@@ -34,17 +34,16 @@ import uk.ac.ebi.embl.api.validation.plan.GenomeAssemblyValidationPlan;
 import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
 import uk.ac.ebi.embl.fasta.writer.FastaFileWriter;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
-import uk.ac.ebi.embl.flatfile.reader.genomeassembly.AssemblyInfoReader;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.ChromosomeListFileReader;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.UnlocalisedListFileReader;
 import uk.ac.ebi.embl.flatfile.writer.embl.EmblEntryWriter;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.validator.ValidatorInterface;
+import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.utils.FileUtils;
 
-public class GenomeAssemblyValidator implements ValidatorInterface
+public class GenomeAssemblyWebinCli implements WebinCliInterface
 {
 	protected FlatFileReader reader = null;
 	private static List<String> chromosomeEntryNames = new ArrayList<String>();
@@ -68,13 +67,13 @@ public class GenomeAssemblyValidator implements ValidatorInterface
 	private String outputDir=null;
 	private List<String> locusTagsList;
 
-	public GenomeAssemblyValidator(ManifestFileReader manifestFileReader, List<String> locusTagsList) {
+	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, List<String> locusTagsList) {
 		this(false);
 		this.manifestFileReader = manifestFileReader;
 		this.locusTagsList = locusTagsList;
 	}
 	
-	public GenomeAssemblyValidator(boolean test)
+	public GenomeAssemblyWebinCli(boolean test)
 	{
 		this.test =test;
 		assemblyInfoFile=null;

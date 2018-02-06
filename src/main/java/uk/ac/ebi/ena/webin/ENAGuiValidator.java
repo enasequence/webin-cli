@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.validator;
+package uk.ac.ebi.ena.webin;
 
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;

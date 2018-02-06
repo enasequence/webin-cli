@@ -31,10 +31,10 @@ jar {
     }
     manifest {
         attributes 'Implementation-Title': 'webin-cli',
-            'Implementation-Version': '1.1.1',
+            'Implementation-Version': version_base,
             'Built-By': System.getProperty('user.name'),
             'Built-Date': new Date(),
-            "Main-Class": 'WebinCli'
+            "Main-Class": 'uk.ac.ebi.ena.webin.cli.WebinCli'
     }
 }
 
