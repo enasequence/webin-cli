@@ -16,6 +16,7 @@ import uk.ac.ebi.ena.utils.FileUtils;
 public class ManifestFileReader
 {
 	public final static String regexSpace = "\\s+";
+	public final static String regexColon = ":";
 	private List<ManifestObj> manifestObjList = new ArrayList<ManifestObj>();
 	private static String InvalidNoOfColumns= "InvalidNumberOfColumns";
     private static final String MANIFESTMESSAGEBUNDLE = "uk.ac.ebi.ena.manifest.ManifestValidationMessages";
@@ -34,8 +35,12 @@ public class ManifestFileReader
 		try (Stream<String> stream = Files.lines(Paths.get(manifestFile))) {
 			stream.forEach(line -> {
 				int currentIndex = Integer.valueOf(index.toString());
-				String[] lineA = line.split(regexSpace);
-				if (line.isEmpty() || lineA.length != 2)
+				String[] lineA = null;
+				if (line.contains(regexColon))
+					lineA = line.split(regexColon);
+				else
+					lineA = line.split(regexSpace);
+				if (lineA == null || lineA.length != 2)
 					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidNoOfColumns, currentIndex)));
 				else
 					manifestObjList.add(new ManifestObj(lineA[0], lineA[1]));
