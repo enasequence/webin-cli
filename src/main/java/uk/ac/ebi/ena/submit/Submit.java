@@ -14,7 +14,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.ena.validator.EnaValidator;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 
 import java.io.StringReader;
 
@@ -37,7 +37,7 @@ public class Submit {
     private String sample;
     private String assemblyName;
 
-    public Submit(EnaValidator.Params params, AssemblyInfoEntry assemblyInfoEntry) throws SubmitException {
+    public Submit(WebinCli.Params params, AssemblyInfoEntry assemblyInfoEntry) throws SubmitException {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {

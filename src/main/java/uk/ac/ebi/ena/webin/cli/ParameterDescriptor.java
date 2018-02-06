@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.validator;
+package uk.ac.ebi.ena.webin.cli;
 
 public class ParameterDescriptor {
     public final static String remoteFlag= "-r";

@@ -2,10 +2,8 @@ package uk.ac.ebi.ena.assembly;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Optional;
 
 import uk.ac.ebi.embl.api.entry.Entry;
-import uk.ac.ebi.embl.api.entry.feature.Feature;
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
@@ -24,10 +22,8 @@ import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.manifest.ManifestObj;
-import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.validator.EnaValidator;
-import uk.ac.ebi.ena.validator.ValidatorInterface;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -37,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-public class TranscriptomeAssemblyValidator implements ValidatorInterface {
+public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
@@ -53,7 +49,7 @@ public class TranscriptomeAssemblyValidator implements ValidatorInterface {
 	private boolean FLAILED_VALIDATION;
 	private ManifestFileReader manifestFileReader;
 
-	public TranscriptomeAssemblyValidator(ManifestFileReader manifestFileReader, AssemblyInfoEntry assemblyInfoEntry, String organism, List<String> locusTagsList) {
+	public TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, AssemblyInfoEntry assemblyInfoEntry, String organism, List<String> locusTagsList) {
 		this.manifestFileReader = manifestFileReader;
 		this.assemblyInfoEntr = assemblyInfoEntry;
 		this.organism = organism;
@@ -85,8 +81,8 @@ public class TranscriptomeAssemblyValidator implements ValidatorInterface {
 		else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
 		if (FLAILED_VALIDATION)
-			return EnaValidator.FLAILED_VALIDATION;
-		return EnaValidator.SUCCESS;
+			return WebinCli.FLAILED_VALIDATION;
+		return WebinCli.SUCCESS;
 	}
 
 	private void createReportFile() throws ValidationEngineException {
