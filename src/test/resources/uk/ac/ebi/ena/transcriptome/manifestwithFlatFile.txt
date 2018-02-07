@@ -1,0 +1,2 @@
+INFO	/Users/cleland/git/ena-validator/validator-CLI/src/test/resources/uk/ac/ebi/ena/transcriptome/hickmania2.info.gz
+FLATFILE	/Users/cleland/git/ena-validator/validator-CLI/src/test/resources/uk/ac/ebi/ena/transcriptome/embl_file_hickmania2.dat.gz

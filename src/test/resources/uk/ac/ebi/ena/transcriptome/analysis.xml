@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS alias="ena-ANALYSIS-1517916967918">
+  <TITLE>Transcriptome assembly: V.speciosa_1.2</TITLE>
+  <STUDY_REF accession=" PRJEB12757" />
+  <SAMPLE_REF accession=" SAMN04526268" />
+  <ANALYSIS_TYPE>
+    <TRANSCRIPTOME_ASSEMBLY />
+  </ANALYSIS_TYPE>
+  <FILES>
+    <FILE filename="transcriptome/V.speciosa_1.2/V.speciosa_1.2.manifest" filetype="manifest" checksum_method="MD5" checksum="" />
+  </FILES>
+</ANALYSIS>

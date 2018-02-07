@@ -1,0 +1,2 @@
+INFO:/Users/cleland/git/ena-validator/validator-CLI/src/test/resources/uk/ac/ebi/ena/transcriptome/fastahomosapien.info.gz
+FASTA:/Users/cleland/git/ena-validator/validator-CLI/src/test/resources/uk/ac/ebi/ena/transcriptome/MC_ANZ045-chr.fasta.gz
