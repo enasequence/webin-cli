@@ -1,0 +1,4 @@
+INFO	valid_assembly_info.txt
+FASTA	valid_fasta.txt
+CHROMOSOME_LIST	chromosome_list.txt
+AGP	valid_agp.txt

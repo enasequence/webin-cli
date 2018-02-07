@@ -1,0 +1,3 @@
+INFO	valid_assembly_info.txt
+FASTA	valid_fasta.txt
+AGP	valid_agp.txt

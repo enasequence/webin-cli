@@ -1,0 +1,2 @@
+INFO	valid_assembly_info.txt
+FLATFILE	valid_flatfile.txt

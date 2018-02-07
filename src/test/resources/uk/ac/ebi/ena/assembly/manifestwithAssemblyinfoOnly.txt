@@ -1,0 +1,1 @@
+INFO	invalid_assembly_info.txt

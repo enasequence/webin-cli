@@ -1,0 +1,2 @@
+FASTA	valid_fasta.txt
+sddfg   fgghfgh.txt

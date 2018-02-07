@@ -1,0 +1,11 @@
+##agp-version	2.0
+# ORGANISM: Homo sapiens
+# TAX_ID: 9606
+# ASSEMBLY NAME: EG1
+# ASSEMBLY DATE: 09-November-2011
+# GENOME CENTER: NCBI
+# DESCRIPTION: Example AGP specifying the assembly of scaffolds from WGS contigs
+IWGSC_CSS_6DL_scaff_3330716	1	330	1	W	IWGSC_CSS_6DL_contig_209591;	1	330	+
+IWGSC_CSS_6DL_scaff_3330716	331	354	2	N	24	scaffold	yes	paired-ends
+IWGSC_CSS_6DL_scaff_3330716;	355	654	3	W	IWGSC_CSS_6DL_contig_209592	1	300	+
+IWGSC_CSS_6DL_scaff_3330717	1	330	1	W	IWGSC_CSS_6DL_contig_209593	1	330	-

@@ -1,0 +1,5 @@
+15_1_contig_01  I
+15_1_contig_02  I
+15_1_contig_03  I
+15_1_contig_04  I
+15_1_contig_05  I
