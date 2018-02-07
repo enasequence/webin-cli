@@ -51,37 +51,30 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	private static HashSet<String> fastaEntryNames = new HashSet<String>();
 	private static HashSet<String> agpEntrynames = new HashSet<String>();
 	private static HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<String, List<Qualifier>>();
-	private static File assemblyInfoFile=null;
-	private static File chromosomeListFile =null;
-	private static File unlocalisedListFile =null;
-	private static List<File> fastaFiles= null;
-	private static List<File> flatFiles = null;
-	private static List<File> agpFiles = null;
+	private static File assemblyInfoFile;
+	private static File chromosomeListFile;
+	private static File unlocalisedListFile;
+	private static List<File> fastaFiles = new ArrayList<File>();
+	private static List<File> flatFiles = new ArrayList<File>();
+	private static List<File> agpFiles = new ArrayList<File>();
 	private static String molType= "genomeDNA";
 	private static String organism=null;
 	private static String originalFileDir= null;;
 	private static String reportDir=null;
-	private boolean test =false;
+	private boolean test;
 	private ManifestFileReader manifestFileReader;
 	private String assemblyName=null;
 	private String outputDir=null;
 	private List<String> locusTagsList;
 
 	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, List<String> locusTagsList) {
-		this(false);
 		this.manifestFileReader = manifestFileReader;
 		this.locusTagsList = locusTagsList;
 	}
 	
-	public GenomeAssemblyWebinCli(boolean test)
-	{
-		this.test =test;
-		assemblyInfoFile=null;
-		chromosomeListFile =null;
-		unlocalisedListFile =null;
-		fastaFiles =new ArrayList<File>();
-		flatFiles =new ArrayList<File>();
-		agpFiles =new ArrayList<File>();
+	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, List<String> locusTagsList, boolean test) {
+		this(manifestFileReader, locusTagsList);
+		this.test = test;
 	}
 
 	public int validate() throws ValidationEngineException
@@ -113,15 +106,15 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 					System.err.println("Assembly info file validation failed - exiting");
 					return 2;
 			}
-			valid= valid&validateChromosomeList(property);
-			valid= valid&validateUnlocalisedList(property);
+			valid = valid&validateChromosomeList(property);
+			valid = valid&validateUnlocalisedList(property);
 			getChromosomeEntryNames(taxonHelper.isChildOf(organism, "Virus"));
-			valid= valid&validateFastaFiles(property);
+			valid = valid&validateFastaFiles(property);
 			property.contigEntryNames.set(fastaEntryNames);
-			valid= valid&validateAgpFiles(property);
-			valid= valid&validateFlatFiles(property);
+			valid = valid&validateAgpFiles(property);
+			valid = valid&validateFlatFiles(property);
 			if(!test)
-			moveFiles(valid);
+				moveFiles(valid);
 			return valid?0:3;
 		} catch (Exception e)
 		{
