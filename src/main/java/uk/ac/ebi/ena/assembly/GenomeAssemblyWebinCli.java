@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import uk.ac.ebi.embl.agp.writer.AGPFileWriter;
 import uk.ac.ebi.embl.api.entry.Entry;
+import uk.ac.ebi.embl.api.entry.Text;
+import uk.ac.ebi.embl.api.entry.XRef;
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
@@ -41,6 +43,8 @@ import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestObj;
+import uk.ac.ebi.ena.sample.Sample;
+import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public class GenomeAssemblyWebinCli implements WebinCliInterface
@@ -54,26 +58,34 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	private static File assemblyInfoFile;
 	private static File chromosomeListFile;
 	private static File unlocalisedListFile;
-	private static List<File> fastaFiles = new ArrayList<File>();
-	private static List<File> flatFiles = new ArrayList<File>();
-	private static List<File> agpFiles = new ArrayList<File>();
+	private static List<File> fastaFiles;
+	private static List<File> flatFiles;
+	private static List<File> agpFiles;
 	private static String molType= "genomeDNA";
-	private static String organism=null;
+	private  Sample sample=null;
 	private static String originalFileDir= null;;
 	private static String reportDir=null;
 	private boolean test;
 	private ManifestFileReader manifestFileReader;
-	private String assemblyName=null;
 	private String outputDir=null;
-	private List<String> locusTagsList;
+	private Study study =null;
 
-	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, List<String> locusTagsList) {
+	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study) {
 		this.manifestFileReader = manifestFileReader;
-		this.locusTagsList = locusTagsList;
+		this.sample=sample;
+		assemblyInfoFile=null;
+		chromosomeListFile=null;
+		unlocalisedListFile=null;
+		fastaFiles = new ArrayList<File>();
+		flatFiles = new ArrayList<File>();
+		agpFiles = new ArrayList<File>();
+		originalFileDir= null;;
+		reportDir=null;
+		this.study=study;
 	}
 	
-	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, List<String> locusTagsList, boolean test) {
-		this(manifestFileReader, locusTagsList);
+	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study, boolean test) {
+		this(manifestFileReader,sample, study);
 		this.test = test;
 	}
 
@@ -85,6 +97,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 			EmblEntryValidationPlanProperty property = new EmblEntryValidationPlanProperty();
 			property.isFixMode.set(true);
 			property.isRemote.set(true);
+			property.locus_tag_prefixes.set(study.getLocusTagsList());
 			TaxonHelper taxonHelper = new TaxonHelperImpl();
 	        reportDir= outputDir+File.separator+"reports";
 	        File rDir= new File(reportDir);
@@ -108,7 +121,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 			}
 			valid = valid&validateChromosomeList(property);
 			valid = valid&validateUnlocalisedList(property);
-			getChromosomeEntryNames(taxonHelper.isChildOf(organism, "Virus"));
+			getChromosomeEntryNames(taxonHelper.isChildOf(sample.getOrganism(), "Virus"));
 			valid = valid&validateFastaFiles(property);
 			property.contigEntryNames.set(fastaEntryNames);
 			valid = valid&validateAgpFiles(property);
@@ -129,7 +142,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		List<ValidationResult> assemblyInfoParseResults = new ArrayList<ValidationResult>();
 		ValidationResult assemblyInfoParseResult= new ValidationResult();
 		AssemblyInfoEntry assemblyInfoEntry = FileUtils.getAssemblyEntry(assemblyInfoFile, assemblyInfoParseResult);
-		assemblyName= assemblyInfoEntry.getName().trim();
 		assemblyInfoParseResults.add(assemblyInfoParseResult);
 		Writer assemblyInforepoWriter = new PrintWriter(reportDir+File.separator+assemblyInfoFile.getName() + ".report", "UTF-8");
 		if (assemblyInfoEntry != null)
@@ -137,7 +149,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 			property.fileType.set(FileType.ASSEMBLYINFO);
 			assemblyInfoPlanResults.add(validateEntry(assemblyInfoEntry,property));
             molType=assemblyInfoEntry.getMoleculeType();
-    		organism = assemblyInfoEntry.getSampleId();//get organism from sample id
 		}
       return GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResults,assemblyInfoPlanResults, assemblyInforepoWriter,assemblyInfoFile.getName());
 	}
@@ -205,9 +216,13 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 			{
 				parseResult = null;
 				SourceFeature source = (new FeatureFactory()).createSourceFeature();
-				source.setScientificName(organism);
+				source.setScientificName(sample.getOrganism());
 				source.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, molType);
 				Entry entry = (Entry) reader.getEntry();
+				if(sample.getBiosampleId()!=null)
+				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
+				if(study.getProjectId()!=null)
+				entry.addProjectAccession(new Text(study.getProjectId()));
 				if (entry.getSubmitterAccession() != null&& chromosomeEntryNames.contains(entry.getSubmitterAccession().toUpperCase()))
 				{
 					List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap.get(entry.getSubmitterAccession().toUpperCase());
@@ -265,7 +280,11 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 				entry.removeFeature(entry.getPrimarySourceFeature());
 				SourceFeature source = (new FeatureFactory()).createSourceFeature();
 				source.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, molType);
-				source.setScientificName(organism);
+				source.setScientificName(sample.getOrganism());
+				if(sample.getBiosampleId()!=null)
+				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
+				if(study.getProjectId()!=null)
+					 entry.addProjectAccession(new Text(study.getProjectId()));			
 				if (entry.getSubmitterAccession() != null&& chromosomeEntryNames.contains(entry.getSubmitterAccession().toUpperCase()))
 				{
 					List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap.get(entry.getSubmitterAccession().toUpperCase());
@@ -330,10 +349,13 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 			{
 				parseResult = null;
 				SourceFeature source = (new FeatureFactory()).createSourceFeature();
-				source.setScientificName(organism);
+				source.setScientificName(sample.getOrganism());
 				source.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, molType);
 				Entry entry = (Entry) reader.getEntry();
-				entry.setDataClass(Entry.CON_DATACLASS);
+				if(sample.getBiosampleId()!=null)
+				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
+				if(study.getProjectId()!=null)
+					 entry.addProjectAccession(new Text(study.getProjectId()));				entry.setDataClass(Entry.CON_DATACLASS);
 				if (entry.getSubmitterAccession() != null && chromosomeEntryNames.contains(entry.getSubmitterAccession().toUpperCase()))
 				{
 					List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap.get(entry.getSubmitterAccession().toUpperCase());

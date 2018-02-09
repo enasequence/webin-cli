@@ -1,7 +1,6 @@
 package uk.ac.ebi.ena.manifest;
 
 import static org.junit.Assert.assertTrue;
-import java.io.File;
 import java.net.URL;
 import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.ValidationPlanResult;

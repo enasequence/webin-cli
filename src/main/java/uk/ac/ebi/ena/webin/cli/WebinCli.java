@@ -94,28 +94,29 @@ public class WebinCli {
 			doSubmit();
 	}
 
-	private List<String> getStudy() throws StudyException {
+	private Study getStudy() throws StudyException {
 		Study study = new Study();
 		study.getStudy(assemblyInfoEntry.getStudyId(), params.userName, params.password);
-		return study.getLocusTagsList();
+		return study;
 	}
 
-	private String getOrganismFromSample() throws SampleException {
+	private Sample getSample() throws SampleException {
 		Sample sample = new Sample();
 		sample.getSample(assemblyInfoEntry.getSampleId(), params.userName, params.password);
-		return sample.getOrganism();
+		return sample;
 	}
 
 	private void doValidation() {
 		try {
 			WebinCliInterface validator = null;
-			List<String> locusTagsList = getStudy();
-			switch(contextE) {
+			Study study = getStudy();
+			  Sample sample=getSample();
+			  switch(contextE) {
                 case transcriptome:
-                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, assemblyInfoEntry, getOrganismFromSample(), locusTagsList);
+                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, assemblyInfoEntry, sample, study);
                     break;
 				case assembly:
-					validator = new GenomeAssemblyWebinCli(manifestFileReader, locusTagsList);
+					validator = new GenomeAssemblyWebinCli(manifestFileReader,sample,study);
 					break;
             }
 			validator.setOutputDir(params.outputDir);
