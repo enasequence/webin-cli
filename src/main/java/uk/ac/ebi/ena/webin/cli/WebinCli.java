@@ -112,6 +112,7 @@ public class WebinCli {
 			List<String> locusTagsList = getStudy();
 			switch(contextE) {
                 case transcriptome:
+					validateInfoFileForTranscriptome();
                     validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, assemblyInfoEntry, getOrganismFromSample(), locusTagsList);
                     break;
 				case assembly:
@@ -145,6 +146,15 @@ public class WebinCli {
 			System.out.println("Validation has failed due to " + e.getMessage());
 			System.exit(3);
 		}
+	}
+
+	private void validateInfoFileForTranscriptome() throws ValidationEngineException {
+		if (assemblyInfoEntry.getName() == null || assemblyInfoEntry.getName().isEmpty())
+			throw new ValidationEngineException("ASSEMBLYNAME is missing from info file");
+		if (assemblyInfoEntry.getPlatform() == null || assemblyInfoEntry.getPlatform().isEmpty())
+			throw new ValidationEngineException("PLATFORM is missing from info file");
+		if (assemblyInfoEntry.getProgram() == null || assemblyInfoEntry.getProgram().isEmpty())
+			throw new ValidationEngineException("PROGRAM is missing from info file");
 	}
 
 	private void doFtpUpload() {
