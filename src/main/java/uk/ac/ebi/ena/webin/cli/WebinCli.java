@@ -113,7 +113,8 @@ public class WebinCli {
 			switch(contextE) {
                 case transcriptome:
 					validateInfoFileForTranscriptome();
-                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, assemblyInfoEntry, getOrganismFromSample(), locusTagsList);
+					String organism = getOrganismFromSample();
+                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, organism, locusTagsList);
                     break;
 				case assembly:
 					validator = new GenomeAssemblyWebinCli(manifestFileReader, locusTagsList);
@@ -149,12 +150,21 @@ public class WebinCli {
 	}
 
 	private void validateInfoFileForTranscriptome() throws ValidationEngineException {
-		if (assemblyInfoEntry.getName() == null || assemblyInfoEntry.getName().isEmpty())
-			throw new ValidationEngineException("ASSEMBLYNAME is missing from info file");
-		if (assemblyInfoEntry.getPlatform() == null || assemblyInfoEntry.getPlatform().isEmpty())
-			throw new ValidationEngineException("PLATFORM is missing from info file");
-		if (assemblyInfoEntry.getProgram() == null || assemblyInfoEntry.getProgram().isEmpty())
-			throw new ValidationEngineException("PROGRAM is missing from info file");
+		boolean INFO_FILE_ERROR = false;
+		if (assemblyInfoEntry.getName() == null || assemblyInfoEntry.getName().isEmpty()) {
+			System.out.println("Field ASSEMBLYNAME is missing from info file");
+			INFO_FILE_ERROR = true;
+		}
+		if (assemblyInfoEntry.getPlatform() == null || assemblyInfoEntry.getPlatform().isEmpty()) {
+			System.out.println("Field PLATFORM is missing from info file");
+			INFO_FILE_ERROR = true;
+		}
+		if (assemblyInfoEntry.getProgram() == null || assemblyInfoEntry.getProgram().isEmpty()) {
+			System.out.println("Field PROGRAM is missing from info file");
+			INFO_FILE_ERROR = true;
+		}
+		if (INFO_FILE_ERROR)
+			System.exit(3);
 	}
 
 	private void doFtpUpload() {
@@ -283,6 +293,10 @@ public class WebinCli {
             }
 			ValidationResult parseResult = new ValidationResult();
 			assemblyInfoEntry =  FileUtils.getAssemblyEntry(infoFilePath.toFile(), parseResult);
+			if (assemblyInfoEntry.getName() == null || assemblyInfoEntry.getName().isEmpty()) {
+				System.err.println("Required field ASSEMBLYNAME is missing from INFO file: " + infoFile);
+				System.exit(2);
+			}
 			assemblyInfoEntry.setName(assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_"));
 		} catch (IOException e) {
 			System.err.println("Info file " + infoFile + " not found.");
