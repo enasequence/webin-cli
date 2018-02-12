@@ -7,8 +7,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -18,8 +16,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Sample {
-    private long taxId;
+  
+	private long taxId;
     private String organism;
+    private String biosampleId;
 
     public void getSample(String sampleId, String userName, String password) throws SampleException {
         try {
@@ -60,7 +60,22 @@ public class Sample {
     public String getOrganism() {
         return organism;
     }
+    public String getBiosampleId() {
+        return biosampleId;
+    }
 
+    public void setTaxId(long taxId) {
+  		this.taxId = taxId;
+  	}
+
+  	public void setOrganism(String organism) {
+  		this.organism = organism;
+  	}
+
+  	public void setBiosampleId(String biosampleId) {
+  		this.biosampleId = biosampleId;
+  	}
+  	
     private void extractResults(String result, String sampleId) throws SampleException {
         try {
             JSONParser jsonParser = new JSONParser();
@@ -71,6 +86,7 @@ public class Sample {
                 throw new SampleException("Unknown sample " + sampleId + " or cannot be referenced by this submission account.");
             taxId = (long)jsonObject.get("taxId");
             organism = (String) jsonObject.get("organism");
+            biosampleId = (String) jsonObject.get("bioSampleId");
         } catch (Exception e) {
             throw new SampleException("An internal error occurred, please try again later. " + e.getMessage());
         }

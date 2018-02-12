@@ -8,9 +8,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.ena.sample.SampleException;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -21,8 +19,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Study {
-    List<String> locusTagsList = new ArrayList<>();;
-
+   
+	private  List<String> locusTagsList = new ArrayList<>();
+    private String projectId;
+    
     public void getStudy(String studyId, String userName, String password) throws StudyException {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -58,6 +58,19 @@ public class Study {
     public List<String> getLocusTagsList() {
         return locusTagsList;
     }
+    
+    public String getProjectId()
+    {
+    	return projectId;
+    }
+
+    public void setLocusTagsList(List<String> locusTagsList) {
+		this.locusTagsList = locusTagsList;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
 
     private void extractResults(String result, String studyId) throws SampleException {
         try {
@@ -68,6 +81,7 @@ public class Study {
             if (!canBeReferenced)
                 throw new StudyException("Unknown study " + studyId + " or cannot be referenced by this submission account.");
             JSONArray jsonArray = (JSONArray)jsonObject.get("locusTags");
+            projectId = (String) jsonObject.get("bioProjectId");
             if (jsonArray != null && !jsonArray.isEmpty())
                 jsonArray.forEach(p -> locusTagsList.add( p.toString()));
         } catch (Exception e) {

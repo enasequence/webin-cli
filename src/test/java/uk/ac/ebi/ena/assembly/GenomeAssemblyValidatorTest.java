@@ -8,6 +8,8 @@ import java.util.List;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
+import uk.ac.ebi.ena.sample.Sample;
+import uk.ac.ebi.ena.study.Study;
 
 public class GenomeAssemblyValidatorTest {
 	@Test
@@ -18,8 +20,10 @@ public class GenomeAssemblyValidatorTest {
 			fileName = url.getPath().replaceAll("%20", " ");
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(fileName);
-		List<String> locuTagsList = new ArrayList<>();
-		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, locuTagsList, true);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study, true);
 		int i= validator.validate();
 		assertEquals(2, i);
 	}
@@ -32,8 +36,10 @@ public class GenomeAssemblyValidatorTest {
 			fileName = url.getPath().replaceAll("%20", " ");
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(fileName);
-		List<String> locuTagsList = new ArrayList<>();
-		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, locuTagsList, true);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study, true);
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -46,8 +52,10 @@ public class GenomeAssemblyValidatorTest {
 			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(manifestFileName);
-		List<String> locuTagsList = new ArrayList<>();
-		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, locuTagsList, true);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study, true);
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -60,8 +68,13 @@ public class GenomeAssemblyValidatorTest {
 			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(manifestFileName);
-		List<String> locuTagsList = new ArrayList<>();
-		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, locuTagsList, true);
+		List<String> locusTagsList = new ArrayList<>();
+		locusTagsList.add("SPLC1");
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		study.setLocusTagsList(locusTagsList);
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study, true);
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -74,8 +87,10 @@ public class GenomeAssemblyValidatorTest {
 			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(manifestFileName);
-		List<String> locuTagsList = new ArrayList<>();
-		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, locuTagsList, true);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study, true);
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -88,8 +103,10 @@ public class GenomeAssemblyValidatorTest {
 			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(manifestFileName);
-		List<String> locuTagsList = new ArrayList<>();
-		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, locuTagsList, true);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study, true);
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -102,8 +119,10 @@ public class GenomeAssemblyValidatorTest {
 			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(manifestFileName);
-		List<String> locuTagsList = new ArrayList<>();
-		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, locuTagsList, true);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study, true);
 		int i= validator.validate();
 		assertEquals(0, i);
 	}

@@ -31,25 +31,29 @@ public class ManifestFileReader
 	}
 
 	public ValidationPlanResult read(String manifestFile) throws IOException {
-		final StringBuilder index = new StringBuilder("1");
-		try (Stream<String> stream = Files.lines(Paths.get(manifestFile))) {
-			stream.forEach(line -> {
-				int currentIndex = Integer.valueOf(index.toString());
-				String[] lineA = null;
-				if (line.contains(regexColon))
-					lineA = line.split(regexColon);
-				else
-					lineA = line.split(regexSpace);
-				if (lineA == null || lineA.length != 2)
-					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidNoOfColumns, currentIndex)));
-				else
-					manifestObjList.add(new ManifestObj(lineA[0], lineA[1]));
-				index.setLength(0);
-				currentIndex++;
-				index.append((currentIndex));
-			});
-		}
-		return result;
+		  ValidationMessageManager.addBundle(MANIFESTMESSAGEBUNDLE);
+			int i=0;
+			try (BufferedReader br = FileUtils.getBufferedReader(new File(manifestFile))) {
+
+				String line;
+				while ((line = br.readLine()) != null) {
+					i++;
+					String[] lineTokens = line.split(regexSpace);
+					if (line.contains(regexColon))
+						lineTokens = line.split(regexColon);
+					else
+						lineTokens = line.split(regexSpace);
+					if (lineTokens.length != 2) 
+					{
+						result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR,InvalidNoOfColumns,i)));
+					}
+					else
+						manifestObjList.add(new ManifestObj(lineTokens[0], lineTokens[1]));
+				}
+
+			}
+			
+			return  result;
 	}
 
 	public String getFilenameFromManifest(FileFormat fileFormat) throws ValidationEngineException {

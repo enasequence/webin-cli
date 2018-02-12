@@ -94,30 +94,32 @@ public class WebinCli {
 			doSubmit();
 	}
 
-	private List<String> getStudy() throws StudyException {
+	private Study getStudy() throws StudyException {
 		Study study = new Study();
 		study.getStudy(assemblyInfoEntry.getStudyId(), params.userName, params.password);
-		return study.getLocusTagsList();
+		return study;
 	}
 
-	private String getOrganismFromSample() throws SampleException {
+	private Sample getSample() throws SampleException {
 		Sample sample = new Sample();
 		sample.getSample(assemblyInfoEntry.getSampleId(), params.userName, params.password);
-		return sample.getOrganism();
+		return sample;
 	}
 
 	private void doValidation() {
 		try {
 			WebinCliInterface validator = null;
-			List<String> locusTagsList = getStudy();
-			switch(contextE) {
+			Study study = getStudy();
+			  Sample sample=getSample();
+			  switch(contextE) {
                 case transcriptome:
 					validateInfoFileForTranscriptome();
 					String organism = getOrganismFromSample();
                     validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, organism, locusTagsList);
+                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, assemblyInfoEntry, sample, study);
                     break;
 				case assembly:
-					validator = new GenomeAssemblyWebinCli(manifestFileReader, locusTagsList);
+					validator = new GenomeAssemblyWebinCli(manifestFileReader,sample,study);
 					break;
             }
 			validator.setOutputDir(params.outputDir);
@@ -293,10 +295,6 @@ public class WebinCli {
             }
 			ValidationResult parseResult = new ValidationResult();
 			assemblyInfoEntry =  FileUtils.getAssemblyEntry(infoFilePath.toFile(), parseResult);
-			if (assemblyInfoEntry.getName() == null || assemblyInfoEntry.getName().isEmpty()) {
-				System.err.println("Required field ASSEMBLYNAME is missing from INFO file: " + infoFile);
-				System.exit(2);
-			}
 			assemblyInfoEntry.setName(assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_"));
 		} catch (IOException e) {
 			System.err.println("Info file " + infoFile + " not found.");

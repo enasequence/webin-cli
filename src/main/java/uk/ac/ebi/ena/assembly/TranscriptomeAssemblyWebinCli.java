@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import uk.ac.ebi.embl.api.entry.Entry;
+import uk.ac.ebi.embl.api.entry.Text;
+import uk.ac.ebi.embl.api.entry.XRef;
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
@@ -22,6 +24,8 @@ import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
+import uk.ac.ebi.ena.sample.Sample;
+import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
 
@@ -37,29 +41,28 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
-	private final static String ASSEMBLY_NAME = "Assembly Name:";
-	private final static String ORGANISM = "Organism:";
 	private String reportFile = "TRANSCRIPTOME.report";
 	private String outputDir;
 	private String submittedFile;
 	private AssemblyInfoEntry assemblyInfoEntr;
-	private String organism;
-	private List<String> locusTagsList;
+	private Sample sample;
+    private Study study;
 	private ValidationPlan validationPlan;
 	private boolean FLAILED_VALIDATION;
 	private ManifestFileReader manifestFileReader;
 
-	public TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, AssemblyInfoEntry assemblyInfoEntry, String organism, List<String> locusTagsList) {
+	public TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, AssemblyInfoEntry assemblyInfoEntry, Sample sample, Study study) {
 		this.manifestFileReader = manifestFileReader;
 		this.assemblyInfoEntr = assemblyInfoEntry;
-		this.organism = organism;
-		this.locusTagsList = locusTagsList;
+		this.sample = sample;
+		this.study = study;
 		EmblEntryValidationPlanProperty emblEntryValidationProperty = new EmblEntryValidationPlanProperty();
 		emblEntryValidationProperty.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
 		emblEntryValidationProperty.isDevMode.set(false);
 		emblEntryValidationProperty.isFixMode.set(true);
 		emblEntryValidationProperty.isAssembly.set(false);
 		emblEntryValidationProperty.minGapLength.set(0);
+		emblEntryValidationProperty.locus_tag_prefixes.set(study.getLocusTagsList());
 		validationPlan = new EmblEntryValidationPlan(emblEntryValidationProperty);
 		validationPlan.addMessageBundle(VALIDATION_MESSAGES_BUNDLE);
 		validationPlan.addMessageBundle(STANDARD_VALIDATION_BUNDLE);
@@ -113,7 +116,11 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 			List<ValidationMessage<Origin>> validationMessagesList;
 			while (flatFileReader.isEntry()) {
 				Entry entry = (Entry)flatFileReader.getEntry();
-				entry.getPrimarySourceFeature().setScientificName(organism);
+				entry.getPrimarySourceFeature().setScientificName(sample.getOrganism());
+				if(sample.getBiosampleId()!=null)
+				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
+				if(study.getProjectId()!=null)
+					 entry.addProjectAccession(new Text(study.getProjectId()));
 				validationPlanResult = validationPlan.execute(entry);
 				validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
 				if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
@@ -143,7 +150,11 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 			while (fastaFileReader.isEntry()) {
 				Entry entry = fastaFileReader.getEntry();
 				SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();
-				sourceFeature.setScientificName(organism);
+				sourceFeature.setScientificName(sample.getOrganism());
+				if(sample.getBiosampleId()!=null)
+				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
+				if(study.getProjectId()!=null)
+				 entry.addProjectAccession(new Text(study.getProjectId()));
 				sourceFeature.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, assemblyInfoEntr.getMoleculeType());
 				Order<Location> featureLocation = new Order<Location>();
 				featureLocation.addLocation(new LocationFactory().createLocalRange(1l, entry.getSequence().getLength()));
