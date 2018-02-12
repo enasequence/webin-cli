@@ -1,54 +1,23 @@
 import org.gradle.plugins.ide.eclipse.model.AccessRule
+plugins {
+    id "us.kirchmeier.capsule" version "0.10.0"
+    id "edu.sc.seis.launch4j" version "1.1.2"
+}
 
 
-def version_num = '1.1.0'
-
-version = version_num
-ext.archivesBaseName = 'webin-cli'
-
-apply plugin: 'signing'
-apply plugin: 'maven'
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'edu.sc.seis.launch4j'
 
-group ='uk.ac.ebi.ena-webin-cli'
+group = 'uk.ac.ebi.ena.webin-cli'
+ext.version_base = '1.0.0'
+version = version_base
 
 repositories {
     mavenLocal()
-    mavenCentral()
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-eclipse {
-    classpath {
-        file {
-            whenMerged {
-                def jre = entries.find { it.path.contains 'org.eclipse.jdt.launching.JRE_CONTAINER' }
-                jre.accessRules.add(new AccessRule('0', 'javafx/**'))
-            }
-        }
-    }
-
-}
-dependencies {
-    compile 'org.apache.commons:commons-lang3:3.0'
-    compile 'org.apache.commons:commons-compress:1.10'
-    compile group: 'com.beust', name: 'jcommander', version: '1.72'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
-    compile 'org.apache.commons:commons-lang3:3.0'
-    compile 'org.apache.commons:commons-compress:1.10'
-    compile group: 'com.beust', name: 'jcommander', version: '1.72'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.1.205')
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.1.205')
-    compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
-    compile("com.googlecode.json-simple:json-simple:1.1.1")
-    compile("commons-net:commons-net:3.4")
-    compile("org.jdom:jdom:2.0.2")
-    testCompile 'junit:junit:4.11'
+    maven { url "http://ena-dev:8081/artifactory/all" }
 }
 
 jar {
@@ -61,125 +30,77 @@ jar {
         }
     }
     manifest {
-        attributes(
-                "Implementation-Title": archivesBaseName,
-                'Implementation-Version': version,
-                'Source-Compatibility': project.sourceCompatibility,
-                'Target-Compatibility': project.targetCompatibility
-        )
+        attributes 'Implementation-Title': 'webin-cli',
+                'Implementation-Version': version_base,
+                'Built-By': System.getProperty('user.name'),
+                'Built-Date': new Date(),
+                "Main-Class": 'uk.ac.ebi.ena.webin.cli.WebinCli'
     }
 }
 
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
+launch4j {
+    mainClassName = "WebinCli"
+    launch4jCmd = "launch4j"
+    jar = "lib\\${project.tasks.jar.archiveName}"
+    headerType = "console"
+    dontWrapJar = false
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
-}
-
-artifacts {
-    archives javadocJar
-    archives jar
-    archives sourceJar
-}
-
-signing {
-    sign configurations.archives
-}
-
-
-task wrapper(type: Wrapper) { gradleVersion = '2.9' }
-
-uploadArchives 
-  {
-    repositories 
-     {
-  /*   mavenDeployer 
-          {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) 
-          }
-       if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')) 
-       {
-        
-          repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") 
-          {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-          }
-          snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") 
-          {
-               authentication(userName: ossrhUsername, password: ossrhPassword)
-          }
-       }
-        pom.project 
-          {
-               name 'sub-taxonomy-client'
-               packaging 'jar'
-               description 'Taxonomy Client'
-               url 'http://www.ebi.ac.uk/ena'
-                scm 
-                {
-                    url 'https://github.com/enasequence/sub-taxonomy-client'
-                }
-                licenses 
-                {
-                    license 
-                    {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers 
-                {
-                    developer 
-                    {
-                        id 'kethi'
-                        name 'kethi reddy'
-                        email 'reddyk@ebi.ac.uk'
-                    }
-                }
+eclipse {
+    classpath {
+        file {
+            whenMerged {
+                def jre = entries.find { it.path.contains 'org.eclipse.jdt.launching.JRE_CONTAINER' }
+                jre.accessRules.add(new AccessRule('0', 'javafx/**'))
             }
-        }*/
-//local repository	
-		 mavenDeployer 
-		 {
-		   repository(url: "http://ena-dev:8081/artifactory/libs-release-local"){
-                authentication(userName: artifactoryUsername, password: artifactoryPassword)
+        }
+    }
+
+}
+
+
+dependencies {
+    compile 'org.apache.commons:commons-lang3:3.0'
+    compile 'org.apache.commons:commons-compress:1.10'
+    compile group: 'com.beust', name: 'jcommander', version: '1.72'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
+    compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
+    compile 'org.apache.commons:commons-lang3:3.0'
+    compile 'org.apache.commons:commons-compress:1.10'
+    compile group: 'com.beust', name: 'jcommander', version: '1.72'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.1.205')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.1.205')
+    compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
+    compile("com.googlecode.json-simple:json-simple:1.1.1")
+    compile("commons-net:commons-net:3.4")
+    compile("org.jdom:jdom:2.0.2")
+    testCompile 'junit:junit:4.11'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+task sourceJar(type: Jar) { from sourceSets.main.allJava }
+
+task wrapper(type: Wrapper) { gradleVersion = '2.6' }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourceJar { classifier "sources" }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username artifactoryUsername
+                password artifactoryPassword
             }
-			pom.project 
-          {
-               name 'webin-cli'
-               packaging 'jar'
-               description 'Taxonomy Client'
-               url 'http://www.ebi.ac.uk/ena'
-
-                scm 
-                {
-                    url 'https://github.com/enasequence/sub-taxonomy-client'
-                }
-
-                licenses 
-                {
-                    license 
-                    {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers 
-                {
-                    developer 
-                    {
-                        id 'kethi'
-                        name 'kethi reddy'
-                        email 'reddyk@ebi.ac.uk'
-                    }
-                }
-            }
-		 }
-	//local repository
-		 }
-		 }
+            url "http://ena-dev:8081/artifactory/libs-release-local"
+        }
+    }
+}

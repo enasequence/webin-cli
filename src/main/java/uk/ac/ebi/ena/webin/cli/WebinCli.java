@@ -114,9 +114,7 @@ public class WebinCli {
 			  switch(contextE) {
                 case transcriptome:
 					validateInfoFileForTranscriptome();
-					String organism = getOrganismFromSample();
-                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, organism, locusTagsList);
-                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, assemblyInfoEntry, sample, study);
+                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, sample, study);
                     break;
 				case assembly:
 					validator = new GenomeAssemblyWebinCli(manifestFileReader,sample,study);

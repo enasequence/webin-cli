@@ -41,19 +41,20 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
+	private final static String ASSEMBLY_NAME = "Assembly Name:";
+	private final static String ORGANISM = "Organism:";
 	private String reportFile = "TRANSCRIPTOME.report";
+	private final String MOL_TYPE = "transcribed RNA";
 	private String outputDir;
 	private String submittedFile;
-	private AssemblyInfoEntry assemblyInfoEntr;
 	private Sample sample;
     private Study study;
 	private ValidationPlan validationPlan;
 	private boolean FLAILED_VALIDATION;
 	private ManifestFileReader manifestFileReader;
 
-	public TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, AssemblyInfoEntry assemblyInfoEntry, Sample sample, Study study) {
+	public TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study) {
 		this.manifestFileReader = manifestFileReader;
-		this.assemblyInfoEntr = assemblyInfoEntry;
 		this.sample = sample;
 		this.study = study;
 		EmblEntryValidationPlanProperty emblEntryValidationProperty = new EmblEntryValidationPlanProperty();
@@ -155,7 +156,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
 				if(study.getProjectId()!=null)
 				 entry.addProjectAccession(new Text(study.getProjectId()));
-				sourceFeature.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, assemblyInfoEntr.getMoleculeType());
+				sourceFeature.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, MOL_TYPE);
 				Order<Location> featureLocation = new Order<Location>();
 				featureLocation.addLocation(new LocationFactory().createLocalRange(1l, entry.getSequence().getLength()));
 				sourceFeature.setLocations(featureLocation);
