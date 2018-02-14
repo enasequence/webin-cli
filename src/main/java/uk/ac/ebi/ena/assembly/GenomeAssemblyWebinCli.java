@@ -55,13 +55,12 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	private static HashSet<String> fastaEntryNames = new HashSet<String>();
 	private static HashSet<String> agpEntrynames = new HashSet<String>();
 	private static HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<String, List<Qualifier>>();
-	private static File assemblyInfoFile;
 	private static File chromosomeListFile;
 	private static File unlocalisedListFile;
 	private static List<File> fastaFiles;
 	private static List<File> flatFiles;
 	private static List<File> agpFiles;
-	private static String molType= "genomeDNA";
+	private String molType= "genomic DNA";
 	private  Sample sample=null;
 	private static String originalFileDir= null;;
 	private static String reportDir=null;
@@ -70,10 +69,9 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	private String outputDir=null;
 	private Study study =null;
 
-	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study) {
+	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study,String molType) {
 		this.manifestFileReader = manifestFileReader;
 		this.sample=sample;
-		assemblyInfoFile=null;
 		chromosomeListFile=null;
 		unlocalisedListFile=null;
 		fastaFiles = new ArrayList<File>();
@@ -82,10 +80,11 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		originalFileDir= null;;
 		reportDir=null;
 		this.study=study;
+		this.molType = molType ==null?this.molType:molType;
 	}
 	
-	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study, boolean test) {
-		this(manifestFileReader,sample, study);
+	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study,String molType, boolean test) {
+		this(manifestFileReader,sample, study,molType);
 		this.test = test;
 	}
 
@@ -108,17 +107,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	        if(!originalDir.exists())
 	        	originalDir.mkdirs();
 			defineFileTypes();
-			if (assemblyInfoFile == null)
-			{ 
-				System.err.println("Assembly info file is missing - exiting");
-				return 2;
-			}
-			valid= valid&validateAssemblyInfo(property);
-			if(!valid)
-			{ 
-					System.err.println("Assembly info file validation failed - exiting");
-					return 2;
-			}
 			valid = valid&validateChromosomeList(property);
 			valid = valid&validateUnlocalisedList(property);
 			getChromosomeEntryNames(taxonHelper.isChildOf(sample.getOrganism(), "Virus"));
@@ -136,22 +124,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 
 	}
 
-	private boolean validateAssemblyInfo(EmblEntryValidationPlanProperty property) throws IOException, ValidationEngineException
-	{
-		List<ValidationPlanResult> assemblyInfoPlanResults = new ArrayList<ValidationPlanResult>();
-		List<ValidationResult> assemblyInfoParseResults = new ArrayList<ValidationResult>();
-		ValidationResult assemblyInfoParseResult= new ValidationResult();
-		AssemblyInfoEntry assemblyInfoEntry = FileUtils.getAssemblyEntry(assemblyInfoFile, assemblyInfoParseResult);
-		assemblyInfoParseResults.add(assemblyInfoParseResult);
-		Writer assemblyInforepoWriter = new PrintWriter(reportDir+File.separator+assemblyInfoFile.getName() + ".report", "UTF-8");
-		if (assemblyInfoEntry != null)
-		{
-			property.fileType.set(FileType.ASSEMBLYINFO);
-			assemblyInfoPlanResults.add(validateEntry(assemblyInfoEntry,property));
-            molType=assemblyInfoEntry.getMoleculeType();
-		}
-      return GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResults,assemblyInfoPlanResults, assemblyInforepoWriter,assemblyInfoFile.getName());
-	}
 	
 	private boolean validateChromosomeList(EmblEntryValidationPlanProperty property) throws IOException, ValidationEngineException
 	{
@@ -449,9 +421,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 				fileName = GenomeAssemblyFileUtils.getFile(fileName);
 			File file = new File(fileName);
 			switch (obj.getFileFormat()) {
-				case INFO:
-					assemblyInfoFile = file;
-					break;
 				case CHROMOSOME_LIST:
 					chromosomeListFile = file;
 					break;

@@ -20,12 +20,12 @@ public class ManifestFileWriterTest
 		File outputFile = null;
 
 		ManifestFileWriter writer = new ManifestFileWriter(true);
-		URL inUrl = GenomeAssemblyValidatorTest.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/manifestwithFastaOnly.txt");
+		URL inUrl = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/manifestwithFastaOnly.txt");
 		if (inUrl != null) 
 		{
 			inputFile = new File(inUrl.getPath().replaceAll("%20", " "));
 		}
-		URL outUrl = GenomeAssemblyValidatorTest.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/manifestwithFastaOnly.out");
+		URL outUrl = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/manifestwithFastaOnly.out");
 		if (outUrl != null) 
 		{
 			outputFile = new File(outUrl.getPath().replaceAll("%20", " "));

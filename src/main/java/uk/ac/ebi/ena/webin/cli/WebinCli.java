@@ -1,27 +1,18 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.assembly.GenomeAssemblyFileUtils;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
+import uk.ac.ebi.ena.assembly.InfoFileValidator;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.manifest.*;
 import uk.ac.ebi.ena.sample.Sample;
@@ -38,10 +29,11 @@ import uk.ac.ebi.ena.upload.FtpService;
 public class WebinCli {
 	public final static int SUCCESS = 0;
 	public final static int FLAILED_VALIDATION = 3;
-	private ManifestFileReader manifestFileReader;
-	private AssemblyInfoEntry assemblyInfoEntry;
 	private Params params;
 	private ContextE contextE;
+	private static ManifestFileValidator manifestValidator= null;
+	private static InfoFileValidator infoValidator =null;
+	private static String outputDir =null;
 
 	public static class Params	{
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = contextValidator.class)
@@ -62,16 +54,31 @@ public class WebinCli {
 		public String manifest;
 	}
 
-	public WebinCli(ManifestFileReader manifestFileReader, Params params) {
-		this.manifestFileReader = manifestFileReader;
+	public WebinCli(Params params) {
 		this.params = params;
 	}
 
 	public static void main(String... args) throws ValidationEngineException {
 		try {
 			Params params = parseParameters(args);
-			ManifestFileReader manifestFileReader = readAndValidateManifestFile(params);
-			WebinCli enaValidator = new WebinCli(manifestFileReader, params);
+			File manifestFile = new File(params.manifest);
+			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
+			File reportDir= new File(outputDir+File.separator+"reports");
+			if(!reportDir.exists())
+				reportDir.mkdirs();
+			infoValidator= new InfoFileValidator();
+			manifestValidator = new ManifestFileValidator();
+			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(),params.context))
+			{
+				System.err.println("Manifest file validation failed,please check the reporting file for errors: "+manifestValidator.getReportFile().getAbsolutePath());
+				System.exit(3);
+			}
+			if(!infoValidator.validate(manifestValidator.getReader(),reportDir.getAbsolutePath(),params.context))
+			{
+				System.err.println("Assembly info file validation failed,please check the reporting file for errors: "+infoValidator.getReportFile().getAbsolutePath());
+				System.exit(3);
+			}
+			WebinCli enaValidator = new WebinCli(params);
 			enaValidator.execute();
 		} catch(Exception e){
 			throw new ValidationEngineException(e.getMessage());
@@ -79,7 +86,7 @@ public class WebinCli {
 	}
 
 	private void execute() throws ValidationEngineException {
-		assemblyInfoEntry = getAssemblyInfo(manifestFileReader.getFilenameFromManifest(FileFormat.INFO));
+		
 		try {
 			contextE = ContextE.valueOf(params.context);
 		} catch (IllegalArgumentException e) {
@@ -96,13 +103,13 @@ public class WebinCli {
 
 	private Study getStudy() throws StudyException {
 		Study study = new Study();
-		study.getStudy(assemblyInfoEntry.getStudyId(), params.userName, params.password);
+		study.getStudy(infoValidator.getentry().getStudyId(), params.userName, params.password);
 		return study;
 	}
 
 	private Sample getSample() throws SampleException {
 		Sample sample = new Sample();
-		sample.getSample(assemblyInfoEntry.getSampleId(), params.userName, params.password);
+		sample.getSample(infoValidator.getentry().getSampleId(), params.userName, params.password);
 		return sample;
 	}
 
@@ -113,25 +120,32 @@ public class WebinCli {
 			  Sample sample=getSample();
 			  switch(contextE) {
                 case transcriptome:
-					validateInfoFileForTranscriptome();
-                    validator = new TranscriptomeAssemblyWebinCli(manifestFileReader, sample, study);
+                    validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), sample, study);
                     break;
 				case assembly:
-					validator = new GenomeAssemblyWebinCli(manifestFileReader,sample,study);
+					validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),sample,study,infoValidator.getentry().getMoleculeType());
 					break;
             }
-			validator.setOutputDir(params.outputDir);
-			if (validator.validate() == SUCCESS) {
-                String assemblyName = assemblyInfoEntry.getName();
-				Path validatedDirectory = getValidatedDirectory(true, assemblyName);
-                for (ManifestObj manifestObj: manifestFileReader.getManifestFileObjects()) {
-                    String srcFile = FileUtils.gZipFile(new File(manifestObj.getFileName()));
-                    Files.copy(Paths.get(srcFile), Paths.get(validatedDirectory.toFile().getAbsolutePath() + File.separator + new File(srcFile).getName()), StandardCopyOption.REPLACE_EXISTING);
+			validator.setOutputDir(outputDir);
+			if (validator.validate() == SUCCESS) 
+			{
+                String assemblyName = infoValidator.getentry().getName().trim().replaceAll(" ", "");
+				File validatedDirectory = getValidatedDirectory(true, assemblyName);
+                for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
+                    Files.copy(Paths.get(manifestObj.getFileName()), 
+                    		             Paths.get(validatedDirectory.getAbsolutePath() + File.separator + new File(manifestObj.getFileName()).getName()), 
+                    		             StandardCopyOption.REPLACE_EXISTING);
                 }
-                new ManifestFileWriter().write(new File(validatedDirectory.toFile().getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestFileReader.getManifestFileObjects());
+                for(File file:Arrays.asList(validatedDirectory.listFiles()))
+                {
+                   FileUtils.gZipFile(file);
+
+                }
+                new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), 
+                		                        manifestValidator.getReader().getManifestFileObjects());
                 System.out.println("All file(s) have successfully passed validation.");
             } else {
-                System.out.println("Validation has failed, please check the report file under " + params.outputDir + " for erros.");
+                System.out.println("Validation has failed, please check the report file under " + outputDir + " for erros.");
                 System.exit(3);
             }
 		} catch (SampleException e) {
@@ -149,30 +163,12 @@ public class WebinCli {
 		}
 	}
 
-	private void validateInfoFileForTranscriptome() throws ValidationEngineException {
-		boolean INFO_FILE_ERROR = false;
-		if (assemblyInfoEntry.getName() == null || assemblyInfoEntry.getName().isEmpty()) {
-			System.out.println("Field ASSEMBLYNAME is missing from info file");
-			INFO_FILE_ERROR = true;
-		}
-		if (assemblyInfoEntry.getPlatform() == null || assemblyInfoEntry.getPlatform().isEmpty()) {
-			System.out.println("Field PLATFORM is missing from info file");
-			INFO_FILE_ERROR = true;
-		}
-		if (assemblyInfoEntry.getProgram() == null || assemblyInfoEntry.getProgram().isEmpty()) {
-			System.out.println("Field PROGRAM is missing from info file");
-			INFO_FILE_ERROR = true;
-		}
-		if (INFO_FILE_ERROR)
-			System.exit(3);
-	}
-
 	private void doFtpUpload() {
-		String assemblyName = assemblyInfoEntry.getName();
+		String assemblyName = infoValidator.getentry().getName();
 		FtpService ftpService = new FtpService(new File(params.manifest).getParent());
 		try {
 			ftpService.connectToFtp(params.userName, params.password);
-			ftpService.ftpDirectory(getValidatedDirectory(false, assemblyName), params.context, assemblyName);
+			ftpService.ftpDirectory(getValidatedDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 			System.out.println("All file(s) have successfully been uploaded.");
 		} catch (FtpException e) {
 			System.out.println("Failed to upload files, please try again later, reason: " + e);
@@ -186,10 +182,10 @@ public class WebinCli {
 		FtpService ftpService = null;
 		boolean success = false;
 		try {
-			String assemblyName = assemblyInfoEntry.getName();
+			String assemblyName = infoValidator.getentry().getName();
 			ftpService = new FtpService(new File(params.manifest).getParent());
 			ftpService.connectToFtp(params.userName, params.password);
-			success = ftpService.checkFilesExistInUploadArea(getValidatedDirectory(false, assemblyName), params.context, assemblyName);
+			success = ftpService.checkFilesExistInUploadArea(getValidatedDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 		} catch (Exception e) {
 			System.out.println(e);
 			System.exit(3);
@@ -201,9 +197,9 @@ public class WebinCli {
 
 	private void doSubmit() {
 		try {
-			String assemblyName = assemblyInfoEntry.getName();
+			String assemblyName = infoValidator.getentry().getName();
 			getValidatedDirectory(false, assemblyName);
-			Submit submit = new Submit(params, assemblyInfoEntry);
+			Submit submit = new Submit(params, infoValidator.getentry());
 			submit.doSubmission();
 			System.out.println("All file(s) have successfully been submitted.");
 		} catch (FtpException e) {
@@ -215,24 +211,22 @@ public class WebinCli {
 		}
 	}
 
-	private Path getValidatedDirectory(boolean create, String name) throws FtpException {
-		Path validatedDirectory = Paths.get(Paths.get(params.manifest).getParent().toString() + File.separator + contextE + File.separator + name);
-		try {
-			if (create) {
-                if (!Files.exists(validatedDirectory))
-                    Files.createDirectory(validatedDirectory);
-            } else {
-                if (!Files.exists(validatedDirectory)) {
-                    System.out.println("Directory does not exist, -validate option required." + validatedDirectory);
-                    System.exit(3);
-                }
-                if (Files.list(validatedDirectory).count() == 0) {
-                    System.out.println("Directory does not contain any files, -validate option required." + validatedDirectory);
-                    System.exit(3);
-                }
-            }
-		} catch (IOException e) {
-			throw new FtpException(e.getMessage());
+	private File getValidatedDirectory(boolean create, String name) throws FtpException {
+		File validatedDirectory =new File(new File(params.manifest).getParent() + File.separator + contextE + File.separator + name);
+		if (create) {
+		    if (validatedDirectory.exists())
+                FileUtils.emptyDirectory(validatedDirectory);
+		    else
+		    	validatedDirectory.mkdirs();
+		} else {
+		    if (!validatedDirectory.exists()) {
+		        System.out.println("Directory does not exist, -validate option required." + validatedDirectory);
+		        System.exit(3);
+		    }
+		    if (validatedDirectory.list().length == 0) {
+		        System.out.println("Directory does not contain any files, -validate option required." + validatedDirectory);
+		        System.exit(3);
+		    }
 		}
 		return validatedDirectory;
 	}
@@ -249,56 +243,6 @@ public class WebinCli {
 			System.exit(2);
 		}
 		return params;
-	}
-
-	private static ManifestFileReader readAndValidateManifestFile(Params params) {
-		ManifestFileReader manifestFileReader = null;
-		try {
-			File manifestFile = new File(params.manifest);
-			String outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
-			Path path = Paths.get(outputDir + File.separator + manifestFile.getName() + ".report");
-			if (Files.exists(path))
-				Files.delete(path);
-			Files.createFile(path);
-			File manifestReportF = path.toFile();
-			ManifestFileValidator manifestValidator = new ManifestFileValidator();
-			ValidationPlanResult result = manifestValidator.validate(manifestFile, params.context);
-			if (!result.isValid()) {
-                try (Writer writer = new PrintWriter(manifestReportF.getAbsolutePath() + ".report", "UTF-8")) {
-                    GenomeAssemblyFileUtils.writeValidationResult(result, writer);
-                }
-                System.err.println("Manifest file validation failed, please check the report file for errors :" + manifestReportF.getAbsolutePath());
-                System.exit(2);
-            }
-			manifestFileReader = new ManifestFileReader();
-			ValidationPlanResult validationPlanResult = manifestFileReader.read(params.manifest);
-			if (validationPlanResult != null && validationPlanResult.getMessages(Severity.ERROR) != null && !validationPlanResult.getMessages(Severity.ERROR).isEmpty()) {
-                System.err.println("Failed to read manifest file :" + manifestReportF.getAbsolutePath());
-                System.exit(2);
-            }
-		} catch (IOException e) {
-			System.err.println("Failed to read manifest file :" + params.manifest);
-			System.exit(2);
-		}
-		return manifestFileReader;
-	}
-
-	private AssemblyInfoEntry getAssemblyInfo(String infoFile) {
-		AssemblyInfoEntry assemblyInfoEntry = null;
-		try {
-			Path infoFilePath = Paths.get(infoFile);
-			if (!Files.exists(infoFilePath)) {
-                System.err.println("Info file " + infoFile + " not found.");
-                System.exit(2);
-            }
-			ValidationResult parseResult = new ValidationResult();
-			assemblyInfoEntry =  FileUtils.getAssemblyEntry(infoFilePath.toFile(), parseResult);
-			assemblyInfoEntry.setName(assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_"));
-		} catch (IOException e) {
-			System.err.println("Info file " + infoFile + " not found.");
-			System.exit(2);
-		}
-		return assemblyInfoEntry;
 	}
 
 	public static class contextValidator implements IParameterValidator {

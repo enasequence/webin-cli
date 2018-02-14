@@ -41,8 +41,6 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
-	private final static String ASSEMBLY_NAME = "Assembly Name:";
-	private final static String ORGANISM = "Organism:";
 	private String reportFile = "TRANSCRIPTOME.report";
 	private final String MOL_TYPE = "transcribed RNA";
 	private String outputDir;

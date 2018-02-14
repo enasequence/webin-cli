@@ -24,6 +24,10 @@ public class ManifestObj {
 		return FileFormat.getFormat(fileFormat.toUpperCase());
 	}
 
+	public String getFileFormatString()
+	{
+		return fileFormat;
+	}
 	public String getFileName() 
 	{
 		return fileName;

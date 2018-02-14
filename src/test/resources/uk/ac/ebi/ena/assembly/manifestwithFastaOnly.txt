@@ -1,1 +1,1 @@
-FASTA	valid_fasta.txt
+   FASTA	valid_fasta.txt

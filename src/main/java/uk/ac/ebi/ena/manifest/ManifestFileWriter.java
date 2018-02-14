@@ -34,7 +34,7 @@ public class ManifestFileWriter
 		{
 			for(ManifestObj obj: manifestObjects)
 			{
-				if(!test)
+			  if(!test)
 			  obj.setMd5chkSum(FileUtils.md5CheckSum(obj.getFileName()));
 			  writer.write(obj.toString()+"\n");
 		    }
