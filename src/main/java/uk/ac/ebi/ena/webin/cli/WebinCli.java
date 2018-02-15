@@ -66,27 +66,24 @@ public class WebinCli {
 			File reportDir= new File(outputDir+File.separator+"reports");
 			if(!reportDir.exists())
 				reportDir.mkdirs();
-			infoValidator= new InfoFileValidator();
+			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
-			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(),params.context))
-			{
+			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(),params.context)){
 				System.err.println("Manifest file validation failed,please check the reporting file for errors: "+manifestValidator.getReportFile().getAbsolutePath());
 				System.exit(3);
 			}
-			if(!infoValidator.validate(manifestValidator.getReader(),reportDir.getAbsolutePath(),params.context))
-			{
+			if(!infoValidator.validate(manifestValidator.getReader(),reportDir.getAbsolutePath(),params.context)) {
 				System.err.println("Assembly info file validation failed,please check the reporting file for errors: "+infoValidator.getReportFile().getAbsolutePath());
 				System.exit(3);
 			}
 			WebinCli enaValidator = new WebinCli(params);
 			enaValidator.execute();
-		} catch(Exception e){
+		} catch(Exception e) {
 			throw new ValidationEngineException(e.getMessage());
 		}
 	}
 
 	private void execute() throws ValidationEngineException {
-		
 		try {
 			contextE = ContextE.valueOf(params.context);
 		} catch (IllegalArgumentException e) {
@@ -129,7 +126,7 @@ public class WebinCli {
 			validator.setOutputDir(outputDir);
 			if (validator.validate() == SUCCESS) 
 			{
-                String assemblyName = infoValidator.getentry().getName().trim().replaceAll(" ", "");
+                String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 				File validatedDirectory = getValidatedDirectory(true, assemblyName);
                 for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
                     Files.copy(Paths.get(manifestObj.getFileName()), 
@@ -164,7 +161,7 @@ public class WebinCli {
 	}
 
 	private void doFtpUpload() {
-		String assemblyName = infoValidator.getentry().getName();
+		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 		FtpService ftpService = new FtpService(new File(params.manifest).getParent());
 		try {
 			ftpService.connectToFtp(params.userName, params.password);
@@ -182,7 +179,7 @@ public class WebinCli {
 		FtpService ftpService = null;
 		boolean success = false;
 		try {
-			String assemblyName = infoValidator.getentry().getName();
+			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 			ftpService = new FtpService(new File(params.manifest).getParent());
 			ftpService.connectToFtp(params.userName, params.password);
 			success = ftpService.checkFilesExistInUploadArea(getValidatedDirectory(false, assemblyName).toPath(), params.context, assemblyName);
@@ -197,7 +194,7 @@ public class WebinCli {
 
 	private void doSubmit() {
 		try {
-			String assemblyName = infoValidator.getentry().getName();
+			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 			getValidatedDirectory(false, assemblyName);
 			Submit submit = new Submit(params, infoValidator.getentry());
 			submit.doSubmission();
