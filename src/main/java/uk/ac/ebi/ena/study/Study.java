@@ -19,10 +19,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Study {
-   
 	private  List<String> locusTagsList = new ArrayList<>();
     private String projectId;
-    
+    private final static String ERROR_01 = "Unknown study or cannot be referenced by this submission account";
+    private final static String ERROR_02 = "An internal error occurred, please try again later";
+    private final static String ERROR_03 = "Unable to check study at this time, please try again later";
+    private final static String ERROR_04 = "Invalid username and/or password provided";
+    private final static String ERROR_05 = "Unknown error occurred during submissione, please try again later";
+
     public void getStudy(String studyId, String userName, String password) throws StudyException {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -40,18 +44,18 @@ public class Study {
                     break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw new StudyException("Unknown study " + studyId + " or cannot be referenced by this submission account.");
+                    throw new StudyException(ERROR_01);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw new StudyException("An internal error occurred, please try again later.");
+                    throw new StudyException(ERROR_02);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw new StudyException("Unable to check sample at this time, please try again later.");
+                    throw new StudyException(ERROR_03);
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new StudyException("Invalis username and/or password provided.");
+                    throw new StudyException(ERROR_04);
                 default:
-                    throw new StudyException("Invalis username and/or password provided.");
+                    throw new StudyException(ERROR_05);
             }
         } catch (Exception e) {
-            throw new StudyException("An internal error occurred, please try again later. " + e.getMessage());
+            throw new StudyException(ERROR_05);
         }
     }
 
