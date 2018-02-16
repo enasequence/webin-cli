@@ -8,13 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.FileType;
-import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
-import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
-import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.embl.api.validation.plan.EmblEntryValidationPlanProperty;
 import uk.ac.ebi.embl.api.validation.plan.GenomeAssemblyValidationPlan;
 import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
@@ -31,8 +25,7 @@ public class InfoFileValidator {
 	private static String platform_missing = "AssemblyInfoPlatformMissingCheck";
 	private static String program_missing = "AssemblyInfoProgramMissingCheck";
 	
-	public boolean validate(ManifestFileReader manifestFileReader,String reportDir,String context ) throws IOException, ValidationEngineException
-	{
+	public boolean validate(ManifestFileReader manifestFileReader,String reportDir,String context ) throws IOException, ValidationEngineException {
 		List<ValidationPlanResult> assemblyInfoPlanResults = new ArrayList<ValidationPlanResult>();
 		List<ValidationResult> assemblyInfoParseResults = new ArrayList<ValidationResult>();
 		ValidationResult assemblyInfoParseResult= new ValidationResult();
@@ -41,19 +34,16 @@ public class InfoFileValidator {
 		assemblyInfoParseResults.add(assemblyInfoParseResult);
 		reportFile=new File(reportDir+File.separator+ new File(obj.get().getFileName()).getName() + ".report");
 		Writer assemblyInforepoWriter = new PrintWriter(reportFile, "UTF-8");
-		if (assemblyInfoEntry != null)
-		{
+		if (assemblyInfoEntry != null) {
 			EmblEntryValidationPlanProperty property= new EmblEntryValidationPlanProperty();
 			property.isRemote.set(true);
 			property.fileType.set(FileType.ASSEMBLYINFO);
 			ValidationPlan validationPlan = getValidationPlan(assemblyInfoEntry, property);
 			assemblyInfoPlanResults.add(validationPlan.execute(assemblyInfoEntry));
-			 if(ContextE.transcriptome.equals(ContextE.getContext(context)))
-	    	  {
-				 assemblyInfoPlanResults.add(validateInfoFileForTranscriptome(assemblyInfoEntry));
-	    	  }
+			if(ContextE.transcriptome.equals(ContextE.getContext(context)))
+				property.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
 		}
-     return GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResults,assemblyInfoPlanResults, assemblyInforepoWriter,obj.get().getFileName());
+     	return GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResults,assemblyInfoPlanResults, assemblyInforepoWriter,obj.get().getFileName());
    	}
 	
 
@@ -73,15 +63,5 @@ public class InfoFileValidator {
 	public File getReportFile()
 	{
 		return reportFile;
-	}
-
-	
-	private ValidationPlanResult validateInfoFileForTranscriptome(AssemblyInfoEntry entry) throws ValidationEngineException {
-         ValidationPlanResult result =new ValidationPlanResult();
-		if (entry.getPlatform() == null || entry.getPlatform().isEmpty())
-        result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR,platform_missing)));
-		if (entry.getProgram() == null || entry.getProgram().isEmpty()) 
-	        result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, program_missing)));
-		return result;
 	}
 }
