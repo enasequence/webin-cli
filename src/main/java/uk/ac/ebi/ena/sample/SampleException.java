@@ -1,7 +1,9 @@
 package uk.ac.ebi.ena.sample;
 
-public class SampleException extends Exception {
-    public SampleException(String msg) {
-        super("Error occured while attempting to validate sample - " + msg);
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+
+public class SampleException extends WebinCliException {
+    public SampleException(String msg, ErrorType errorType) {
+        super(msg, errorType);
     }
 }

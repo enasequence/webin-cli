@@ -1,7 +1,9 @@
 package uk.ac.ebi.ena.study;
 
-public class StudyException extends Exception {
-    public StudyException(String msg) {
-        super("Error occured while attempting to validate study - " + msg);
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+
+public class StudyException  extends WebinCliException {
+    public StudyException(String msg, ErrorType errorType) {
+        super(msg, errorType);
     }
 }
