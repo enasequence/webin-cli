@@ -14,6 +14,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 
 import java.io.StringReader;
@@ -37,11 +38,16 @@ public class Submit {
     private String sample;
     private String assemblyName;
 
+    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit.";
+    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit.";
+    private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit.";
+    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit.";
+
     public Submit(WebinCli.Params params, AssemblyInfoEntry assemblyInfoEntry) throws SubmitException {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {
-            throw new SubmitException("Invalid context: " + params.context);
+            throw new SubmitException(WebinCli.INVALID_CONTEXT + params.context, WebinCliException.ErrorType.USER_ERROR);
         }
         this.userName = params.userName;
         this.password = params.password;
@@ -72,18 +78,18 @@ public class Submit {
                     extractReceipt(resultsList);
                     break;
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw (new SubmitException("Unable to logon to submission service with supplied credentials."));
+                    throw (new SubmitException(WebinCli.INVALID_CREDENTIALS, WebinCliException.ErrorType.USER_ERROR));
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw (new SubmitException("An internal error occurred during the subission process."));
+                    throw (new SubmitException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR));
                 case HttpStatus.SC_BAD_REQUEST:
-                    throw (new SubmitException("Submission request rejected due to it not being correct."));
+                    throw (new SubmitException(SYSTEM_ERROR_BAD_REQUEST, WebinCliException.ErrorType.SYSTEM_ERROR));
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw (new SubmitException("Submission service is currently unavailable, please try again later."));
+                    throw (new SubmitException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR));
                 default:
-                    throw (new SubmitException("Unknown error occurred during submissione, please try again later."));
+                    throw (new SubmitException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR));
             }
         } catch (Exception e) {
-            throw (new SubmitException(("Error occurred while attempting to submit file: " + e.toString())));
+            throw (new SubmitException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR));
         }
     }
 
@@ -98,9 +104,9 @@ public class Submit {
             if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
                 String accession = rootNode.getChild("ANALYSIS").getAttributeValue("accession");
                 if (accession != null && !accession.isEmpty())
-                    System.out.println("Submission successful - analysis id: " + accession);
+                    System.out.println(WebinCli.SUBMIT_SUCCESS + " The following analysis accession was assigned to the submission: " + accession);
                 else
-                    errorsSb.append("Submission was successful, but Analysis accession returned.");
+                    System.out.println(WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the analysis XML submission. Please contact the helpdesk.");
             } else {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
                 for (Element child : childrenList) {
@@ -108,13 +114,13 @@ public class Submit {
                     if (errorList != null && !errorList.isEmpty())
                         errorList.stream().forEach(e -> errorsSb.append(e.getValue()));
                     else
-                        errorsSb.append("Submission failed, no error reported");
+                        errorsSb.append("The submission failed because of an analysis XML submission error.");
                 }
             }
             if (errorsSb.length() != 0)
-                throw new SubmitException(errorsSb.toString());
+                throw new SubmitException(errorsSb.toString(), WebinCliException.ErrorType.SYSTEM_ERROR);
         } catch (Exception e) {
-            throw new SubmitException(e.getMessage());
+            throw new SubmitException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 
@@ -152,7 +158,7 @@ public class Submit {
             Files.write(path, stringWriter.toString().getBytes());
             return path;
         } catch (Exception e) {
-            throw new SubmitException(e.getMessage());
+            throw new SubmitException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 }
