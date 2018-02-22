@@ -37,6 +37,7 @@ public class Submit {
     private String study;
     private String sample;
     private String assemblyName;
+    private final boolean TEST;
 
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit.";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit.";
@@ -49,6 +50,7 @@ public class Submit {
         } catch (IllegalArgumentException e) {
             throw new SubmitException(WebinCli.INVALID_CONTEXT + params.context, WebinCliException.ErrorType.USER_ERROR);
         }
+        this.TEST = params.test;
         this.userName = params.userName;
         this.password = params.password;
         this.manifest = params.manifest;
@@ -60,8 +62,7 @@ public class Submit {
     public void doSubmission() throws SubmitException {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
-//            HttpPost httpPost = new HttpPost("https://www.ebi.ac.uk/ena/submit/drop-box/submit");
-            HttpPost httpPost = new HttpPost("https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/");
+            HttpPost httpPost = new HttpPost((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/" : "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"));
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
             httpPost.setHeader("Authorization", "Basic " + encoding);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
