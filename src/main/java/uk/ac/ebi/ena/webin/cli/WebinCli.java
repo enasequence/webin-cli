@@ -30,35 +30,29 @@ public class WebinCli {
 	public final static int SYSTEM_ERROR = 1;
 	public final static int USER_ERROR = 2;
 	public final static int VALIDATION_ERROR = 3;
-
 	private static final String VALIDATE_SUCCESS = "The submission has been validated. " +
 			"Please complete the submission process using the -upload and -submit options.";
 	private static final String VALIDATE_USER_ERROR = "Submission validation has failed because of an user error.";
 	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation has failed because of a system error.";
 	private static final String VALIDATE_VALIDATION_ERROR = "Submission validation has failed because of a validation error.";
-
 	private static final String UPLOAD_SUCCESS = "The files have been successfully uploaded. " +
 			"Please complete the submission process using the -submit option.";
 	private static final String UPLOAD_USER_ERROR = "Failed to upload files because of an user error. " +
 			"Please correct the errors and complete the submission process using the -upload and -submit options.";
 	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files because of a system error. " +
 			"Please complete the submission process using the -upload and -submit options.";
-
 	private static final String UPLOAD_CHECK_USER_ERROR = "Failed to check if the files have been uploaded because of an user error. " +
 			"Please correct the errors and use the -submit option again.";
 	private static final String UPLOAD_CHECK_SYSTEM_ERROR = "Failed to check if the files have been uploaded because of a system error. " +
 			"Please use the -submit option again later.";
-
 	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully.";
 	private static final String SUBMIT_USER_ERROR = "The submission has failed because of an user error. " +
 			"Please correct the errors and complete the submission process using the -submit option.";
 	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. " +
 			"Please use the -submit option again later.";
-
 	public static final String INVALID_CONTEXT = "Invalid context: ";
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
 	public static final String INVALID_CREDENTIALS = "Invalid submission account user name or password.";
-
 	private Params params;
 	private ContextE contextE;
 	private static ManifestFileValidator manifestValidator= null;
@@ -68,20 +62,22 @@ public class WebinCli {
 	public static class Params	{
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = contextValidator.class)
 		public String context;
-		@Parameter(names = ParameterDescriptor.outputDir, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class, required = true)
-		public String outputDir;
 		@Parameter(names = ParameterDescriptor.userName, description = ParameterDescriptor.userNameFlagDescription, required = true)
 		public String userName;
 		@Parameter(names = ParameterDescriptor.password, description = ParameterDescriptor.passwordFlagDescription, required = true)
 		public String password;
-		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription, required = false)
-		public boolean validate;
-		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription, required = false)
-		public boolean submit;
-		@Parameter(names = ParameterDescriptor.upload, description = ParameterDescriptor.uploadFlagDescription, required = false)
-		public boolean upload;
 		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = manifestFileValidator.class)
 		public String manifest;
+		@Parameter(names = ParameterDescriptor.outputDir, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class, required = true)
+		public String outputDir;
+		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription, required = false)
+		public boolean validate;
+		@Parameter(names = ParameterDescriptor.upload, description = ParameterDescriptor.uploadFlagDescription, required = false)
+		public boolean upload;
+		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription, required = false)
+		public boolean submit;
+		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
+		public boolean test;
 	}
 
 	public WebinCli(Params params) {
@@ -130,13 +126,13 @@ public class WebinCli {
 
 	private Study getStudy() throws StudyException {
 		Study study = new Study();
-		study.getStudy(infoValidator.getentry().getStudyId(), params.userName, params.password);
+		study.getStudy(infoValidator.getentry().getStudyId(), params.userName, params.password, params.test);
 		return study;
 	}
 
 	private Sample getSample() throws SampleException {
 		Sample sample = new Sample();
-		sample.getSample(infoValidator.getentry().getSampleId(), params.userName, params.password);
+		sample.getSample(infoValidator.getentry().getSampleId(), params.userName, params.password, params.test);
 		return sample;
 	}
 
@@ -154,8 +150,7 @@ public class WebinCli {
 					break;
             }
 			validator.setOutputDir(outputDir);
-			if (validator.validate() == SUCCESS)
-			{
+			if (validator.validate() == SUCCESS) {
                 String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 				File validatedDirectory = getValidatedDirectory(true, assemblyName);
                 for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
@@ -164,11 +159,9 @@ public class WebinCli {
                     		             StandardCopyOption.REPLACE_EXISTING);
                 }
                 for(File file:Arrays.asList(validatedDirectory.listFiles()))
-                {
                    FileUtils.gZipFile(file);
 
-                }
-                new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), 
+                new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"),
                 		                        manifestValidator.getReader().getManifestFileObjects());
                 System.out.println(VALIDATE_SUCCESS);
             } else {
@@ -284,7 +277,8 @@ public class WebinCli {
 		try {
 			jCommander.parse(args);
 		} catch (Exception e) {
-			System.err.println("Invalid options: " + e.getMessage());
+			System.err.println("Invalid options: The following options are required: [-password], [-userName], [-manifest], [-context]\n" +
+					"Usage: <main class> [options]");
 			jCommander.usage();
 			writeReturnCodes();
 			System.exit(USER_ERROR);

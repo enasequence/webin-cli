@@ -31,10 +31,10 @@ public class Study {
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving study information.";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving study information.";
 
-    public void getStudy(String studyId, String userName, String password) throws StudyException {
+    public void getStudy(String studyId, String userName, String password, boolean TEST) throws StudyException {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet("http://ves-ebi-5a:8110/ena/submit/drop-box/reference/project/" + studyId.trim());
+            HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/project/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/project/") + studyId.trim());
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
             httpGet.setHeader("Authorization", "Basic " + encoding);
             CloseableHttpResponse response = httpClient.execute(httpGet);
