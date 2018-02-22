@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: uk.ac.ebi.ena.taxonomy:sub-taxonomy-client:2.2.7">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena.taxonomy/sub-taxonomy-client/2.2.7/825e11a15f226cd352e548186bdb6ab1ce8e931/sub-taxonomy-client-2.2.7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena.taxonomy/sub-taxonomy-client/2.2.7/3148ebbd6d29d72a9743b3d8df2c8697f6a0955d/sub-taxonomy-client-2.2.7-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
