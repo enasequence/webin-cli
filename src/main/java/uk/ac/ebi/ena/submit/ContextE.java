@@ -8,7 +8,7 @@ import uk.ac.ebi.ena.manifest.FileFormat;
 
 public enum ContextE {
     transcriptome("Transcriptome assembly: ASSEMBLY_NAME", "TRANSCRIPTOME_ASSEMBLY", new FileFormat[] {FileFormat.FASTA,FileFormat.FLATFILE,FileFormat.INFO} ),
-    assembly("Genome assembly: ASSEMBLY_NAME", "SEQUENCE_ASSEMBLY/",new FileFormat[] {FileFormat.FASTA, FileFormat.AGP, FileFormat.FLATFILE,FileFormat.CHROMOSOME_LIST,FileFormat.UNLOCALISED_LIST,FileFormat.INFO});
+    assembly("Genome assembly: ASSEMBLY_NAME", "SEQUENCE_ASSEMBLY",new FileFormat[] {FileFormat.FASTA, FileFormat.AGP, FileFormat.FLATFILE,FileFormat.CHROMOSOME_LIST,FileFormat.UNLOCALISED_LIST,FileFormat.INFO});
 
     private String analysisTitle;
     private String analysisType;
