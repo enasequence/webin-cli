@@ -30,10 +30,10 @@ public class Sample {
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving sample information.";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving sample information.";
 
-    public void getSample(String sampleId, String userName, String password) throws SampleException {
+    public void getSample(String sampleId, String userName, String password, boolean TEST) throws SampleException {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet("http://ves-ebi-5a:8110/ena/submit/drop-box/reference/sample/" + sampleId.trim());
+            HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/") + sampleId.trim());
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
             httpGet.setHeader("Authorization", "Basic " + encoding);
             CloseableHttpResponse response = httpClient.execute(httpGet);
