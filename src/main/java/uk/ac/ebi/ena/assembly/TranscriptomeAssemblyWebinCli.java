@@ -8,7 +8,6 @@ import uk.ac.ebi.embl.api.entry.Text;
 import uk.ac.ebi.embl.api.entry.XRef;
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.entry.location.Location;
 import uk.ac.ebi.embl.api.entry.location.LocationFactory;
 import uk.ac.ebi.embl.api.entry.location.Order;
@@ -83,7 +82,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 		else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
 		if (FLAILED_VALIDATION)
-			return WebinCli.FLAILED_VALIDATION;
+			return WebinCli.VALIDATION_ERROR;
 		return WebinCli.SUCCESS;
 	}
 

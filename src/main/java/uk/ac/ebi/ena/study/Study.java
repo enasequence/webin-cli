@@ -8,6 +8,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.sample.SampleException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -21,11 +23,13 @@ import java.util.stream.Collectors;
 public class Study {
 	private  List<String> locusTagsList = new ArrayList<>();
     private String projectId;
-    private final static String ERROR_01 = "Unknown study or cannot be referenced by this submission account";
-    private final static String ERROR_02 = "An internal error occurred, please try again later";
-    private final static String ERROR_03 = "Unable to check study at this time, please try again later";
-    private final static String ERROR_04 = "Invalid username and/or password provided";
-    private final static String ERROR_05 = "Unknown error occurred during submissione, please try again later";
+
+    private final static String USER_ERROR_STUDY = "Unknown study (project) or the study (project) cannot be referenced by your submission account. " +
+            "Studies (projects) must be submitted before they can be referenced in the submission.";
+
+    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving study information.";
+    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving study information.";
+    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving study information.";
 
     public void getStudy(String studyId, String userName, String password) throws StudyException {
         try {
@@ -44,18 +48,18 @@ public class Study {
                     break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw new StudyException(ERROR_01);
+                    throw new StudyException(USER_ERROR_STUDY + " Study: " + studyId + ".", WebinCliException.ErrorType.USER_ERROR);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw new StudyException(ERROR_02);
+                    throw new StudyException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw new StudyException(ERROR_03);
+                    throw new StudyException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new StudyException(ERROR_04);
+                    throw new StudyException(WebinCli.INVALID_CREDENTIALS, WebinCliException.ErrorType.USER_ERROR);
                 default:
-                    throw new StudyException(ERROR_05);
+                    throw new StudyException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
         } catch (Exception e) {
-            throw new StudyException(ERROR_05);
+            throw new StudyException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 
@@ -83,13 +87,13 @@ public class Study {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             boolean canBeReferenced = (boolean)jsonObject.get("canBeReferenced");
             if (!canBeReferenced)
-                throw new StudyException("Unknown study " + studyId + " or cannot be referenced by this submission account.");
+                throw new StudyException(USER_ERROR_STUDY + " Study: " + studyId + ".", WebinCliException.ErrorType.USER_ERROR);
             JSONArray jsonArray = (JSONArray)jsonObject.get("locusTags");
             projectId = (String) jsonObject.get("bioProjectId");
             if (jsonArray != null && !jsonArray.isEmpty())
                 jsonArray.forEach(p -> locusTagsList.add( p.toString()));
         } catch (Exception e) {
-            throw new SampleException("An internal error occurred, please try again later. " + e.getMessage());
+            throw new SampleException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 }

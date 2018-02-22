@@ -1,7 +1,9 @@
 package uk.ac.ebi.ena.submit;
 
-public class SubmitException extends Exception {
-    public SubmitException(String msg) {
-        super("ERROR - Failed to Submit data: " + msg);
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+
+public class SubmitException extends WebinCliException {
+    public SubmitException(String msg, ErrorType errorType) {
+        super(msg, errorType);
     }
 }
