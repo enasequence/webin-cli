@@ -7,8 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.ena.manifest.FileFormat;
 
 public enum ContextE {
-    transcriptome("Transcriptome assembly: ASSEMBLY_NAME", "TRANSCRIPTOME_ASSEMBLY", new FileFormat[] {FileFormat.FASTA,FileFormat.FLATFILE,FileFormat.INFO} ),
-    assembly("Genome assembly: ASSEMBLY_NAME", "SEQUENCE_ASSEMBLY",new FileFormat[] {FileFormat.FASTA, FileFormat.AGP, FileFormat.FLATFILE,FileFormat.CHROMOSOME_LIST,FileFormat.UNLOCALISED_LIST,FileFormat.INFO});
+    transcriptome("Transcriptome genome: ASSEMBLY_NAME", "TRANSCRIPTOME_ASSEMBLY", new FileFormat[] {FileFormat.FASTA,FileFormat.FLATFILE,FileFormat.INFO} ),
+    genome("Assembly genome: ASSEMBLY_NAME", "SEQUENCE_ASSEMBLY",new FileFormat[] {FileFormat.FASTA, FileFormat.AGP, FileFormat.FLATFILE,FileFormat.CHROMOSOME_LIST,FileFormat.UNLOCALISED_LIST,FileFormat.INFO});
 
     private String analysisTitle;
     private String analysisType;
