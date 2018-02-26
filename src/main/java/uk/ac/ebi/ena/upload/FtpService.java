@@ -100,6 +100,8 @@ public class FtpService {
                     throw new FtpException(UPLOAD_SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
                 }
             }
+        } catch (FtpException e) {
+            throw e;
         } catch (Exception e) {
             throw new FtpException(UPLOAD_SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
@@ -140,6 +142,8 @@ public class FtpService {
                 if (!found.isPresent())
                     throw new FtpException(CHECK_USER_ERROR_NO_FILE, WebinCliException.ErrorType.USER_ERROR);
             }
+        } catch (FtpException e) {
+            throw e;
         } catch (Exception e) {
             throw new FtpException(CHECK_SYSTEM_ERROR, WebinCliException.ErrorType.SYSTEM_ERROR);
         }

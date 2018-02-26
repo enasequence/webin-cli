@@ -89,6 +89,8 @@ public class Submit {
                 default:
                     throw (new SubmitException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR));
             }
+        } catch (SubmitException e) {
+            throw e;
         } catch (Exception e) {
             throw (new SubmitException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR));
         }
