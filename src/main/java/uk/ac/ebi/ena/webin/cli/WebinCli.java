@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
+
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -60,6 +62,10 @@ public class WebinCli {
 	private static String outputDir =null;
 
 	public static class Params	{
+		@Parameter(names = "help", required = false)
+		public boolean help;
+		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
+		public boolean test;
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = contextValidator.class)
 		public String context;
 		@Parameter(names = ParameterDescriptor.userName, description = ParameterDescriptor.userNameFlagDescription, required = true)
@@ -76,8 +82,6 @@ public class WebinCli {
 		public boolean upload;
 		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription, required = false)
 		public boolean submit;
-		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
-		public boolean test;
 	}
 
 	public WebinCli(Params params) {
@@ -86,7 +90,18 @@ public class WebinCli {
 
 	public static void main(String... args) throws ValidationEngineException {
 		try {
+			if (args != null && args.length > 0) {
+				Optional<String> found = Arrays.stream(args).filter(arg -> "-help".equalsIgnoreCase(arg))
+				.findFirst();
+				if (found.isPresent()) {
+					usageFormatted();
+					System.exit(0);
+				}
+			}
 			Params params = parseParameters(args);
+			if (params.help) {
+				System.exit(0);
+			}
 			File manifestFile = new File(params.manifest);
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
 			File reportDir= new File(outputDir+File.separator+"reports");
@@ -185,7 +200,6 @@ public class WebinCli {
 		}
 	}
 
-
 	private void doFtpUpload() {
 		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 		FtpService ftpService = new FtpService(new File(params.manifest).getParent());
@@ -239,7 +253,6 @@ public class WebinCli {
 			getValidatedDirectory(false, assemblyName);
 			Submit submit = new Submit(params, infoValidator.getentry());
 			submit.doSubmission();
-			System.out.println(SUBMIT_SUCCESS);
 		} catch (WebinCliException e) {
 			if (WebinCliException.ErrorType.USER_ERROR.equals(e.getErrorType())) {
 				System.out.println(SUBMIT_USER_ERROR + e.getMessage());
@@ -277,9 +290,14 @@ public class WebinCli {
 		try {
 			jCommander.parse(args);
 		} catch (Exception e) {
-			System.err.println("Invalid options: The following options are required: [-password], [-userName], [-manifest], [-context]\n" +
-					"Usage: <main class> [options]");
-			jCommander.usage();
+			StringBuilder usage = new StringBuilder("Invalid options: The following options are required: [-context], [-userName], [-password], [-manifest], [-outputDir]");
+			usage.append("\nIn addtion, one of the following options must be supplied:");
+			usage.append("\n\t" + ParameterDescriptor.validate);
+			usage.append("\n\t" + ParameterDescriptor.upload);
+			usage.append("\n\t" + ParameterDescriptor.submit);
+			usage.append("\nUsage: <main class> [options]");
+			usage.append("\nFor full help on options use the [-help] option.");
+			System.out.println(usage);
 			writeReturnCodes();
 			System.exit(USER_ERROR);
 		}
@@ -327,5 +345,17 @@ public class WebinCli {
 		returnCodeMap.put(USER_ERROR, "USER ERROR");
 		returnCodeMap.put(VALIDATION_ERROR, "VALIDATION ERROR");
 		System.out.println("Exit codes: " + returnCodeMap.toString());
+	}
+
+	private static void usageFormatted() {
+		StringBuilder options = new StringBuilder(ParameterDescriptor.context + ParameterDescriptor.contextFlagDescription);;
+		options.append("\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription);
+		options.append("\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription);
+		options.append("\n" + ParameterDescriptor.manifest + ParameterDescriptor.manifestFlagDescription);;
+		options.append("\n" + ParameterDescriptor.outputDir + ParameterDescriptor.outputDirFlagDescription);;
+		options.append("\n" + ParameterDescriptor.validate + ParameterDescriptor.validateFlagDescription);;
+		options.append("\n" + ParameterDescriptor.upload + ParameterDescriptor.uploadFlagDescription);;
+		options.append("\n" + ParameterDescriptor.submit + ParameterDescriptor.submitFlagDescription);;
+		System.out.println(options);
 	}
 }
