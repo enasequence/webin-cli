@@ -62,7 +62,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	private static List<File> agpFiles;
 	private String molType= "genomic DNA";
 	private  Sample sample=null;
-	private static String originalFileDir= null;;
 	private static String reportDir=null;
 	private boolean test;
 	private ManifestFileReader manifestFileReader;
@@ -77,7 +76,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		fastaFiles = new ArrayList<File>();
 		flatFiles = new ArrayList<File>();
 		agpFiles = new ArrayList<File>();
-		originalFileDir= null;;
 		reportDir=null;
 		this.study=study;
 		this.molType = molType ==null?this.molType:molType;
@@ -102,10 +100,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	        File rDir= new File(reportDir);
 	        if(!rDir.exists())
 	        	rDir.mkdirs();
-	        originalFileDir=outputDir+File.separator+"originalSequenceFiles";
-	        File originalDir= new File(originalFileDir);
-	        if(!originalDir.exists())
-	        	originalDir.mkdirs();
 			defineFileTypes();
 			valid = valid&validateChromosomeList(property);
 			valid = valid&validateUnlocalisedList(property);
@@ -444,16 +438,11 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 
 	private void moveFiles(boolean valid) throws IOException	{
 		for(ManifestObj mo: manifestFileReader.getManifestFileObjects())	{
-			String fileName=mo.getFileName();
-			if(test)
-				fileName=GenomeAssemblyFileUtils.getFile(mo.getFileName());
 			switch(mo.getFileFormat()) {
 				case FASTA:
 				case FLATFILE:
 				case AGP:
-					if(valid)
-						GenomeAssemblyFileUtils.replaceOriginalFile(fileName,fileName+".fixed", originalFileDir);
-					else {
+					if (!valid) {
 						File fixedFile= new File(mo.getFileName()+".fixed");
 						if(fixedFile.exists())
 						fixedFile.delete();

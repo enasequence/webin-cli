@@ -189,13 +189,16 @@ public class WebinCli {
                 String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 				File validatedDirectory = getValidatedDirectory(true, assemblyName);
                 for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
+                	// Copy files to the validated directory.
                     Files.copy(Paths.get(manifestObj.getFileName()), 
                     		             Paths.get(validatedDirectory.getAbsolutePath() + File.separator + new File(manifestObj.getFileName()).getName()), 
                     		             StandardCopyOption.REPLACE_EXISTING);
                 }
+				// Gzip the files validated directory.
                 for(File file:Arrays.asList(validatedDirectory.listFiles()))
                    FileUtils.gZipFile(file);
 
+				// Create the manifest in the validated directory.
                 new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"),
                 		                        manifestValidator.getReader().getManifestFileObjects());
                 System.out.println(VALIDATE_SUCCESS);

@@ -138,22 +138,7 @@ public class GenomeAssemblyFileUtils
 		reader.read(file.toString());
 		return reader.getManifestFileObjects();
 	}
-	
-	public static void replaceOriginalFile(String originalFile, String fixedFile, String originalDir) throws IOException 
-	{
-		File orgFile = new File(originalFile);
-		File fixFile = new File(fixedFile);
-		File originalFileDir = new File(originalDir);
-		if (!originalFileDir.exists())
-			originalFileDir.mkdir();
-		File newOriginalFileLoc = new File(originalFileDir + File.separator + orgFile.getName());
-		if(fixFile.exists())
-		{
-		Files.move(orgFile.toPath(), newOriginalFileLoc.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		Files.move(fixFile.toPath(), orgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		}
-	}
-	
+
 	public static String getFile(String file) {
 		String fileName = null;
 		URL url = GenomeAssemblyFileUtils.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/"+file);
