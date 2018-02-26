@@ -19,7 +19,7 @@ public class ManifestFileValidatorTest {
 		{
 			fileName = url.getPath().replaceAll("%20", " ");
 		}
-		assertTrue(!validator.validate(new File(fileName),new File(fileName).getParent(),"assembly"));//info must be given in manifest file
+		assertTrue(!validator.validate(new File(fileName),new File(fileName).getParent(),"genome"));//info must be given in manifest file
 	}
 	
 	@Test
@@ -31,7 +31,7 @@ public class ManifestFileValidatorTest {
 		{
 			fileName = url.getPath().replaceAll("%20", " ");
 		}
-		assertTrue(validator.validate(new File(fileName),new File(fileName).getParent(),"assembly"));
+		assertTrue(validator.validate(new File(fileName),new File(fileName).getParent(),"genome"));
 	}
 
 	@Test
@@ -43,6 +43,6 @@ public class ManifestFileValidatorTest {
 		{
 			fileName = url.getPath().replaceAll("%20", " ");
 		}
-		assertTrue(!validator.validate(new File(fileName),new File(fileName).getParent(),"assembly"));
+		assertTrue(!validator.validate(new File(fileName),new File(fileName).getParent(),"genome"));
 	}
 }

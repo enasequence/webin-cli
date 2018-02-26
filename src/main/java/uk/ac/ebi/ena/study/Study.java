@@ -57,6 +57,8 @@ public class Study {
                 default:
                     throw new StudyException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
+        } catch (StudyException e) {
+            throw e;
         } catch (Exception e) {
             throw new StudyException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
         }

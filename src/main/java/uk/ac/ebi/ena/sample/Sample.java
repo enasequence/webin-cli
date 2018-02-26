@@ -57,6 +57,8 @@ public class Sample {
                 default:
                     throw new SampleException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
+        } catch (SampleException e) {
+            throw e;
         } catch (Exception e) {
             throw new SampleException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
