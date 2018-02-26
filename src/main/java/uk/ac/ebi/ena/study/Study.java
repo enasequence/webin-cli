@@ -26,9 +26,9 @@ public class Study {
     private final static String USER_ERROR_STUDY = "Unknown study (project) or the study (project) cannot be referenced by your submission account. " +
             "Studies (projects) must be submitted before they can be referenced in the submission.";
 
-    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving study information.";
-    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving study information.";
-    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving study information.";
+    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving study information. ";
+    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving study information. ";
+    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving study information. ";
 
     public void getStudy(String studyId, String userName, String password, boolean TEST) throws StudyException {
         try {
