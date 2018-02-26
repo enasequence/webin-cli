@@ -1,6 +1,7 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -34,9 +35,11 @@ public class WebinCli {
 	public final static int VALIDATION_ERROR = 3;
 	private static final String VALIDATE_SUCCESS = "The submission has been validated. " +
 			"Please complete the submission process using the -upload and -submit options.";
-	private static final String VALIDATE_USER_ERROR = "Submission validation has failed because of an user error.";
-	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation has failed because of a system error.";
-	private static final String VALIDATE_VALIDATION_ERROR = "Submission validation has failed because of a validation error.";
+
+	private static final String VALIDATE_USER_ERROR = "Submission validation has failed because of an user error. ";
+	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation has failed because of a system error. ";
+	private static final String VALIDATE_VALIDATION_ERROR = "Submission validation has failed because of a validation error. ";
+
 	private static final String UPLOAD_SUCCESS = "The files have been successfully uploaded. " +
 			"Please complete the submission process using the -submit option.";
 	private static final String UPLOAD_USER_ERROR = "Failed to upload files because of an user error. " +
@@ -88,6 +91,10 @@ public class WebinCli {
 		this.params = params;
 	}
 
+	private static String getFullPath(String path) {
+		return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
+	}
+
 	public static void main(String... args) throws ValidationEngineException {
 		try {
 			if (args != null && args.length > 0) {
@@ -102,11 +109,24 @@ public class WebinCli {
 			if (params.help) {
 				System.exit(0);
 			}
+			if (!params.validate &&
+				!params.upload &&
+				!params.submit) {
+				printUsageAndExit();
+			}
+
+			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
+
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
+			outputDir = getFullPath(outputDir);
+
 			File reportDir= new File(outputDir+File.separator+"reports");
-			if(!reportDir.exists())
+			if(!reportDir.exists()) {
+				System.out.println("Creating report directory: " + reportDir.getCanonicalPath());
 				reportDir.mkdirs();
+			} else
+				System.out.println("Using report directory: " + reportDir.getCanonicalPath());
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(),params.context)){
@@ -180,7 +200,7 @@ public class WebinCli {
                 		                        manifestValidator.getReader().getManifestFileObjects());
                 System.out.println(VALIDATE_SUCCESS);
             } else {
-                System.out.println(VALIDATE_VALIDATION_ERROR + " Please check the report file under " + outputDir + " for errors.");
+                System.out.println(VALIDATE_VALIDATION_ERROR + " Please check the report file under '" + outputDir + File.separator + "reports' for errors.");
                 System.exit(VALIDATION_ERROR);
             }
 		} catch (WebinCliException e) {
@@ -192,7 +212,7 @@ public class WebinCli {
 				System.exit(SYSTEM_ERROR);
 			}
 		} catch (ValidationEngineException e) {
-			System.out.println(VALIDATE_VALIDATION_ERROR + " Please check the report file under " + outputDir + " for errors.");
+			System.out.println(VALIDATE_VALIDATION_ERROR + e.getMessage());
 			System.exit(VALIDATION_ERROR);
 		} catch (Exception e) {
 			System.out.println(VALIDATE_SYSTEM_ERROR + e.getMessage());
@@ -290,18 +310,22 @@ public class WebinCli {
 		try {
 			jCommander.parse(args);
 		} catch (Exception e) {
-			StringBuilder usage = new StringBuilder("Invalid options: The following options are required: [-context], [-userName], [-password], [-manifest], [-outputDir]");
-			usage.append("\nIn addtion, one of the following options must be supplied:");
-			usage.append("\n\t" + ParameterDescriptor.validate);
-			usage.append("\n\t" + ParameterDescriptor.upload);
-			usage.append("\n\t" + ParameterDescriptor.submit);
-			usage.append("\nUsage: <main class> [options]");
-			usage.append("\nFor full help on options use the [-help] option.");
-			System.out.println(usage);
-			writeReturnCodes();
-			System.exit(USER_ERROR);
+			printUsageAndExit();
 		}
 		return params;
+	}
+
+	private static void printUsageAndExit() {
+		StringBuilder usage = new StringBuilder("Invalid options: the following options are required: [-context], [-userName], [-password], [-manifest], [-outputDir]");
+		usage.append("\nIn addition, please provide one of the following options:");
+		usage.append("\n\t" + ParameterDescriptor.validate);
+		usage.append("\n\t" + ParameterDescriptor.upload);
+		usage.append("\n\t" + ParameterDescriptor.submit);
+		usage.append("\nUsage: java -jar webin-cli-<version>.jar [options]");
+		usage.append("\nFor full help on options use the [-help] option.");
+		System.out.println(usage);
+		writeReturnCodes();
+		System.exit(USER_ERROR);
 	}
 
 	public static class contextValidator implements IParameterValidator {

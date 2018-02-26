@@ -39,10 +39,10 @@ public class Submit {
     private String assemblyName;
     private final boolean TEST;
 
-    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit.";
-    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit.";
-    private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit.";
-    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit.";
+    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit. ";
+    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit. ";
+    private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit. ";
+    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit. ";
 
     public Submit(WebinCli.Params params, AssemblyInfoEntry assemblyInfoEntry) throws SubmitException {
         try {
