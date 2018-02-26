@@ -160,7 +160,7 @@ public class WebinCli {
                 case transcriptome:
                     validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), sample, study);
                     break;
-				case assembly:
+				case genome:
 					validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),sample,study,infoValidator.getentry().getMoleculeType());
 					break;
             }
