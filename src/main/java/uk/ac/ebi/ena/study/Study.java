@@ -80,7 +80,7 @@ public class Study {
 		this.projectId = projectId;
 	}
 
-    private void extractResults(String result, String studyId) throws SampleException {
+    private void extractResults(String result, String studyId) throws StudyException {
         try {
             JSONParser jsonParser = new JSONParser();
             StringReader reader = new StringReader(result);
@@ -93,7 +93,7 @@ public class Study {
             if (jsonArray != null && !jsonArray.isEmpty())
                 jsonArray.forEach(p -> locusTagsList.add( p.toString()));
         } catch (Exception e) {
-            throw new SampleException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw new StudyException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 }
