@@ -43,6 +43,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	private String reportFile = "TRANSCRIPTOME.report";
 	private final String MOL_TYPE = "transcribed RNA";
 	private String outputDir;
+	private String reportDir;
 	private String submittedFile;
 	private Sample sample;
     private Study study;
@@ -72,7 +73,12 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 		this.outputDir = outputDir;
 	}
 
-   @Override
+	@Override
+	public void setReportsDir(String reportDir) {
+		this.reportDir = reportDir;
+	}
+
+	@Override
 	public int validate() throws ValidationEngineException {
 		createReportFile();
 		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null)
@@ -88,7 +94,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 
 	private void createReportFile() throws ValidationEngineException {
 		try {
-			reportFile = outputDir +  (outputDir.endsWith(File.separator) ? "" : File.separator) + reportFile;
+			reportFile = reportDir + File.separator + reportFile;
 			Path reportPath = Paths.get(reportFile);
 			if (Files.exists(reportPath))
 				Files.delete(reportPath);
