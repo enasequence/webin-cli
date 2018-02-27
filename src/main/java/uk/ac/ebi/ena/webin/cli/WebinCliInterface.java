@@ -8,4 +8,5 @@ import java.util.List;
 public interface WebinCliInterface {
 	int validate() throws ValidationEngineException;
 	void setOutputDir(String outputDir);
+	void setReportsDir(String reportDir);
 }

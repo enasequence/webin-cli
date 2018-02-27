@@ -1,10 +1,8 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
@@ -35,11 +33,9 @@ public class WebinCli {
 	public final static int VALIDATION_ERROR = 3;
 	private static final String VALIDATE_SUCCESS = "The submission has been validated. " +
 			"Please complete the submission process using the -upload and -submit options.";
-
 	private static final String VALIDATE_USER_ERROR = "Submission validation has failed because of an user error. ";
 	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation has failed because of a system error. ";
 	private static final String VALIDATE_VALIDATION_ERROR = "Submission validation has failed because of a validation error. ";
-
 	private static final String UPLOAD_SUCCESS = "The files have been successfully uploaded. " +
 			"Please complete the submission process using the -submit option.";
 	private static final String UPLOAD_USER_ERROR = "Failed to upload files because of an user error. " +
@@ -60,6 +56,8 @@ public class WebinCli {
 	public static final String INVALID_CREDENTIALS = "Invalid submission account user name or password.";
 	private Params params;
 	private ContextE contextE;
+	private String UPLOAD_DIR = "upload";
+	private String REPORTS_DIR = "validate";
 	private static ManifestFileValidator manifestValidator= null;
 	private static InfoFileValidator infoValidator =null;
 	private static String outputDir =null;
@@ -114,14 +112,11 @@ public class WebinCli {
 				!params.submit) {
 				printUsageAndExit();
 			}
-
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
-
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
 			outputDir = getFullPath(outputDir);
-
-			File reportDir= new File(outputDir+File.separator+"reports");
+			File reportDir= new File(outputDir + File.separator + "reports");
 			if(!reportDir.exists()) {
 				System.out.println("Creating report directory: " + reportDir.getCanonicalPath());
 				reportDir.mkdirs();
@@ -129,11 +124,11 @@ public class WebinCli {
 				System.out.println("Using report directory: " + reportDir.getCanonicalPath());
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
-			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(),params.context)){
+			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(), params.context)){
 				System.out.println("Manifest file validation failed, please check the reporting file for errors: "+manifestValidator.getReportFile().getAbsolutePath());
 				System.exit(VALIDATION_ERROR);
 			}
-			if(!infoValidator.validate(manifestValidator.getReader(),reportDir.getAbsolutePath(),params.context)) {
+			if(!infoValidator.validate(manifestValidator.getReader(),reportDir.getAbsolutePath(), params.context)) {
 				System.out.println("Assembly info file validation failed, please check the reporting file for errors: "+infoValidator.getReportFile().getAbsolutePath());
 				System.exit(VALIDATION_ERROR);
 			}
@@ -184,10 +179,11 @@ public class WebinCli {
 					validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),sample,study,infoValidator.getentry().getMoleculeType());
 					break;
             }
+			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
+			validator.setReportsDir(createValidatedReportsDir(assemblyName));
 			validator.setOutputDir(outputDir);
 			if (validator.validate() == SUCCESS) {
-                String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-				File validatedDirectory = getValidatedDirectory(true, assemblyName);
+				File validatedDirectory = getUploadDirectory(true, assemblyName);
                 for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
                 	// Copy files to the validated directory.
                     Files.copy(Paths.get(manifestObj.getFileName()), 
@@ -197,10 +193,8 @@ public class WebinCli {
 				// Gzip the files validated directory.
                 for(File file:Arrays.asList(validatedDirectory.listFiles()))
                    FileUtils.gZipFile(file);
-
 				// Create the manifest in the validated directory.
-                new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"),
-                		                        manifestValidator.getReader().getManifestFileObjects());
+                new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects());
                 System.out.println(VALIDATE_SUCCESS);
             } else {
                 System.out.println(VALIDATE_VALIDATION_ERROR + " Please check the report file under '" + outputDir + File.separator + "reports' for errors.");
@@ -225,10 +219,10 @@ public class WebinCli {
 
 	private void doFtpUpload() {
 		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-		FtpService ftpService = new FtpService(new File(params.manifest).getParent());
+		FtpService ftpService = new FtpService();
 		try {
 			ftpService.connectToFtp(params.userName, params.password);
-			ftpService.ftpDirectory(getValidatedDirectory(false, assemblyName).toPath(), params.context, assemblyName);
+			ftpService.ftpDirectory(getUploadDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 			System.out.println(UPLOAD_SUCCESS);
 		} catch (WebinCliException e) {
 			if (WebinCliException.ErrorType.USER_ERROR.equals(e.getErrorType())) {
@@ -244,14 +238,23 @@ public class WebinCli {
 		}
 	}
 
+	private String createValidatedReportsDir(String name) {
+		File reportDirectory =new File(new File(params.manifest).getParent() + File.separator + contextE + File.separator + name + File.separator + REPORTS_DIR);
+		if (reportDirectory.exists())
+			FileUtils.emptyDirectory(reportDirectory);
+		else
+			reportDirectory.mkdirs();
+		return reportDirectory.getAbsolutePath();
+	}
+
 	private boolean checkFilesExistInUploadArea() {
 		FtpService ftpService = null;
 		boolean success = false;
 		try {
 			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-			ftpService = new FtpService(new File(params.manifest).getParent());
+			ftpService = new FtpService();
 			ftpService.connectToFtp(params.userName, params.password);
-			success = ftpService.checkFilesExistInUploadArea(getValidatedDirectory(false, assemblyName).toPath(), params.context, assemblyName);
+			success = ftpService.checkFilesExistInUploadArea(getUploadDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 		} catch (FtpException e) {
 			if (WebinCliException.ErrorType.USER_ERROR.equals(e.getErrorType())) {
 				System.out.println(UPLOAD_CHECK_USER_ERROR + e.getMessage());
@@ -273,7 +276,7 @@ public class WebinCli {
 	private void doSubmit() {
 		try {
 			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-			getValidatedDirectory(false, assemblyName);
+			getUploadDirectory(false, assemblyName);
 			Submit submit = new Submit(params, infoValidator.getentry());
 			submit.doSubmission();
 		} catch (WebinCliException e) {
@@ -287,8 +290,8 @@ public class WebinCli {
 		}
 	}
 
-	private File getValidatedDirectory(boolean create, String name) throws FtpException {
-		File validatedDirectory =new File(new File(params.manifest).getParent() + File.separator + contextE + File.separator + name);
+	private File getUploadDirectory(boolean create, String name) throws FtpException {
+		File validatedDirectory =new File(new File(params.manifest).getParent() + File.separator + contextE + File.separator + name + File.separator + UPLOAD_DIR);
 		if (create) {
 		    if (validatedDirectory.exists())
                 FileUtils.emptyDirectory(validatedDirectory);
