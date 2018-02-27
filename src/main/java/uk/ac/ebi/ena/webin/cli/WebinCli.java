@@ -1,11 +1,12 @@
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
@@ -57,10 +58,13 @@ public class WebinCli {
 	private Params params;
 	private ContextE contextE;
 	private String UPLOAD_DIR = "upload";
-	private String REPORTS_DIR = "validate";
+	private final static String REPORTS_DIR = "validate";
 	private static ManifestFileValidator manifestValidator= null;
 	private static InfoFileValidator infoValidator =null;
-	private static String outputDir =null;
+	private static String outputDir = null;
+	private final static String INFO = "INFO";
+	private final static String ASSEMBLYNAME = "ASSEMBLYNAME";
+	private static String reportsDir;
 
 	public static class Params	{
 		@Parameter(names = "help", required = false)
@@ -104,24 +108,20 @@ public class WebinCli {
 				}
 			}
 			Params params = parseParameters(args);
-			if (params.help) {
+			if (params.help)
 				System.exit(SUCCESS);
-			}
 			if (!params.validate &&
 				!params.upload &&
 				!params.submit) {
 				printUsageAndExit();
 			}
+			String assemblyName = peekMInfoFileToGetAssemblyName(peekManifestForInfoFile(params.manifest));
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
 			outputDir = getFullPath(outputDir);
-			File reportDir= new File(outputDir + File.separator + "reports");
-			if(!reportDir.exists()) {
-				System.out.println("Creating report directory: " + reportDir.getCanonicalPath());
-				reportDir.mkdirs();
-			} else
-				System.out.println("Using report directory: " + reportDir.getCanonicalPath());
+			reportsDir = createValidatedReportsDir(params, assemblyName);
+			File reportDir= new File(outputDir + File.separator + params.context + File.separator + assemblyName + File.separator + REPORTS_DIR);
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(), params.context)){
@@ -180,7 +180,7 @@ public class WebinCli {
 					break;
             }
 			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-			validator.setReportsDir(createValidatedReportsDir(assemblyName));
+			validator.setReportsDir(reportsDir);
 			validator.setOutputDir(outputDir);
 			if (validator.validate() == SUCCESS) {
 				File validatedDirectory = getUploadDirectory(true, assemblyName);
@@ -238,8 +238,8 @@ public class WebinCli {
 		}
 	}
 
-	private String createValidatedReportsDir(String name) {
-		File reportDirectory =new File(new File(params.manifest).getParent() + File.separator + contextE + File.separator + name + File.separator + REPORTS_DIR);
+	private static String createValidatedReportsDir(Params params, String name) {
+		File reportDirectory =new File(new File(params.manifest).getParent() + File.separator + params.context + File.separator + name + File.separator + REPORTS_DIR);
 		if (reportDirectory.exists())
 			FileUtils.emptyDirectory(reportDirectory);
 		else
@@ -388,4 +388,33 @@ public class WebinCli {
 		options.append("\n" + ParameterDescriptor.submit + ParameterDescriptor.submitFlagDescription);;
 		System.out.println(options);
 	}
+
+	private static String peekManifestForInfoFile(String manifest) throws Exception {
+		try (Stream<String> stream = Files.lines(Paths.get(manifest))) {
+			Optional<String> optional = stream.filter(line -> line.startsWith("INFO")).findFirst();
+			if (optional.isPresent())
+				return optional.get().substring(INFO.length()).trim();
+			else {
+				System.out.println("Manifest file " + manifest + " is missing the " + INFO + " entry");
+				System.exit(USER_ERROR);
+			}
+		}
+		return "";
+	}
+
+	private static String peekMInfoFileToGetAssemblyName(String info) throws Exception {
+		InputStream fileIs = Files.newInputStream(Paths.get(info));
+		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
+		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs));
+		Optional<String> optional =  reader.lines().filter(line -> line.startsWith(ASSEMBLYNAME)).findFirst();
+		if (optional.isPresent())
+			return optional.get().substring(ASSEMBLYNAME.length()).trim().replaceAll("\\s+", "_");
+		else {
+			System.out.println("Info file " + info + " is missing the " + ASSEMBLYNAME + " entry");
+			System.exit(USER_ERROR);
+		}
+		return "";
+	}
+
 }
