@@ -62,11 +62,11 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	private static List<File> agpFiles;
 	private String molType= "genomic DNA";
 	private  Sample sample=null;
-	private static String reportDir=null;
 	private boolean test;
 	private ManifestFileReader manifestFileReader;
 	private String outputDir=null;
 	private Study study =null;
+	private String reportDir;
 
 	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study,String molType) {
 		this.manifestFileReader = manifestFileReader;
@@ -76,7 +76,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		fastaFiles = new ArrayList<File>();
 		flatFiles = new ArrayList<File>();
 		agpFiles = new ArrayList<File>();
-		reportDir=null;
 		this.study=study;
 		this.molType = molType ==null?this.molType:molType;
 	}
@@ -84,6 +83,11 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader,Sample sample,Study study,String molType, boolean test) {
 		this(manifestFileReader,sample, study,molType);
 		this.test = test;
+	}
+
+	@Override
+	public void setReportsDir(String reportDir) {
+		this.reportDir = reportDir;
 	}
 
 	public int validate() throws ValidationEngineException
@@ -96,10 +100,6 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 			property.isRemote.set(true);
 			property.locus_tag_prefixes.set(study.getLocusTagsList());
 			TaxonHelper taxonHelper = new TaxonHelperImpl();
-	        reportDir= outputDir+File.separator+"reports";
-	        File rDir= new File(reportDir);
-	        if(!rDir.exists())
-	        	rDir.mkdirs();
 			defineFileTypes();
 			valid = valid&validateChromosomeList(property);
 			valid = valid&validateUnlocalisedList(property);
@@ -128,7 +128,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		ValidationResult chromosomeListParseResult= new ValidationResult();		
 		chromosomeEntries = getChromosomeEntries(chromosomeListFile,chromosomeListParseResult);
 		chromosomeListParseResults.add(chromosomeListParseResult);
-		Writer chromosomeListRepoWriter = new PrintWriter(reportDir+File.separator+chromosomeListFile.getName() + ".report", "UTF-8");
+		Writer chromosomeListRepoWriter = new PrintWriter(reportDir + File.separator+chromosomeListFile.getName() + ".report", "UTF-8");
 		if (chromosomeEntries != null)
 		{
 			property.fileType.set(FileType.CHROMOSOMELIST);
@@ -150,7 +150,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		List<ValidationResult> unlocalisedListParseResults = new ArrayList<ValidationResult>();
 		List<UnlocalisedEntry> unlocalisedEntries = getUnlocalisedEntries(unlocalisedListFile, unlocalisedParseResult);
 		unlocalisedListParseResults.add(unlocalisedParseResult);
-		Writer unlocalisedListRepoWriter = new PrintWriter(reportDir+File.separator+unlocalisedListFile.getName() + ".report", "UTF-8");
+		Writer unlocalisedListRepoWriter = new PrintWriter(reportDir + File.separator+unlocalisedListFile.getName() + ".report", "UTF-8");
 		if (unlocalisedEntries != null)
 		{
 			property.fileType.set(FileType.UNLOCALISEDLIST);
@@ -168,7 +168,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		for (File file : fastaFiles)
 		{
 			property.fileType.set(FileType.FASTA);
-			try (Writer fixedFileWriter= new PrintWriter(file.getAbsolutePath()+".fixed"); Writer reportWriter = new PrintWriter(reportDir+File.separator+file.getName()+ ".report", "UTF-8");BufferedReader bf=FileUtils.getBufferedReader(file))
+			try (Writer fixedFileWriter= new PrintWriter(file.getAbsolutePath()+".fixed"); Writer reportWriter = new PrintWriter(reportDir + File.separator+file.getName()+ ".report", "UTF-8");BufferedReader bf=FileUtils.getBufferedReader(file))
 			{
 			FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.FASTA,file,bf);
 			List<ValidationResult> parseResults = new ArrayList<ValidationResult>();
@@ -229,7 +229,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		for (File file : flatFiles)
 		{
 			property.fileType.set(FileType.EMBL);
-			try (Writer fixedFileWriter= new PrintWriter(file.getAbsolutePath()+".fixed"); Writer reportWriter = new PrintWriter(reportDir+File.separator+file.getName()+ ".report", "UTF-8");BufferedReader bf=FileUtils.getBufferedReader(file))
+			try (Writer fixedFileWriter= new PrintWriter(file.getAbsolutePath()+".fixed"); Writer reportWriter = new PrintWriter(reportDir + File.separator+file.getName()+ ".report", "UTF-8");BufferedReader bf=FileUtils.getBufferedReader(file))
 			{
 			FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.FLATFILE,file,bf);
 			List<ValidationResult> parseResults = new ArrayList<ValidationResult>();
@@ -299,7 +299,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface
 		for (File file : agpFiles)
 		{
 			property.fileType.set(FileType.AGP);
-			try (Writer fixedFileWriter= new PrintWriter(file.getAbsolutePath()+".fixed"); Writer reportWriter = new PrintWriter(reportDir+File.separator+file.getName()+ ".report", "UTF-8");BufferedReader bf=FileUtils.getBufferedReader(file))
+			try (Writer fixedFileWriter= new PrintWriter(file.getAbsolutePath()+".fixed"); Writer reportWriter = new PrintWriter(reportDir + File.separator+file.getName()+ ".report", "UTF-8");BufferedReader bf=FileUtils.getBufferedReader(file))
 			{
 			FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.AGP,file,bf);
       		List<ValidationResult> parseResults = new ArrayList<ValidationResult>();
