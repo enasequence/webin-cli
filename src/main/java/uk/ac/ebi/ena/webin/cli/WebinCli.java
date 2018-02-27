@@ -57,14 +57,14 @@ public class WebinCli {
 	public static final String INVALID_CREDENTIALS = "Invalid submission account user name or password.";
 	private Params params;
 	private ContextE contextE;
-	private String UPLOAD_DIR = "upload";
-	private final static String REPORTS_DIR = "validate";
+	private final static String UPLOAD_DIR = "upload";
+	private final static String VALIDATE_DIR = "validate";
 	private static ManifestFileValidator manifestValidator= null;
 	private static InfoFileValidator infoValidator =null;
 	private static String outputDir = null;
 	private final static String INFO = "INFO";
 	private final static String ASSEMBLYNAME = "ASSEMBLYNAME";
-	private static String reportsDir;
+	private static String validateDir;
 
 	public static class Params	{
 		@Parameter(names = "help", required = false)
@@ -115,13 +115,13 @@ public class WebinCli {
 				!params.submit) {
 				printUsageAndExit();
 			}
-			String assemblyName = peekMInfoFileToGetAssemblyName(peekManifestForInfoFile(params.manifest));
+			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
 			outputDir = getFullPath(outputDir);
-			reportsDir = createValidatedReportsDir(params, assemblyName);
-			File reportDir= new File(outputDir + File.separator + params.context + File.separator + assemblyName + File.separator + REPORTS_DIR);
+			validateDir = createValidateDir(params, name);
+			File reportDir= new File(outputDir + File.separator + params.context + File.separator + name + File.separator + VALIDATE_DIR);
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(), params.context)){
@@ -180,7 +180,7 @@ public class WebinCli {
 					break;
             }
 			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-			validator.setReportsDir(reportsDir);
+			validator.setReportsDir(validateDir);
 			validator.setOutputDir(outputDir);
 			if (validator.validate() == SUCCESS) {
 				File validatedDirectory = getUploadDirectory(true, assemblyName);
@@ -238,13 +238,13 @@ public class WebinCli {
 		}
 	}
 
-	private static String createValidatedReportsDir(Params params, String name) {
-		File reportDirectory =new File(new File(params.manifest).getParent() + File.separator + params.context + File.separator + name + File.separator + REPORTS_DIR);
-		if (reportDirectory.exists())
-			FileUtils.emptyDirectory(reportDirectory);
+	private static String createValidateDir(Params params, String name) {
+		File validateDirectory =new File(new File(params.manifest).getParent() + File.separator + params.context + File.separator + name + File.separator + VALIDATE_DIR);
+		if (validateDirectory.exists())
+			FileUtils.emptyDirectory(validateDirectory);
 		else
-			reportDirectory.mkdirs();
-		return reportDirectory.getAbsolutePath();
+			validateDirectory.mkdirs();
+		return validateDirectory.getAbsolutePath();
 	}
 
 	private boolean checkFilesExistInUploadArea() {
@@ -402,7 +402,7 @@ public class WebinCli {
 		return "";
 	}
 
-	private static String peekMInfoFileToGetAssemblyName(String info) throws Exception {
+	private static String peekInfoFileForName(String info) throws Exception {
 		InputStream fileIs = Files.newInputStream(Paths.get(info));
 		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
 		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
