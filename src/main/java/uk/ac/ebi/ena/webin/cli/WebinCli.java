@@ -102,12 +102,12 @@ public class WebinCli {
 				.findFirst();
 				if (found.isPresent()) {
 					usageFormatted();
-					System.exit(0);
+					System.exit(SUCCESS);
 				}
 			}
 			Params params = parseParameters(args);
 			if (params.help) {
-				System.exit(0);
+				System.exit(SUCCESS);
 			}
 			if (!params.validate &&
 				!params.upload &&
@@ -130,11 +130,11 @@ public class WebinCli {
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(),params.context)){
-				System.err.println("Manifest file validation failed, please check the reporting file for errors: "+manifestValidator.getReportFile().getAbsolutePath());
+				System.out.println("Manifest file validation failed, please check the reporting file for errors: "+manifestValidator.getReportFile().getAbsolutePath());
 				System.exit(VALIDATION_ERROR);
 			}
 			if(!infoValidator.validate(manifestValidator.getReader(),reportDir.getAbsolutePath(),params.context)) {
-				System.err.println("Assembly info file validation failed, please check the reporting file for errors: "+infoValidator.getReportFile().getAbsolutePath());
+				System.out.println("Assembly info file validation failed, please check the reporting file for errors: "+infoValidator.getReportFile().getAbsolutePath());
 				System.exit(VALIDATION_ERROR);
 			}
 			WebinCli enaValidator = new WebinCli(params);
@@ -148,7 +148,7 @@ public class WebinCli {
 		try {
 			contextE = ContextE.valueOf(params.context);
 		} catch (IllegalArgumentException e) {
-			System.err.println(INVALID_CONTEXT + params.context);
+			System.out.println(INVALID_CONTEXT + params.context);
 			System.exit(USER_ERROR);
 		}
 		if (params.validate)
@@ -337,7 +337,7 @@ public class WebinCli {
 			try {
 				ContextE.valueOf(value);
 			} catch (IllegalArgumentException e) {
-				System.err.println(INVALID_CONTEXT + value);
+				System.out.println(INVALID_CONTEXT + value);
 				System.exit(USER_ERROR);
 			}
 		}
@@ -348,7 +348,7 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists()) {
-				System.err.println("The output directory " + value + " does not exist. Please provide a valid -outputDir option.");
+				System.out.println("The output directory " + value + " does not exist. Please provide a valid -outputDir option.");
 				System.exit(USER_ERROR);
 			}
 		}
@@ -359,7 +359,7 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists()) {
-				System.err.println("The manifest file " + value + " does not exist. Please provide a valid -manifest option.");
+				System.out.println("The manifest file " + value + " does not exist. Please provide a valid -manifest option.");
 				System.exit(USER_ERROR);
 			}
 		}
