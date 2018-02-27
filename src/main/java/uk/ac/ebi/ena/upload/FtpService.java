@@ -21,24 +21,16 @@ public class FtpService {
     private final static String SERVER = "webin.ebi.ac.uk";
     private final static int FTP_PORT = 21;
     private FTPClient ftpClient = new FTPClient() ;
-    private String manifestDir;
-
     private final static String CONNECT_SYSTEM_ERROR = "Failed to connect to the Webin file upload area.";
-
     private final static String CHECK_USER_ERROR_NO_DIR = "The files have not been uploaded. The directory has not been created. " +
             "Please use the -validate and -upload options before using the -submit option.";
     private final static String CHECK_USER_ERROR_NO_FILE = "The files have not been uploaded. " +
             "Please use the -validate and -upload options before using the -submit option.";
     private final static String CHECK_SYSTEM_ERROR = "Failed to check if files have been uploaded.";
-
     private final static String UPLOAD_SYSTEM_ERROR_CREATE_DIR = "Failed to create directory in Webin file upload area.";
     private final static String UPLOAD_SYSTEM_ERROR_CHANGE_DIR = "Failed to access directory in Webin file upload area.";
     private final static String UPLOAD_SYSTEM_ERROR_UPLOAD_FILE = "Failed to upload files to Webin file upload area.";
     private final static String UPLOAD_SYSTEM_ERROR_OTHER = "A server error occurred when uploading files to Webin file upload area.";
-
-    public FtpService(String manifestDir) {
-        this.manifestDir = manifestDir;
-    }
 
     public void connectToFtp(String userName, String password) throws FtpException {
         try {
@@ -59,7 +51,7 @@ public class FtpService {
         }
     }
 
-    public void ftpDirectory(Path validatedDirectory, String context, String name) throws FtpException {
+    public void ftpDirectory(Path uploadDirectory, String context, String name) throws FtpException {
         if (context == null || context.isEmpty() || name == null || name.isEmpty())
             throw new FtpException(WebinCli.MISSING_CONTEXT, WebinCliException.ErrorType.USER_ERROR);
         try {
@@ -90,10 +82,10 @@ public class FtpService {
                         ftpClient.deleteFile(ftpFile.getName());
                 }
             }
-            List<Path> fileList = Files.list(validatedDirectory).map(Path::getFileName).filter(f -> !f.toFile().isHidden())
+            List<Path> fileList = Files.list(uploadDirectory).map(Path::getFileName).filter(f -> !f.toFile().isHidden())
                     .collect(Collectors.toList());
             for (Path path: fileList) {
-                try (FileInputStream fileInputStream = new FileInputStream(validatedDirectory + File.separator + path.toFile().getName())) {
+                try (FileInputStream fileInputStream = new FileInputStream(uploadDirectory + File.separator + path.toFile().getName())) {
                     if (!ftpClient.storeFile(path.toFile().getName(), fileInputStream))
                         throw new FtpException(UPLOAD_SYSTEM_ERROR_UPLOAD_FILE, WebinCliException.ErrorType.SYSTEM_ERROR);
                 } catch (IOException e) {
