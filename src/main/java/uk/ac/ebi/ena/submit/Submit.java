@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 public class Submit {
     private final static String ANALYSIS_XML = "analysis.xml";
+    private final static String RECEIPT_XML = "receipt.xml";
     private String userName;
     private String password;
     private ContextE contextE;
@@ -38,6 +39,8 @@ public class Submit {
     private String sample;
     private String assemblyName;
     private final boolean TEST;
+    private Path submitDir;
+    private String SUBMIT_DIR = "submit";
 
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit. ";
@@ -61,6 +64,7 @@ public class Submit {
 
     public void doSubmission() throws SubmitException {
         try {
+            createSubmitDir();
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/" : "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"));
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
@@ -101,8 +105,17 @@ public class Submit {
         try {
             String receipt = resultsList.stream()
                   .collect(Collectors.joining());
+            Path receiptFile = Paths.get(submitDir + File.separator + RECEIPT_XML);
+            if (Files.exists(receiptFile))
+                Files.delete(receiptFile);
+            Files.createFile(receiptFile);
             SAXBuilder builder = new SAXBuilder();
             Document doc = builder.build(new StringReader(receipt));
+            XMLOutputter xmlOutput = new XMLOutputter();
+            xmlOutput.setFormat(Format.getPrettyFormat());
+            StringWriter stringWriter = new StringWriter();
+            xmlOutput.output(doc, stringWriter);
+            Files.write(receiptFile, stringWriter.toString().getBytes());
             Element rootNode = doc.getRootElement();
             if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
                 String accession = rootNode.getChild("ANALYSIS").getAttributeValue("accession");
@@ -154,13 +167,23 @@ public class Submit {
             xmlOutput.setFormat(Format.getPrettyFormat());
             StringWriter stringWriter = new StringWriter();
             xmlOutput.output(doc, stringWriter);
-            Path path = Paths.get(Paths.get(manifest).getParent() + File.separator + ANALYSIS_XML);
-            if (Files.exists(path))
-                Files.delete(path);
-            Files.createFile(path);
-            Files.write(path, stringWriter.toString().getBytes());
-            return path;
+            Path analysisFile = Paths.get(submitDir + File.separator + ANALYSIS_XML);
+            if (Files.exists(analysisFile))
+                Files.delete(analysisFile);
+            Files.createFile(analysisFile);
+            Files.write(analysisFile, stringWriter.toString().getBytes());
+            return analysisFile;
         } catch (Exception e) {
+            throw new SubmitException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+        }
+    }
+
+    private void createSubmitDir() throws SubmitException {
+        try {
+            submitDir = Paths.get(Paths.get(manifest).getParent() + File.separator + contextE + File.separator + assemblyName + File.separator + SUBMIT_DIR);
+            if (!Files.exists(submitDir))
+                Files.createDirectory(submitDir);
+        } catch (IOException e) {
             throw new SubmitException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
