@@ -125,11 +125,11 @@ public class WebinCli {
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(), params.context)){
-				System.out.println("Manifest file validation failed, please check the reporting file for errors: "+manifestValidator.getReportFile().getAbsolutePath());
+				System.out.println("Manifest file validation failed. Please check the report file for errors: "+manifestValidator.getReportFile().getAbsolutePath());
 				System.exit(VALIDATION_ERROR);
 			}
 			if(!infoValidator.validate(manifestValidator.getReader(),reportDir.getAbsolutePath(), params.context)) {
-				System.out.println("Assembly info file validation failed, please check the reporting file for errors: "+infoValidator.getReportFile().getAbsolutePath());
+				System.out.println("Assembly info file validation failed. Please check the report file for errors: "+infoValidator.getReportFile().getAbsolutePath());
 				System.exit(VALIDATION_ERROR);
 			}
 			WebinCli enaValidator = new WebinCli(params);
@@ -196,7 +196,7 @@ public class WebinCli {
                 new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects());
                 System.out.println(VALIDATE_SUCCESS);
             } else {
-                System.out.println(VALIDATE_VALIDATION_ERROR + " Please check the report file under '" + outputDir + File.separator + "reports' for errors.");
+                System.out.println(VALIDATE_VALIDATION_ERROR + " Please check the report files under '" + outputDir + File.separator + "validate' for errors.");
                 System.exit(VALIDATION_ERROR);
             }
 		} catch (WebinCliException e) {
