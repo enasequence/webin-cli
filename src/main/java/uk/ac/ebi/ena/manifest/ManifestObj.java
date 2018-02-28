@@ -7,14 +7,6 @@ public class ManifestObj {
 	private String fileName;
 	private String md5chkSum;
 	
-	public String getMd5chkSum() {
-		return md5chkSum;
-	}
-
-	public void setMd5chkSum(String md5chkSum) {
-		this.md5chkSum = md5chkSum;
-	}
-
 	public ManifestObj(String fileFormat,String fileName) {
        this.fileFormat= fileFormat;
        this.fileName =fileName;
@@ -41,6 +33,14 @@ public class ManifestObj {
 		this.fileName = fileName;
 	}
 	
+	public String getMd5chkSum() {
+		return md5chkSum;
+	}
+
+	public void setMd5chkSum(String md5chkSum) {
+		this.md5chkSum = md5chkSum;
+	}
+
 	@Override
 	public String toString() {
 		return this.getFileFormat().toString()+"\t"+new File(this.getFileName()).getName()+"\t"+this.getMd5chkSum();
