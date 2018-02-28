@@ -34,7 +34,7 @@ public class Submit {
     private String userName;
     private String password;
     private ContextE contextE;
-    private String manifest;
+    private String outputDir;
     private String study;
     private String sample;
     private String assemblyName;
@@ -47,7 +47,7 @@ public class Submit {
     private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit. ";
 
-    public Submit(WebinCli.Params params, AssemblyInfoEntry assemblyInfoEntry) throws SubmitException {
+    public Submit(WebinCli.Params params,String outputDir, AssemblyInfoEntry assemblyInfoEntry) throws SubmitException {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {
@@ -56,7 +56,7 @@ public class Submit {
         this.TEST = params.test;
         this.userName = params.userName;
         this.password = params.password;
-        this.manifest = params.manifest;
+        this.outputDir = outputDir;
         this.study = assemblyInfoEntry.getStudyId();
         this.sample = assemblyInfoEntry.getSampleId();
         this.assemblyName = assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_");
@@ -180,7 +180,7 @@ public class Submit {
 
     private void createSubmitDir() throws SubmitException {
         try {
-            submitDir = Paths.get(Paths.get(manifest).getParent() + File.separator + contextE + File.separator + assemblyName + File.separator + SUBMIT_DIR);
+            submitDir = Paths.get(Paths.get(outputDir) + File.separator + contextE + File.separator + assemblyName + File.separator + SUBMIT_DIR);
             if (!Files.exists(submitDir))
                 Files.createDirectory(submitDir);
         } catch (IOException e) {
