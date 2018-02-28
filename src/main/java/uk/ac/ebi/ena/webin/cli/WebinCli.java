@@ -57,14 +57,14 @@ public class WebinCli {
 	public static final String INVALID_CREDENTIALS = "Invalid submission account user name or password.";
 	private Params params;
 	private ContextE contextE;
-	private final static String UPLOAD_DIR = "upload";
-	private final static String VALIDATE_DIR = "validate";
+	private String UPLOAD_DIR = "upload";
+	private final static String REPORTS_DIR = "validate";
 	private static ManifestFileValidator manifestValidator= null;
 	private static InfoFileValidator infoValidator =null;
 	private static String outputDir = null;
 	private final static String INFO = "INFO";
 	private final static String ASSEMBLYNAME = "ASSEMBLYNAME";
-	private static String validateDir;
+	private static String reportsDir;
 
 	public static class Params	{
 		@Parameter(names = "help", required = false)
@@ -115,13 +115,13 @@ public class WebinCli {
 				!params.submit) {
 				printUsageAndExit();
 			}
-			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
+			String assemblyName = peekMInfoFileToGetAssemblyName(peekManifestForInfoFile(params.manifest));
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
 			outputDir = getFullPath(outputDir);
-			validateDir = createValidateDir(params, name);
-			File reportDir= new File(outputDir + File.separator + params.context + File.separator + name + File.separator + VALIDATE_DIR);
+			reportsDir = createValidatedReportsDir(params, assemblyName);
+			File reportDir= new File(outputDir + File.separator + params.context + File.separator + assemblyName + File.separator + REPORTS_DIR);
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if(!manifestValidator.validate(manifestFile, reportDir.getAbsolutePath(), params.context)){
@@ -180,8 +180,7 @@ public class WebinCli {
 					break;
             }
 			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-			validator.setReportsDir(validateDir);
-			validator.setOutputDir(outputDir);
+			validator.setReportsDir(reportsDir);
 			if (validator.validate() == SUCCESS) {
 				File validatedDirectory = getUploadDirectory(true, assemblyName);
                 for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
@@ -238,13 +237,13 @@ public class WebinCli {
 		}
 	}
 
-	private static String createValidateDir(Params params, String name) {
-		File validateDirectory =new File(new File(params.manifest).getParent() + File.separator + params.context + File.separator + name + File.separator + VALIDATE_DIR);
-		if (validateDirectory.exists())
-			FileUtils.emptyDirectory(validateDirectory);
+	private static String createValidatedReportsDir(Params params, String name) {
+		File reportDirectory =new File(new File(params.manifest).getParent() + File.separator + params.context + File.separator + name + File.separator + REPORTS_DIR);
+		if (reportDirectory.exists())
+			FileUtils.emptyDirectory(reportDirectory);
 		else
-			validateDirectory.mkdirs();
-		return validateDirectory.getAbsolutePath();
+			reportDirectory.mkdirs();
+		return reportDirectory.getAbsolutePath();
 	}
 
 	private boolean checkFilesExistInUploadArea() {
@@ -391,7 +390,8 @@ public class WebinCli {
 
 	private static String peekManifestForInfoFile(String manifest) throws Exception {
 		try (Stream<String> stream = Files.lines(Paths.get(manifest))) {
-			Optional<String> optional = stream.filter(line -> line.startsWith("INFO")).findFirst();
+			Optional<String> optional = stream.filter(line -> line.startsWith(INFO))
+					.findFirst();
 			if (optional.isPresent())
 				return optional.get().substring(INFO.length()).trim();
 			else {
@@ -402,12 +402,13 @@ public class WebinCli {
 		return "";
 	}
 
-	private static String peekInfoFileForName(String info) throws Exception {
+	private static String peekMInfoFileToGetAssemblyName(String info) throws Exception {
 		InputStream fileIs = Files.newInputStream(Paths.get(info));
 		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
 		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs));
-		Optional<String> optional =  reader.lines().filter(line -> line.startsWith(ASSEMBLYNAME)).findFirst();
+		Optional<String> optional = reader.lines().filter(line -> line.startsWith(ASSEMBLYNAME))
+				.findFirst();
 		if (optional.isPresent())
 			return optional.get().substring(ASSEMBLYNAME.length()).trim().replaceAll("\\s+", "_");
 		else {
