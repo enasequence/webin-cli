@@ -15,15 +15,22 @@ public class ParameterDescriptor {
     public final static String contextFlagDescription = "\n\tRequired. Valid values are:" +
             "\n\t\t>> genome" +
             "\n\t\t>> transcriptome";
-    public final static String outputDirFlagDescription = "\n\tDirectory to write validated files. Validated files are organised into <context>/<name>\n\t" +
-            "directory structure where <name> is the unique name provided in the info file.";
+    public final static String outputDirFlagDescription =
+            "\n\tDirectory for output files with the following structure:" +
+            "\n\t\t>> <context>/<name>/validate" +
+            "\n\t\t>> <context>/<name>/upload" +
+            "\n\t\t>> <context>/<name>/submit" +
+            "\n\tThe <name> is the unique name provided in the info file." +
+            "\n\tThe 'validate' directory contains validation reports." +
+            "\n\tThe 'upload' directory contains validated files to be uploaded" +
+            "\n\tto the Webin upload area using the -upload option." +
+            "\n\tThe 'submit' directory contains the XMLs created by the -submit" +
+            "\n\toption including submitted Analysis XML and Receipt XML.";
     public final static String userNameFlagDescription = "\n\tRequired. Your submission account name or your e-mail address.";
-    public final static String passwordFlagDescription = "\n\tRequired. Your submission account password,";
+    public final static String passwordFlagDescription = "\n\tRequired. Your submission account password.";
     public final static String validateFlagDescription = "\n\tValidates the files defined in the manifest file. Validated files must be uploaded" +
             "\n\tusing the -upload option and submitted using the -submit option. All three options" +
-            "\n\ttcan be given at the same time. Validated and uploaded files are organised into" +
-            "\t\n<context>/<name> directory  structure where <name> is the unique name provided" +
-            "\n\tin the info file.";
+            "\n\ttcan be given at the same time";
     public final static String submitFlagDescription = "\n\tSubmits the validated and uploaded files. An accession number is provided. ";
     public final static String uploadFlagDescription = "\n\tUploads validated files to Webin upload area. Uploaded files must be submitted using the -submit option.";
     public final static String manifestFlagDescription = "\n\tRequired. Path to a manifest file. The manifest file lists the files within the submission." +
