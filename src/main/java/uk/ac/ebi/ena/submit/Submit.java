@@ -160,7 +160,7 @@ public class Submit {
             Element fileE = new Element("FILE");
             filesE.addContent(fileE);
             // Using unix path separator in the Analysis XML.
-            fileE.setAttribute("filename", contextE + File.separator + assemblyName + "/" + assemblyName + ".manifest");
+            fileE.setAttribute("filename", contextE + "/" + assemblyName + "/" + assemblyName + ".manifest");
             fileE.setAttribute("filetype", "manifest");
             fileE.setAttribute("checksum_method", "MD5");
             fileE.setAttribute("checksum", "");
