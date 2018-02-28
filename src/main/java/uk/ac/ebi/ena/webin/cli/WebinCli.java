@@ -79,7 +79,7 @@ public class WebinCli {
 		public String password;
 		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = manifestFileValidator.class)
 		public String manifest;
-		@Parameter(names = ParameterDescriptor.outputDir, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class, required = true)
+		@Parameter(names = ParameterDescriptor.outputDir, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class)
 		public String outputDir;
 		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription, required = false)
 		public boolean validate;
@@ -238,7 +238,7 @@ public class WebinCli {
 	}
 
 	private static String createValidatedReportsDir(Params params, String name) {
-		File reportDirectory =new File(new File(params.manifest).getParent() + File.separator + params.context + File.separator + name + File.separator + REPORTS_DIR);
+		File reportDirectory =new File(new File(outputDir) + File.separator + params.context + File.separator + name + File.separator + REPORTS_DIR);
 		if (reportDirectory.exists())
 			FileUtils.emptyDirectory(reportDirectory);
 		else
@@ -276,7 +276,7 @@ public class WebinCli {
 		try {
 			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
 			getUploadDirectory(false, assemblyName);
-			Submit submit = new Submit(params, infoValidator.getentry());
+			Submit submit = new Submit(params,outputDir,infoValidator.getentry());
 			submit.doSubmission();
 		} catch (WebinCliException e) {
 			if (WebinCliException.ErrorType.USER_ERROR.equals(e.getErrorType())) {
@@ -290,7 +290,7 @@ public class WebinCli {
 	}
 
 	private File getUploadDirectory(boolean create, String name) throws FtpException {
-		File validatedDirectory =new File(new File(params.manifest).getParent() + File.separator + contextE + File.separator + name + File.separator + UPLOAD_DIR);
+		File validatedDirectory =new File(new File(outputDir) + File.separator + contextE + File.separator + name + File.separator + UPLOAD_DIR);
 		if (create) {
 		    if (validatedDirectory.exists())
                 FileUtils.emptyDirectory(validatedDirectory);
