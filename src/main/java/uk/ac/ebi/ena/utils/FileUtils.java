@@ -12,20 +12,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.AssemblyInfoReader;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyFileUtils;
 import uk.ac.ebi.ena.manifest.FileFormat;
-import uk.ac.ebi.ena.manifest.ManifestObj;
 
 public class FileUtils {
 

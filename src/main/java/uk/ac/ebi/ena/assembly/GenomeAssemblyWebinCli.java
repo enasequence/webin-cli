@@ -155,7 +155,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 		boolean valid = true;
 		for (File file : fastaFiles) {
 			property.fileType.set(FileType.FASTA);
-			try (Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed"); Writer reportWriter = new PrintWriter(reportDir + File.separator + file.getName() + ".report", "UTF-8"); BufferedReader bf = FileUtils.getBufferedReader(file)) {
+			try (/*Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed"); */Writer reportWriter = new PrintWriter(reportDir + File.separator + file.getName() + ".report", "UTF-8"); BufferedReader bf = FileUtils.getBufferedReader(file)) {
 				FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.FASTA, file, bf);
 				List<ValidationResult> parseResults = new ArrayList<ValidationResult>();
 				List<ValidationPlanResult> planResults = new ArrayList<ValidationPlanResult>();
@@ -190,15 +190,15 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 					entry.getSequence().setMoleculeType(molType);
 					ValidationPlan validationPlan = getValidationPlan(entry, property);
 					planResults.add(validationPlan.execute(entry));
-					FastaFileWriter writer = new FastaFileWriter(entry, fixedFileWriter);
-					writer.write();
+					//FastaFileWriter writer = new FastaFileWriter(entry, fixedFileWriter);
+					//writer.write();
 					fastaEntryNames.add(entry.getSubmitterAccession());
 					parseResult = reader.read();
 					if (parseResult != null)
 						parseResults.add(parseResult);
 				}
 				valid = valid && GenomeAssemblyFileUtils.writeValidationResult(parseResults, planResults, reportWriter, file.getName());
-				fixedFileWriter.flush();
+				//fixedFileWriter.flush();
 			}
 		}
 		return valid;
@@ -208,7 +208,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 		boolean valid = true;
 		for (File file : flatFiles) {
 			property.fileType.set(FileType.EMBL);
-			try (Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed"); Writer reportWriter = new PrintWriter(reportDir + File.separator + file.getName() + ".report", "UTF-8"); BufferedReader bf = FileUtils.getBufferedReader(file)) {
+			try (/*Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed");*/ Writer reportWriter = new PrintWriter(reportDir + File.separator + file.getName() + ".report", "UTF-8"); BufferedReader bf = FileUtils.getBufferedReader(file)) {
 				FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.FLATFILE, file, bf);
 				List<ValidationResult> parseResults = new ArrayList<ValidationResult>();
 				List<ValidationPlanResult> planResults = new ArrayList<ValidationPlanResult>();
@@ -249,15 +249,15 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 					entry.getSequence().setMoleculeType(molType);
 					ValidationPlan validationPlan = getValidationPlan(entry, property);
 					planResults.add(validationPlan.execute(entry));
-					EmblEntryWriter writer = new EmblEntryWriter(entry);
-					writer.write(fixedFileWriter);
+					//EmblEntryWriter writer = new EmblEntryWriter(entry);
+					//writer.write(fixedFileWriter);
 					parseResult = reader.read();
 					if (parseResult != null)
 						parseResults.add(parseResult);
 				}
 
 				valid = valid && GenomeAssemblyFileUtils.writeValidationResult(parseResults, planResults, reportWriter, file.getName());
-				fixedFileWriter.flush();
+				//fixedFileWriter.flush();
 			}
 		}
 		return valid;
@@ -268,7 +268,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 
 		for (File file : agpFiles) {
 			property.fileType.set(FileType.AGP);
-			try (Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed"); Writer reportWriter = new PrintWriter(reportDir + File.separator + file.getName() + ".report", "UTF-8"); BufferedReader bf = FileUtils.getBufferedReader(file)) {
+			try (/*Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed");*/ Writer reportWriter = new PrintWriter(reportDir + File.separator + file.getName() + ".report", "UTF-8"); BufferedReader bf = FileUtils.getBufferedReader(file)) {
 				FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.AGP, file, bf);
 				List<ValidationResult> parseResults = new ArrayList<ValidationResult>();
 				List<ValidationPlanResult> planResults = new ArrayList<ValidationPlanResult>();
@@ -302,15 +302,15 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 					entry.getSequence().setMoleculeType(molType);
 					ValidationPlan validationPlan = getValidationPlan(entry, property);
 					planResults.add(validationPlan.execute(entry));
-					AGPFileWriter writer = new AGPFileWriter(entry, fixedFileWriter);
-					writer.write();
+					//AGPFileWriter writer = new AGPFileWriter(entry, fixedFileWriter);
+				//	writer.write();
 					agpEntrynames.add(entry.getSubmitterAccession());
 					parseResult = reader.read();
 					if (parseResult != null)
 						parseResults.add(parseResult);
 				}
 				valid = valid && GenomeAssemblyFileUtils.writeValidationResult(parseResults, planResults, reportWriter, file.getName());
-				fixedFileWriter.flush();
+				//fixedFileWriter.flush();
 			}
 
 		}

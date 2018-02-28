@@ -390,7 +390,7 @@ public class WebinCli {
 
 	private static String peekManifestForInfoFile(String manifest) throws Exception {
 		try (Stream<String> stream = Files.lines(Paths.get(manifest))) {
-			Optional<String> optional = stream.filter(line -> line.startsWith(INFO))
+			Optional<String> optional = stream.filter(line -> line.toUpperCase().startsWith(INFO))
 					.findFirst();
 			if (optional.isPresent())
 				return optional.get().substring(INFO.length()).trim();
@@ -407,7 +407,7 @@ public class WebinCli {
 		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
 		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs));
-		Optional<String> optional = reader.lines().filter(line -> line.startsWith(ASSEMBLYNAME))
+		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(ASSEMBLYNAME))
 				.findFirst();
 		if (optional.isPresent())
 			return optional.get().substring(ASSEMBLYNAME.length()).trim().replaceAll("\\s+", "_");
