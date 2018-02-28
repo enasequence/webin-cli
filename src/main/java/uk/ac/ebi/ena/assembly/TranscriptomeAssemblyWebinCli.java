@@ -40,9 +40,8 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
-	private String reportFile = "TRANSCRIPTOME.report";
 	private final String MOL_TYPE = "transcribed RNA";
-	private String outputDir;
+	private String reportFile;
 	private String reportDir;
 	private String submittedFile;
 	private Sample sample;
@@ -69,23 +68,19 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	}
 
 	@Override
-	public void setOutputDir(String outputDir) {
-		this.outputDir = outputDir;
-	}
-
-	@Override
 	public void setReportsDir(String reportDir) {
 		this.reportDir = reportDir;
 	}
 
 	@Override
 	public int validate() throws ValidationEngineException {
-		createReportFile();
-		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null)
+		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
+			createReportFile();
 			validateFlatFile();
-		else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null)
+		} else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
+			createReportFile();
 			validateFastaFile();
-		else
+		} else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
 		if (FLAILED_VALIDATION)
 			return WebinCli.VALIDATION_ERROR;
@@ -94,7 +89,10 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 
 	private void createReportFile() throws ValidationEngineException {
 		try {
-			reportFile = reportDir + File.separator + reportFile;
+			Path submittedFilePath = Paths.get(submittedFile);
+			if (!Files.exists(submittedFilePath))
+				throw new ValidationEngineException("Flat file " + submittedFile + " does not exist");
+			reportFile = reportDir + File.separator + submittedFilePath.getFileName().toString() + ".report";
 			Path reportPath = Paths.get(reportFile);
 			if (Files.exists(reportPath))
 				Files.delete(reportPath);
@@ -108,7 +106,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 		try  {
 			Path path = Paths.get(submittedFile);
 			if (!Files.exists(path))
-				throw new Exception("Flat file " + submittedFile + " does not exist");
+				throw new ValidationEngineException("Flat file " + submittedFile + " does not exist");
 			File flatFileF = path.toFile();
 			FlatFileReader flatFileReader = new EmblEntryReader(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(flatFileF)))), EmblEntryReader.Format.ASSEMBLY_FILE_FORMAT, flatFileF.getName());
 			ValidationResult validationResult = flatFileReader.read();
