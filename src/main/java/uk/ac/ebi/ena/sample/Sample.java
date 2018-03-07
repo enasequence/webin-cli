@@ -7,7 +7,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliAuthenticationException;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 import java.io.BufferedReader;
@@ -22,13 +22,13 @@ public class Sample {
 	private long taxId;
     private String organism;
     private String biosampleId;
-    private final static String USER_ERROR_SAMPLE = "Unknown sample or the sample cannot be referenced by your submission account. " +
+    private final static String VALIDATION_ERROR_SAMPLE = "Unknown sample or the sample cannot be referenced by your submission account. " +
             "Samples must be submitted before they can be referenced in the submission.";
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving sample information. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving sample information. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving sample information. ";
 
-    public void getSample(String sampleId, String userName, String password, boolean TEST) throws SampleException {
+    public void getSample(String sampleId, String userName, String password, boolean TEST)  {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/") + sampleId.trim());
@@ -45,20 +45,20 @@ public class Sample {
                     break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw new SampleException(USER_ERROR_SAMPLE + " Sample: " + sampleId + ".", WebinCliException.ErrorType.USER_ERROR);
+                    throw new WebinCliException(VALIDATION_ERROR_SAMPLE + " Sample: " + sampleId + ".", WebinCliException.ErrorType.VALIDATION_ERROR);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw new SampleException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw new SampleException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw new WebinCliException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new SampleException(WebinCli.INVALID_CREDENTIALS, WebinCliException.ErrorType.USER_ERROR);
+                    throw new WebinCliAuthenticationException();
                 default:
-                    throw new SampleException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
-        } catch (SampleException e) {
+        } catch (WebinCliException e) {
             throw e;
         } catch (Exception e) {
-            throw new SampleException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 
@@ -85,19 +85,19 @@ public class Sample {
   		this.biosampleId = biosampleId;
   	}
   	
-    private void extractResults(String result, String sampleId) throws SampleException {
+    private void extractResults(String result, String sampleId) {
         try {
             JSONParser jsonParser = new JSONParser();
             StringReader reader = new StringReader(result);
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             boolean canBeReferenced = (boolean)jsonObject.get("canBeReferenced");
             if (!canBeReferenced)
-                throw new SampleException(USER_ERROR_SAMPLE + " Sample: " + sampleId + ".", WebinCliException.ErrorType.USER_ERROR);
+                throw new WebinCliException(VALIDATION_ERROR_SAMPLE + " Sample: " + sampleId + ".", WebinCliException.ErrorType.USER_ERROR);
             taxId = (long)jsonObject.get("taxId");
             organism = (String) jsonObject.get("organism");
             biosampleId = (String) jsonObject.get("bioSampleId");
         } catch (Exception e) {
-            throw new SampleException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 }
