@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import uk.ac.ebi.embl.api.validation.Severity;
@@ -38,10 +37,7 @@ public class ManifestFileValidator
 	public  boolean validate(File manifestFile,String reportDir,String context) throws FileNotFoundException, IOException
 	{
         ValidationMessageManager.addBundle(MANIFESTMESSAGEBUNDLE);
-        
-        List<ValidationPlanResult> manifestPlanResults = new ArrayList<ValidationPlanResult>();
-		List<ValidationResult> manifestParseResults = new ArrayList<ValidationResult>();
-		reportFile=new File(reportDir+File.separator+manifestFile.getName()+ ".report");
+        reportFile=new File(reportDir+File.separator+manifestFile.getName()+ ".report");
 		Writer manifestrepoWriter = new PrintWriter(reportFile, "UTF-8");
 		reader= new ManifestFileReader();
 		ValidationPlanResult result= new ValidationPlanResult();
@@ -83,8 +79,7 @@ public class ManifestFileValidator
 			}
 		}
 		
-		manifestPlanResults.add(result);
-	    return GenomeAssemblyFileUtils.writeValidationResult(manifestParseResults,manifestPlanResults, manifestrepoWriter,manifestFile.getName());
+	    return GenomeAssemblyFileUtils.writeValidationPlanResult(result, manifestrepoWriter,manifestFile.getName());
 	}
 	
 	public ManifestFileReader getReader()

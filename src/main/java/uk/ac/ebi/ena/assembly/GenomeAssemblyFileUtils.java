@@ -16,6 +16,7 @@ import uk.ac.ebi.embl.api.entry.genomeassembly.ChromosomeEntry;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
 import uk.ac.ebi.embl.api.entry.qualifier.QualifierFactory;
 import uk.ac.ebi.embl.api.validation.SequenceEntryUtils;
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.embl.fasta.reader.FastaFileReader;
@@ -105,30 +106,29 @@ public class GenomeAssemblyFileUtils
 		return chromosomeQualifiers;
 	}
 	
-	
-	public static boolean writeValidationResult(List<ValidationResult> parseResults,List<ValidationPlanResult> planResults, Writer writer,String file) throws IOException
-	{
-		boolean valid =true;
-		for(ValidationResult result:parseResults)
-		{
-			result.writeMessages(writer,file);
-			if(!result.isValid())
-				valid=false;
-		}
-		for (ValidationPlanResult planResult : planResults)
-		{
-			writeValidationResult(planResult, writer);
-			if(!planResult.isValid())
-				valid =false;
-		}
+	public static boolean writeValidationResult(ValidationPlanResult planResult,ValidationResult parseResult, Writer writer,String file) throws IOException
+	{		
+		boolean valid=writeValidationPlanResult(planResult, writer, file)&&writeValidationResult(parseResult, writer, file);
 		writer.flush();
 		return valid;
 	}
 	
-	public static void writeValidationResult(ValidationPlanResult planResult, Writer writer) throws IOException
+	public static boolean writeValidationPlanResult(ValidationPlanResult planResult, Writer writer,String file) throws IOException
 	{
+		if(planResult==null)
+			return true;
 			for (ValidationResult result : planResult.getResults())
-				result.writeMessages(writer);
+				result.writeMessages(writer,Severity.ERROR,file);
+			return planResult.isValid();
+		
+	}
+	
+	public static boolean writeValidationResult(ValidationResult validationResult, Writer writer,String file) throws IOException
+	{
+		if(validationResult==null)
+			return true;
+		validationResult.writeMessages(writer,Severity.ERROR,file);
+		return validationResult.isValid();
 		
 	}
 	
