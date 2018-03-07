@@ -39,14 +39,9 @@ public class FtpService {
             throw new FtpException(CONNECT_SYSTEM_ERROR, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
         try {
-            int count = 0;
-            while (!ftpClient.login(userName, password)) {
-                if (count == 3)
-                    throw new FtpException(WebinCli.INVALID_CREDENTIALS, WebinCliException.ErrorType.USER_ERROR);
-                Thread.sleep(3000);
-                count++;
-            }
-        } catch (Exception e) {
+            if (!ftpClient.login(userName, password))
+                throw new FtpException(WebinCli.INVALID_CREDENTIALS, WebinCliException.ErrorType.USER_ERROR);
+        } catch (IOException e) {
             throw new FtpException(CONNECT_SYSTEM_ERROR, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
