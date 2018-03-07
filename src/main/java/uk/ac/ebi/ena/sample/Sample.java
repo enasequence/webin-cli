@@ -22,10 +22,8 @@ public class Sample {
 	private long taxId;
     private String organism;
     private String biosampleId;
-
     private final static String USER_ERROR_SAMPLE = "Unknown sample or the sample cannot be referenced by your submission account. " +
             "Samples must be submitted before they can be referenced in the submission.";
-
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving sample information. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving sample information. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving sample information. ";
