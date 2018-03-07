@@ -22,28 +22,24 @@ public class InfoFileValidator {
 	
 	private AssemblyInfoEntry assemblyInfoEntry=null;
 	private File reportFile =null;
-	private static String platform_missing = "AssemblyInfoPlatformMissingCheck";
-	private static String program_missing = "AssemblyInfoProgramMissingCheck";
 	
 	public boolean validate(ManifestFileReader manifestFileReader,String reportDir,String context ) throws IOException, ValidationEngineException {
-		List<ValidationPlanResult> assemblyInfoPlanResults = new ArrayList<ValidationPlanResult>();
-		List<ValidationResult> assemblyInfoParseResults = new ArrayList<ValidationResult>();
 		ValidationResult assemblyInfoParseResult= new ValidationResult();
 		Optional<ManifestObj> obj=manifestFileReader.getManifestFileObjects().stream().filter(p->(FileFormat.INFO.equals(p.getFileFormat()))).findFirst();
 		assemblyInfoEntry = FileUtils.getAssemblyEntry(new File(obj.get().getFileName()), assemblyInfoParseResult);
-		assemblyInfoParseResults.add(assemblyInfoParseResult);
 		reportFile=new File(reportDir+File.separator+ new File(obj.get().getFileName()).getName() + ".report");
 		Writer assemblyInforepoWriter = new PrintWriter(reportFile, "UTF-8");
+		boolean valid=GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResult, assemblyInforepoWriter,reportFile.getName());
 		if (assemblyInfoEntry != null) {
 			EmblEntryValidationPlanProperty property= new EmblEntryValidationPlanProperty();
 			property.isRemote.set(true);
 			property.fileType.set(FileType.ASSEMBLYINFO);
 			ValidationPlan validationPlan = getValidationPlan(assemblyInfoEntry, property);
-			assemblyInfoPlanResults.add(validationPlan.execute(assemblyInfoEntry));
+			valid=valid&&GenomeAssemblyFileUtils.writeValidationPlanResult( validationPlan.execute(assemblyInfoEntry),assemblyInforepoWriter, new File(obj.get().getFileName()).getName());
 			if(ContextE.transcriptome.equals(ContextE.getContext(context)))
 				property.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
 		}
-     	return GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResults,assemblyInfoPlanResults, assemblyInforepoWriter,obj.get().getFileName());
+     	return valid;
    	}
 	
 
