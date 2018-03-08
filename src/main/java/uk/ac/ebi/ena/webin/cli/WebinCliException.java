@@ -10,18 +10,8 @@ public class WebinCliException extends RuntimeException {
 
     private ErrorType errorType;
 
-    public WebinCliException(ErrorType errorType) {
-        super();
-        this.errorType = errorType;
-    }
-
-    public WebinCliException(String message, ErrorType errorType) {
-        super(trim(message));
-        this.errorType = errorType;
-    }
-
-    public WebinCliException(String messageContext, String message, ErrorType errorType) {
-        super(trim(messageContext, message));
+    private WebinCliException(ErrorType errorType, String ... messages) {
+        super(trim(messages));
         this.errorType = errorType;
     }
 
@@ -29,13 +19,25 @@ public class WebinCliException extends RuntimeException {
         return errorType;
     }
 
-    public WebinCliException addMessageContext(String userErrorMessageContext, String systemErrorMessageContext) {
+    public WebinCliException throwAddMessage(String userErrorMessage, String systemErrorMessage) {
         switch (getErrorType()) {
             case SYSTEM_ERROR:
-                throw new WebinCliException(trim(systemErrorMessageContext, getMessage()), getErrorType());
+                throw new WebinCliException(getErrorType(), trim(systemErrorMessage, getMessage()));
             default:
-                throw new WebinCliException(trim(userErrorMessageContext, getMessage()), getErrorType());
+                throw new WebinCliException(getErrorType(), trim(userErrorMessage, getMessage()));
         }
+    }
+
+    public static WebinCliException createUserError(String ... messages) {
+        return new WebinCliException(ErrorType.USER_ERROR, messages);
+    }
+
+    public static WebinCliException createSystemError(String ... messages) {
+        return new WebinCliException(ErrorType.SYSTEM_ERROR, messages);
+    }
+
+    public static WebinCliException createValidationError(String ... messages) {
+        return new WebinCliException(ErrorType.VALIDATION_ERROR, messages);
     }
 
     private static String trim(String ... messages) {

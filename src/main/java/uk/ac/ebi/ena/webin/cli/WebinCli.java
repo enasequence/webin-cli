@@ -137,10 +137,10 @@ public class WebinCli {
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if (!manifestValidator.validate(manifestFile, reportDir, params.context)) {
-				throw new WebinCliException(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath(), WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
 			}
 			if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context)) {
-				throw new WebinCliException(INVALID_INFO, infoValidator.getReportFile().getAbsolutePath(), WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError(INVALID_INFO, infoValidator.getReportFile().getAbsolutePath());
 			}
 			infoReportFile = infoValidator.getReportFile().getAbsolutePath();
 			createWebinCliReportFile();
@@ -167,7 +167,7 @@ public class WebinCli {
 		try {
 			contextE = ContextE.valueOf(params.context);
 		} catch (IllegalArgumentException e) {
-			throw new WebinCliException(INVALID_CONTEXT, params.context, WebinCliException.ErrorType.USER_ERROR);
+			throw WebinCliException.createUserError(INVALID_CONTEXT, params.context);
 		}
 		if (params.validate)
 			doValidation();
@@ -221,10 +221,10 @@ public class WebinCli {
 		try {
 			validatorResult = validator.validate();
 		} catch (ValidationEngineException e) {
-			throw new WebinCliException(VALIDATE_SYSTEM_ERROR, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
 		if (validatorResult != SUCCESS) {
-			throw new WebinCliException(VALIDATE_USER_ERROR, reportDir + File.separator + "validate", WebinCliException.ErrorType.VALIDATION_ERROR);
+			throw WebinCliException.createValidationError(VALIDATE_USER_ERROR, reportDir + File.separator + "validate");
 		}
 
 		try {
@@ -242,7 +242,7 @@ public class WebinCli {
 			new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects());
 			writeMessage(VALIDATE_SUCCESS);
 		} catch (IOException | NoSuchAlgorithmException e) {
-			throw new WebinCliException(VALIDATE_SYSTEM_ERROR, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
 	}
 
@@ -254,7 +254,7 @@ public class WebinCli {
 			ftpService.ftpDirectory(getUploadDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 			writeMessage(UPLOAD_SUCCESS);
 		} catch (WebinCliException e) {
-			e.addMessageContext(UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR);
+			e.throwAddMessage(UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR);
 		} finally {
 			ftpService.disconnectFtp();
 		}
@@ -286,7 +286,7 @@ public class WebinCli {
 			ftpService.connectToFtp(params.userName, params.password);
 			success = ftpService.checkFilesExistInUploadArea(getUploadDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 		} catch (WebinCliException e) {
-			e.addMessageContext(UPLOAD_CHECK_USER_ERROR, UPLOAD_CHECK_SYSTEM_ERROR);
+			e.throwAddMessage(UPLOAD_CHECK_USER_ERROR, UPLOAD_CHECK_SYSTEM_ERROR);
 		} finally {
 			ftpService.disconnectFtp();
 		}
@@ -300,7 +300,7 @@ public class WebinCli {
 			Submit submit = new Submit(params,outputDir, infoValidator.getentry());
 			submit.doSubmission();
 		} catch (WebinCliException e) {
-			e.addMessageContext(SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR);
+			e.throwAddMessage(SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR);
 		}
 	}
 
@@ -313,12 +313,12 @@ public class WebinCli {
 		    	validatedDirectory.mkdirs();
 		} else {
 		    if (!validatedDirectory.exists()) {
-				throw new WebinCliException("Directory " + validatedDirectory + " does not exist. Please use the -validate option to validate and prepare the files for submission.",
-						WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError("Directory " + validatedDirectory + " does not exist. Please use the -validate option to validate and prepare the files for submission."
+                );
 		    }
 		    if (validatedDirectory.list().length == 0) {
-				throw new WebinCliException("Directory "  + validatedDirectory + " does not contain any files. Please use the -validate option to validate and prepare the files for submission.",
-						WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError("Directory "  + validatedDirectory + " does not contain any files. Please use the -validate option to validate and prepare the files for submission."
+                );
 		    }
 		}
 		return validatedDirectory;
@@ -377,8 +377,8 @@ public class WebinCli {
 			try {
 				ContextE.valueOf(value);
 			} catch (IllegalArgumentException e) {
-				throw new WebinCliException(INVALID_CONTEXT, value,
-						WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError(INVALID_CONTEXT, value
+                );
 			}
 		}
 	}
@@ -388,8 +388,8 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists()) {
-				throw new WebinCliException("The output directory " + value + " does not exist. Please provide a valid -outputDir option.",
-						WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError("The output directory " + value + " does not exist. Please provide a valid -outputDir option."
+                );
 			}
 		}
 	}
@@ -399,8 +399,8 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists()) {
-				throw new WebinCliException("The manifest file " + value + " does not exist. Please provide a valid -manifest option.",
-						WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError("The manifest file " + value + " does not exist. Please provide a valid -manifest option."
+                );
 			}
 		}
 	}
@@ -412,8 +412,8 @@ public class WebinCli {
 			if (optional.isPresent())
 				return optional.get().substring(INFO_FIELD.length()).trim();
 			else {
-				throw new WebinCliException("Manifest file " + manifest + " is missing the " + INFO_FIELD + " field.",
-						WebinCliException.ErrorType.USER_ERROR);
+				throw WebinCliException.createUserError("Manifest file " + manifest + " is missing the " + INFO_FIELD + " field."
+                );
 			}
 		}
 	}
@@ -428,8 +428,8 @@ public class WebinCli {
 		if (optional.isPresent())
 			return optional.get().substring(ASSEMBLYNAME_FIELD.length()).trim().replaceAll("\\s+", "_");
 		else {
-			throw new WebinCliException("Info file " + info + " is missing the " + ASSEMBLYNAME_FIELD + " field.",
-					WebinCliException.ErrorType.USER_ERROR);
+			throw WebinCliException.createUserError("Info file " + info + " is missing the " + ASSEMBLYNAME_FIELD + " field."
+            );
 		}
 	}
 
@@ -437,7 +437,7 @@ public class WebinCli {
 		String version = WebinCli.class.getPackage().getImplementationVersion();
 		Version versionService = new Version();
 		if (!versionService.isVersionValid(version)) {
-			throw new WebinCliException(INVALID_VERSION.replaceAll("__VERSION__", version), WebinCliException.ErrorType.USER_ERROR);
+			throw WebinCliException.createUserError(INVALID_VERSION.replaceAll("__VERSION__", version));
 		}
 	}
 
