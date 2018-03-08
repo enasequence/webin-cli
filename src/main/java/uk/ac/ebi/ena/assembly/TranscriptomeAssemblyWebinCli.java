@@ -131,7 +131,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 				}
 				flatFileReader.read();
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new ValidationEngineException(e);
 		}
 	}
@@ -140,7 +140,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 		try {
 			Path path = Paths.get(submittedFile);
 			if (!Files.exists(path))
-				throw new Exception("Fasta file " + submittedFile + " does not exist");
+				throw new ValidationEngineException("Fasta file " + submittedFile + " does not exist");
 			FastaFileReader fastaFileReader = new FastaFileReader(new FastaLineReader(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(path.toFile()))))));
 			ValidationResult validationResult = fastaFileReader.read();
 			if (validationResult != null && validationResult.getMessages(Severity.ERROR) != null && !validationResult.getMessages(Severity.ERROR).isEmpty()) {
@@ -170,18 +170,18 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 				}
 				fastaFileReader.read();
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new ValidationEngineException(e);
 		}
 	}
 
-	private void writeReport(ValidationResult validationResult) throws Exception {
+	private void writeReport(ValidationResult validationResult) throws IOException {
 		Collection<ValidationMessage<Origin>> validationMessagesList =  validationResult.getMessages();
 		for (ValidationMessage validationMessage: validationMessagesList)
 		Files.write(Paths.get(reportFile), validationMessage.getMessage().getBytes(), StandardOpenOption.APPEND);
 	}
 
-	private void writeReport(List<ValidationMessage<Origin>> validationMessagesList) throws Exception {
+	private void writeReport(List<ValidationMessage<Origin>> validationMessagesList) throws IOException {
 		for (ValidationMessage validationMessage: validationMessagesList)
 		Files.write(Paths.get(reportFile), (validationMessage.getMessage() + "\n").getBytes(), StandardOpenOption.APPEND);
 	}
