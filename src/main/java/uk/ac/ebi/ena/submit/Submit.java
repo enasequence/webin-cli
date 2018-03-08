@@ -10,11 +10,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.ena.webin.cli.WebinCliAuthenticationException;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 
@@ -52,7 +52,7 @@ public class Submit {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {
-            throw new WebinCliException(WebinCli.INVALID_CONTEXT + params.context, WebinCliException.ErrorType.USER_ERROR);
+            throw new WebinCliException(WebinCli.INVALID_CONTEXT, params.context, WebinCliException.ErrorType.USER_ERROR);
         }
         this.TEST = params.test;
         this.userName = params.userName;
@@ -84,7 +84,7 @@ public class Submit {
                     extractReceipt(resultsList);
                     break;
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new WebinCliAuthenticationException();
+                    throw new WebinCliException(WebinCli.AUTHENTICATION_ERROR, WebinCliException.ErrorType.USER_ERROR);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                     throw (new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR));
                 case HttpStatus.SC_BAD_REQUEST:
@@ -94,10 +94,8 @@ public class Submit {
                 default:
                     throw (new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR));
             }
-        } catch (WebinCliException e) {
-            throw e;
-        } catch (Exception e) {
-            throw (new WebinCliException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR));
+        } catch (IOException e) {
+            throw (new WebinCliException(SYSTEM_ERROR_OTHER, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR));
         }
     }
 
@@ -134,9 +132,10 @@ public class Submit {
                         errorsSb.append("The submission failed because of an analysis XML submission error.");
                 }
             }
-            if (errorsSb.length() != 0)
+            if (errorsSb.length() != 0) {
                 throw new WebinCliException(errorsSb.toString(), WebinCliException.ErrorType.SYSTEM_ERROR);
-        } catch (Exception e) {
+            }
+        } catch (IOException | JDOMException e) {
             throw new WebinCliException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
@@ -175,7 +174,7 @@ public class Submit {
             Files.createFile(analysisFile);
             Files.write(analysisFile, stringWriter.toString().getBytes());
             return analysisFile;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new WebinCliException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }

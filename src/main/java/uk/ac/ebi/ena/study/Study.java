@@ -8,9 +8,11 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import uk.ac.ebi.ena.webin.cli.WebinCliAuthenticationException;
+import org.json.simple.parser.ParseException;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +25,7 @@ public class Study {
 	private  List<String> locusTagsList = new ArrayList<>();
     private String projectId;
     private final static String VALIDATION_ERROR_STUDY = "Unknown study (project) or the study (project) cannot be referenced by your submission account. " +
-            "Studies (projects) must be submitted before they can be referenced in the submission.";
+            "Studies (projects) must be submitted before they can be referenced in the submission. Study: ";
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving study information. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving study information. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving study information. ";
@@ -45,19 +47,17 @@ public class Study {
                     break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw new WebinCliException(VALIDATION_ERROR_STUDY + " Study: " + studyId + ".", WebinCliException.ErrorType.VALIDATION_ERROR);
+                    throw new WebinCliException(VALIDATION_ERROR_STUDY, studyId, WebinCliException.ErrorType.VALIDATION_ERROR);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                     throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
                     throw new WebinCliException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new WebinCliAuthenticationException();
+                    throw new WebinCliException(WebinCli.AUTHENTICATION_ERROR, WebinCliException.ErrorType.USER_ERROR);
                 default:
                     throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
-        } catch (WebinCliException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
@@ -86,13 +86,13 @@ public class Study {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             boolean canBeReferenced = (boolean)jsonObject.get("canBeReferenced");
             if (!canBeReferenced)
-                throw new WebinCliException(VALIDATION_ERROR_STUDY + " Study: " + studyId + ".", WebinCliException.ErrorType.USER_ERROR);
+                throw new WebinCliException(VALIDATION_ERROR_STUDY, studyId, WebinCliException.ErrorType.USER_ERROR);
             JSONArray jsonArray = (JSONArray)jsonObject.get("locusTags");
             projectId = (String) jsonObject.get("bioProjectId");
             if (jsonArray != null && !jsonArray.isEmpty())
                 jsonArray.forEach(p -> locusTagsList.add( p.toString()));
-        } catch (Exception e) {
-            throw new WebinCliException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+        } catch (IOException | ParseException e) {
+            throw new WebinCliException(SYSTEM_ERROR_OTHER, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 }

@@ -3,7 +3,6 @@ package uk.ac.ebi.ena.upload;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import uk.ac.ebi.ena.webin.cli.WebinCliAuthenticationException;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -41,7 +40,7 @@ public class FtpService {
         }
         try {
             if (!ftpClient.login(userName, password))
-                throw new WebinCliAuthenticationException();
+                throw new WebinCliException(WebinCli.AUTHENTICATION_ERROR, WebinCliException.ErrorType.USER_ERROR);
         } catch (IOException e) {
             throw new WebinCliException(SYSTEM_ERROR_CONNECT, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
@@ -58,20 +57,20 @@ public class FtpService {
             if (!Arrays.asList(ftpFilesA).stream()
                     .anyMatch(f -> context.equalsIgnoreCase(f.getName()))) {
                 if (!ftpClient.makeDirectory(context))
-                    throw new WebinCliException(SYSTEM_ERROR_CREATE_DIR + context, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw new WebinCliException(SYSTEM_ERROR_CREATE_DIR, context, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
             if (!ftpClient.changeWorkingDirectory(context))
-                throw new WebinCliException(SYSTEM_ERROR_CHANGE_DIR + context, WebinCliException.ErrorType.SYSTEM_ERROR);
+                throw new WebinCliException(SYSTEM_ERROR_CHANGE_DIR, context, WebinCliException.ErrorType.SYSTEM_ERROR);
             ftpFilesA = ftpClient.listDirectories();
             if (!Arrays.asList(ftpFilesA).stream()
                     .anyMatch(f -> name.equalsIgnoreCase(f.getName()))) {
                 if (!ftpClient.makeDirectory(name))
-                    throw new WebinCliException(SYSTEM_ERROR_CREATE_DIR + name, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw new WebinCliException(SYSTEM_ERROR_CREATE_DIR, name, WebinCliException.ErrorType.SYSTEM_ERROR);
                 if (!ftpClient.changeWorkingDirectory(name))
-                    throw new WebinCliException(SYSTEM_ERROR_CHANGE_DIR + name, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw new WebinCliException(SYSTEM_ERROR_CHANGE_DIR, name, WebinCliException.ErrorType.SYSTEM_ERROR);
             } else {
                 if (!ftpClient.changeWorkingDirectory(name))
-                    throw new WebinCliException(SYSTEM_ERROR_CHANGE_DIR + name, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw new WebinCliException(SYSTEM_ERROR_CHANGE_DIR, name, WebinCliException.ErrorType.SYSTEM_ERROR);
                 FTPFile[] fileTodeleteA = ftpClient.listFiles();
                 if (fileTodeleteA != null && fileTodeleteA.length > 0) {
                     for (FTPFile ftpFile: fileTodeleteA)
@@ -81,17 +80,12 @@ public class FtpService {
             List<Path> fileList = Files.list(uploadDirectory).map(Path::getFileName).filter(f -> !f.toFile().isHidden())
                     .collect(Collectors.toList());
             for (Path path: fileList) {
-                try (FileInputStream fileInputStream = new FileInputStream(uploadDirectory + File.separator + path.toFile().getName())) {
-                    if (!ftpClient.storeFile(path.toFile().getName(), fileInputStream))
-                        throw new WebinCliException(SYSTEM_ERROR_UPLOAD_FILE, WebinCliException.ErrorType.SYSTEM_ERROR);
-                } catch (IOException e) {
-                    throw new WebinCliException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
-                }
+                FileInputStream fileInputStream = new FileInputStream(uploadDirectory + File.separator + path.toFile().getName());
+                if (!ftpClient.storeFile(path.toFile().getName(), fileInputStream))
+                    throw new WebinCliException(SYSTEM_ERROR_UPLOAD_FILE, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
-        } catch (WebinCliException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new WebinCliException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+        } catch (IOException e) {
+            throw new WebinCliException(SYSTEM_ERROR_OTHER, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
 
@@ -130,9 +124,7 @@ public class FtpService {
                 if (!found.isPresent())
                     throw new WebinCliException(USER_ERROR_NO_FILE, WebinCliException.ErrorType.USER_ERROR);
             }
-        } catch (WebinCliException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new WebinCliException(SYSTEM_ERROR_CHECK, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
         return true;

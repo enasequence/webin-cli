@@ -7,10 +7,12 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import uk.ac.ebi.ena.webin.cli.WebinCliAuthenticationException;
+import org.json.simple.parser.ParseException;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +25,7 @@ public class Sample {
     private String organism;
     private String biosampleId;
     private final static String VALIDATION_ERROR_SAMPLE = "Unknown sample or the sample cannot be referenced by your submission account. " +
-            "Samples must be submitted before they can be referenced in the submission.";
+            "Samples must be submitted before they can be referenced in the submission. Sample: ";
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving sample information. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving sample information. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving sample information. ";
@@ -45,19 +47,17 @@ public class Sample {
                     break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw new WebinCliException(VALIDATION_ERROR_SAMPLE + " Sample: " + sampleId + ".", WebinCliException.ErrorType.VALIDATION_ERROR);
+                    throw new WebinCliException(VALIDATION_ERROR_SAMPLE, sampleId, WebinCliException.ErrorType.VALIDATION_ERROR);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                     throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
                     throw new WebinCliException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR);
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new WebinCliAuthenticationException();
+                    throw new WebinCliException(WebinCli.AUTHENTICATION_ERROR, WebinCliException.ErrorType.USER_ERROR);
                 default:
                     throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
             }
-        } catch (WebinCliException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
@@ -92,11 +92,11 @@ public class Sample {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             boolean canBeReferenced = (boolean)jsonObject.get("canBeReferenced");
             if (!canBeReferenced)
-                throw new WebinCliException(VALIDATION_ERROR_SAMPLE + " Sample: " + sampleId + ".", WebinCliException.ErrorType.USER_ERROR);
+                throw new WebinCliException(VALIDATION_ERROR_SAMPLE, sampleId, WebinCliException.ErrorType.USER_ERROR);
             taxId = (long)jsonObject.get("taxId");
             organism = (String) jsonObject.get("organism");
             biosampleId = (String) jsonObject.get("bioSampleId");
-        } catch (Exception e) {
+        } catch (IOException | ParseException e) {
             throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
         }
     }
