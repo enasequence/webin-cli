@@ -10,6 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -47,11 +48,11 @@ public class Submit {
     private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit. ";
 
-    public Submit(WebinCli.Params params,String outputDir, AssemblyInfoEntry assemblyInfoEntry) throws SubmitException {
+    public Submit(WebinCli.Params params,String outputDir, AssemblyInfoEntry assemblyInfoEntry) {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {
-            throw new SubmitException(WebinCli.INVALID_CONTEXT + params.context, WebinCliException.ErrorType.USER_ERROR);
+            throw WebinCliException.createUserError(WebinCli.INVALID_CONTEXT, params.context);
         }
         this.TEST = params.test;
         this.userName = params.userName;
@@ -62,7 +63,7 @@ public class Submit {
         this.assemblyName = assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_");
     }
 
-    public void doSubmission() throws SubmitException {
+    public void doSubmission() {
         try {
             createSubmitDir();
             CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -83,24 +84,22 @@ public class Submit {
                     extractReceipt(resultsList);
                     break;
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw (new SubmitException(WebinCli.INVALID_CREDENTIALS, WebinCliException.ErrorType.USER_ERROR));
+                    throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw (new SubmitException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
                 case HttpStatus.SC_BAD_REQUEST:
-                    throw (new SubmitException(SYSTEM_ERROR_BAD_REQUEST, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_BAD_REQUEST);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw (new SubmitException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
                 default:
-                    throw (new SubmitException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
             }
-        } catch (SubmitException e) {
-            throw e;
-        } catch (Exception e) {
-            throw (new SubmitException(SYSTEM_ERROR_OTHER + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR));
+        } catch (IOException e) {
+            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER, e.getMessage());
         }
     }
 
-    private void extractReceipt(List<String> resultsList) throws SubmitException {
+    private void extractReceipt(List<String> resultsList) {
         StringBuilder errorsSb = new StringBuilder();
         try {
             String receipt = resultsList.stream()
@@ -120,9 +119,9 @@ public class Submit {
             if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
                 String accession = rootNode.getChild("ANALYSIS").getAttributeValue("accession");
                 if (accession != null && !accession.isEmpty())
-                    System.out.println(WebinCli.SUBMIT_SUCCESS + " The following analysis accession was assigned to the submission: " + accession);
+                    WebinCli.writeMessage(WebinCli.SUBMIT_SUCCESS + " The following analysis accession was assigned to the submission: " + accession);
                 else
-                    System.out.println(WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the analysis XML submission. Please contact the helpdesk.");
+                    WebinCli.writeMessage(WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the analysis XML submission. Please contact the helpdesk.");
             } else {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
                 for (Element child : childrenList) {
@@ -133,14 +132,15 @@ public class Submit {
                         errorsSb.append("The submission failed because of an analysis XML submission error.");
                 }
             }
-            if (errorsSb.length() != 0)
-                throw new SubmitException(errorsSb.toString(), WebinCliException.ErrorType.SYSTEM_ERROR);
-        } catch (Exception e) {
-            throw new SubmitException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+            if (errorsSb.length() != 0) {
+                throw WebinCliException.createSystemError(errorsSb.toString());
+            }
+        } catch (IOException | JDOMException e) {
+            throw WebinCliException.createSystemError(e.getMessage());
         }
     }
 
-    private Path createAnalysisXml() throws SubmitException {
+    private Path createAnalysisXml() {
         try {
             Element analysisE = new Element("ANALYSIS");
             Document doc = new Document(analysisE);
@@ -174,18 +174,18 @@ public class Submit {
             Files.createFile(analysisFile);
             Files.write(analysisFile, stringWriter.toString().getBytes());
             return analysisFile;
-        } catch (Exception e) {
-            throw new SubmitException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+        } catch (IOException e) {
+            throw WebinCliException.createSystemError(e.getMessage());
         }
     }
 
-    private void createSubmitDir() throws SubmitException {
+    private void createSubmitDir() {
         try {
             submitDir = Paths.get(Paths.get(outputDir) + File.separator + contextE + File.separator + assemblyName + File.separator + SUBMIT_DIR);
             if (!Files.exists(submitDir))
                 Files.createDirectory(submitDir);
         } catch (IOException e) {
-            throw new SubmitException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw WebinCliException.createSystemError(e.getMessage());
         }
     }
 }
