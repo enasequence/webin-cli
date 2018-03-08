@@ -129,11 +129,14 @@ public class WebinCli {
 			checkVersion();
 
 			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
+
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
 			outputDir = getFullPath(outputDir);
-			createValidatedReportsDir(params.context, name);
+			createValidateDir(params.context, name);
+			createWebinCliReportFile();
+
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if (!manifestValidator.validate(manifestFile, reportDir, params.context)) {
@@ -143,7 +146,6 @@ public class WebinCli {
 				throw WebinCliException.createUserError(INVALID_INFO, infoValidator.getReportFile().getAbsolutePath());
 			}
 			infoReportFile = infoValidator.getReportFile().getAbsolutePath();
-			createWebinCliReportFile();
 			WebinCli webinCli = new WebinCli(params);
 			webinCli.execute();
 			System.exit(SUCCESS);
@@ -260,7 +262,7 @@ public class WebinCli {
 		}
 	}
 
-	private static void createValidatedReportsDir(String context, String assemblyName) throws Exception {
+	private static void createValidateDir(String context, String assemblyName) throws Exception {
 		File reportDirectory = new File(outputDir + File.separator + context + File.separator + assemblyName + File.separator + VALIDATE_DIR);
 		if (reportDirectory.exists())
 			FileUtils.emptyDirectory(reportDirectory);
@@ -330,21 +332,17 @@ public class WebinCli {
 		try {
 			jCommander.parse(args);
 		} catch (Exception e) {
+			writeMessage(e.getMessage());
 			printUsageErrorAndExit();
 		}
 		return params;
 	}
 
 	private static void printUsageErrorAndExit() {
-		StringBuilder usage = new StringBuilder("Invalid options: the following options are required: [-context], [-userName], [-password], [-manifest], [-outputDir]");
-		usage.append("\nIn addition, please provide one of the following options:");
-		usage.append("\n\t" + ParameterDescriptor.validate);
-		usage.append("\n\t" + ParameterDescriptor.upload);
-		usage.append("\n\t" + ParameterDescriptor.submit);
-		usage.append("\nUsage: java -jar webin-cli-<version>.jar [options]");
-		usage.append("\nFor full help on options use the [-help] option.");
+		StringBuilder usage = new StringBuilder("The following options are required:\n\t[-context], [-userName], [-password], [-manifest]");
+		usage.append("\nIn addition, at least one of the following options must be provided:\n\t[-validate], [-upload], [-submit]");
+		usage.append("\nFor full help please use the [-help] option.");
 		writeMessage(usage.toString());
-		writeReturnCodes();
 		System.exit(USER_ERROR);
 	}
 
@@ -377,8 +375,7 @@ public class WebinCli {
 			try {
 				ContextE.valueOf(value);
 			} catch (IllegalArgumentException e) {
-				throw WebinCliException.createUserError(INVALID_CONTEXT, value
-                );
+				throw new ParameterException(INVALID_CONTEXT + value);
 			}
 		}
 	}
@@ -388,8 +385,7 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists()) {
-				throw WebinCliException.createUserError("The output directory " + value + " does not exist. Please provide a valid -outputDir option."
-                );
+				throw new ParameterException("The output directory '" + value + "' does not exist. Please provide a valid -outputDir option.");
 			}
 		}
 	}
@@ -399,8 +395,7 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists()) {
-				throw WebinCliException.createUserError("The manifest file " + value + " does not exist. Please provide a valid -manifest option."
-                );
+				throw new ParameterException("The manifest file '" + value + "' does not exist. Please provide a valid -manifest option.");
 			}
 		}
 	}
