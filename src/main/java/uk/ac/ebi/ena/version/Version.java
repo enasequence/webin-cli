@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 public class Version {
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when checking application version.";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when checking application version. ";
+    private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit. ";
+    private final static String SYSTEM_ERROR_NOT_FOUND = "A not found request error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when checking application version. ";
 
     public boolean isVersionValid(String version) {
@@ -35,19 +37,20 @@ public class Version {
                             .findFirst();
                     return optional.isPresent();
                 case HttpStatus.SC_BAD_REQUEST:
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_BAD_REQUEST);
                 case HttpStatus.SC_NOT_FOUND:
-                    throw new WebinCliException(WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_NOT_FOUND);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw new WebinCliException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new WebinCliException(WebinCli.AUTHENTICATION_ERROR, WebinCliException.ErrorType.USER_ERROR);
+                    throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
                 default:
-                    throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
             }
         } catch (IOException e) {
-            throw new WebinCliException(SYSTEM_ERROR_OTHER, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER, e.getMessage());
         }
     }
 }

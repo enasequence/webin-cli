@@ -52,7 +52,7 @@ public class Submit {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {
-            throw new WebinCliException(WebinCli.INVALID_CONTEXT, params.context, WebinCliException.ErrorType.USER_ERROR);
+            throw WebinCliException.createUserError(WebinCli.INVALID_CONTEXT, params.context);
         }
         this.TEST = params.test;
         this.userName = params.userName;
@@ -84,18 +84,18 @@ public class Submit {
                     extractReceipt(resultsList);
                     break;
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new WebinCliException(WebinCli.AUTHENTICATION_ERROR, WebinCliException.ErrorType.USER_ERROR);
+                    throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw (new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
                 case HttpStatus.SC_BAD_REQUEST:
-                    throw (new WebinCliException(SYSTEM_ERROR_BAD_REQUEST, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_BAD_REQUEST);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw (new WebinCliException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
                 default:
-                    throw (new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR));
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
             }
         } catch (IOException e) {
-            throw (new WebinCliException(SYSTEM_ERROR_OTHER, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR));
+            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER, e.getMessage());
         }
     }
 
@@ -133,10 +133,10 @@ public class Submit {
                 }
             }
             if (errorsSb.length() != 0) {
-                throw new WebinCliException(errorsSb.toString(), WebinCliException.ErrorType.SYSTEM_ERROR);
+                throw WebinCliException.createSystemError(errorsSb.toString());
             }
         } catch (IOException | JDOMException e) {
-            throw new WebinCliException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw WebinCliException.createSystemError(e.getMessage());
         }
     }
 
@@ -175,7 +175,7 @@ public class Submit {
             Files.write(analysisFile, stringWriter.toString().getBytes());
             return analysisFile;
         } catch (IOException e) {
-            throw new WebinCliException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw WebinCliException.createSystemError(e.getMessage());
         }
     }
 
@@ -185,7 +185,7 @@ public class Submit {
             if (!Files.exists(submitDir))
                 Files.createDirectory(submitDir);
         } catch (IOException e) {
-            throw new WebinCliException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw WebinCliException.createSystemError(e.getMessage());
         }
     }
 }

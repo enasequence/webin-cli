@@ -47,18 +47,18 @@ public class Sample {
                     break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw new WebinCliException(VALIDATION_ERROR_SAMPLE, sampleId, WebinCliException.ErrorType.VALIDATION_ERROR);
+                    throw WebinCliException.createValidationError(VALIDATION_ERROR_SAMPLE, sampleId);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw new WebinCliException(SYSTEM_ERROR_UNAVAILABLE, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw new WebinCliException(WebinCli.AUTHENTICATION_ERROR, WebinCliException.ErrorType.USER_ERROR);
+                    throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
                 default:
-                    throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
             }
         } catch (IOException e) {
-            throw new WebinCliException(SYSTEM_ERROR_OTHER, WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
         }
     }
 
@@ -92,12 +92,12 @@ public class Sample {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             boolean canBeReferenced = (boolean)jsonObject.get("canBeReferenced");
             if (!canBeReferenced)
-                throw new WebinCliException(VALIDATION_ERROR_SAMPLE, sampleId, WebinCliException.ErrorType.USER_ERROR);
+                throw WebinCliException.createUserError(VALIDATION_ERROR_SAMPLE, sampleId);
             taxId = (long)jsonObject.get("taxId");
             organism = (String) jsonObject.get("organism");
             biosampleId = (String) jsonObject.get("bioSampleId");
         } catch (IOException | ParseException e) {
-            throw new WebinCliException(SYSTEM_ERROR_INTERNAL, WebinCliException.ErrorType.SYSTEM_ERROR);
+            throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
         }
     }
 }
