@@ -36,24 +36,29 @@ public class WebinCli {
 	private static final String VALIDATE_USER_ERROR = "Submission validation has failed because of an user error. " +
 			"Please check the report directory for errors: ";
 	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation has failed because of a system error. ";
+
 	private static final String UPLOAD_SUCCESS = "The files have been successfully uploaded. " +
 			"Please complete the submission process using the -submit option.";
 	private static final String UPLOAD_USER_ERROR = "Failed to upload files because of an user error. " +
 			"Please correct the errors and complete the submission process using the -upload and -submit options.";
 	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files because of a system error. " +
 			"Please complete the submission process using the -upload and -submit options.";
+
 	private static final String UPLOAD_CHECK_USER_ERROR = "Failed to check if the files have been uploaded because of an user error. " +
 			"Please correct the errors and use the -submit option again.";
 	private static final String UPLOAD_CHECK_SYSTEM_ERROR = "Failed to check if the files have been uploaded because of a system error. " +
 			"Please use the -submit option again later.";
+
 	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully.";
 	private static final String SUBMIT_USER_ERROR = "The submission has failed because of an user error. " +
 			"Please correct the errors and complete the submission process using the -submit option.";
 	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. " +
 			"Please use the -submit option again later.";
+
+	public static final String AUTHENTICATION_ERROR = "Invalid submission account user name or password.";
+
 	public static final String INVALID_CONTEXT = "Invalid context: ";
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
-	public static final String AUTHENTICATION_ERROR = "Invalid submission account user name or password.";
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
 	private final static String INVALID_MANIFEST = "Manifest file validation failed. Please check the report file for errors: ";
 	private final static String INVALID_INFO = "Info file validation failed. Please check the report file for errors: ";
@@ -120,6 +125,7 @@ public class WebinCli {
 				!params.submit) {
 				printUsageErrorAndExit();
 			}
+
 			checkVersion();
 
 			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
@@ -178,7 +184,7 @@ public class WebinCli {
 		}
 		catch (WebinCliException e) {
 			writeMessageIntoInfoReport(e.getMessage());
-			throw new WebinCliException(e.getErrorType());
+			throw e;
 		}
 		return study;
 	}
@@ -190,7 +196,7 @@ public class WebinCli {
 		}
 		catch (WebinCliException e) {
 			writeMessageIntoInfoReport(e.getMessage());
-			throw new WebinCliException(e.getErrorType());
+			throw e;
 		}
 		return sample;
 	}
@@ -456,7 +462,6 @@ public class WebinCli {
 		if (message == null || message.isEmpty()) {
 			return;
 		}
-		writeMessageIntoConsole(message);
 		if (infoReportFile != null) {
 			try {
 				Files.write(Paths.get(infoReportFile), message.getBytes(), StandardOpenOption.APPEND);
