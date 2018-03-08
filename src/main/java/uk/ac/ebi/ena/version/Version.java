@@ -33,7 +33,9 @@ public class Version {
             int responsecode = response.getStatusLine().getStatusCode();
             switch (responsecode) {
                 case HttpStatus.SC_OK:
-                    List<String> resultsList = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+                    List<String> resultsList = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))
+                            .lines()
+                            .collect(Collectors.toList());
                     Optional<String> optional = resultsList.stream()
                             .filter(p -> "true".equalsIgnoreCase(p))
                             .findFirst();
