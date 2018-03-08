@@ -107,7 +107,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 			if (!test)
 				moveFiles(valid);
 			return valid ? 0 : 3;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new ValidationEngineException(e.getMessage());
 		}
 

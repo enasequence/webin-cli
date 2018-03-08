@@ -47,9 +47,9 @@ public class ManifestFileValidator
 		ValidationPlanResult result= new ValidationPlanResult();
 		try {
 			result = reader.read(manifestFile.toString());
-		} catch (Exception e) {
-
+		} catch (IOException e) {
 		}
+
 		List<ManifestObj> manifestRecords= reader.getManifestFileObjects();
 		boolean infoFileExists =false;
 		if(result.isValid())

@@ -2,6 +2,7 @@ package uk.ac.ebi.ena.webin.cli;
 
 import java.io.*;
 import java.nio.file.*;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
@@ -130,19 +131,16 @@ public class WebinCli {
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
 			if (!manifestValidator.validate(manifestFile, reportDir, params.context)) {
-				throw new WebinCliException(INVALID_MANIFEST + manifestValidator.getReportFile().getAbsolutePath(), WebinCliException.ErrorType.USER_ERROR);
+				throw new WebinCliException(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath(), WebinCliException.ErrorType.USER_ERROR);
 			}
 			if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context)) {
-				throw new WebinCliException(INVALID_INFO + infoValidator.getReportFile().getAbsolutePath(), WebinCliException.ErrorType.USER_ERROR);
+				throw new WebinCliException(INVALID_INFO, infoValidator.getReportFile().getAbsolutePath(), WebinCliException.ErrorType.USER_ERROR);
 			}
 			infoReportFile = infoValidator.getReportFile().getAbsolutePath();
 			createWebinCliReportFile();
 			WebinCli webinCli = new WebinCli(params);
 			webinCli.execute();
 			System.exit(SUCCESS);
-		} catch (WebinCliAuthenticationException e) {
-			writeMessage(AUTHENTICATION_ERROR);
-			System.exit(USER_ERROR);
 		} catch (WebinCliException e) {
             writeMessage(e.getMessage());
 			switch (e.getErrorType()) {
@@ -163,7 +161,7 @@ public class WebinCli {
 		try {
 			contextE = ContextE.valueOf(params.context);
 		} catch (IllegalArgumentException e) {
-			throw new WebinCliException(INVALID_CONTEXT + params.context, WebinCliException.ErrorType.USER_ERROR);
+			throw new WebinCliException(INVALID_CONTEXT, params.context, WebinCliException.ErrorType.USER_ERROR);
 		}
 		if (params.validate)
 			doValidation();
@@ -198,40 +196,47 @@ public class WebinCli {
 	}
 
 	private void doValidation() {
-		try {
-			Study study = getStudy();
-			Sample sample = getSample();
+		Study study = getStudy();
+		Sample sample = getSample();
 
-			WebinCliInterface validator = null;
-			switch(contextE) {
-				case transcriptome:
-					validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), sample, study);
-					break;
-				case genome:
-					validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),sample,study,infoValidator.getentry().getMoleculeType());
-					break;
+		WebinCliInterface validator = null;
+		switch(contextE) {
+			case transcriptome:
+				validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), sample, study);
+				break;
+			case genome:
+				validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),sample,study,infoValidator.getentry().getMoleculeType());
+				break;
+		}
+		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
+		validator.setReportsDir(reportDir);
+
+		int validatorResult;
+		try {
+			validatorResult = validator.validate();
+		} catch (ValidationEngineException e) {
+			throw new WebinCliException(VALIDATE_SYSTEM_ERROR, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+		}
+		if (validatorResult != SUCCESS) {
+			throw new WebinCliException(VALIDATE_USER_ERROR, reportDir + File.separator + "validate", WebinCliException.ErrorType.VALIDATION_ERROR);
+		}
+
+		try {
+			File validatedDirectory = getUploadDirectory(true, assemblyName);
+			for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
+				// Copy files to the validated directory.
+				Files.copy(Paths.get(manifestObj.getFileName()),
+									 Paths.get(validatedDirectory.getAbsolutePath() + File.separator + new File(manifestObj.getFileName()).getName()),
+									 StandardCopyOption.REPLACE_EXISTING);
 			}
-			String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-			validator.setReportsDir(reportDir);
-			if (validator.validate() == SUCCESS) {
-				File validatedDirectory = getUploadDirectory(true, assemblyName);
-                for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects()) {
-                	// Copy files to the validated directory.
-                    Files.copy(Paths.get(manifestObj.getFileName()), 
-                    		             Paths.get(validatedDirectory.getAbsolutePath() + File.separator + new File(manifestObj.getFileName()).getName()), 
-                    		             StandardCopyOption.REPLACE_EXISTING);
-                }
-				// Gzip the files validated directory.
-                for(File file:Arrays.asList(validatedDirectory.listFiles()))
-                   FileUtils.gZipFile(file);
-				// Create the manifest in the validated directory.
-                new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects());
-				writeMessage(VALIDATE_SUCCESS);
-            } else {
-                throw new WebinCliException(VALIDATE_USER_ERROR + reportDir + File.separator + "validate", WebinCliException.ErrorType.VALIDATION_ERROR);
-            }
-		} catch (Exception e) {
-			throw new WebinCliException(VALIDATE_SYSTEM_ERROR + e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+			// Gzip the files validated directory.
+			for(File file:Arrays.asList(validatedDirectory.listFiles()))
+			   FileUtils.gZipFile(file);
+			// Create the manifest in the validated directory.
+			new ManifestFileWriter().write(new File(validatedDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects());
+			writeMessage(VALIDATE_SUCCESS);
+		} catch (IOException | NoSuchAlgorithmException e) {
+			throw new WebinCliException(VALIDATE_SYSTEM_ERROR, e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
 		}
 	}
 
@@ -243,7 +248,7 @@ public class WebinCli {
 			ftpService.ftpDirectory(getUploadDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 			writeMessage(UPLOAD_SUCCESS);
 		} catch (WebinCliException e) {
-			e.addToMessageAndThrow(UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR);
+			e.addMessageContext(UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR);
 		} finally {
 			ftpService.disconnectFtp();
 		}
@@ -258,7 +263,7 @@ public class WebinCli {
 		reportDir = reportDirectory.getAbsolutePath();
 	}
 
-	private static void createWebinCliReportFile() throws Exception {
+	private static void createWebinCliReportFile() throws IOException {
 		Path reportPath = Paths.get(reportDir + File.separator + "webin-cli.report");
 		if (Files.exists(reportPath))
 			Files.delete(reportPath);
@@ -275,9 +280,7 @@ public class WebinCli {
 			ftpService.connectToFtp(params.userName, params.password);
 			success = ftpService.checkFilesExistInUploadArea(getUploadDirectory(false, assemblyName).toPath(), params.context, assemblyName);
 		} catch (WebinCliException e) {
-			e.addToMessageAndThrow(UPLOAD_CHECK_USER_ERROR, UPLOAD_CHECK_SYSTEM_ERROR);
-		} catch (Exception e) {
-			throw new WebinCliException(e.getMessage(), WebinCliException.ErrorType.SYSTEM_ERROR);
+			e.addMessageContext(UPLOAD_CHECK_USER_ERROR, UPLOAD_CHECK_SYSTEM_ERROR);
 		} finally {
 			ftpService.disconnectFtp();
 		}
@@ -291,7 +294,7 @@ public class WebinCli {
 			Submit submit = new Submit(params,outputDir, infoValidator.getentry());
 			submit.doSubmission();
 		} catch (WebinCliException e) {
-			e.addToMessageAndThrow(SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR);
+			e.addMessageContext(SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR);
 		}
 	}
 
@@ -368,7 +371,7 @@ public class WebinCli {
 			try {
 				ContextE.valueOf(value);
 			} catch (IllegalArgumentException e) {
-				throw new WebinCliException(INVALID_CONTEXT + value,
+				throw new WebinCliException(INVALID_CONTEXT, value,
 						WebinCliException.ErrorType.USER_ERROR);
 			}
 		}
