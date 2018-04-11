@@ -12,7 +12,7 @@ apply plugin: 'idea'
 apply plugin: 'edu.sc.seis.launch4j'
 
 group = 'uk.ac.ebi.ena.webin-cli'
-ext.version_base = '1.0.3'
+ext.version_base = '1.0.4'
 version = version_base
 
 repositories {
