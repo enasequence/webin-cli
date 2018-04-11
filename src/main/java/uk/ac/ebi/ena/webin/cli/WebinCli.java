@@ -121,7 +121,7 @@ public class WebinCli {
 				!params.submit) {
 				printUsageErrorAndExit();
 			}
-//			checkVersion();
+			checkVersion();
 			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
