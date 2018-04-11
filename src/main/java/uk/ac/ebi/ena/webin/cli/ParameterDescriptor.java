@@ -17,20 +17,15 @@ public class ParameterDescriptor {
     public final static String outputDirFlagDescription =
             "\n\tDirectory for output files with the following structure:" +
             "\n\t\t>> <context>/<name>/validate" +
-            "\n\t\t>> <context>/<name>/upload" +
             "\n\t\t>> <context>/<name>/submit" +
             "\n\tThe <name> is the unique name provided in the info file." +
             "\n\tThe 'validate' directory contains validation reports." +
-            "\n\tThe 'upload' directory contains validated files to be uploaded" +
-            "\n\tto the Webin upload area using the -upload option." +
-            "\n\tThe 'submit' directory contains the XMLs created by the -submit" +
-            "\n\toption including submitted Analysis XML and Receipt XML.";
+            "\n\tThe 'submit' directory contains the file manifest and the XMLs created during the submission" +
+            "\n\tincluding the Receipt XML.";
     public final static String userNameFlagDescription = "\n\tRequired. Your submission account name or your e-mail address.";
     public final static String passwordFlagDescription = "\n\tRequired. Your submission account password.";
-    public final static String validateFlagDescription = "\n\tValidates the files defined in the manifest file. Validated files must be uploaded" +
-            "\n\tusing the -upload option and submitted using the -submit option. All three options" +
-            "\n\ttcan be given at the same time";
-    public final static String submitFlagDescription = "\n\tSubmits the validated and uploaded files. An accession number is provided. ";
+    public final static String validateFlagDescription = "\n\tValidates the files defined in the manifest file.";
+    public final static String submitFlagDescription = "\n\tValidates and submits the files defined in the manifest file.";
     public final static String manifestFlagDescription = "\n\tRequired. Path to a manifest file. The manifest file lists the files within the submission." +
             "\n\tThe manifest file is a text file with two columns separated by a tab:" +
             "\n\t\t>> file type" +

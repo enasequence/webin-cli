@@ -5,4 +5,5 @@ target
 embl-api-core.iml
 build
 .gradle
-/bin
+bin
+.idea

@@ -30,29 +30,30 @@ public class WebinCli {
 	public final static int SYSTEM_ERROR = 1;
 	public final static int USER_ERROR = 2;
 	public final static int VALIDATION_ERROR = 3;
-	private static final String VALIDATE_SUCCESS = "The submission has been validated. " +
-			"Please complete the submission process using the -upload and -submit options.";
-	private static final String VALIDATE_USER_ERROR = "Submission validation has failed because of an user error. " +
-			"Please check the report directory for errors: ";
-	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation has failed because of a system error. ";
 
-	private static final String UPLOAD_SUCCESS = "The files have been successfully uploaded. " +
-			"Please complete the submission process using the -submit option.";
-	private static final String UPLOAD_USER_ERROR = "Failed to upload files because of an user error. " +
-			"Please correct the errors and complete the submission process using the -upload and -submit options.";
-	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files because of a system error. " +
-			"Please complete the submission process using the -upload and -submit options.";
+	private static final String RESUBMIT_AFTER_USER_ERROR = "Please correct the errors and use the -submit option again.";
+	private static final String RESUBMIT_AFTER_SYSTEM_ERROR = "Please use the -submit option again later.";
 
-	private static final String UPLOAD_CHECK_USER_ERROR = "Failed to check if the files have been uploaded because of an user error. " +
-			"Please correct the errors and use the -submit option again.";
-	private static final String UPLOAD_CHECK_SYSTEM_ERROR = "Failed to check if the files have been uploaded because of a system error. " +
-			"Please use the -submit option again later.";
+	private static final String VALIDATE_SUCCESS = "The submission has been validated successfully. ";
 
-	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully.";
-	private static final String SUBMIT_USER_ERROR = "The submission has failed because of an user error. " +
-			"Please correct the errors and complete the submission process using the -submit option.";
-	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. " +
-			"Please use the -submit option again later.";
+	private static final String VALIDATE_USER_ERROR = "Submission validation failed because of an user error. " +
+			"Please check the report directory for the errors: ";
+	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation failed because of a system error. ";
+
+	private static final String UPLOAD_SUCCESS = "The files have been uploaded to webin.ebi.ac.uk. ";
+
+	private static final String UPLOAD_USER_ERROR = "Failed to upload files to webin.ebi.ac.uk because of an user error. " + RESUBMIT_AFTER_USER_ERROR;
+	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
+
+	/*
+	private static final String UPLOAD_CHECK_USER_ERROR = "Failed to check if files have been uploaded to webin.ebi.ac.uk because of an user error. " + RESUBMIT_AFTER_USER_ERROR;
+	private static final String UPLOAD_CHECK_SYSTEM_ERROR = "Failed to check if files have been uploaded to webin.ebi.ac.uk because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
+	*/
+
+	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully. ";
+
+	private static final String SUBMIT_USER_ERROR = "The submission has failed because of an user error. " + RESUBMIT_AFTER_USER_ERROR;
+	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
 
 	public static final String AUTHENTICATION_ERROR = "Invalid submission account user name or password.";
 
@@ -265,6 +266,7 @@ public class WebinCli {
         return uploadFilesList;
     }
 
+    /*
     private boolean doFilesExistInUploadArea(List<File> uploadFileList, String assemblyName) {
         FtpService ftpService = null;
         boolean success = false;
@@ -279,6 +281,7 @@ public class WebinCli {
         }
         return success;
     }
+    */
 
 	private static void createValidateDir(String context, String assemblyName) throws Exception {
 		File reportDirectory = new File(outputDir + File.separator + context + File.separator + assemblyName + File.separator + VALIDATE_DIR);
@@ -348,9 +351,10 @@ public class WebinCli {
 	}
 
 	private static void printUsageErrorAndExit() {
-		StringBuilder usage = new StringBuilder("The following options are required:\n\t[-context], [-userName], [-password], [-manifest]");
-		usage.append("\nIn addition, at least one of the following options must be provided:\n\t[-validate], [-upload], [-submit]");
-		usage.append("\nFor full help please use the [-help] option.");
+		StringBuilder usage = new StringBuilder();
+		//usage.append("The following options are required:\n\t[-context], [-userName], [-password], [-manifest]");
+		usage.append("In addition, one of the following options must be provided: [-validate], [-submit]");
+		usage.append("\nFor full help please use the option: [-help]");
 		writeMessage(Severity.INFO, usage.toString());
 		System.exit(USER_ERROR);
 	}
