@@ -9,28 +9,23 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FtpService {
     private final static String SERVER = "webin.ebi.ac.uk";
     private final static int FTP_PORT = 21;
     private FTPClient ftpClient = new FTPClient() ;
     private final static String SYSTEM_ERROR_CONNECT = "Failed to connect to the Webin file upload area.";
-    private final static String USER_ERROR_NO_DIR = "The files have not been uploaded. The directory has not been created. " +
-            "Please use the -validate and -upload options before using the -submit option.";
-    private final static String USER_ERROR_NO_FILE = "The files have not been uploaded. " +
-            "Please use the -validate and -upload options before using the -submit option.";
+
+    /*
     private final static String SYSTEM_ERROR_CHECK = "Failed to check if files have been uploaded.";
-    private final static String SYSTEM_ERROR_CREATE_DIR = "Failed to create directory in Webin file upload area.";
-    private final static String SYSTEM_ERROR_CHANGE_DIR = "Failed to access directory in Webin file upload area.";
-    private final static String SYSTEM_ERROR_UPLOAD_FILE = "Failed to upload files to Webin file upload area.";
-    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when uploading files to Webin file upload area.";
+    */
+
+    private final static String SYSTEM_ERROR_CREATE_DIR = "Failed to create directory in webin.ebi.ac.uk file upload area.";
+    private final static String SYSTEM_ERROR_CHANGE_DIR = "Failed to access directory in webin.ebi.ac.uk file upload area.";
+    private final static String SYSTEM_ERROR_UPLOAD_FILE = "Failed to upload files to webin.ebi.ac.uk file upload area.";
+    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when uploading files to webin.ebi.ac.uk file upload area.";
 
     public void connectToFtp(String userName, String password) {
         try {
@@ -88,6 +83,7 @@ public class FtpService {
         }
     }
 
+    /*
     public boolean doFilesExistInUploadArea(List<File> uploadFilesList, String context, String assemblyName)  {
         if (context == null || context.isEmpty() || assemblyName == null || assemblyName.isEmpty())
             throw WebinCliException.createUserError(WebinCli.MISSING_CONTEXT);
@@ -123,6 +119,7 @@ public class FtpService {
         }
         return true;
     }
+    */
 
     public void disconnectFtp() {
         try {
