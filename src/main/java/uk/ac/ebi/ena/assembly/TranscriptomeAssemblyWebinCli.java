@@ -178,11 +178,11 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	private void writeReport(ValidationResult validationResult) throws IOException {
 		Collection<ValidationMessage<Origin>> validationMessagesList =  validationResult.getMessages();
 		for (ValidationMessage validationMessage: validationMessagesList)
-		Files.write(Paths.get(reportFile), validationMessage.getMessage().getBytes(), StandardOpenOption.APPEND);
+		    Files.write(Paths.get(reportFile), validationMessage.getMessage().getBytes(), StandardOpenOption.APPEND);
 	}
 
 	private void writeReport(List<ValidationMessage<Origin>> validationMessagesList) throws IOException {
 		for (ValidationMessage validationMessage: validationMessagesList)
-		Files.write(Paths.get(reportFile), (validationMessage.getMessage() + "\n").getBytes(), StandardOpenOption.APPEND);
+		    Files.write(Paths.get(reportFile), (validationMessage.getMessage() + "\n").getBytes(), StandardOpenOption.APPEND);
 	}
 }

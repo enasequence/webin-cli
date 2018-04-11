@@ -46,7 +46,7 @@ public class FtpService {
         }
     }
 
-    public void ftpDirectory(Path uploadDirectory, String context, String name) {
+    public void ftpDirectory(List<File> uploadFilesList, String context, String name) {
         if (context == null || context.isEmpty() || name == null || name.isEmpty())
             throw WebinCliException.createUserError(WebinCli.MISSING_CONTEXT);
         try {
@@ -77,11 +77,9 @@ public class FtpService {
                         ftpClient.deleteFile(ftpFile.getName());
                 }
             }
-            List<Path> fileList = Files.list(uploadDirectory).map(Path::getFileName).filter(f -> !f.toFile().isHidden())
-                    .collect(Collectors.toList());
-            for (Path path: fileList) {
-                try (FileInputStream fileInputStream = new FileInputStream(uploadDirectory + File.separator + path.toFile().getName())) {
-                    if (!ftpClient.storeFile(path.toFile().getName(), fileInputStream))
+            for (File file: uploadFilesList) {
+                try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                    if (!ftpClient.storeFile(file.getName(), fileInputStream))
                         throw WebinCliException.createSystemError(SYSTEM_ERROR_UPLOAD_FILE);
                 }
             }
@@ -90,40 +88,35 @@ public class FtpService {
         }
     }
 
-    public boolean checkFilesExistInUploadArea(Path validatedDirectory, String context, String name)  {
-        if (context == null || context.isEmpty() || name == null || name.isEmpty())
+    public boolean doFilesExistInUploadArea(List<File> uploadFilesList, String context, String assemblyName)  {
+        if (context == null || context.isEmpty() || assemblyName == null || assemblyName.isEmpty())
             throw WebinCliException.createUserError(WebinCli.MISSING_CONTEXT);
         try {
             List<FTPFile> ftpFileList = Arrays.asList(ftpClient.listDirectories());
             if (ftpFileList == null || ftpFileList.isEmpty())
-                throw WebinCliException.createUserError(USER_ERROR_NO_FILE);
+                return false;
             Optional<FTPFile> found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(context))
                     .findFirst();
             if (!found.isPresent())
-                throw WebinCliException.createUserError(USER_ERROR_NO_FILE);
+                return false;
             if (!ftpClient.changeWorkingDirectory(context))
-                throw WebinCliException.createUserError(USER_ERROR_NO_DIR);
+                throw WebinCliException.createSystemError(SYSTEM_ERROR_CHANGE_DIR);
             ftpFileList = Arrays.asList(ftpClient.listDirectories());
             if (ftpFileList == null || ftpFileList.isEmpty())
-                throw WebinCliException.createUserError(USER_ERROR_NO_FILE);
-            found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(name)).findFirst();
+                return false;
+            found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(assemblyName)).findFirst();
             if (!found.isPresent())
-                throw WebinCliException.createUserError(USER_ERROR_NO_FILE);
-            if (!ftpClient.changeWorkingDirectory(name))
-                throw WebinCliException.createUserError(USER_ERROR_NO_DIR);
+                return false;
+            if (!ftpClient.changeWorkingDirectory(assemblyName))
+                throw WebinCliException.createSystemError(SYSTEM_ERROR_CHANGE_DIR);
             ftpFileList = Arrays.asList(ftpClient.listFiles());
             if (ftpFileList == null || ftpFileList.isEmpty())
-                throw WebinCliException.createUserError(USER_ERROR_NO_FILE);
-            List<Path> fileList = null;
-            Stream<Path> stream = Files.list(validatedDirectory);
-            fileList = stream.filter(f -> !f.toFile().isHidden())
-                    .map(Path::getFileName)
-                    .collect(Collectors.toList());
-            for (Path path: fileList) {
-                found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(path.getFileName().toString()))
+                return false;
+            for (File fileName: uploadFilesList) {
+                found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(fileName.getName()))
                         .findFirst();
                 if (!found.isPresent())
-                    throw WebinCliException.createUserError(USER_ERROR_NO_FILE);
+                    return false;
             }
         } catch (IOException e) {
             throw WebinCliException.createSystemError(SYSTEM_ERROR_CHECK);

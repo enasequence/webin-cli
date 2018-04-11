@@ -7,7 +7,6 @@ public class ParameterDescriptor {
     public final static String password ="-password";
     public final static String validate ="-validate";
     public final static String submit ="-submit";
-    public final static String upload ="-upload";
     public final static String manifest ="-manifest";
     public final static String test ="-test";
 
@@ -32,7 +31,6 @@ public class ParameterDescriptor {
             "\n\tusing the -upload option and submitted using the -submit option. All three options" +
             "\n\ttcan be given at the same time";
     public final static String submitFlagDescription = "\n\tSubmits the validated and uploaded files. An accession number is provided. ";
-    public final static String uploadFlagDescription = "\n\tUploads validated files to Webin upload area. Uploaded files must be submitted using the -submit option.";
     public final static String manifestFlagDescription = "\n\tRequired. Path to a manifest file. The manifest file lists the files within the submission." +
             "\n\tThe manifest file is a text file with two columns separated by a tab:" +
             "\n\t\t>> file type" +
