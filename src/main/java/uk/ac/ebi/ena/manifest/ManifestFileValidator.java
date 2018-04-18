@@ -15,13 +15,11 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyFileUtils;
 import uk.ac.ebi.ena.submit.ContextE;
 
-public class ManifestFileValidator
-{
+public class ManifestFileValidator {
 	private static String InvalidFileFormat = "invalidFileFormat";
 	private static String InvalidFile = "invalidFile";
 	private static String fileNotExist = "fileNotExist";
 	private static String infoFileNotExist = "infoFileMisssing";
-
     private static final String MANIFESTMESSAGEBUNDLE = "uk.ac.ebi.ena.manifest.ManifestValidationMessages";
     private boolean test=false;
     private ManifestFileReader reader= null;
@@ -30,12 +28,13 @@ public class ManifestFileValidator
     public ManifestFileValidator() {
 	this(false);
     }
+
 	public ManifestFileValidator(boolean test) 
 	{
 		this.test=test;
 	}
-	public  boolean validate(File manifestFile,String reportDir,String context) throws FileNotFoundException, IOException
-	{
+
+	public  boolean validate(File manifestFile,String reportDir,String context) throws IOException {
         ValidationMessageManager.addBundle(MANIFESTMESSAGEBUNDLE);
         reportFile=new File(reportDir+File.separator+manifestFile.getName()+ ".report");
 		Writer manifestrepoWriter = new PrintWriter(reportFile, "UTF-8");
@@ -43,42 +42,26 @@ public class ManifestFileValidator
 		ValidationPlanResult result= new ValidationPlanResult();
 		try {
 			result = reader.read(manifestFile.toString());
-		} catch (IOException e) {
-		}
-
-		List<ManifestObj> manifestRecords= reader.getManifestFileObjects();
+		} catch (IOException e) {}
+		List<ManifestObj> manifestRecords = reader.getManifestFileObjects();
 		boolean infoFileExists =false;
-		if(result.isValid())
-		{
-			for (ManifestObj m : manifestRecords) 
-			{
-				
+		if(result.isValid()) {
+			for (ManifestObj m : manifestRecords) {
 				if(m.getFileFormat()==null||!Arrays.asList(ContextE.getContext(context.toLowerCase()).getFileFormats()).contains(m.getFileFormat()))
 				   result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidFileFormat,m.getFileFormatString(),context,ContextE.getContext(context.toLowerCase()).getFileFormatString())));
-				
 				if (m.getFileName() == null)
 					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidFile)));
-				else
-				{
-				File file = new File(m.getFileName());
-				if (!file.exists()&&!test)
-				{
-					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, fileNotExist)));
+				else {
+					File file = new File(m.getFileName());
+					if (!file.exists()&&!test)
+						result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, fileNotExist)));
 				}
-				}
-				
 				if(FileFormat.INFO.equals(m.getFileFormat()))
-				{
 					infoFileExists= true;
-				}
 		    }
-			
 			if (!infoFileExists)
-			{ 
 				result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, infoFileNotExist)));
-			}
 		}
-		
 	    return GenomeAssemblyFileUtils.writeValidationPlanResult(result, manifestrepoWriter,manifestFile.getName());
 	}
 	

@@ -25,6 +25,7 @@ import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
 
@@ -75,31 +76,16 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	@Override
 	public int validate() throws ValidationEngineException {
 		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-			createReportFile();
+            FileUtils.createReportFile(submittedFile, reportFile, reportDir);
 			validateFlatFile();
 		} else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
-			createReportFile();
+            FileUtils.createReportFile(submittedFile, reportFile, reportDir);
 			validateFastaFile();
 		} else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
 		if (FLAILED_VALIDATION)
 			return WebinCli.VALIDATION_ERROR;
 		return WebinCli.SUCCESS;
-	}
-
-	private void createReportFile() throws ValidationEngineException {
-		try {
-			Path submittedFilePath = Paths.get(submittedFile);
-			if (!Files.exists(submittedFilePath))
-				throw new ValidationEngineException("Flat file " + submittedFile + " does not exist");
-			reportFile = reportDir + File.separator + submittedFilePath.getFileName().toString() + ".report";
-			Path reportPath = Paths.get(reportFile);
-			if (Files.exists(reportPath))
-				Files.delete(reportPath);
-			Files.createFile(reportPath);
-		} catch (IOException e) {
-			throw new ValidationEngineException("Unable to create report file.");
-		}
 	}
 
 	private void validateFlatFile() throws ValidationEngineException {
@@ -112,7 +98,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 			ValidationResult validationResult = flatFileReader.read();
 			if (validationResult != null && validationResult.getMessages(Severity.ERROR) != null && !validationResult.getMessages(Severity.ERROR).isEmpty()) {
 				FLAILED_VALIDATION = true;
-				writeReport(validationResult);
+                FileUtils.writeReport(reportFile, validationResult);
 			}
 			ValidationPlanResult validationPlanResult;
 			List<ValidationMessage<Origin>> validationMessagesList;
@@ -127,7 +113,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 				validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
 				if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
 					FLAILED_VALIDATION = true;
-					writeReport(validationMessagesList);
+                    FileUtils.writeReport(reportFile, validationMessagesList);
 				}
 				flatFileReader.read();
 			}
@@ -145,7 +131,7 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 			ValidationResult validationResult = fastaFileReader.read();
 			if (validationResult != null && validationResult.getMessages(Severity.ERROR) != null && !validationResult.getMessages(Severity.ERROR).isEmpty()) {
 				FLAILED_VALIDATION = true;
-				writeReport(validationResult);
+                FileUtils.writeReport(reportFile, validationResult);
 			}
 			ValidationPlanResult validationPlanResult;
 			List<ValidationMessage<Origin>> validationMessagesList;
@@ -166,23 +152,12 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 				validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
 				if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
 					FLAILED_VALIDATION = true;
-					writeReport(validationMessagesList);
+                    FileUtils.writeReport(reportFile, validationMessagesList);
 				}
 				fastaFileReader.read();
 			}
 		} catch (IOException e) {
 			throw new ValidationEngineException(e);
 		}
-	}
-
-	private void writeReport(ValidationResult validationResult) throws IOException {
-		Collection<ValidationMessage<Origin>> validationMessagesList =  validationResult.getMessages();
-		for (ValidationMessage validationMessage: validationMessagesList)
-		    Files.write(Paths.get(reportFile), validationMessage.getMessage().getBytes(), StandardOpenOption.APPEND);
-	}
-
-	private void writeReport(List<ValidationMessage<Origin>> validationMessagesList) throws IOException {
-		for (ValidationMessage validationMessage: validationMessagesList)
-		    Files.write(Paths.get(reportFile), (validationMessage.getMessage() + "\n").getBytes(), StandardOpenOption.APPEND);
 	}
 }

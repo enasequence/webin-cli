@@ -1,23 +1,22 @@
-import org.gradle.plugins.ide.eclipse.model.AccessRule
-plugins {
-    id "us.kirchmeier.capsule" version "0.10.0"
-    id "edu.sc.seis.launch4j" version "1.1.2"
-}
-
-
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'edu.sc.seis.launch4j'
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.version_base = '1.0.4'
 version = version_base
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
-    mavenLocal()
-    maven { url "http://ena-dev:8081/artifactory/all" }
+    maven{ url "http://ena-dev:8081/artifactory/all" }
+    mavenCentral()
 }
 
 jar {
@@ -38,27 +37,6 @@ jar {
     }
 }
 
-launch4j {
-    mainClassName = "WebinCli"
-    launch4jCmd = "launch4j"
-    jar = "lib\\${project.tasks.jar.archiveName}"
-    headerType = "console"
-    dontWrapJar = false
-}
-
-eclipse {
-    classpath {
-        file {
-            whenMerged {
-                def jre = entries.find { it.path.contains 'org.eclipse.jdt.launching.JRE_CONTAINER' }
-                jre.accessRules.add(new AccessRule('0', 'javafx/**'))
-            }
-        }
-    }
-
-}
-
-
 dependencies {
     compile 'org.apache.commons:commons-lang3:3.0'
     compile 'org.apache.commons:commons-compress:1.10'
@@ -71,6 +49,7 @@ dependencies {
     compile group: 'com.beust', name: 'jcommander', version: '1.72'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
+    compile(group: 'uk.ac.ebi.ena-template-expansion', name: 'ena-template-expansion', version: '1.0.0')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.1.208')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.1.208')
     compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
@@ -80,12 +59,9 @@ dependencies {
     testCompile 'junit:junit:4.11'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 task sourceJar(type: Jar) { from sourceSets.main.allJava }
 
-task wrapper(type: Wrapper) { gradleVersion = '2.6' }
+task Wrapper(type: Wrapper) { gradleVersion = '3.4.1' }
 
 publishing {
     publications {

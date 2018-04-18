@@ -67,7 +67,7 @@ public class WebinCli {
 	private final static String VALIDATE_DIR = "validate";
     private String SUBMIT_DIR = "submit";
 	private final static String INFO_FIELD = "INFO";
-	private final static String ASSEMBLYNAME_FIELD = "ASSEMBLYNAME";
+	private final static String NAME_FIELD = "NAME";
 
 	private static ManifestFileValidator manifestValidator = null;
 	private static InfoFileValidator infoValidator = null;
@@ -422,12 +422,12 @@ public class WebinCli {
 		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
 		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs));
-		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(ASSEMBLYNAME_FIELD))
+		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(NAME_FIELD))
 				.findFirst();
 		if (optional.isPresent())
-			return optional.get().substring(ASSEMBLYNAME_FIELD.length()).trim().replaceAll("\\s+", "_");
+			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
 		else
-			throw WebinCliException.createUserError("Info file " + info + " is missing the " + ASSEMBLYNAME_FIELD + " field.");
+			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
 	}
 
 	private static void checkVersion() {

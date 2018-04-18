@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: uk.ac.ebi.ena-core-processing:ena-core-processing:1.0.0">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/Could not find uk.ac.ebi.ena-core-processing:ena-core-processing:1.0.0." />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-core-processing/ena-core-processing/1.0.0/27979c434367dbbddbe0326dc03878e9e19ca4/ena-core-processing-1.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-core-processing/ena-core-processing/1.0.0/2662d9658e312425a7154f9e64e523c4e0a42e4a/ena-core-processing-1.0.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
