@@ -19,11 +19,10 @@ import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public class InfoFileValidator {
-	
 	private AssemblyInfoEntry assemblyInfoEntry=null;
 	private File reportFile =null;
 	
-	public boolean validate(ManifestFileReader manifestFileReader,String reportDir,String context ) throws IOException, ValidationEngineException {
+	public boolean validate(ManifestFileReader manifestFileReader, String reportDir, String context) throws IOException, ValidationEngineException {
 		ValidationResult assemblyInfoParseResult= new ValidationResult();
 		Optional<ManifestObj> obj=manifestFileReader.getManifestFileObjects().stream().filter(p->(FileFormat.INFO.equals(p.getFileFormat()))).findFirst();
 		assemblyInfoEntry = FileUtils.getAssemblyEntry(new File(obj.get().getFileName()), assemblyInfoParseResult);
@@ -41,10 +40,8 @@ public class InfoFileValidator {
 		}
      	return valid;
    	}
-	
 
-	public ValidationPlan getValidationPlan(Object entry,EmblEntryValidationPlanProperty property)
-	{
+	public ValidationPlan getValidationPlan(Object entry,EmblEntryValidationPlanProperty property) {
 		ValidationPlan validationPlan = new GenomeAssemblyValidationPlan(property);
 		validationPlan.addMessageBundle(ValidationMessageManager.GENOMEASSEMBLY_VALIDATION_BUNDLE);
 		validationPlan.addMessageBundle(ValidationMessageManager.GENOMEASSEMBLY_FIXER_BUNDLE);
