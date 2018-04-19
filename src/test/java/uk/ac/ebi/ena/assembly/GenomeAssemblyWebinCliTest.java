@@ -1,12 +1,12 @@
 package uk.ac.ebi.ena.assembly;
 
 import static org.junit.Assert.assertEquals;
+
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Test;
-
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
@@ -24,6 +24,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(fileName).getParent());
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -40,6 +41,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(fileName).getParent());
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -56,6 +58,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(manifestFileName).getParent());
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -75,6 +78,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		study.setLocusTagsList(locusTagsList);
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null, true);
+		validator.setReportsDir(new File(manifestFileName).getParent());
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -91,6 +95,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(manifestFileName).getParent());
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -107,6 +112,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(manifestFileName).getParent());
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
@@ -123,6 +129,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(manifestFileName).getParent());
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
