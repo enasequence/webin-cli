@@ -109,7 +109,6 @@ public class GenomeAssemblyFileUtils
 	public static boolean writeValidationResult(ValidationPlanResult planResult,ValidationResult parseResult, Writer writer,String file) throws IOException
 	{		
 		boolean valid=writeValidationPlanResult(planResult, writer, file)&&writeValidationResult(parseResult, writer, file);
-		writer.flush();
 		return valid;
 	}
 	
