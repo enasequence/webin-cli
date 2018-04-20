@@ -15,6 +15,7 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.InfoFileValidator;
+import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.manifest.*;
 import uk.ac.ebi.ena.sample.Sample;
@@ -67,7 +68,7 @@ public class WebinCli {
 	private final static String VALIDATE_DIR = "validate";
     private String SUBMIT_DIR = "submit";
 	private final static String INFO_FIELD = "INFO";
-	private final static String NAME_FIELD = "NAME";
+	private final static String NAME_FIELD = "ASSEMBLYNAME";
 
 	private static ManifestFileValidator manifestValidator = null;
 	private static InfoFileValidator infoValidator = null;
@@ -192,14 +193,16 @@ public class WebinCli {
 
 	private void doValidation() {
 		Study study = getStudy();
-		Sample sample = getSample();
 		WebinCliInterface validator = null;
 		switch(contextE) {
 			case transcriptome:
-				validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), sample, study);
+				validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), getSample(), study);
+				break;
+			case sequence:
+				validator = new SequenceAssemblyWebinCli(manifestValidator.getReader(), study);
 				break;
 			case genome:
-				validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),sample,study,infoValidator.getentry().getMoleculeType());
+				validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),getSample(), study,infoValidator.getentry().getMoleculeType());
 				break;
 		}
 		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
@@ -280,8 +283,8 @@ public class WebinCli {
         return success;
     }
 
-	private static void createValidateDir(String context, String assemblyName) throws Exception {
-		File reportDirectory = new File(outputDir + File.separator + context + File.separator + assemblyName + File.separator + VALIDATE_DIR);
+	private static void createValidateDir(String context, String name) throws Exception {
+		File reportDirectory = new File(outputDir + File.separator + context + File.separator + name + File.separator + VALIDATE_DIR);
 		if (reportDirectory.exists())
 			FileUtils.emptyDirectory(reportDirectory);
 		else

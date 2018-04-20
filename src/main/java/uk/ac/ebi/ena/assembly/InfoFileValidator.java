@@ -23,12 +23,12 @@ public class InfoFileValidator {
 	private File reportFile =null;
 	
 	public boolean validate(ManifestFileReader manifestFileReader, String reportDir, String context) throws IOException, ValidationEngineException {
-		ValidationResult assemblyInfoParseResult= new ValidationResult();
+		ValidationResult assemblyInfoParseResult = new ValidationResult();
 		Optional<ManifestObj> obj=manifestFileReader.getManifestFileObjects().stream().filter(p->(FileFormat.INFO.equals(p.getFileFormat()))).findFirst();
 		assemblyInfoEntry = FileUtils.getAssemblyEntry(new File(obj.get().getFileName()), assemblyInfoParseResult);
 		reportFile=new File(reportDir+File.separator+ new File(obj.get().getFileName()).getName() + ".report");
 		Writer assemblyInforepoWriter = new PrintWriter(reportFile, "UTF-8");
-		boolean valid=GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResult, assemblyInforepoWriter,reportFile.getName());
+		boolean valid = GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResult, assemblyInforepoWriter,reportFile.getName());
 		if (assemblyInfoEntry != null) {
 			EmblEntryValidationPlanProperty property= new EmblEntryValidationPlanProperty();
 			property.isRemote.set(true);

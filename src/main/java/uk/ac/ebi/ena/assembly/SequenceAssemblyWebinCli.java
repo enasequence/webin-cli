@@ -1,47 +1,53 @@
 package uk.ac.ebi.ena.assembly;
 
-import org.apache.commons.io.IOUtils;
 import uk.ac.ebi.embl.api.entry.Entry;
+import uk.ac.ebi.embl.api.entry.reference.*;
 import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
-import uk.ac.ebi.ena.core.SubmissionFileLocationE;
-import uk.ac.ebi.ena.core.exception.SystemException;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.sra.pipeline.configuration.Configuration;
-import uk.ac.ebi.ena.template.expansion.TemplateEntryProcessor;
+import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.template.expansion.*;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
 public class SequenceAssemblyWebinCli implements WebinCliInterface {
+    private static final String TEMPLATE_ID_PATTERN = "(ERT[0-9]+)";
+    private final static String TEMPLATE_ACCESSION_LINE = "#template_accession";
     private boolean FAILED_VALIDATION;
     private ManifestFileReader manifestFileReader;
     private String submittedFile;
     private String reportFile;
     private String reportDir;
-    private int sequenceCount;
+    private Study study;
+    private final static int MAX_SEQUENCE_COUNT = 100000;
 
-    public SequenceAssemblyWebinCli(ManifestFileReader manifestFileReader) {
+    public SequenceAssemblyWebinCli(ManifestFileReader manifestFileReader, Study study) {
         this.manifestFileReader = manifestFileReader;
+        this.study = study;
     }
 
     @Override
     public int validate() throws ValidationEngineException {
         if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-            FileUtils.createReportFile(submittedFile, reportFile, reportDir);
+            reportFile = FileUtils.createReportFile(submittedFile, reportDir);
             validateFlatFile();
-        } else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
-            FileUtils.createReportFile(submittedFile, reportFile, reportDir);
+        } else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.TSV ))!= null) {
+            reportFile = FileUtils.createReportFile(submittedFile, reportDir);
             validateTsvFile();
         } else
-            throw new ValidationEngineException("Manifest file: TSV or FLATFILE must be present.");
+            throw new ValidationEngineException("Manifest file: TSV or FLATFILE must be pre55t4444eeeeeszsent.");
         if (FAILED_VALIDATION)
             return WebinCli.VALIDATION_ERROR;
         return WebinCli.SUCCESS;
@@ -53,7 +59,32 @@ public class SequenceAssemblyWebinCli implements WebinCliInterface {
     }
 
     private void validateTsvFile()  throws ValidationEngineException {
-        getTemplateFromDatabaseAndWriteToProcessDir();
+        Path templatePath = getTemplateAndWriteToValidateDir();
+        try (FileInputStream submittedDataFis = new FileInputStream(submittedFile)) {
+            TemplateInfo templateInfo = new TemplateLoader().loadTemplateFromFile(templatePath.toFile());
+            TemplateProcessor templateProcessor = new TemplateProcessor(templateInfo, null);
+            BufferedInputStream bufferedInputStremSubmittedData = new BufferedInputStream(new GZIPInputStream(submittedDataFis));
+            CSVReader csvReader = new CSVReader(bufferedInputStremSubmittedData, templateInfo.getTokens(), 0);
+            CSVLine csvLine;
+            int lineCount = 0;
+            while ((csvLine = csvReader.readTemplateSpreadsheetLine()) != null) {
+                lineCount = csvLine.getLineNumber();
+                if (lineCount == MAX_SEQUENCE_COUNT)
+                    throw new ValidationEngineException("Data file has exceeded the maximum permitted number of sequencies (" + MAX_SEQUENCE_COUNT + ")" + " that are allowed in one data file.");
+                ValidationPlanResult validationPlanResult = templateProcessor.process(csvLine.getEntryTokenMap()).getValidationPlanResult();
+                if (!validationPlanResult.isValid()) {
+                    List<ValidationMessage<Origin>> validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
+                    if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
+                        FAILED_VALIDATION = true;
+                        FileUtils.writeReport(reportFile, validationMessagesList, "Sequence: " + csvLine.getLineNumber().toString() + " ");
+                    }
+                }
+            }
+        } catch (TemplateException e) {
+            throw new ValidationEngineException(e.getMessage());
+        } catch (Exception e) {
+            throw new ValidationEngineException(e.getMessage());
+        }
     }
 
     private void validateFlatFile() throws ValidationEngineException {
@@ -78,15 +109,15 @@ public class SequenceAssemblyWebinCli implements WebinCliInterface {
                 }
                 Entry entry = (Entry)flatFileReader.getEntry();
                 entry.getSequence().setVersion(1);
+                addDefaultCitationForOfflineValisation(entry);
                 if (entry.getProjectAccessions() != null && !entry.getProjectAccessions().isEmpty())
                     entry.getProjectAccessions().clear();
                 TemplateEntryProcessor templateEntryProcessor = new TemplateEntryProcessor(ValidationScope.EMBL);
                 ValidationPlanResult validationPlanResult = templateEntryProcessor.validateSequenceUploadEntry(entry);
                 if (!validationPlanResult.isValid()) {
                     FAILED_VALIDATION = true;
-                    FileUtils.writeReport(reportFile, validationPlanResult.getMessages(Severity.ERROR));
+                    FileUtils.writeReport(reportFile, validationPlanResult.getMessages(Severity.ERROR), "Entry " + ((EmblEntryReader)flatFileReader).getLineReader().getCurrentLineNumber() + " ");
                 }
-                sequenceCount++;
                 validationResult = flatFileReader.read();
             }
         } catch (Exception e) {
@@ -94,28 +125,54 @@ public class SequenceAssemblyWebinCli implements WebinCliInterface {
         }
     }
 
-    private void getTemplateFromDatabaseAndWriteToProcessDir(String templateId) throws Exception {
-        String template = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("template/" + templateId + ".xml"));
-        /*
-        if (template == null || template.isEmpty())
-            throw  new SystemException("- GenerateFlatFile.getTemplateFromDatabaseAndWriteToProcessDir(): no template found for analysis id: " + analysisId);
-        if (template.contains("encoding=\"\""))
-            template = template.replace("encoding=\"\"", "encoding=\"UTF-8\"");
-        PrintWriter out = null;
+    private Path getTemplateAndWriteToValidateDir() throws ValidationEngineException {
         try {
-            out = new PrintWriter(Configuration.getFileLocation(analysisId, TEMPLATE_FILE_NAME + templateId + Configuration.XML_SUFFIX, SubmissionFileLocationE.PROCESS_DIR));
-            out.print(template);
+            String templateId = getTemplateIdFromTsvFile();
+            String template = new TemplateProcessor().getTemplate(templateId);
+            Path path = Paths.get(reportDir + File.separator + templateId + ".xml");
+            Files.deleteIfExists(path);
+            Files.createFile(path);
+            Files.write(path, template.getBytes());
+            return path;
+        } catch (ValidationEngineException e) {
+            throw e;
         } catch (Exception e) {
-            throw new SystemException(e.getMessage());
-        } finally {
-            if (out != null)
-                out.close();
+            throw new ValidationEngineException(e.getMessage());
         }
-        */
     }
 
-    private String getTemplateIdFromTsvFile() {
-        Files.readAllLines(Paths.get(submittedFile)).
-        return "";
+    private String getTemplateIdFromTsvFile() throws ValidationEngineException {
+        String templateId = "";
+        try {
+            Optional<String> optional =  new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(Paths.get(submittedFile).toFile())))).lines()
+                    .filter(line -> line.startsWith(TEMPLATE_ACCESSION_LINE))
+                    .findFirst();
+            if (optional.isPresent()) {
+                templateId = optional.get().replace(TEMPLATE_ACCESSION_LINE, "").trim();
+                if (templateId.isEmpty() || !templateId.matches(TEMPLATE_ID_PATTERN))
+                    throw new ValidationEngineException(TEMPLATE_ACCESSION_LINE + " template id '" + templateId + " is missing or not in the correct format. Example id is ERT000003");
+            } else
+                throw new ValidationEngineException("File " + submittedFile + " is missing the '" +  TEMPLATE_ACCESSION_LINE + "' line, please add it followed by the template id");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return templateId;
+    }
+
+    private void addDefaultCitationForOfflineValisation(Entry entry) {
+        ReferenceFactory referenceFactory = new ReferenceFactory();
+        Reference reference = referenceFactory.createReference();
+        Publication publication = new Publication();
+        Person person = referenceFactory.createPerson("CLELAND");
+        publication.addAuthor(person);
+        reference.setAuthorExists(true);
+        Submission submission = referenceFactory.createSubmission(publication);
+        submission.setSubmitterAddress(", The European Bioinformatics Institute (EMBL-EBI), Wellcome Genome Campus, CB10 1SD, United Kingdom");
+        submission.setDay(Calendar.getInstance().getTime());
+        publication = submission;
+        reference.setPublication(publication);
+        reference.setLocationExists(true);
+        reference.setReferenceNumber(1);
+        entry.addReference(reference);
     }
 }

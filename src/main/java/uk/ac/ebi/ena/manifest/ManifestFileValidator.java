@@ -36,7 +36,7 @@ public class ManifestFileValidator {
 
 	public  boolean validate(File manifestFile,String reportDir,String context) throws IOException {
         ValidationMessageManager.addBundle(MANIFESTMESSAGEBUNDLE);
-        reportFile=new File(reportDir+File.separator+manifestFile.getName()+ ".report");
+        reportFile=new File(reportDir + File.separator+manifestFile.getName()+ ".report");
 		Writer manifestrepoWriter = new PrintWriter(reportFile, "UTF-8");
 		reader= new ManifestFileReader();
 		ValidationPlanResult result= new ValidationPlanResult();
@@ -47,7 +47,7 @@ public class ManifestFileValidator {
 		boolean infoFileExists =false;
 		if(result.isValid()) {
 			for (ManifestObj m : manifestRecords) {
-				if(m.getFileFormat()==null||!Arrays.asList(ContextE.getContext(context.toLowerCase()).getFileFormats()).contains(m.getFileFormat()))
+				if(m.getFileFormat() == null||!Arrays.asList(ContextE.getContext(context.toLowerCase()).getFileFormats()).contains(m.getFileFormat()))
 				   result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidFileFormat,m.getFileFormatString(),context,ContextE.getContext(context.toLowerCase()).getFileFormatString())));
 				if (m.getFileName() == null)
 					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidFile)));
@@ -65,8 +65,7 @@ public class ManifestFileValidator {
 	    return GenomeAssemblyFileUtils.writeValidationPlanResult(result, manifestrepoWriter,manifestFile.getName());
 	}
 	
-	public ManifestFileReader getReader()
-	{
+	public ManifestFileReader getReader() {
 		return reader;
 	}
 	
