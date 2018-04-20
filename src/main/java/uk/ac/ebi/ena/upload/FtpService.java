@@ -9,13 +9,9 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FtpService {
     private final static String SERVER = "webin.ebi.ac.uk";

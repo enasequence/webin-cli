@@ -76,10 +76,10 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 	@Override
 	public int validate() throws ValidationEngineException {
 		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-            FileUtils.createReportFile(submittedFile, reportFile, reportDir);
+			reportFile = FileUtils.createReportFile(submittedFile, reportDir);
 			validateFlatFile();
 		} else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
-            FileUtils.createReportFile(submittedFile, reportFile, reportDir);
+			reportFile = FileUtils.createReportFile(submittedFile, reportDir);
 			validateFastaFile();
 		} else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
