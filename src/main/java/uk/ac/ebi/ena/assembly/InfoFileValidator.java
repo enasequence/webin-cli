@@ -16,6 +16,7 @@ import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.utils.AssemblyReporter;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public class InfoFileValidator {
@@ -29,13 +30,14 @@ public class InfoFileValidator {
 		assemblyInfoEntry = FileUtils.getAssemblyEntry(new File(obj.get().getFileName()), assemblyInfoParseResult);
 		reportFile=new File(reportDir+File.separator+ new File(obj.get().getFileName()).getName() + ".report");
 		Writer assemblyInforepoWriter = new PrintWriter(reportFile, "UTF-8");
-		boolean valid=GenomeAssemblyFileUtils.writeValidationResult(assemblyInfoParseResult, assemblyInforepoWriter,reportFile.getName());
+		boolean valid=AssemblyReporter.logMessages(reportFile.getName(), assemblyInfoParseResult, new ValidationPlanResult(), assemblyInforepoWriter);
 		if (assemblyInfoEntry != null) {
 			EmblEntryValidationPlanProperty property= new EmblEntryValidationPlanProperty();
 			property.isRemote.set(true);
 			property.fileType.set(FileType.ASSEMBLYINFO);
 			ValidationPlan validationPlan = getValidationPlan(assemblyInfoEntry, property);
-			valid=valid&&GenomeAssemblyFileUtils.writeValidationPlanResult( validationPlan.execute(assemblyInfoEntry),assemblyInforepoWriter, new File(obj.get().getFileName()).getName());
+			AssemblyReporter.logMessages(reportFile.getName(), new ValidationResult(), validationPlan.execute(assemblyInfoEntry), assemblyInforepoWriter);
+			valid=valid&&AssemblyReporter.logMessages(reportFile.getName(), new ValidationResult(), validationPlan.execute(assemblyInfoEntry), assemblyInforepoWriter);
 			if(ContextE.transcriptome.equals(ContextE.getContext(context)))
 				property.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
 		}

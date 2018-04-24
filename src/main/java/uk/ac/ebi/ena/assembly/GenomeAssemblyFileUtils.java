@@ -4,10 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import uk.ac.ebi.embl.agp.reader.AGPFileReader;
@@ -16,9 +13,6 @@ import uk.ac.ebi.embl.api.entry.genomeassembly.ChromosomeEntry;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
 import uk.ac.ebi.embl.api.entry.qualifier.QualifierFactory;
 import uk.ac.ebi.embl.api.validation.SequenceEntryUtils;
-import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.embl.fasta.reader.FastaFileReader;
 import uk.ac.ebi.embl.fasta.reader.FastaLineReader;
 import uk.ac.ebi.embl.flatfile.reader.EntryReader;
@@ -106,30 +100,7 @@ public class GenomeAssemblyFileUtils
 		return chromosomeQualifiers;
 	}
 	
-	public static boolean writeValidationResult(ValidationPlanResult planResult,ValidationResult parseResult, Writer writer,String file) throws IOException
-	{		
-		boolean valid=writeValidationPlanResult(planResult, writer, file)&&writeValidationResult(parseResult, writer, file);
-		return valid;
-	}
 	
-	public static boolean writeValidationPlanResult(ValidationPlanResult planResult, Writer writer,String file) throws IOException
-	{
-		if(planResult==null)
-			return true;
-			for (ValidationResult result : planResult.getResults())
-				result.writeMessages(writer,Severity.ERROR,file);
-			return planResult.isValid();
-		
-	}
-	
-	public static boolean writeValidationResult(ValidationResult validationResult, Writer writer,String file) throws IOException
-	{
-		if(validationResult==null)
-			return true;
-		validationResult.writeMessages(writer,Severity.ERROR,file);
-		return validationResult.isValid();
-		
-	}
 	
 	public static List<ManifestObj> readManifest(File file) throws FileNotFoundException, IOException
 	{
