@@ -36,23 +36,23 @@ public class WebinCli {
 
 	private static final String VALIDATE_SUCCESS = "The submission has been validated successfully. ";
 
-	private static final String VALIDATE_USER_ERROR = "Submission validation failed because of an user error. " +
+	private static final String VALIDATE_USER_ERROR = "Submission validation failed because of a user error. " +
 			"Please check the report directory for the errors: ";
 	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation failed because of a system error. ";
 
 	private static final String UPLOAD_SUCCESS = "The files have been uploaded to webin.ebi.ac.uk. ";
 
-	private static final String UPLOAD_USER_ERROR = "Failed to upload files to webin.ebi.ac.uk because of an user error. " + RESUBMIT_AFTER_USER_ERROR;
+	private static final String UPLOAD_USER_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
 	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
 
 	/*
-	private static final String UPLOAD_CHECK_USER_ERROR = "Failed to check if files have been uploaded to webin.ebi.ac.uk because of an user error. " + RESUBMIT_AFTER_USER_ERROR;
+	private static final String UPLOAD_CHECK_USER_ERROR = "Failed to check if files have been uploaded to webin.ebi.ac.uk because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
 	private static final String UPLOAD_CHECK_SYSTEM_ERROR = "Failed to check if files have been uploaded to webin.ebi.ac.uk because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
 	*/
 
 	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully. ";
 
-	private static final String SUBMIT_USER_ERROR = "The submission has failed because of an user error. " + RESUBMIT_AFTER_USER_ERROR;
+	private static final String SUBMIT_USER_ERROR = "The submission has failed because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
 	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
 
 	public static final String AUTHENTICATION_ERROR = "Invalid submission account user name or password.";
