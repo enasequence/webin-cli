@@ -14,6 +14,7 @@ import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyFileUtils;
 import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.utils.AssemblyReporter;
 
 public class ManifestFileValidator
 {
@@ -79,7 +80,7 @@ public class ManifestFileValidator
 			}
 		}
 		
-	    return GenomeAssemblyFileUtils.writeValidationPlanResult(result, manifestrepoWriter,manifestFile.getName());
+	    return AssemblyReporter.logMessages(reportFile.getName(), new ValidationResult(), result, manifestrepoWriter);
 	}
 	
 	public ManifestFileReader getReader()
