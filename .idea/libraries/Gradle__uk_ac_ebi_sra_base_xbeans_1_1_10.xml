@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: uk.ac.ebi:sra-base:xbeans:1.1.10">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi/sra-base/1.1.10/c8bc49551338ffd2305c0ba04df0d603e997812b/sra-base-1.1.10-xbeans.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi/sra-base/1.1.10/2818f1e6a1f2558479fbf007c63ac6607c8bdee7/sra-base-1.1.10-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi/sra-base/1.1.10/befb01f90e8d67096f18bf7ed3b6b34da00213a0/sra-base-1.1.10-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

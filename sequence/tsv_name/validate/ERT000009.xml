@@ -1,0 +1,103 @@
+<?xml version = '1.0' encoding = 'UTF-8'?><template id="ERT000009" version="3">
+    <name>ITS rDNA</name>
+    <forms_name>ITS region</forms_name>
+    <description>For ITS rDNA region. This checklist allows generic annotation of the ITS components (18S rRNA, ITS1, 5.8S rRNA, ITS2 and 28S rRNA). For annotation of the rRNA component only, please use the rRNA gene checklist.</description>
+    <token name="ORGANISM" type="TAXON_FIELD" mandatory="true" display_name="Organism" description="Formal taxonomic name of organism." tip="uncultured mycorrhizal fungus, Allomyces javanicus, Glomus sp. 123"/>
+    <token name="ENVSAM" type="BOOLEAN_FIELD" mandatory="true" display_name="Is your organism from an environmental/metagenomic/uncultured sample? (yes/no)" description="Environmental samples are those which are derived from direct sequencing of a bulk anonymous sample. Prokaryote/fungi from environmental samples are not culturable and so cannot be identified morphologically. Such organisms are prefixed with the term uncultured." tip="If yes, isolation source information is mandatory"/>
+    <token name="STRAIN" type="TEXT_FIELD" mandatory="false" display_name="Strain name" description="Name or identifier for strain, typically a collection prefix followed by a number." tip="DSM 5432, BALB/c"/>
+    <token name="CLONE" type="TEXT_FIELD" mandatory="false" display_name="Clone identifier" description="Identifier given to each clone in a sequenced library." tip="a2314_1296, lib1_b_9"/>
+    <token name="ISOLATE" type="TEXT_FIELD" mandatory="false" display_name="Isolate name" description="Name given to the environmental isolate that has been sequenced." tip="isolate#3, 654g14"/>
+    <token name="COUNTRY" type="TEXT_CHOICE_FIELD" cv_name="country" mandatory="false" display_name="Country" description="Political name of country or ocean in which sequenced sample or isolate was collected." tip="France, China, Pacific Ocean"/>
+    <token name="AREA" type="TEXT_FIELD" mandatory="false" display_name="Geographic area" description="Political name of the area of country or ocean in which sequenced sample or isolate was collected. Must have Country selected." tip="Cambridge, Bordeaux, North Altantic Ridge"/>
+    <token name="LOCALITY" type="TEXT_FIELD" mandatory="false" display_name="Locality" description="More geographic-specific location where sequenced material was sourced. Must have Country AND Geographic area selected." tip="York, Colton, Loch Ness"/>
+    <token name="LATLON" type="TEXT_FIELD" mandatory="false" display_name="Latitude/Longitude" description="Geographical coordinates of the location where the specimen was collected, in decimal degrees (to 2 places)." tip="47.94 N 28.12 W or 45.01 S 4.12 E"/>
+    <token name="ISOSOURCE" type="TEXT_FIELD" mandatory="false" display_name="Isolation source" description="Physical geography of sampling/isolation site must be present for environmental samples." tip="fast-flowing river, microbial mat"/>
+    <token name="HOST" type="TEXT_FIELD" mandatory="false" display_name="Natural host" description="The natural host of the organism from which the sequenced material was taken."/>
+    <token name="COLDATE" type="TEXT_FIELD" mandatory="false" display_name="Collection date" description="Date of collection of the original sample/organism." tip="08-Mar-1975, Mar-1975, 1975"/>
+    <token name="COLBY" type="TEXT_FIELD" mandatory="false" display_name="Collected by" description="Collector(s) of the sample/organism."/>
+    <token name="IDBY" type="TEXT_FIELD" mandatory="false" display_name="Identified by" description="Identifier(s) of the sample/organism."/>
+    <token name="CULTCOLL" type="TEXT_FIELD" mandatory="false" display_name="Culture Collection" description="to annotate live microbial and fungal cultures, and cell lines that have been deposited in or obtained from curated culture collections. http://www.ebi.ac.uk/ena/WebFeat/qualifiers/culture_collection.html" tip="ATCC:26370"/>
+    <token name="SPECVOUCH" type="TEXT_FIELD" mandatory="false" display_name="Specimen Voucher" description="Reference to the physical specimen from which the sequence was obtained (e.g. curated museum collection). http://www.ebi.ac.uk/ena/WebFeat/qualifiers/specimen_voucher.html" tip="AMCC:101706"/>
+    <token name="VARIETY" type="TEXT_FIELD" mandatory="false" display_name="Variety" description="variety (= varietas, a formal Linnaean rank) of organism from which sequence was derived.  Use the cultivar qualifier for cultivated plant varieties, i.e., products of artificial selection."/>
+    <token name="ECOTYPE" type="TEXT_FIELD" mandatory="false" display_name="Ecotype" description="A population within a given species displaying genetically based, phenotypic traits that reflect adaptation to a local habitat."/>
+    <token name="CULTIVAR" type="TEXT_FIELD" mandatory="false" display_name="Cultivar" description="cultivar (cultivated variety) of plant from which sequence was obtained, and is applied solely to products of artificial selection; use the variety qualifier for natural, named plant and fungal varieties."/>
+    <token name="PFNAME1" type="TEXT_FIELD" mandatory="false" display_name="Forward primer name" description="Name of the forward direction PCR primer."/>
+    <token name="PRNAME1" type="TEXT_FIELD" mandatory="false" display_name="Reverse primer name" description="Name of the reverse direction PCR primer."/>
+    <token name="PFSEQ1" type="TEXT_FIELD" mandatory="false" display_name="Forward primer sequence" description="Sequences should be given in the IUPAC degenerate-base alphabet, except for the modified bases; those must be enclosed within angle brackets."/>
+    <token name="PRSEQ1" type="TEXT_FIELD" mandatory="false" display_name="Reverse primer sequence" description="Sequences should be given in the IUPAC degenerate-base alphabet, except for the modified bases; those must be enclosed within angle brackets."/>
+    <token name="PFNAME2" type="TEXT_FIELD" mandatory="false" display_name="2nd forward primer name" description="Name of the 2nd forward direction PCR primer."/>
+    <token name="PRNAME2" type="TEXT_FIELD" mandatory="false" display_name="2nd reverse primer name" description="Name of the 2nd reverse direction PCR primer."/>
+    <token name="PFSEQ2" type="TEXT_FIELD" mandatory="false" display_name="2nd forward primer sequence" description="Sequences should be given in the IUPAC degenerate-base alphabet, except for the modified bases; those must be enclosed within angle brackets."/>
+    <token name="PRSEQ2" type="TEXT_FIELD" mandatory="false" display_name="2nd reverse primer sequence" description="Sequences should be given in the IUPAC degenerate-base alphabet, except for the modified bases; those must be enclosed within angle brackets."/>
+    <token name="18S" type="BOOLEAN_FIELD" mandatory="true" display_name="18S rRNA present" description="indicate if partial or complete 18S sequence is included."/>
+    <token name="ITS1" type="BOOLEAN_FIELD" mandatory="true" display_name="ITS1 present" description="indicate if partial or complete ITS1 sequence is included."/>
+    <token name="5.8S" type="BOOLEAN_FIELD" mandatory="true" display_name="5.8S rRNA present" description="indicate if partial or complete 5.8S sequence is included."/>
+    <token name="ITS2" type="BOOLEAN_FIELD" mandatory="true" display_name="ITS2 present" description="indicate if partial or complete ITS2 sequence is included."/>
+    <token name="28S" type="BOOLEAN_FIELD" mandatory="true" display_name="28S rRNA present" description="indicate if partial or complete 28S sequence is included."/>
+    <token name="SEQUENCE" type="TEXT_AREA_FIELD" display_name="Sequence" mandatory="true" variable_only="true" description="Sequence"/>
+    <token_group name="Basic Details" mandatory="true" contains="ORGANISM,STRAIN,CLONE,ISOLATE,ENVSAM,ISOSOURCE" description="Organism from which the sequenced material was taken."/>
+    <token_group name="Additional collection details" mandatory="false" contains="CULTCOLL,COUNTRY,AREA,LOCALITY,LATLON,HOST,COLDATE,COLBY,IDBY" description="Sampling details for the organism."/>
+    <token_group name="Plant/Fungal specific" mandatory="false" contains="VARIETY,CULTIVAR,ECOTYPE,SPECVOUCH" description="Qualifiers specifically for samples of plants or fungi."/>
+    <token_group name="PCR Primers" mandatory="false" contains="PFNAME1,PFSEQ1,PRNAME1,PRSEQ1,PFNAME2,PFSEQ2,PRNAME2,PRSEQ2" description="Details of the PCR primers used."/>
+    <token_group name="Features" mandatory="true" contains="18S,ITS1,5.8S,ITS2,28S" description="features present in the submitted sequence."/>
+    <token_group name="Sequence" contains="SEQUENCE" description="Sequence data"/>
+    <section name="ENV_SCT" mandatory="ENVSAM"/>
+    <section name="CLONE_SCT" mandatory="CLONE"/>
+    <section name="ISOLATE_SCT" mandatory="ISOLATE"/>
+    <section name="STRAIN_SCT" mandatory="STRAIN"/>
+    <section name="SPECVOUCH_SCT" mandatory="SPECVOUCH"/>
+    <section name="AREA_SCT" mandatory="AREA"/>
+    <section name="LOCALITY_SCT" mandatory="LOCALITY"/>
+    <section name="PFNAME1_SCT" mandatory="PFNAME1"/>
+    <section name="PRNAME1_SCT" mandatory="PRNAME1"/>
+    <section name="PFNAME2_SCT" mandatory="PFNAME2"/>
+    <section name="PRNAME2_SCT" mandatory="PRNAME2"/>
+    <section name="PFSEQ2_SCT" mandatory="PFSEQ2"/>
+    <section name="PRSEQ2_SCT" mandatory="PRSEQ2"/>
+    <section name="PF2_SCT" mandatory="PFSEQ2"/>
+    <section name="PR2_SCT" mandatory="PRSEQ2"/>
+    <template_string>
+        ID   XXX; SV XXX; linear; genomic DNA; XXX; XXX; {SEQUENCE_LENGTH} BP.
+        XX
+        ST * {STATUS}
+        XX
+        AC   ;
+        XX
+        DE   {ORGANISM} genomic DNA {PP_NOTES}{{STRAIN_SCT}}, strain {STRAIN}{{/STRAIN_SCT}}{{ISOLATE_SCT}}, isolate {ISOLATE}{{/ISOLATE_SCT}}{{SPECVOUCH_SCT}}, specimen voucher {SPECVOUCH}{{/SPECVOUCH_SCT}}{{CLONE_SCT}}, clone {CLONE}{{/CLONE_SCT}}
+        XX
+        KW   .
+        XX
+        OS
+        OC   .
+        XX
+        {CITATIONS}
+        FH   Key             Location/Qualifiers
+        FH
+        FT   source          1..{SEQUENCE_LENGTH}
+        FT                   /organism="{ORGANISM}"
+        FT                   /mol_type="genomic DNA"
+        {{ENV_SCT}}
+        FT                   /environmental_sample
+        {{/ENV_SCT}}
+        FT                   /clone="{CLONE}"
+        FT                   /strain="{STRAIN}"
+        FT                   /isolate="{ISOLATE}"
+        FT                   /country="{COUNTRY}{{AREA_SCT}}:{AREA}{{LOCALITY_SCT}}, {LOCALITY}{{/LOCALITY_SCT}}{{/AREA_SCT}}"
+        FT                   /isolation_source="{ISOSOURCE}"
+        FT                   /collection_date="{COLDATE}"
+        FT                   /collected_by="{COLBY}"
+        FT                   /identified_by="{IDBY}"
+        FT                   /culture_collection="{CULTCOLL}"
+        FT                   /specimen_voucher="{SPECVOUCH}"
+        FT                   /lat_lon="{LATLON}"
+        FT                   /cultivar="{CULTIVAR}"
+        FT                   /variety="{VARIETY}"
+        FT                   /ecotype="{ECOTYPE}"
+        FT                   /host="{HOST}"
+        FT                   /PCR_primers="{{PFNAME1_SCT}}fwd_name: {PFNAME1}, {{/PFNAME1_SCT}}fwd_seq: {PFSEQ1}, {{PF2_SCT}}{{PFNAME2_SCT}}fwd_name: {PFNAME2}, {{/PFNAME2_SCT}}{{PFSEQ2_SCT}}fwd_seq: {PFSEQ2}, {{/PFSEQ2_SCT}}{{/PF2_SCT}}{{PRNAME1_SCT}}rev_name: {PRNAME1}, {{/PRNAME1_SCT}}rev_seq: {PRSEQ1}{{PR2_SCT}}{{PRNAME2_SCT}}, rev_name: {PRNAME2}{{/PRNAME2_SCT}}{{PRSEQ2_SCT}}, rev_seq: {PRSEQ2}{{/PRSEQ2_SCT}}{{/PR2_SCT}}"
+        FT   misc_RNA        1..{SEQUENCE_LENGTH}
+        FT                   /note="{PP_NOTES}"
+        XX
+        {SEQUENCE}//
+    </template_string><![CDATA[For submission of ITS rDNA sequences where the annotation of individual component coordinates is not required. If you are submitting only part of a rRNA gene (e.g., 18S rRNA), please use the rRNA gene checklist.]]><example_string/>
+</template>

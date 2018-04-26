@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.apache.directory.studio:org.apache.commons.codec:1.8">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apache.directory.studio/org.apache.commons.codec/1.8/af243a2c8302b659b0afe9b4a2d8add1b7f964c0/org.apache.commons.codec-1.8.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apache.directory.studio/org.apache.commons.codec/1.8/750f287803fbd488190aeb3afeaf2235b3663b85/org.apache.commons.codec-1.8-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

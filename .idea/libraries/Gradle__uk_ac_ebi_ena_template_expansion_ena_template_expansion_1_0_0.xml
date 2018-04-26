@@ -1,14 +1,13 @@
 <component name="libraryTable">
   <library name="Gradle: uk.ac.ebi.ena-template-expansion:ena-template-expansion:1.0.0">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-template-expansion/ena-template-expansion/1.0.0/b63f65e026665697556a6e75ccac277405d5e9b8/ena-template-expansion-1.0.0.jar!/" />
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-template-expansion/ena-template-expansion/1.0.0/bbd5f3b299c41987eb46e6ac1867fb66598e2b61/ena-template-expansion-1.0.0.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-template-expansion/ena-template-expansion/1.0.0/6119ca2ad14310a5203a1b4ede4714972e1f443e/ena-template-expansion-1.0.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-template-expansion/ena-template-expansion/1.0.0/a1f9bc0774c95b65bfc89408b9949dabd2d2ab5/ena-template-expansion-1.0.0-sources.jar!/" />
-      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-template-expansion/ena-template-expansion/1.0.0/8041bd62cd8f3b3e3366d39d38d915f5fe27f1ee/ena-template-expansion-1.0.0-sources.jar!/" />
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-template-expansion/ena-template-expansion/1.0.0/5d7af90634462a8ac2c5024a8865193fe9b6517a/ena-template-expansion-1.0.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena-template-expansion/ena-template-expansion/1.0.0/5664f524a7d2823cfec9e0c3335c1fefa9be34b1/ena-template-expansion-1.0.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
