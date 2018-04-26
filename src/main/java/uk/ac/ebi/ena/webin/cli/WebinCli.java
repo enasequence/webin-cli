@@ -212,7 +212,7 @@ public class WebinCli {
 			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
 		if (validatorResult != SUCCESS)
-			throw WebinCliException.createValidationError(VALIDATE_USER_ERROR, reportDir + File.separator + "validate");
+			throw WebinCliException.createValidationError(VALIDATE_USER_ERROR, reportDir );
 		try {
 			File submitDirectory = createSubmitDirectory( assemblyName);
             // Gzip the files validated directory.
