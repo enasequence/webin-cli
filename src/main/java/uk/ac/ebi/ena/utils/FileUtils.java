@@ -102,16 +102,17 @@ public class FileUtils {
 	    return dir.listFiles().length==0;
 	}
 
-	public static void createReportFile(String submittedFile, String reportFile, String reportDir) throws ValidationEngineException {
+	public static String createReportFile(String submittedFile, String reportDir) throws ValidationEngineException {
 		try {
 			Path submittedFilePath = Paths.get(submittedFile);
 			if (!Files.exists(submittedFilePath))
 				throw new ValidationEngineException("Flat file " + submittedFile + " does not exist");
-			reportFile = reportDir + File.separator + submittedFilePath.getFileName().toString() + ".report";
+			String reportFile = reportDir + File.separator + submittedFilePath.getFileName().toString() + ".report";
 			Path reportPath = Paths.get(reportFile);
 			if (Files.exists(reportPath))
 				Files.delete(reportPath);
 			Files.createFile(reportPath);
+			return reportFile;
 		} catch (IOException e) {
 			throw new ValidationEngineException("Unable to create report file.");
 		}
@@ -136,6 +137,14 @@ public class FileUtils {
 		try {
 			for (ValidationMessage validationMessage: validationMessagesList)
                 Files.write(Paths.get(reportFile), (validationMessage.getMessage() + "\n").getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e) {}
+	}
+
+
+	public static void writeReport(String reportFile, List<ValidationMessage<Origin>> validationMessagesList, String messagePrefix) {
+		try {
+			for (ValidationMessage validationMessage: validationMessagesList)
+				Files.write(Paths.get(reportFile), (messagePrefix + (validationMessage.getMessage() + "\n")).getBytes(), StandardOpenOption.APPEND);
 		} catch (IOException e) {}
 	}
 }
