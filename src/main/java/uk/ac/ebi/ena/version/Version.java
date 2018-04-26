@@ -23,10 +23,10 @@ public class Version {
     private final static String SYSTEM_ERROR_NOT_FOUND = "A not found request error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when checking application version. ";
 
-    public boolean isVersionValid(String version) {
+    public boolean isVersionValid(String version, boolean TEST ) {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet(("https://wwwdev.ebi.ac.uk/ena/submit/drop-box/check_version/cli/") + version);
+            HttpGet httpGet = new HttpGet(( TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/check_version/cli/" :  "https://www.ebi.ac.uk/ena/submit/drop-box/check_version/cli/" ) + version);
             CloseableHttpResponse response = httpClient.execute(httpGet);
             int responsecode = response.getStatusLine().getStatusCode();
             switch (responsecode) {

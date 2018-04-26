@@ -121,7 +121,7 @@ public class WebinCli {
 				!params.submit) {
 				printUsageErrorAndExit();
 			}
-			checkVersion();
+			checkVersion( params.test );
 			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
@@ -434,10 +434,10 @@ public class WebinCli {
 			throw WebinCliException.createUserError("Info file " + info + " is missing the " + ASSEMBLYNAME_FIELD + " field.");
 	}
 
-	private static void checkVersion() {
+	private static void checkVersion( boolean test ) {
 		String version = WebinCli.class.getPackage().getImplementationVersion();
 		Version versionService = new Version();
-		if (!versionService.isVersionValid(version))
+		if (!versionService.isVersionValid(version, test ))
 			throw WebinCliException.createUserError(INVALID_VERSION.replaceAll("__VERSION__", version));
 	}
 
