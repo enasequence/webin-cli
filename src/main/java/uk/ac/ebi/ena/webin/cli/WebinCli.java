@@ -287,8 +287,9 @@ public class WebinCli {
 		File reportDirectory = new File(outputDir + File.separator + context + File.separator + assemblyName + File.separator + VALIDATE_DIR);
 		if (reportDirectory.exists())
 			FileUtils.emptyDirectory(reportDirectory);
-		else
-			reportDirectory.mkdirs();
+		else if (!reportDirectory.mkdirs()) {
+            throw WebinCliException.createSystemError("Unable to create directory: " + reportDirectory.getPath());
+		}
 		reportDir = reportDirectory.getAbsolutePath();
 	}
 
