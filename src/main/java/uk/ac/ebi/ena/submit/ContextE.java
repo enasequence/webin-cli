@@ -7,8 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.ena.manifest.FileFormat;
 
 public enum ContextE {
-    transcriptome("Transcriptome assembly: ASSEMBLY_NAME", "TRANSCRIPTOME_ASSEMBLY", new FileFormat[] {FileFormat.FASTA,FileFormat.FLATFILE,FileFormat.INFO} ),
-    genome("Genome assembly: ASSEMBLY_NAME", "SEQUENCE_ASSEMBLY",new FileFormat[] {FileFormat.FASTA, FileFormat.AGP, FileFormat.FLATFILE,FileFormat.CHROMOSOME_LIST,FileFormat.UNLOCALISED_LIST,FileFormat.INFO});
+    sequence("Sequence assembly: ASSEMBLYNAME", "SEQUENCE_FLATFILE", new FileFormat[] {FileFormat.TSV, FileFormat.FLATFILE, FileFormat.INFO} ),
+    transcriptome("Transcriptome assembly: ASSEMBLYNAME", "TRANSCRIPTOME_ASSEMBLY", new FileFormat[] {FileFormat.FASTA,FileFormat.FLATFILE, FileFormat.INFO} ),
+    genome("Genome assembly: ASSEMBLYNAME", "SEQUENCE_ASSEMBLY",new FileFormat[] {FileFormat.FASTA, FileFormat.AGP, FileFormat.FLATFILE,FileFormat.CHROMOSOME_LIST,FileFormat.UNLOCALISED_LIST,FileFormat.INFO});
 
     private String analysisTitle;
     private String analysisType;
@@ -20,8 +21,8 @@ public enum ContextE {
         this.fileFormats =fileFormats;
     }
 
-    public String getAnalysisTitle(String assemblyName) {
-        return analysisTitle.replace("ASSEMBLY_NAME", assemblyName);
+    public String getAnalysisTitle(String name) {
+        return analysisTitle.replace("_NAME_", name);
     }
 
     public String getAnalysisType() {
@@ -33,24 +34,18 @@ public enum ContextE {
     	return fileFormats;
     }
     
-    public String getFileFormatString()
-    {
+    public String getFileFormatString() {
     	StringBuilder fileFormats = new StringBuilder();
     	for(FileFormat fileFormat:Arrays.asList(this.fileFormats))
-    	{
     		fileFormats.append(fileFormat.name()+",");
-    	}
     	return StringUtils.stripEnd(fileFormats.toString(),",");
     }
-    public static  ContextE getContext(String context)
-    {
-    	try
-    	{
+
+    public static  ContextE getContext(String context) {
+    	try {
     	  return ContextE.valueOf(context);
-    	}catch(Exception e)
-    	{
+    	}catch(Exception e)	{
     		return null;
     	}
     }
-    
 }

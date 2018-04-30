@@ -17,11 +17,6 @@ public class FtpService {
     private final static int FTP_PORT = 21;
     private FTPClient ftpClient = new FTPClient() ;
     private final static String SYSTEM_ERROR_CONNECT = "Failed to connect to the Webin file upload area.";
-
-    /*
-    private final static String SYSTEM_ERROR_CHECK = "Failed to check if files have been uploaded.";
-    */
-
     private final static String SYSTEM_ERROR_CREATE_DIR = "Failed to create directory in webin.ebi.ac.uk file upload area.";
     private final static String SYSTEM_ERROR_CHANGE_DIR = "Failed to access directory in webin.ebi.ac.uk file upload area.";
     private final static String SYSTEM_ERROR_UPLOAD_FILE = "Failed to upload files to webin.ebi.ac.uk file upload area.";

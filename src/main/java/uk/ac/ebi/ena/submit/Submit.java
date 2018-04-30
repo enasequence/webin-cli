@@ -147,9 +147,11 @@ public class Submit {
             Element studyRefE = new Element("STUDY_REF");
             analysisE.addContent(studyRefE);
             studyRefE.setAttribute("accession", study);
-            Element sampleRefE = new Element("SAMPLE_REF");
-            analysisE.addContent(sampleRefE);
-            sampleRefE.setAttribute("accession", sample);
+            if (sample != null && !sample.isEmpty()) {
+                Element sampleRefE = new Element("SAMPLE_REF");
+                analysisE.addContent(sampleRefE);
+                sampleRefE.setAttribute("accession", sample);
+            }
             Element analysisTypeE = new Element("ANALYSIS_TYPE");
             analysisE.addContent(analysisTypeE);
             analysisTypeE.addContent(new Element(contextE.getAnalysisType()));
