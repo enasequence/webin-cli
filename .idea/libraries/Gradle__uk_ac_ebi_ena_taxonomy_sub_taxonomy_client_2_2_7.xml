@@ -6,6 +6,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena.taxonomy/sub-taxonomy-client/2.2.7/3148ebbd6d29d72a9743b3d8df2c8697f6a0955d/sub-taxonomy-client-2.2.7-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/uk.ac.ebi.ena.taxonomy/sub-taxonomy-client/2.2.7/ec12a4d4a16d967995929c062e1c492d98134540/sub-taxonomy-client-2.2.7-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

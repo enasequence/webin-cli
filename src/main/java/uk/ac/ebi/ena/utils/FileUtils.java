@@ -9,15 +9,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.AssemblyInfoReader;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyFileUtils;
 import uk.ac.ebi.ena.manifest.FileFormat;
@@ -96,6 +100,52 @@ public class FileUtils {
 	        }
 	    }
 	    return dir.listFiles().length==0;
+	}
+
+	public static String createReportFile(String submittedFile, String reportDir) throws ValidationEngineException {
+		try {
+			Path submittedFilePath = Paths.get(submittedFile);
+			if (!Files.exists(submittedFilePath))
+				throw new ValidationEngineException("Flat file " + submittedFile + " does not exist");
+			String reportFile = reportDir + File.separator + submittedFilePath.getFileName().toString() + ".report";
+			Path reportPath = Paths.get(reportFile);
+			if (Files.exists(reportPath))
+				Files.delete(reportPath);
+			Files.createFile(reportPath);
+			return reportFile;
+		} catch (IOException e) {
+			throw new ValidationEngineException("Unable to create report file.");
+		}
+	}
+
+	public static void writeReport(String reportFile, Severity severity, String message) {
+		try {
+			message = severity.name() + ": " + message;
+			Files.write(Paths.get(reportFile), message.getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e) {}
+	}
+
+	public static void writeReport(String reportFile, ValidationResult validationResult) {
+		try {
+			Collection<ValidationMessage<Origin>> validationMessagesList =  validationResult.getMessages();
+			for (ValidationMessage validationMessage: validationMessagesList)
+                Files.write(Paths.get(reportFile), validationMessage.getMessage().getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e) {}
+	}
+
+	public static void writeReport(String reportFile, List<ValidationMessage<Origin>> validationMessagesList) {
+		try {
+			for (ValidationMessage validationMessage: validationMessagesList)
+                Files.write(Paths.get(reportFile), (validationMessage.getMessage() + "\n").getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e) {}
+	}
+
+
+	public static void writeReport(String reportFile, List<ValidationMessage<Origin>> validationMessagesList, String messagePrefix) {
+		try {
+			for (ValidationMessage validationMessage: validationMessagesList)
+				Files.write(Paths.get(reportFile), (messagePrefix + (validationMessage.getMessage() + "\n")).getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e) {}
 	}
 }
 
