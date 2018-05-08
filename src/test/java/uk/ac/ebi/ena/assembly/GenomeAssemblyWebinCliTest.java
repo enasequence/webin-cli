@@ -1,17 +1,27 @@
 package uk.ac.ebi.ena.assembly;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 
 public class GenomeAssemblyWebinCliTest {
+	@Before public void
+	before()
+	{
+		Locale.setDefault( Locale.UK );
+		//-Duser.country=US -Duser.language=en
+	}
+	
 	@Test
 	public void testAssemblyWithnoInfo() throws Exception {
 		String fileName=null;
@@ -25,8 +35,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(fileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 
 	@Test
@@ -42,8 +51,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(fileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 
 	@Test
@@ -59,8 +67,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 
 	@Test
@@ -79,8 +86,7 @@ public class GenomeAssemblyWebinCliTest {
 		study.setLocusTagsList(locusTagsList);
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null, true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 
 	@Test
@@ -96,8 +102,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 	
 	@Test
@@ -113,8 +118,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 	
 	@Test
@@ -130,7 +134,6 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 }

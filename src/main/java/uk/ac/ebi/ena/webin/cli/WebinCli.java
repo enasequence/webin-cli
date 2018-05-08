@@ -194,28 +194,45 @@ public class WebinCli {
 
 	private void doValidation() {
 		Study study = getStudy();
-		WebinCliInterface validator = null;
+		AbstractWebinCli validator = null;
 		switch(contextE) {
 			case transcriptome:
-				validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), getSample(), study);
+			{
+				TranscriptomeAssemblyWebinCli v = new TranscriptomeAssemblyWebinCli( manifestValidator.getReader(), getSample(), study );
+				v.setReportsDir( reportDir );
+				validator = v;
 				break;
+			}
 			case sequence:
-				validator = new SequenceAssemblyWebinCli(manifestValidator.getReader(), study);
+			{
+				SequenceAssemblyWebinCli v = new SequenceAssemblyWebinCli( manifestValidator.getReader(), study );
+				v.setReportsDir( reportDir );
+				validator = v;
 				break;
+			}	
 			case genome:
-				validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),getSample(), study,infoValidator.getentry().getMoleculeType());
+			{
+				GenomeAssemblyWebinCli v = new GenomeAssemblyWebinCli( manifestValidator.getReader(),getSample(), study,infoValidator.getentry().getMoleculeType() );
+				v.setReportsDir( reportDir );
+				validator = v;
 				break;
+			}
 		}
 		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-		validator.setReportsDir(reportDir);
-		int validatorResult;
-		try {
-			validatorResult = validator.validate();
-		} catch (ValidationEngineException e) {
+		try 
+		{
+			if( validator.validate() )
+			{
+				writeMessage( Severity.INFO, VALIDATE_SUCCESS );	
+			} else
+			{
+				throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, reportDir );
+			}
+		} catch( ValidationEngineException e )
+		{
 			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
-		if (validatorResult != SUCCESS)
-			throw WebinCliException.createValidationError(VALIDATE_USER_ERROR, reportDir );
+
 		try {
 			File submitDirectory = createSubmitDirectory( assemblyName);
             // Gzip the files validated directory.
