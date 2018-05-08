@@ -133,4 +133,40 @@ public class GenomeAssemblyWebinCliTest {
 		int i= validator.validate();
 		assertEquals(0, i);
 	}
+	
+	@Test
+	public void testAssemblywithInvalidAGP() throws Exception {
+		String manifestFileName=null;
+		URL manifestUrl = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/manifestwithFastaInvalidAGPinfo.txt");
+		if (manifestUrl != null)
+			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
+		ManifestFileReader reader= new ManifestFileReader();
+		reader.read(manifestFileName);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(manifestFileName).getParent());
+		int i= validator.validate();
+		assertEquals(3, i);
+	}
+	
+	@Test
+	public void testAssemblywithFlatfileandGP() throws Exception {
+		String manifestFileName=null;
+		URL manifestUrl = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/manifestwithFlatfilevalidAGPinfo.txt");
+		if (manifestUrl != null)
+			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
+		ManifestFileReader reader= new ManifestFileReader();
+		reader.read(manifestFileName);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir(new File(manifestFileName).getParent());
+		int i= validator.validate();
+		assertEquals(0, i);
+	}
+	
+	
 }

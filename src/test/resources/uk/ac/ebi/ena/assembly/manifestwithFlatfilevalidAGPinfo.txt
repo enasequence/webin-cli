@@ -1,0 +1,3 @@
+INFO	valid_assembly_info.txt
+FLATFILE	valid_flatfileforAgp.txt
+AGP	valid_flatfileagp.txt
