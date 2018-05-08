@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
 import uk.ac.ebi.embl.api.entry.Entry;
 import uk.ac.ebi.embl.api.entry.Text;
 import uk.ac.ebi.embl.api.entry.XRef;
@@ -37,16 +38,16 @@ import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.ChromosomeListFileReader;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.UnlocalisedListFileReader;
-import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
 import uk.ac.ebi.ena.manifest.FileFormat;
+import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.utils.AssemblyReporter;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 
-public class GenomeAssemblyWebinCli implements WebinCliInterface {
+public class GenomeAssemblyWebinCli extends AbstractWebinCli {
 	protected FlatFileReader reader = null;
 	private static List<String> chromosomeEntryNames = new ArrayList<String>();
 	private static List<ChromosomeEntry> chromosomeEntries = null;
@@ -82,12 +83,12 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 		this.test = test;
 	}
 
-	@Override
+
 	public void setReportsDir(String reportDir) {
 		this.reportDir = reportDir;
 	}
 
-	public int validate() throws ValidationEngineException {
+	public boolean validate() throws ValidationEngineException {
 		boolean valid = true;
 		try {
 			EmblEntryValidationPlanProperty property = new EmblEntryValidationPlanProperty();
@@ -105,7 +106,7 @@ public class GenomeAssemblyWebinCli implements WebinCliInterface {
 			valid = valid & validateFlatFiles(property);
 			if (!test)
 				moveFiles(valid);
-			return valid ? 0 : 3;
+			return valid;
 		} catch (IOException e) {
 			throw new ValidationEngineException(e.getMessage());
 		}
