@@ -143,7 +143,7 @@ public class Submit {
             Element analysisE = new Element("ANALYSIS");
             Document doc = new Document(analysisE);
             analysisE.setAttribute("alias", "ena-ANALYSIS-" + System.currentTimeMillis());
-            analysisE.addContent(new Element("TITLE").setText(contextE.getAnalysisTitle(assemblyName)));
+            analysisE.addContent(new Element("TITLE").setText(contextE.getTitle(assemblyName)));
             Element studyRefE = new Element("STUDY_REF");
             analysisE.addContent(studyRefE);
             studyRefE.setAttribute("accession", study);
@@ -154,7 +154,7 @@ public class Submit {
             }
             Element analysisTypeE = new Element("ANALYSIS_TYPE");
             analysisE.addContent(analysisTypeE);
-            analysisTypeE.addContent(new Element(contextE.getAnalysisType()));
+            analysisTypeE.addContent(new Element(contextE.getType()));
             Element filesE = new Element("FILES");
             analysisE.addContent(filesE);
             Element fileE = new Element("FILE");

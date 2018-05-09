@@ -1,17 +1,5 @@
 package uk.ac.ebi.ena.transcriptome;
 
-import static org.junit.Assert.assertEquals;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Test;
-
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
-import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
-
 public class TranscriptomeValidatorTest {
     /*
     @Test
