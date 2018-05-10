@@ -13,6 +13,8 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.InfoFileValidator;
 import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
@@ -109,7 +111,13 @@ public class WebinCli {
 		return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
 	}
 
-	public static void main(String... args) {
+	
+	public static 
+	void main( String... args ) 
+	{
+	    ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
+	    ValidationResult.setDefaultMessageFormatter( null );
+
 		try {
 			if (args != null && args.length > 0) {
 				Optional<String> found = Arrays.stream(args).filter(arg -> "-help".equalsIgnoreCase(arg))
@@ -127,8 +135,8 @@ public class WebinCli {
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
-			outputDir = getFullPath(outputDir);
-			createValidateDir(params.context, name);
+			outputDir = getFullPath( outputDir );
+			createValidateDir( params.context, name );
 			createWebinCliReportFile();
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
@@ -199,21 +207,21 @@ public class WebinCli {
 			case transcriptome:
 			{
 				TranscriptomeAssemblyWebinCli v = new TranscriptomeAssemblyWebinCli( manifestValidator.getReader(), getSample(), study );
-				v.setReportsDir( reportDir );
+                v.setReportsDir( reportDir );
 				validator = v;
 				break;
 			}
 			case sequence:
 			{
 				SequenceAssemblyWebinCli v = new SequenceAssemblyWebinCli( manifestValidator.getReader(), study );
-				v.setReportsDir( reportDir );
+                v.setReportsDir( reportDir );
 				validator = v;
 				break;
 			}	
 			case genome:
 			{
 				GenomeAssemblyWebinCli v = new GenomeAssemblyWebinCli( manifestValidator.getReader(),getSample(), study,infoValidator.getentry().getMoleculeType() );
-				v.setReportsDir( reportDir );
+                v.setReportsDir( reportDir );
 				validator = v;
 				break;
 			}
@@ -442,7 +450,7 @@ public class WebinCli {
 		}
 	}
 
-	private static String peekInfoFileForName(String info) throws Exception {
+	public static String peekInfoFileForName(String info) throws Exception {
 		InputStream fileIs = Files.newInputStream(Paths.get(info));
 		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
 		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);

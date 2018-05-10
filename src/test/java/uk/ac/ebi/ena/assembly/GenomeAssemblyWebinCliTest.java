@@ -1,8 +1,10 @@
 package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,7 +36,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir(new File(fileName).getParent());
+		validator.setReportsDir( createOutputFolder().getPath() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -50,7 +52,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir(new File(fileName).getParent());
+		validator.setReportsDir( createOutputFolder().getPath() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -66,7 +68,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir(new File(manifestFileName).getParent());
+		validator.setReportsDir( createOutputFolder().getPath() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -85,7 +87,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		study.setLocusTagsList(locusTagsList);
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null, true);
-		validator.setReportsDir(new File(manifestFileName).getParent());
+		validator.setReportsDir( createOutputFolder().getPath() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -101,7 +103,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir(new File(manifestFileName).getParent());
+		validator.setReportsDir( createOutputFolder().getPath() );
 		Assert.assertTrue( validator.validate() );
 	}
 	
@@ -117,7 +119,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir(new File(manifestFileName).getParent());
+		validator.setReportsDir( createOutputFolder().getPath() );
 		Assert.assertTrue( validator.validate() );
 	}
 	
@@ -133,7 +135,45 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir(new File(manifestFileName).getParent());
+		validator.setReportsDir( createOutputFolder().getPath() );
 		Assert.assertTrue( validator.validate() );
 	}
+	
+	@Test public void 
+    testFastaNoValidEntries() throws Exception 
+    {
+        GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( new ManifestFileReader(), new Sample(), new Study(), null, true );
+        //TODO remove
+        validator.setReportsDir( createOutputFolder().getPath() );
+        //validator.getParameters().setOutputDir( createOutputFolder() );
+        Assert.assertTrue( !validator.validateFastaFiles( validator.getValidationProperties(), 
+                                                          Arrays.asList( new File( GenomeAssemblyWebinCliTest.class
+                                                                                              .getClassLoader()
+                                                                                              .getResource( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz" )
+                                                                                              .getFile() ) ) ) );
+    }
+
+    @Test public void 
+    testChromosomeListNoValidEntries() throws Exception 
+    {
+        GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( new ManifestFileReader(), new Sample(), new Study(), null, true );
+        //TODO remove
+        validator.setReportsDir( createOutputFolder().getPath() );
+        //validator.getParameters().setOutputDir( createOutputFolder() );
+        Assert.assertTrue( !validator.validateChromosomeList( validator.getValidationProperties(), 
+                                                              new File( GenomeAssemblyWebinCliTest.class
+                                                                                                  .getClassLoader()
+                                                                                                  .getResource( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz" )
+                                                                                                  .getFile() ) ) );
+    }
+
+    
+    private File
+    createOutputFolder() throws IOException
+    {
+        File output = File.createTempFile( "test", "test" );
+        Assert.assertTrue( output.delete() );
+        Assert.assertTrue( output.mkdirs() );
+        return output;
+    }
 }

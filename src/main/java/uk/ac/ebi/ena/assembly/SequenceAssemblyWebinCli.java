@@ -48,8 +48,8 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
     private boolean FAILED_VALIDATION;
     private ManifestFileReader manifestFileReader;
     private String submittedFile;
-    private String reportFile;
-    private String reportDir;
+    private File reportFile;
+    private File reportDir;
     private Study study;
     private final static int MAX_SEQUENCE_COUNT = 100000;
 
@@ -61,10 +61,10 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
     @Override public boolean 
     validate() throws ValidationEngineException {
         if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-            reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+            reportFile = FileUtils.createReportFile( reportDir, submittedFile );
             validateFlatFile();
         } else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.TSV ))!= null) {
-            reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+            reportFile = FileUtils.createReportFile( reportDir, submittedFile );
             validateTsvFile();
         } else
             throw new ValidationEngineException("Manifest file: TSV or FLATFILE must be pre55t4444eeeeeszsent.");
@@ -74,7 +74,7 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
 
 
     public void setReportsDir(String reportDir) {
-        this.reportDir = reportDir;
+        this.reportDir = new File( reportDir );
     }
 
     private void validateTsvFile()  throws ValidationEngineException {
