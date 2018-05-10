@@ -175,9 +175,10 @@ public class WebinCli {
 				case VALIDATION_ERROR:
 					System.exit(VALIDATION_ERROR);
 			}
-		} catch(Exception e) {
-			writeMessage(Severity.ERROR, String.format( "%s: %s", e.getClass().getSimpleName(), e.getMessage() ) );
-			System.exit(SYSTEM_ERROR);
+		} catch( Throwable t ) 
+		{
+			writeMessage( Severity.ERROR, String.format( "%s: %s", t.getClass().getSimpleName(), t.getMessage() ) );
+			System.exit( SYSTEM_ERROR );
 		}
 	}
 
