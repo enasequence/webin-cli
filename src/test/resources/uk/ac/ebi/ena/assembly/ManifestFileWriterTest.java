@@ -29,12 +29,8 @@ public class ManifestFileWriterTest
 			inputFile = new File(inUrl.getPath().replaceAll("%20", " "));
 		}
 
-		System.out.println( inputFile );
-		Files.readAllLines( inputFile.toPath(), StandardCharsets.UTF_8 ).forEach( System.out::println );
-		
 		ManifestFileReader reader= new ManifestFileReader();
 		reader.read(inputFile.getAbsolutePath());
-		reader.getManifestFileObjects().stream().forEach( System.out::println );
 		writer.write(outputFile, reader.getManifestFileObjects());
 		StringBuilder fileContent = new StringBuilder();
 		try (BufferedReader r = Files.newBufferedReader(outputFile.toPath())) {
