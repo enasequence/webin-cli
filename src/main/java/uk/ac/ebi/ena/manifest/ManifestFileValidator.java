@@ -3,20 +3,18 @@ package uk.ac.ebi.ena.manifest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.assembly.GenomeAssemblyFileUtils;
 import uk.ac.ebi.ena.submit.ContextE;
-import uk.ac.ebi.ena.utils.AssemblyReporter;
+import uk.ac.ebi.ena.utils.FileUtils;
 
-public class ManifestFileValidator
+@Deprecated public class ManifestFileValidator
 {
 	private static String InvalidFileFormat = "invalidFileFormat";
 	private static String InvalidFile = "invalidFile";
@@ -38,8 +36,8 @@ public class ManifestFileValidator
 	public  boolean validate(File manifestFile,String reportDir,String context) throws FileNotFoundException, IOException
 	{
         ValidationMessageManager.addBundle(MANIFESTMESSAGEBUNDLE);
-        reportFile=new File(reportDir+File.separator+manifestFile.getName()+ ".report");
-		Writer manifestrepoWriter = new PrintWriter(reportFile, "UTF-8");
+        reportFile = new File( reportDir+File.separator+manifestFile.getName()+ ".report" );
+//		Writer manifestrepoWriter = new PrintWriter(reportFile, "UTF-8");
 		reader= new ManifestFileReader();
 		ValidationPlanResult result= new ValidationPlanResult();
 		try {
@@ -80,8 +78,11 @@ public class ManifestFileValidator
 			}
 		}
 		
-	    return AssemblyReporter.logMessages(reportFile.getName(), new ValidationResult(), result, manifestrepoWriter);
+	    FileUtils.writeReport( reportFile, result.getMessages(),  reportFile.getName() );
+	    
+	    return result.isValid();
 	}
+	
 	
 	public ManifestFileReader getReader()
 	{

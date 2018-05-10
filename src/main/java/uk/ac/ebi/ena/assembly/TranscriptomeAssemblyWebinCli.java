@@ -40,15 +40,14 @@ import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
 
 public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
 	private final String MOL_TYPE = "transcribed RNA";
-	private String reportFile;
-	private String reportDir;
+	private File reportFile;
+	private File reportDir;
 	private String submittedFile;
 	private Sample sample;
     private Study study;
@@ -75,16 +74,16 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 
 
 	public void setReportsDir(String reportDir) {
-		this.reportDir = reportDir;
+		this.reportDir = new File( reportDir );
 	}
 
 	@Override
 	public boolean validate() throws ValidationEngineException {
 		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-			reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+			reportFile = FileUtils.createReportFile( reportDir, submittedFile );
 			validateFlatFile();
 		} else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
-			reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+			reportFile = FileUtils.createReportFile( reportDir, submittedFile );
 			validateFastaFile();
 		} else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
