@@ -150,8 +150,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
-		int i= validator.validate();
-		assertEquals(3, i);
+		Assert.assertTrue( !validator.validate() );
 	}
 	
 	@Test
@@ -167,8 +166,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
-		int i= validator.validate();
-		assertEquals(0, i);
+		Assert.assertTrue( validator.validate() );
 	}
 	
 	
