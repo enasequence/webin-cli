@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
@@ -468,17 +469,22 @@ public class WebinCli {
 		}
 	}
 
-	public static String peekInfoFileForName(String info) throws Exception {
-		InputStream fileIs = Files.newInputStream(Paths.get(info));
-		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
-		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs));
-		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(NAME_FIELD))
-				.findFirst();
-		if (optional.isPresent())
-			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
-		else
-			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
+	@Deprecated public static String peekInfoFileForName(String info) throws Exception {
+		try( InputStream fileIs = Files.newInputStream(Paths.get(info) );
+		     BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
+		     GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
+		     BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs) ); )
+		{
+    		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(NAME_FIELD))
+    				.findFirst();
+    		if (optional.isPresent())
+    			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
+    		else
+    			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
+		} catch( ZipException ze )
+		{
+		    throw new ZipException( String.format( "file %s %s", info, ze.getMessage() ) );
+		}
 	}
 
 	private static void checkVersion( boolean test ) {
