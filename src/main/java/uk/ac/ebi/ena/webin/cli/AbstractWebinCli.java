@@ -8,13 +8,15 @@ AbstractWebinCli
 {
     protected static final String VALIDATE_SUCCESS = "The submission has been validated successfully. ";
     protected static final String VALIDATE_SYSTEM_ERROR = "Submission validation failed because of a system error. ";
+    protected static final String VALIDATE_DIR = "validate";
+    protected static final String SUBMIT_DIR   = "submit";
+    
     
     private SubmissionBundle   submissionBundle;
     private ValidationResult   validationResult;
     private WebinCliParameters parameters = new WebinCliParameters();
 
-
-
+    
     public void 
     init( WebinCliParameters parameters )
     {

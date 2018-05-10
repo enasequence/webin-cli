@@ -1,11 +1,7 @@
 package uk.ac.ebi.ena.assembly;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +20,10 @@ import uk.ac.ebi.embl.api.entry.location.LocationFactory;
 import uk.ac.ebi.embl.api.entry.location.Order;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
 import uk.ac.ebi.embl.api.validation.FileType;
+import uk.ac.ebi.embl.api.validation.Origin;
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
@@ -43,12 +42,11 @@ import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
-import uk.ac.ebi.ena.utils.AssemblyReporter;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 
-public class GenomeAssemblyWebinCli extends AbstractWebinCli {
-	protected FlatFileReader reader = null;
+public class 
+GenomeAssemblyWebinCli extends SequenceWebinCli 
+{
 	private static List<String> chromosomeEntryNames = new ArrayList<String>();
 	private static List<ChromosomeEntry> chromosomeEntries = null;
 	private static HashMap<String,Long> fastaEntryNames = new HashMap<String,Long>();
@@ -65,7 +63,6 @@ public class GenomeAssemblyWebinCli extends AbstractWebinCli {
 	private boolean test;
 	private ManifestFileReader manifestFileReader;
 	private Study study = null;
-	private String reportDir;
 
 	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study, String molType) {
 		this.manifestFileReader = manifestFileReader;
@@ -85,24 +82,20 @@ public class GenomeAssemblyWebinCli extends AbstractWebinCli {
 		this.test = test;
 	}
 
-
-	public void setReportsDir(String reportDir) {
-		this.reportDir = reportDir;
-	}
-
-	public boolean validate() throws ValidationEngineException {
+	
+    public boolean validate() throws ValidationEngineException {
 		boolean valid = true;
-		try {
-			EmblEntryValidationPlanProperty property = new EmblEntryValidationPlanProperty();
-			property.isFixMode.set(true);
-			property.isRemote.set(true);
-			property.locus_tag_prefixes.set(study.getLocusTagsList());
+		try 
+		{
+            EmblEntryValidationPlanProperty property = getValidationProperties();
+            
 			TaxonHelper taxonHelper = new TaxonHelperImpl();
 			defineFileTypes();
-			valid = valid & validateChromosomeList(property);
-			valid = valid & validateUnlocalisedList(property);
-			getChromosomeEntryNames(taxonHelper.isChildOf(sample.getOrganism(), "Virus"));
-			valid = valid & validateFastaFiles(property);
+
+			valid = valid & validateChromosomeList( property, chromosomeListFile );
+			valid = valid & validateUnlocalisedList( property );
+			getChromosomeEntryNames( taxonHelper.isChildOf( sample.getOrganism(), "Virus" ) );
+			valid = valid & validateFastaFiles( property, fastaFiles );
 			valid = valid & validateFlatFiles(property);
 			HashMap<String,Long> entryNames= new HashMap<String,Long>();
 			entryNames.putAll(fastaEntryNames);
@@ -118,223 +111,291 @@ public class GenomeAssemblyWebinCli extends AbstractWebinCli {
 
 	}
 
-	private boolean validateChromosomeList(EmblEntryValidationPlanProperty property)
-			throws IOException, ValidationEngineException {
-		if (chromosomeListFile == null)
-			return true;
-		ValidationResult chromosomeListParseResult = new ValidationResult();
-		chromosomeEntries = getChromosomeEntries(chromosomeListFile, chromosomeListParseResult);
-		Writer chromosomeListRepoWriter = new PrintWriter(
-				new FileOutputStream(new File(reportDir + File.separator + chromosomeListFile.getName() + ".report")),
-				true);
-		boolean valid = AssemblyReporter.logMessages(chromosomeListFile.getName(), chromosomeListParseResult,
-				new ValidationPlanResult(), chromosomeListRepoWriter);
-		;
-		if (chromosomeEntries != null) {
-			property.fileType.set(FileType.CHROMOSOMELIST);
 
-			for (ChromosomeEntry chromosomeEntry : chromosomeEntries) {
-				valid = valid & AssemblyReporter.logMessages(chromosomeListFile.getName(), new ValidationResult(),
-						validateEntry(chromosomeEntry, property), chromosomeListRepoWriter);
-			}
-		}
-		chromosomeListRepoWriter.flush();
-		return valid;
-	}
+    EmblEntryValidationPlanProperty 
+    getValidationProperties() 
+    {
+        EmblEntryValidationPlanProperty property = new EmblEntryValidationPlanProperty();
+        
+        property.isFixMode.set( true );
+        property.isRemote.set( true );
+        property.locus_tag_prefixes.set( study.getLocusTagsList() );
+        return property;
+    }
+	   
+	
+	boolean 
+    validateChromosomeList( EmblEntryValidationPlanProperty property, File chromosomeListFile ) throws IOException, ValidationEngineException 
+    {
+        if( chromosomeListFile == null )
+            return true;
+        
+        ValidationResult parseResult = new ValidationResult();
+        
+        chromosomeEntries = getChromosomeEntries( chromosomeListFile, parseResult );
+        File f = getReportFile( FileFormat.CHROMOSOME_LIST, chromosomeListFile.getName() );
 
-	private boolean validateUnlocalisedList(EmblEntryValidationPlanProperty property)
-			throws IOException, ValidationEngineException {
-		if (unlocalisedListFile == null)
-			return true;
-		ValidationResult unlocalisedParseResult = new ValidationResult();
-		List<UnlocalisedEntry> unlocalisedEntries = getUnlocalisedEntries(unlocalisedListFile, unlocalisedParseResult);
-		Writer unlocalisedListRepoWriter = new PrintWriter(
-				new FileOutputStream(new File(reportDir + File.separator + unlocalisedListFile.getName() + ".report")),
-				true);
-		boolean valid = AssemblyReporter.logMessages(unlocalisedListFile.getName(), unlocalisedParseResult,
-				new ValidationPlanResult(), unlocalisedListRepoWriter);
-		;
-		if (unlocalisedEntries != null) {
-			property.fileType.set(FileType.UNLOCALISEDLIST);
-			for (UnlocalisedEntry unlocalisedEntry : unlocalisedEntries) {
-				valid = valid & AssemblyReporter.logMessages(unlocalisedListFile.getName(), new ValidationResult(),
-						validateEntry(unlocalisedEntry, property), unlocalisedListRepoWriter);
-			}
-		}
-		unlocalisedListRepoWriter.flush();
-		return valid;
-	}
+        if( null == chromosomeEntries || chromosomeEntries.isEmpty() )
+        {
+            FileUtils.writeReport( f, Severity.ERROR, "File " + chromosomeListFile.getPath() + " has no valid chromosome entries" );
+            return false;
+        }   
 
-	private boolean validateFastaFiles(EmblEntryValidationPlanProperty property)
-			throws IOException, ValidationEngineException {
-		boolean valid = true;
-		for (File file : fastaFiles) {
-			property.fileType.set(FileType.FASTA);
-			try (/*
-					 * Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed");
-					 */Writer reportWriter = new PrintWriter(
-					new FileOutputStream(new File(reportDir + File.separator + file.getName() + ".report")), true);
-					BufferedReader bf = FileUtils.getBufferedReader(file)) {
-				FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.FASTA, file, bf);
-				ValidationResult parseResult = reader.read();
-				while (reader.isEntry()) {
-					SourceFeature source = (new FeatureFactory()).createSourceFeature();
-					source.setScientificName(sample.getOrganism());
-					source.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, molType);
-					Entry entry = (Entry) reader.getEntry();
-					if (sample.getBiosampleId() != null)
-						entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
-					if (study.getProjectId() != null)
-						entry.addProjectAccession(new Text(study.getProjectId()));
-					if (entry.getSubmitterAccession() != null
-							&& chromosomeEntryNames.contains(entry.getSubmitterAccession().toUpperCase())) {
-						List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap
-								.get(entry.getSubmitterAccession().toUpperCase());
-						source.addQualifiers(chromosomeQualifiers);
-						property.validationScope.set(ValidationScope.ASSEMBLY_CHROMOSOME);
-						entry.setDataClass(Entry.STD_DATACLASS);
-					} else {
-						property.validationScope.set(ValidationScope.ASSEMBLY_CONTIG);
-						entry.setDataClass(Entry.WGS_DATACLASS);
-					}
 
-					Order<Location> featureLocation = new Order<Location>();
-					featureLocation
-							.addLocation(new LocationFactory().createLocalRange(1l, entry.getSequence().getLength()));
-					source.setLocations(featureLocation);
-					entry.addFeature(source);
-					entry.getSequence().setMoleculeType(molType);
-					ValidationPlan validationPlan = getValidationPlan(entry, property);
-					valid = valid & AssemblyReporter.logMessages(file.getName(), parseResult,
-							validationPlan.execute(entry), reportWriter);
-					// FastaFileWriter writer = new FastaFileWriter(entry, fixedFileWriter);
-					// writer.write();
-					fastaEntryNames.put(entry.getSubmitterAccession(),entry.getSequence().getLength());
-					parseResult = reader.read();
-				}
-				// fixedFileWriter.flush();
-				reportWriter.flush();
-			}
-		}
-		return valid;
-	}
+        if( !parseResult.isValid() )
+        {
+            FileUtils.writeReport( f, parseResult, chromosomeListFile.getName() );
+            return false;
+        }
+        
+        boolean valid = true;
+        if( chromosomeEntries != null )
+        {
+            property.fileType.set( FileType.CHROMOSOMELIST );
+            
+            for( ChromosomeEntry chromosomeEntry : chromosomeEntries )
+            {
+                ValidationPlanResult vpr = validateEntry( chromosomeEntry, property );
+                valid &= vpr.isValid();
+                FileUtils.writeReport( f, vpr.getMessages(), chromosomeListFile.getName() );
+            }
+        }
+        return valid;
+    }
 
-	private boolean validateFlatFiles(EmblEntryValidationPlanProperty property)
-			throws IOException, ValidationEngineException {
-		boolean valid = true;
-		for (File file : flatFiles) {
-			property.fileType.set(FileType.EMBL);
-			try (/*
-					 * Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed");
-					 */ Writer reportWriter = new PrintWriter(
-					new FileOutputStream(new File(reportDir + File.separator + file.getName() + ".report")), true);
-					BufferedReader bf = FileUtils.getBufferedReader(file)) {
-				FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.FLATFILE, file, bf);
-				ValidationResult parseResult = reader.read();
-				while (reader.isEntry()) {
-					Entry entry = (Entry) reader.getEntry();
-					flatfileEntryNames.put(entry.getSubmitterAccession(),entry.getSequence().getLength());
-					entry.removeFeature(entry.getPrimarySourceFeature());
-					SourceFeature source = (new FeatureFactory()).createSourceFeature();
-					source.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, molType);
-					source.setScientificName(sample.getOrganism());
-					if (sample.getBiosampleId() != null)
-						entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
-					if (study.getProjectId() != null)
-						entry.addProjectAccession(new Text(study.getProjectId()));
-					if (entry.getSubmitterAccession() != null
-							&& chromosomeEntryNames.contains(entry.getSubmitterAccession().toUpperCase())) {
-						List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap
-								.get(entry.getSubmitterAccession().toUpperCase());
-						source.addQualifiers(chromosomeQualifiers);
-						property.validationScope.set(ValidationScope.ASSEMBLY_CHROMOSOME);
-						if (entry.getSubmitterAccession() != null
-								&& agpEntrynames.contains(entry.getSubmitterAccession().toUpperCase()))
-							entry.setDataClass(Entry.CON_DATACLASS);
-						else
-							entry.setDataClass(Entry.STD_DATACLASS);
-					} else if (entry.getSubmitterAccession() != null
-							&& agpEntrynames.contains(entry.getSubmitterAccession().toUpperCase())) {
-						entry.setDataClass(Entry.CON_DATACLASS);
-						property.validationScope.set(ValidationScope.ASSEMBLY_SCAFFOLD);
-					} else {
-						property.validationScope.set(ValidationScope.ASSEMBLY_CONTIG);
-						entry.setDataClass(Entry.WGS_DATACLASS);
-					}
-					Order<Location> featureLocation = new Order<Location>();
-					featureLocation
-							.addLocation(new LocationFactory().createLocalRange(1l, entry.getSequence().getLength()));
-					source.setLocations(featureLocation);
-					entry.addFeature(source);
-					entry.getSequence().setMoleculeType(molType);
-					ValidationPlan validationPlan = getValidationPlan(entry, property);
-					valid = valid & AssemblyReporter.logMessages(file.getName(), parseResult,
-							validationPlan.execute(entry), reportWriter);
-					// EmblEntryWriter writer = new EmblEntryWriter(entry);
-					// writer.write(fixedFileWriter);
-					parseResult = reader.read();
-				}
 
-				reportWriter.flush();
-			}
-		}
-		return valid;
-	}
+	private boolean 
+    validateUnlocalisedList( EmblEntryValidationPlanProperty property ) throws IOException, ValidationEngineException
+    {
+        if( unlocalisedListFile == null )
+            return true;
+        
+        ValidationResult parseResult = new ValidationResult();
+        List<UnlocalisedEntry> unlocalisedEntries = getUnlocalisedEntries( unlocalisedListFile, parseResult );
+        File f = getReportFile( FileFormat.UNLOCALISED_LIST, unlocalisedListFile.getName() );
+        boolean valid = parseResult.isValid();
+        FileUtils.writeReport( f, parseResult, unlocalisedListFile.getName() );
+        
+        if( parseResult.isValid() )
+        {
+            if( unlocalisedEntries != null ) 
+            {
+                property.fileType.set( FileType.UNLOCALISEDLIST );
+                for( UnlocalisedEntry unlocalisedEntry : unlocalisedEntries ) 
+                {
+                    ValidationPlanResult vpr = validateEntry( unlocalisedEntry, property );
+                    valid &= vpr.isValid();
+                    FileUtils.writeReport( f, vpr.getMessages(), unlocalisedListFile.getName() );
+                }
+            }
+        }           
+        
+        return valid;
+    }
+	
 
-	private boolean validateAgpFiles(EmblEntryValidationPlanProperty property)
-			throws IOException, ValidationEngineException {
-		boolean valid = true;
+	boolean 
+    validateFastaFiles( EmblEntryValidationPlanProperty property, List<File> fastaFiles ) throws IOException, ValidationEngineException 
+    {
+        boolean valid = true;
+        boolean valid_entries = false;
+        
+        for( File file : fastaFiles ) 
+        {
+            property.fileType.set( FileType.FASTA );
+            File f = getReportFile( FileFormat.FASTA, file.getName() ); 
+            FlatFileReader<?> reader = getFileReader( FileFormat.FASTA, file );
+            ValidationResult parseResult = reader.read();
+            valid &= parseResult.isValid();
+            FileUtils.writeReport( f, parseResult, file.getName() );
+            if( parseResult.isValid() )
+            {
+                while( reader.isEntry() )
+                {
+                    SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
+                    source.setScientificName( sample.getOrganism() );
+                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
+                    
+                    Entry entry = (Entry) reader.getEntry();
+                    if( sample.getBiosampleId() != null )
+                        entry.addXRef( new XRef( "BioSample", sample.getBiosampleId() ) );
+                    
+                    if( study.getProjectId() != null )
+                        entry.addProjectAccession( new Text( study.getProjectId() ) );
+                    
+                    if( entry.getSubmitterAccession() != null && chromosomeEntryNames.contains( entry.getSubmitterAccession().toUpperCase() ) ) 
+                    {
+                        List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap.get( entry.getSubmitterAccession().toUpperCase() );
+                        source.addQualifiers( chromosomeQualifiers );
+                        property.validationScope.set( ValidationScope.ASSEMBLY_CHROMOSOME );
+                        entry.setDataClass( Entry.STD_DATACLASS );
+                    } else 
+                    {
+                        property.validationScope.set( ValidationScope.ASSEMBLY_CONTIG );
+                        entry.setDataClass( Entry.WGS_DATACLASS );
+                    }
 
-		for (File file : agpFiles) {
-			property.fileType.set(FileType.AGP);
-			try (/*
-					 * Writer fixedFileWriter = new PrintWriter(file.getAbsolutePath() + ".fixed");
-					 */ Writer reportWriter = new PrintWriter(
-					new FileOutputStream(new File(reportDir + File.separator + file.getName() + ".report")), true);
-					BufferedReader bf = FileUtils.getBufferedReader(file)) {
-				FlatFileReader reader = GenomeAssemblyFileUtils.getFileReader(FileFormat.AGP, file, bf);
+                    Order<Location> featureLocation = new Order<Location>();
+                    featureLocation.addLocation( new LocationFactory().createLocalRange(1l, entry.getSequence().getLength() ) );
+                    source.setLocations( featureLocation);
+                    entry.addFeature( source);
+                    entry.getSequence().setMoleculeType( molType );
 
-				ValidationResult parseResult = reader.read();
-				while (reader.isEntry()) {
-					SourceFeature source = (new FeatureFactory()).createSourceFeature();
-					source.setScientificName(sample.getOrganism());
-					source.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, molType);
-					Entry entry = (Entry) reader.getEntry();
-					if (sample.getBiosampleId() != null)
-						entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
-					if (study.getProjectId() != null)
-						entry.addProjectAccession(new Text(study.getProjectId()));
-					entry.setDataClass(Entry.CON_DATACLASS);
-					if (entry.getSubmitterAccession() != null
-							&& chromosomeEntryNames.contains(entry.getSubmitterAccession().toUpperCase())) {
-						List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap
-								.get(entry.getSubmitterAccession().toUpperCase());
-						source.addQualifiers(chromosomeQualifiers);
-						property.validationScope.set(ValidationScope.ASSEMBLY_CHROMOSOME);
-					} else
-						property.validationScope.set(ValidationScope.ASSEMBLY_SCAFFOLD);
-					Order<Location> featureLocation = new Order<Location>();
-					featureLocation
-							.addLocation(new LocationFactory().createLocalRange(1l, entry.getSequence().getLength()));
-					source.setLocations(featureLocation);
-					entry.addFeature(source);
-					entry.getSequence().setMoleculeType(molType);
-					ValidationPlan validationPlan = getValidationPlan(entry, property);
-					valid = valid & AssemblyReporter.logMessages(file.getName(), parseResult,
-							validationPlan.execute(entry), reportWriter);
-					// AGPFileWriter writer = new AGPFileWriter(entry, fixedFileWriter);
-					// writer.write();
-					agpEntrynames.add(entry.getSubmitterAccession());
-					parseResult = reader.read();
-				}
-				// fixedFileWriter.flush();
-				reportWriter.flush();
-			}
+					ValidationPlanResult vpr = getValidationPlan( entry, property ).execute( entry );
+					valid &= vpr.isValid();
+		            FileUtils.writeReport( f, vpr.getMessages(), file.getName() );
+		            
+					fastaEntryNames.put( entry.getSubmitterAccession(), entry.getSequence().getLength() );
+                    valid_entries = true;
+                    parseResult = reader.read();
+                }
 
-		}
-		return valid;
-	}
+                if( !valid_entries )
+                {
+                    valid &= false;
+                    FileUtils.writeReport( f, Severity.ERROR, "File " + file.getName() + " does not contain valid FASTA entries" );
+                }   
+            }
+        }
+        return valid;
+    }
+	
 
+    private boolean 
+    validateFlatFiles( EmblEntryValidationPlanProperty property ) throws ValidationEngineException, IOException 
+    {
+        boolean valid = true;
+        for( File file : flatFiles ) 
+        {
+            property.fileType.set( FileType.EMBL );
+            File f = getReportFile( FileFormat.FLATFILE, file.getName() );
+            
+            FlatFileReader<?> reader = getFileReader( FileFormat.FLATFILE, file );
+            ValidationResult parseResult = reader.read();
+            valid &= parseResult.isValid();
+            FileUtils.writeReport( f, parseResult, file.getName() );
+            
+            if( parseResult.isValid() )
+            {
+                while( reader.isEntry() ) 
+                {
+                    Entry entry = (Entry) reader.getEntry();
+                    flatfileEntryNames.put(entry.getSubmitterAccession(),entry.getSequence().getLength());
+                    entry.removeFeature( entry.getPrimarySourceFeature() );
+                    SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
+                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
+                    source.setScientificName( sample.getOrganism() );
+                    
+                    if( sample.getBiosampleId() != null )
+                        entry.addXRef( new XRef( "BioSample", sample.getBiosampleId() ) );
+                    
+                    if( study.getProjectId() != null )
+                        entry.addProjectAccession( new Text( study.getProjectId() ) );
+                    
+                    if( entry.getSubmitterAccession() != null && chromosomeEntryNames.contains( entry.getSubmitterAccession().toUpperCase() ) ) 
+                    {
+                        List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap.get( entry.getSubmitterAccession().toUpperCase() );
+                        source.addQualifiers( chromosomeQualifiers );
+                        property.validationScope.set( ValidationScope.ASSEMBLY_CHROMOSOME );
+                        if( entry.getSubmitterAccession() != null && agpEntrynames.contains( entry.getSubmitterAccession().toUpperCase() ) )
+                        {
+                            entry.setDataClass( Entry.CON_DATACLASS );
+                        } else
+                        {
+                            entry.setDataClass( Entry.STD_DATACLASS );
+                        }
+                    } else if( entry.getSubmitterAccession() != null && agpEntrynames.contains( entry.getSubmitterAccession().toUpperCase() ) ) 
+                    {
+                        entry.setDataClass( Entry.CON_DATACLASS );
+                        property.validationScope.set( ValidationScope.ASSEMBLY_SCAFFOLD );
+                    } else 
+                    {
+                        property.validationScope.set( ValidationScope.ASSEMBLY_CONTIG );
+                        entry.setDataClass( Entry.WGS_DATACLASS );
+                    }
+                    Order<Location> featureLocation = new Order<Location>();
+                    featureLocation.addLocation( new LocationFactory().createLocalRange( 1l, entry.getSequence().getLength() ) );
+                    source.setLocations( featureLocation );
+                    entry.addFeature( source );
+                    entry.getSequence().setMoleculeType( molType );
+
+                    ValidationPlanResult validationPlanResult = getValidationPlan( entry, property ).execute( entry );
+                    valid &= validationPlanResult.isValid();
+                    FileUtils.writeReport( f, validationPlanResult.getMessages(), file.getName() );
+
+                    parseResult = reader.read();
+                    if( !parseResult.isValid() )
+                    {
+                        valid = false;
+                        FileUtils.writeReport( f, parseResult, file.getName() );
+                    }
+                }
+            }
+        }
+        return valid;
+    }
+
+
+    private boolean 
+    validateAgpFiles( EmblEntryValidationPlanProperty property ) throws IOException, ValidationEngineException 
+    {
+        boolean valid = true;
+
+        for( File file : agpFiles ) 
+        {
+            property.fileType.set( FileType.AGP );
+            File f = getReportFile( FileFormat.AGP, file.getName() );
+            
+            FlatFileReader<?> reader = getFileReader( FileFormat.AGP, file );
+            
+            ValidationResult parseResult = reader.read();
+            valid &= parseResult.isValid();
+            if( !valid ) //TODO: discuss file format errors, AgpFileReader.isEntry
+            {
+                FileUtils.writeReport( f, parseResult, file.getName() );
+            } else
+            {
+                while( reader.isEntry() ) 
+                {
+                    SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
+                    source.setScientificName( sample.getOrganism() );
+                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
+                    Entry entry = (Entry) reader.getEntry();
+                    if( sample.getBiosampleId() != null )
+                        entry.addXRef( new XRef( "BioSample", sample.getBiosampleId() ) );
+                    
+                    if( study.getProjectId() != null )
+                        entry.addProjectAccession( new Text( study.getProjectId() ) );
+                    
+                    entry.setDataClass( Entry.CON_DATACLASS );
+                    if( entry.getSubmitterAccession() != null && chromosomeEntryNames.contains( entry.getSubmitterAccession().toUpperCase() ) ) 
+                    {
+                        List<Qualifier> chromosomeQualifiers = chromosomeQualifierMap.get( entry.getSubmitterAccession().toUpperCase() );
+                        source.addQualifiers( chromosomeQualifiers );
+                        property.validationScope.set( ValidationScope.ASSEMBLY_CHROMOSOME );
+                    } else
+                    {
+                        property.validationScope.set( ValidationScope.ASSEMBLY_SCAFFOLD );
+                    }
+                    
+                    Order<Location> featureLocation = new Order<Location>();
+                    featureLocation.addLocation( new LocationFactory().createLocalRange( 1l, entry.getSequence().getLength() ) );
+                    source.setLocations( featureLocation );
+                    entry.addFeature( source );
+                    entry.getSequence().setMoleculeType( molType );
+                    ValidationPlanResult vpr = getValidationPlan( entry, property ).execute( entry );
+                    valid &= vpr.isValid();
+                    FileUtils.writeReport( f, vpr.getMessages(), file.getName() );
+                    
+                    agpEntrynames.add( entry.getSubmitterAccession() );
+                    parseResult = reader.read();
+                }
+            }
+        }
+        return valid;
+    }
+
+    
 	public ValidationPlan getValidationPlan(Object entry, EmblEntryValidationPlanProperty property) {
 		ValidationPlan validationPlan = null;
 		if (entry instanceof AssemblyInfoEntry || entry instanceof ChromosomeEntry || entry instanceof UnlocalisedEntry)
