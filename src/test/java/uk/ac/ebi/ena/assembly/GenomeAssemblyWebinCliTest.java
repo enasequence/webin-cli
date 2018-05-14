@@ -36,7 +36,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir( createOutputFolder().getPath() );
+		validator.setReportsDir( new File(fileName).getParent() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -52,7 +52,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir( createOutputFolder().getPath() );
+		validator.setReportsDir( new File(fileName).getParent() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -68,7 +68,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir( createOutputFolder().getPath() );
+		validator.setReportsDir( new File(manifestFileName).getParent() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -87,7 +87,7 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		study.setLocusTagsList(locusTagsList);
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null, true);
-		validator.setReportsDir( createOutputFolder().getPath() );
+		validator.setReportsDir( new File(manifestFileName).getParent() );
 		Assert.assertTrue( validator.validate() );
 	}
 
@@ -103,7 +103,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir( createOutputFolder().getPath() );
+		validator.setReportsDir( new File(manifestFileName).getParent() );
 		Assert.assertTrue( validator.validate() );
 	}
 	
@@ -119,7 +119,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir( createOutputFolder().getPath() );
+		validator.setReportsDir( new File(manifestFileName).getParent() );
 		Assert.assertTrue( validator.validate() );
 	}
 	
@@ -135,7 +135,7 @@ public class GenomeAssemblyWebinCliTest {
 		sample.setOrganism("Quercus robur");
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
-		validator.setReportsDir( createOutputFolder().getPath() );
+		validator.setReportsDir( new File(manifestFileName).getParent() );
 		Assert.assertTrue( validator.validate() );
 	}
 	
@@ -145,7 +145,10 @@ public class GenomeAssemblyWebinCliTest {
     {
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( new ManifestFileReader(), new Sample(), new Study(), null, true );
         //TODO remove
-        validator.setReportsDir( createOutputFolder().getPath() );
+        validator.setReportsDir( new File( GenomeAssemblyWebinCliTest.class
+                .getClassLoader()
+                .getResource( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz" )
+                .getFile() ).getParent() );
         //validator.getParameters().setOutputDir( createOutputFolder() );
         Assert.assertTrue( !validator.validateFastaFiles( validator.getValidationProperties(), 
                                                           Arrays.asList( new File( GenomeAssemblyWebinCliTest.class
@@ -159,7 +162,10 @@ public class GenomeAssemblyWebinCliTest {
     {
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( new ManifestFileReader(), new Sample(), new Study(), null, true );
         //TODO remove
-        validator.setReportsDir( createOutputFolder().getPath() );
+        validator.setReportsDir( new File( GenomeAssemblyWebinCliTest.class
+                .getClassLoader()
+                .getResource( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz" )
+                .getFile() ).getParent() );
         //validator.getParameters().setOutputDir( createOutputFolder() );
         Assert.assertTrue( !validator.validateChromosomeList( validator.getValidationProperties(), 
                                                               new File( GenomeAssemblyWebinCliTest.class
@@ -209,5 +215,21 @@ public class GenomeAssemblyWebinCliTest {
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
 		validator.setReportsDir(new File(manifestFileName).getParent());
 		Assert.assertTrue( validator.validate() );
+	}
+	
+	@Test
+	public void testAssemblywithSequencelessChromosomeAGP() throws Exception {
+		String manifestFileName=null;
+		URL manifestUrl = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/manifestwithSequencelessChromosomeAGPinfo.txt");
+		if (manifestUrl != null)
+			manifestFileName = manifestUrl.getPath().replaceAll("%20", " ");
+		ManifestFileReader reader= new ManifestFileReader();
+		reader.read(manifestFileName);
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli(reader, sample,study,null,true);
+		validator.setReportsDir( new File(manifestFileName).getParent() );
+		Assert.assertTrue(!validator.validate() );
 	}
 }
