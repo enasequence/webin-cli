@@ -20,10 +20,8 @@ import uk.ac.ebi.embl.api.entry.location.LocationFactory;
 import uk.ac.ebi.embl.api.entry.location.Order;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
 import uk.ac.ebi.embl.api.validation.FileType;
-import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
@@ -39,10 +37,11 @@ import uk.ac.ebi.embl.flatfile.reader.genomeassembly.ChromosomeListFileReader;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.UnlocalisedListFileReader;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli 
@@ -53,32 +52,52 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	private static HashMap<String,Long> flatfileEntryNames = new HashMap<String,Long>();
 	private static HashSet<String> agpEntrynames = new HashSet<String>();
 	private static HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<String, List<Qualifier>>();
-	private static File chromosomeListFile;
-	private static File unlocalisedListFile;
-	private static List<File> fastaFiles;
-	private static List<File> flatFiles;
-	private static List<File> agpFiles;
 	private String molType = "genomic DNA";
-	private Sample sample = null;
 	private boolean test;
-	private ManifestFileReader manifestFileReader;
-	private Study study = null;
 
-	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study, String molType) {
-		this.manifestFileReader = manifestFileReader;
-		this.sample = sample;
-		chromosomeListFile = null;
-		unlocalisedListFile = null;
-		fastaFiles = new ArrayList<File>();
-		flatFiles = new ArrayList<File>();
-		agpFiles = new ArrayList<File>();
-		this.study = study;
+	
+    public 
+    GenomeAssemblyWebinCli()
+    {
+        this( false );
+    }
+
+	
+	public 
+	GenomeAssemblyWebinCli( boolean test_mode )
+	{
+	    this.test = test_mode;
+	}
+	
+	
+	@Override public void
+	init( WebinCliParameters parameters ) throws ValidationEngineException
+	{
+	    super.init( parameters );
+	}
+	
+	
+	void 
+	__init( ManifestFileReader manifestFileReader, 
+	        Sample sample, 
+	        Study study, 
+	        String molType )
+	{
+//		this.manifestFileReader = manifestFileReader;
+		setSample( sample );
+		setStudy( study );
 		this.molType = molType == null ? this.molType : molType;
 	}
 
-	public GenomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study, String molType,
-			boolean test) {
-		this(manifestFileReader, sample, study, molType);
+	
+	void
+	__init( ManifestFileReader manifestFileReader, 
+	        Sample sample, 
+	        Study study, 
+	        String molType,
+	        boolean test )
+	{
+		__init( manifestFileReader, sample, study, molType );
 		this.test = test;
 	}
 
@@ -90,11 +109,10 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
             EmblEntryValidationPlanProperty property = getValidationProperties();
             
 			TaxonHelper taxonHelper = new TaxonHelperImpl();
-			defineFileTypes();
 
 			valid = valid & validateChromosomeList( property, chromosomeListFile );
 			valid = valid & validateUnlocalisedList( property );
-			getChromosomeEntryNames( taxonHelper.isChildOf( sample.getOrganism(), "Virus" ) );
+			getChromosomeEntryNames( taxonHelper.isChildOf( getSample().getOrganism(), "Virus" ) );
 			valid = valid & validateFastaFiles( property, fastaFiles );
 			valid = valid & validateFlatFiles(property);
 			HashMap<String,Long> entryNames= new HashMap<String,Long>();
@@ -102,8 +120,8 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 			entryNames.putAll(flatfileEntryNames);
     		property.contigEntryNames.set(entryNames);
 			valid = valid & validateAgpFiles(property);
-			if (!test)
-				moveFiles(valid);
+			if( !test )
+				deleteFixedFiles(valid);
 			return valid;
 		} catch (IOException e) {
 			throw new ValidationEngineException(e.getMessage());
@@ -119,7 +137,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         
         property.isFixMode.set( true );
         property.isRemote.set( true );
-        property.locus_tag_prefixes.set( study.getLocusTagsList() );
+        property.locus_tag_prefixes.set( getStudy().getLocusTagsList() );
         return property;
     }
 	   
@@ -213,15 +231,15 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                 while( reader.isEntry() )
                 {
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
-                    source.setScientificName( sample.getOrganism() );
+                    source.setScientificName( getSample().getOrganism() );
                     source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
                     
                     Entry entry = (Entry) reader.getEntry();
-                    if( sample.getBiosampleId() != null )
-                        entry.addXRef( new XRef( "BioSample", sample.getBiosampleId() ) );
+                    if( getSample().getBiosampleId() != null )
+                        entry.addXRef( new XRef( "BioSample", getSample().getBiosampleId() ) );
                     
-                    if( study.getProjectId() != null )
-                        entry.addProjectAccession( new Text( study.getProjectId() ) );
+                    if( getStudy().getProjectId() != null )
+                        entry.addProjectAccession( new Text( getStudy().getProjectId() ) );
                     
                     if( entry.getSubmitterAccession() != null && chromosomeEntryNames.contains( entry.getSubmitterAccession().toUpperCase() ) ) 
                     {
@@ -284,13 +302,13 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                     entry.removeFeature( entry.getPrimarySourceFeature() );
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
                     source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
-                    source.setScientificName( sample.getOrganism() );
+                    source.setScientificName( getSample().getOrganism() );
                     
-                    if( sample.getBiosampleId() != null )
-                        entry.addXRef( new XRef( "BioSample", sample.getBiosampleId() ) );
+                    if( getSample().getBiosampleId() != null )
+                        entry.addXRef( new XRef( "BioSample", getSample().getBiosampleId() ) );
                     
-                    if( study.getProjectId() != null )
-                        entry.addProjectAccession( new Text( study.getProjectId() ) );
+                    if( getStudy().getProjectId() != null )
+                        entry.addProjectAccession( new Text( getStudy().getProjectId() ) );
                     
                     if( entry.getSubmitterAccession() != null && chromosomeEntryNames.contains( entry.getSubmitterAccession().toUpperCase() ) ) 
                     {
@@ -358,14 +376,14 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                 while( reader.isEntry() ) 
                 {
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
-                    source.setScientificName( sample.getOrganism() );
+                    source.setScientificName( getSample().getOrganism() );
                     source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
                     Entry entry = (Entry) reader.getEntry();
-                    if( sample.getBiosampleId() != null )
-                        entry.addXRef( new XRef( "BioSample", sample.getBiosampleId() ) );
+                    if( getSample().getBiosampleId() != null )
+                        entry.addXRef( new XRef( "BioSample", getSample().getBiosampleId() ) );
                     
-                    if( study.getProjectId() != null )
-                        entry.addProjectAccession( new Text( study.getProjectId() ) );
+                    if( getStudy().getProjectId() != null )
+                        entry.addProjectAccession( new Text( getStudy().getProjectId() ) );
                     
                     entry.setDataClass( Entry.CON_DATACLASS );
                     if( entry.getSubmitterAccession() != null && chromosomeEntryNames.contains( entry.getSubmitterAccession().toUpperCase() ) ) 
@@ -452,49 +470,37 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 		return chromosomeEntryNames;
 	}
 
-	private void defineFileTypes() throws ValidationEngineException, IOException {
-		for (ManifestObj obj : manifestFileReader.getManifestFileObjects()) {
-			String fileName = obj.getFileName();
-			if (test)
-				fileName = GenomeAssemblyFileUtils.getFile(fileName);
-			File file = new File(fileName);
-			switch (obj.getFileFormat()) {
-			case CHROMOSOME_LIST:
-				chromosomeListFile = file;
-				break;
-			case UNLOCALISED_LIST:
-				unlocalisedListFile = file;
-				break;
-			case FASTA:
-				fastaFiles.add(file);
-				break;
-			case FLATFILE:
-				flatFiles.add(file);
-				break;
-			case AGP:
-				agpFiles.add(file);
-				break;
-			default:
-				break;
-			}
-		}
+
+	private void 
+	deleteFixedFiles( boolean valid ) throws IOException
+	{
+        List<File> files = new ArrayList<>();
+        files.addAll( fastaFiles );
+        files.addAll( flatFiles );
+        files.addAll( agpFiles );
+        
+	    for( File f : files )
+	    {
+            if( !valid ) 
+            {
+                File fixedFile = new File( f.getPath() + ".fixed" );
+                if( fixedFile.exists() )
+                    fixedFile.delete();
+            }
+	    }
 	}
 
-	private void moveFiles(boolean valid) throws IOException {
-		for (ManifestObj mo : manifestFileReader.getManifestFileObjects()) {
-			switch (mo.getFileFormat()) {
-			case FASTA:
-			case FLATFILE:
-			case AGP:
-				if (!valid) {
-					File fixedFile = new File(mo.getFileName() + ".fixed");
-					if (fixedFile.exists())
-						fixedFile.delete();
-				}
-				break;
-			default:
-				break;
-			}
-		}
-	}
+
+    @Override ContextE
+    getContext()
+    {
+        return ContextE.genome;
+    }
+
+
+    @Override boolean 
+    getTestMode()
+    {
+        return test;
+    }
 }

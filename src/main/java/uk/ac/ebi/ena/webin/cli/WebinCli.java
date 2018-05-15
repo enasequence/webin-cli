@@ -3,9 +3,12 @@ package uk.ac.ebi.ena.webin.cli;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -18,6 +21,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
@@ -82,12 +87,14 @@ public class WebinCli {
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
 	private final static String INVALID_MANIFEST = "Manifest file validation failed. Please check the report file for errors: ";
-	private final static String INVALID_INFO = "Info file validation failed. Please check the report file for errors: ";
-
+	@Deprecated private final static String INVALID_INFO = "Info file validation failed. Please check the report file for errors: ";
+	
 	private Params params;
 	private ContextE contextE;
 	private final static String VALIDATE_DIR = "validate";
     private String SUBMIT_DIR = "submit";
+    private boolean test_mode;
+    private AbstractWebinCli validator;
 	private final static String INFO_FIELD = "INFO";
 	private final static String NAME_FIELD = "ASSEMBLYNAME";
 
@@ -121,67 +128,169 @@ public class WebinCli {
 		public boolean submit;
 	}
 
-	public WebinCli(Params params) {
-		this.params = params;
-	}
 
 	private static String getFullPath(String path) {
 		return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
 	}
 
 	
-	public static 
-	void main( String... args ) 
-	{
-	    ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
-	    ValidationResult.setDefaultMessageFormatter( null );
+    public static void 
+    main( String... args )
+    {
+        ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
+        ValidationResult.setDefaultMessageFormatter( null );
+        
+        try 
+        {
+            if( args != null && args.length > 0 )
+            {
+                Set<String> found = Arrays.stream( args ).collect( Collectors.toSet() );
 
-		try {
-			if (args != null && args.length > 0) {
-				Optional<String> found = Arrays.stream(args).filter(arg -> "-help".equalsIgnoreCase(arg))
-						.findFirst();
-				if (found.isPresent())
-					printUsageHelpAndExit();
-			}
-			Params params = parseParameters(args);
-			if (!params.validate &&
-				!params.submit) {
-				printUsageErrorAndExit();
-			}
-			checkVersion( params.test );
-			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
-			params.manifest = getFullPath(params.manifest);
-			File manifestFile = new File(params.manifest);
-			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
-			outputDir = getFullPath( outputDir );
-			createValidateDir( params.context, name );
-			createWebinCliReportFile();
-			infoValidator = new InfoFileValidator();
-			manifestValidator = new ManifestFileValidator();
-			if (!manifestValidator.validate(manifestFile, reportDir, params.context))
-				throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
-			if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context))
-				throw WebinCliException.createUserError(INVALID_INFO, infoValidator.getReportFile().getAbsolutePath());
-			infoReportFile = infoValidator.getReportFile().getAbsolutePath();
-			WebinCli webinCli = new WebinCli(params);
-			webinCli.execute();
-			System.exit(SUCCESS);
-		} catch (WebinCliException e) {
-            writeMessage(Severity.ERROR, e.getMessage());
-			switch (e.getErrorType()) {
-				case SYSTEM_ERROR:
-					System.exit(SYSTEM_ERROR);
-				case USER_ERROR:
-					System.exit(USER_ERROR);
-				case VALIDATION_ERROR:
-					System.exit(VALIDATION_ERROR);
-			}
-		} catch( Throwable t ) 
-		{
-			writeMessage( Severity.ERROR, String.format( "%s: %s", t.getClass().getSimpleName(), t.getMessage() ) );
-			System.exit( SYSTEM_ERROR );
-		}
-	}
+                if( found.contains( "-help" ) )
+                    printUsageHelpAndExit();
+                
+                if( found.contains( "-version" ) )
+                {
+                    String version = WebinCli.class.getPackage().getImplementationVersion();
+                    writeMessage( Severity.INFO, String.format( "%s, version %s", WebinCli.class.getSimpleName(), version ) );
+                    System.exit( SUCCESS );
+                }
+
+            }
+
+            Params params = parseParameters( args );
+            
+            if( !params.validate && !params.submit ) 
+            {
+                printUsageErrorAndExit();
+            }
+
+            checkVersion( params.test );
+    
+            WebinCli webinCli = new WebinCli();
+            webinCli.init( params );
+            webinCli.execute();
+            
+            System.exit( SUCCESS );
+            
+        } catch( WebinCliException e ) 
+        {
+            writeMessage( Severity.ERROR, e.getMessage() );
+            
+            switch( e.getErrorType() )
+            {
+                case SYSTEM_ERROR:
+                    System.exit( SYSTEM_ERROR );
+                    
+                case USER_ERROR:
+                    System.exit( USER_ERROR );
+                    
+                case VALIDATION_ERROR:
+                    System.exit( VALIDATION_ERROR );
+            }
+        } catch( Throwable e ) 
+        {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace( new PrintWriter( sw ) );
+            writeMessage( Severity.ERROR, sw.toString() );
+            System.exit( SYSTEM_ERROR );
+        }
+    }
+
+  
+    private void 
+    init( Params params ) throws Exception, IOException, FileNotFoundException, ValidationEngineException 
+    {
+        this.params = params;
+        this.contextE = ContextE.valueOf( String.valueOf( params.context ).toLowerCase() );
+        this.test_mode = params.test;
+        
+        params.manifest = getFullPath( params.manifest );
+        File manifestFile = new File( params.manifest );
+        
+        String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
+        
+        outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
+        outputDir = getFullPath( outputDir );
+        
+        createValidateDir( params.context, name );
+        createWebinCliReportFile();
+        infoValidator = new InfoFileValidator();
+        manifestValidator = new ManifestFileValidator();
+        if (!manifestValidator.validate(manifestFile, reportDir, params.context))
+            throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
+        if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context))
+            throw WebinCliException.createUserError( INVALID_INFO, infoValidator.getReportFile().getAbsolutePath() );
+        infoReportFile = infoValidator.getReportFile().getAbsolutePath();
+
+
+        this.validator = contextE.getValidatorClass().newInstance();
+        
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setManifestFile( manifestFile );
+        parameters.setInputDir( new File( "." ) );
+        parameters.setOutputDir( new File( outputDir ) );
+        parameters.setUsername( params.userName );
+        parameters.setPassword( params.password );
+        
+        validator.init( parameters );
+        
+        createWebinCliReportFile();
+    }
+    
+    
+//    public static 
+//	void _main( String... args ) 
+//	{
+//	    ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
+//	    ValidationResult.setDefaultMessageFormatter( null );
+//
+//		try {
+//			if (args != null && args.length > 0) {
+//				Optional<String> found = Arrays.stream(args).filter(arg -> "-help".equalsIgnoreCase(arg))
+//						.findFirst();
+//				if (found.isPresent())
+//					printUsageHelpAndExit();
+//			}
+//			Params params = parseParameters(args);
+//			if (!params.validate &&
+//				!params.submit) {
+//				printUsageErrorAndExit();
+//			}
+//			checkVersion( params.test );
+//			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
+//			params.manifest = getFullPath(params.manifest);
+//			File manifestFile = new File(params.manifest);
+//			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
+//			outputDir = getFullPath( outputDir );
+//			createValidateDir( params.context, name );
+//			createWebinCliReportFile();
+//			infoValidator = new InfoFileValidator();
+//			manifestValidator = new ManifestFileValidator();
+//			if (!manifestValidator.validate(manifestFile, reportDir, params.context))
+//				throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
+//			if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context))
+//				throw WebinCliException.createUserError(INVALID_INFO, infoValidator.getReportFile().getAbsolutePath());
+//			infoReportFile = infoValidator.getReportFile().getAbsolutePath();
+//			WebinCli webinCli = new WebinCli(params);
+//			webinCli.execute();
+//			System.exit(SUCCESS);
+//		} catch (WebinCliException e) {
+//            writeMessage(Severity.ERROR, e.getMessage());
+//			switch (e.getErrorType()) {
+//				case SYSTEM_ERROR:
+//					System.exit(SYSTEM_ERROR);
+//				case USER_ERROR:
+//					System.exit(USER_ERROR);
+//				case VALIDATION_ERROR:
+//					System.exit(VALIDATION_ERROR);
+//			}
+//		} catch( Throwable t ) 
+//		{
+//			writeMessage( Severity.ERROR, String.format( "%s: %s", t.getClass().getSimpleName(), t.getMessage() ) );
+//			System.exit( SYSTEM_ERROR );
+//		}
+//	}
 
 	private void execute() {
 		try {
@@ -219,9 +328,11 @@ public class WebinCli {
 		return sample;
 	}
 
-	private void doValidation() {
+	
+	private void 
+	doValidation() 
+	{
 		Study study = getStudy();
-		AbstractWebinCli validator = null;
 		switch(contextE) {
 			case transcriptome:
 			{
@@ -239,9 +350,7 @@ public class WebinCli {
 			}	
 			case genome:
 			{
-				GenomeAssemblyWebinCli v = new GenomeAssemblyWebinCli( manifestValidator.getReader(),getSample(), study,infoValidator.getentry().getMoleculeType() );
-                v.setReportsDir( reportDir );
-				validator = v;
+                ( (GenomeAssemblyWebinCli) validator ).setReportsDir( reportDir );
 				break;
 			}
 		}
@@ -330,6 +439,7 @@ public class WebinCli {
     }
     */
 
+    @Deprecated
 	private static void createValidateDir(String context, String name) throws Exception {
 		File reportDirectory = new File(outputDir + File.separator + context + File.separator + name + File.separator + VALIDATE_DIR);
 		if (reportDirectory.exists())
@@ -340,6 +450,7 @@ public class WebinCli {
 		reportDir = reportDirectory.getAbsolutePath();
 	}
 
+    @Deprecated
 	private static void createWebinCliReportFile() throws IOException {
 		Path reportPath = Paths.get(reportDir + File.separator + "webin-cli.report");
 		if (Files.exists(reportPath))
@@ -541,5 +652,32 @@ public class WebinCli {
 	{
 		System.out.print( message );
 	}
+
+    
+	public boolean
+    getTestMode()
+    {
+        return test_mode;
+    }
+
+    
+    public void
+    setTestMode( boolean test_mode )
+    {
+        this.test_mode = test_mode;
+    }
+
+    
+    public ContextE
+    getContext()
+    {
+        return contextE;
+    }
+
+    public void
+    setContext( ContextE contextE )
+    {
+        this.contextE = contextE;
+    }
 
 }
