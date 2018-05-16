@@ -142,7 +142,7 @@ SequenceWebinCli extends AbstractWebinCli
 
             defineFileTypes( getParameters().getManifestFile() );
             setAssemblyInfo( defineInfo( infoFile ) );
-            setName( getAssemblyInfo().getName() );
+            setName( getAssemblyInfo().getName().trim().replaceAll( "\\s+", "_" ) );
             
             setValidationDir( createOutputDir( String.valueOf( getContext() ), getName(), VALIDATE_DIR ) );
             setSubmitDir( createOutputDir( String.valueOf( getContext() ), getName(), SUBMIT_DIR ) );
