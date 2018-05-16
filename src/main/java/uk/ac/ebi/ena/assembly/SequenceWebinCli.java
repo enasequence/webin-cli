@@ -129,17 +129,9 @@ SequenceWebinCli extends AbstractWebinCli
     }
 
     
-//    private static void createWebinCliReportFile() throws IOException {
-//        Path reportPath = Paths.get(reportDir + File.separator + "webin-cli.report");
-//        if (Files.exists(reportPath))
-//            Files.delete(reportPath);
-//        Files.createFile(reportPath);
-//        webinCliReportFile = reportPath.toFile().getAbsolutePath();
-//    }
-
-    
     abstract ContextE getContext();
     abstract boolean  getTestMode();
+    
     
     @Override public void 
     init( WebinCliParameters parameters ) throws ValidationEngineException
