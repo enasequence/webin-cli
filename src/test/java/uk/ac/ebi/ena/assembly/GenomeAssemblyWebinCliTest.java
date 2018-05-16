@@ -34,7 +34,6 @@ public class GenomeAssemblyWebinCliTest {
         Sample sample = new Sample();
 		sample.setOrganism( "Quercus robur" );
 		Study study = new Study();
-		
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
 		validator.setInputDir( file.getParentFile() );
 		validator.setValidationDir( file.getParentFile() );
@@ -81,7 +80,7 @@ public class GenomeAssemblyWebinCliTest {
 		Assert.assertTrue( validator.validate() );
 	}
 
-	
+
 	@Test public void 
 	testAssemblyFlatFileInfo() throws Exception	
 	{
@@ -170,7 +169,8 @@ public class GenomeAssemblyWebinCliTest {
                                                                                               .getFile() ) ) ) );
     }
 
-    @Test public void 
+
+	@Test public void 
     testChromosomeListNoValidEntries() throws Exception 
     {
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
@@ -227,5 +227,23 @@ public class GenomeAssemblyWebinCliTest {
         validator.setSample( sample );
         validator.setStudy( study );
 		Assert.assertTrue( validator.validate() );
+	}
+	
+	
+	@Test public void 
+	testAssemblywithSequencelessChromosomeAGP() throws Exception 
+	{
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/manifestwithSequencelessChromosomeAGPinfo.txt" );
+        File file = new File( url.getFile() );
+		Sample sample = new Sample();
+		sample.setOrganism("Quercus robur");
+		Study study = new Study();
+        GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
+        validator.setInputDir( file.getParentFile() );
+        validator.setValidationDir( file.getParentFile() );
+        validator.defineFileTypes( file );
+        validator.setSample( sample );
+        validator.setStudy( study );
+		Assert.assertTrue(!validator.validate() );
 	}
 }
