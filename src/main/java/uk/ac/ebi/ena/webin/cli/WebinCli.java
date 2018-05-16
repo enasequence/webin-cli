@@ -304,7 +304,7 @@ public class WebinCli {
 			doSubmit();
 	}
 
-	private Study getStudy() {
+	@Deprecated private Study getStudy() {
 		Study study = new Study();
 		try {
 			study.getStudy(infoValidator.getentry().getStudyId(), params.userName, params.password, params.test);
@@ -316,7 +316,7 @@ public class WebinCli {
 		return study;
 	}
 
-	private Sample getSample() {
+	@Deprecated private Sample getSample() {
 		Sample sample = new Sample();
 		try {
 			sample.getSample(infoValidator.getentry().getSampleId(), params.userName, params.password, params.test);
@@ -348,36 +348,25 @@ public class WebinCli {
 				validator = v;
 				break;
 			}	
-			case genome:
-			{
-                ( (GenomeAssemblyWebinCli) validator ).setReportsDir( reportDir );
-				break;
-			}
 		}
-		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
+		
 		try 
 		{
-			if( validator.validate() )
-			{
-				writeMessage( Severity.INFO, VALIDATE_SUCCESS );	
-			} else
-			{
-				throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, reportDir );
-			}
-		} catch( ValidationEngineException e )
-		{
-			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
-		}
+            if( !validator.validate() )
+            {
+                throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, reportDir );
+            }
 
-		try {
-			File submitDirectory = createSubmitDirectory( assemblyName);
+            String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
+            File submitDirectory = createSubmitDirectory( assemblyName );
             // Gzip the files validated directory.
-			for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects())
-                FileUtils.gZipFile(Paths.get(manifestObj.getFileName()).toFile());
+			for( ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects() )
+                FileUtils.gZipFile( Paths.get( manifestObj.getFileName() ).toFile() );
 			// Create the manifest in the submit directory.
-			new ManifestFileWriter().write(new File(submitDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects());
-			writeMessage(Severity.INFO, VALIDATE_SUCCESS);
-		} catch (IOException | NoSuchAlgorithmException e) {
+			new ManifestFileWriter().write( new File( submitDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects() );
+			writeMessage( Severity.INFO, VALIDATE_SUCCESS );
+		} catch( IOException | NoSuchAlgorithmException | ValidationEngineException e ) 
+		{
 			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
 	}
