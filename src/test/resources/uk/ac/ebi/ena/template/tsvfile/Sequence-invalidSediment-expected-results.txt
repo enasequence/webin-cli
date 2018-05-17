@@ -1,0 +1,1 @@
+{"Sequence":"1","USER_ERROR":"Value \"666\" is not in the required set of Sedimentation coefficien, Permitted values are 5S,5.8S,12S,16S,18S,23S,26S,28S, "}
