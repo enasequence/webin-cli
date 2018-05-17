@@ -39,28 +39,36 @@ public class InfoFileValidator {
     }
 
 	
-	public boolean validate(ManifestFileReader manifestFileReader,String reportDir,String context ) throws IOException, ValidationEngineException {
-		ValidationResult assemblyInfoParseResult= new ValidationResult();
-		Optional<ManifestObj> obj=manifestFileReader.getManifestFileObjects().stream().filter(p->(FileFormat.INFO.equals(p.getFileFormat()))).findFirst();
-		assemblyInfoEntry = getAssemblyEntry(new File(obj.get().getFileName()), assemblyInfoParseResult);
-		reportFile=new File(reportDir+File.separator+ new File(obj.get().getFileName()).getName() + ".report");
+    public boolean 
+    validate( File assembly_info, String reportDir, ContextE context ) throws IOException, ValidationEngineException 
+    {
+        ValidationResult assemblyInfoParseResult= new ValidationResult();
+        assemblyInfoEntry = getAssemblyEntry( assembly_info, assemblyInfoParseResult );
+        reportFile=new File( reportDir, assembly_info.getName() + ".report" );
 
-		boolean valid = assemblyInfoParseResult.isValid();
-		
-		FileUtils.writeReport( reportFile, assemblyInfoParseResult.getMessages(), reportFile.getName() );
-		if (assemblyInfoEntry != null) {
-			EmblEntryValidationPlanProperty property= new EmblEntryValidationPlanProperty();
-			property.isRemote.set(true);
-			property.fileType.set(FileType.ASSEMBLYINFO);
-			ValidationPlan validationPlan = getValidationPlan(assemblyInfoEntry, property);
-			ValidationPlanResult vpr = validationPlan.execute( assemblyInfoEntry );
-			
-			valid &= vpr.isValid(); 
-			FileUtils.writeReport( reportFile, vpr.getMessages(), reportFile.getName() );
-			if(ContextE.transcriptome.equals(ContextE.getContext(context)))
-				property.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
-		}
-     	return valid;
+        boolean valid = assemblyInfoParseResult.isValid();
+        
+        FileUtils.writeReport( reportFile, assemblyInfoParseResult.getMessages(), reportFile.getName() );
+        if (assemblyInfoEntry != null) {
+            EmblEntryValidationPlanProperty property= new EmblEntryValidationPlanProperty();
+            property.isRemote.set(true);
+            property.fileType.set(FileType.ASSEMBLYINFO);
+            ValidationPlan validationPlan = getValidationPlan(assemblyInfoEntry, property);
+            ValidationPlanResult vpr = validationPlan.execute( assemblyInfoEntry );
+            
+            valid &= vpr.isValid(); 
+            FileUtils.writeReport( reportFile, vpr.getMessages(), reportFile.getName() );
+            if( ContextE.transcriptome.equals( context ) )
+                property.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
+        }
+        return valid;
+    }
+    
+    
+	public boolean 
+	validate( ManifestFileReader manifestFileReader,String reportDir,String context ) throws IOException, ValidationEngineException {
+		Optional<ManifestObj> obj=manifestFileReader.getManifestFileObjects().stream().filter(p->(FileFormat.INFO.equals(p.getFileFormat()))).findFirst();
+		return validate( new File( obj.get().getFileName() ), reportDir, ContextE.getContext( context ) );
    	}
 	
 
