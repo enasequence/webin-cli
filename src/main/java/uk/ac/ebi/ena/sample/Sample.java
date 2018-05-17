@@ -30,8 +30,9 @@ public class Sample {
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving sample information. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving sample information. ";
 
-    public void getSample(String sampleId, String userName, String password, boolean TEST)  {
+    public static Sample getSample(String sampleId, String userName, String password, boolean TEST)  {
         try {
+            Sample sample = new Sample();
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/") + sampleId.trim());
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
@@ -43,8 +44,8 @@ public class Sample {
                     List<String> resultsList = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
                     String result = resultsList.stream()
                             .collect(Collectors.joining(" "));
-                    extractResults(result, sampleId);
-                    break;
+                    sample.extractResults(result, sampleId);
+                    return sample;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
                     throw WebinCliException.createValidationError(VALIDATION_ERROR_SAMPLE, sampleId);
