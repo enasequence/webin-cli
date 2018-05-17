@@ -1,19 +1,11 @@
 package uk.ac.ebi.ena.assembly;
 
-import uk.ac.ebi.embl.api.entry.Entry;
-import uk.ac.ebi.embl.api.entry.reference.*;
-import uk.ac.ebi.embl.api.validation.*;
-import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
-import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
-import uk.ac.ebi.ena.manifest.FileFormat;
-import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.study.Study;
-import uk.ac.ebi.ena.template.expansion.*;
-import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,14 +14,42 @@ import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
-public class SequenceAssemblyWebinCli implements WebinCliInterface {
+import uk.ac.ebi.embl.api.entry.Entry;
+import uk.ac.ebi.embl.api.entry.reference.Person;
+import uk.ac.ebi.embl.api.entry.reference.Publication;
+import uk.ac.ebi.embl.api.entry.reference.Reference;
+import uk.ac.ebi.embl.api.entry.reference.ReferenceFactory;
+import uk.ac.ebi.embl.api.entry.reference.Submission;
+import uk.ac.ebi.embl.api.validation.Origin;
+import uk.ac.ebi.embl.api.validation.Severity;
+import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.embl.api.validation.ValidationScope;
+import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
+import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
+import uk.ac.ebi.ena.manifest.FileFormat;
+import uk.ac.ebi.ena.manifest.ManifestFileReader;
+import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.template.expansion.CSVLine;
+import uk.ac.ebi.ena.template.expansion.CSVReader;
+import uk.ac.ebi.ena.template.expansion.TemplateEntryProcessor;
+import uk.ac.ebi.ena.template.expansion.TemplateException;
+import uk.ac.ebi.ena.template.expansion.TemplateInfo;
+import uk.ac.ebi.ena.template.expansion.TemplateLoader;
+import uk.ac.ebi.ena.template.expansion.TemplateProcessor;
+import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+
+public class SequenceAssemblyWebinCli extends AbstractWebinCli {
     private static final String TEMPLATE_ID_PATTERN = "(ERT[0-9]+)";
     private final static String TEMPLATE_ACCESSION_LINE = "#template_accession";
     private boolean FAILED_VALIDATION;
     private ManifestFileReader manifestFileReader;
     private String submittedFile;
-    private String reportFile;
-    private String reportDir;
+    private File reportFile;
+    private File reportDir;
     private Study study;
     private final static int MAX_SEQUENCE_COUNT = 100000;
 
@@ -38,24 +58,23 @@ public class SequenceAssemblyWebinCli implements WebinCliInterface {
         this.study = study;
     }
 
-    @Override
-    public int validate() throws ValidationEngineException {
+    @Override public boolean 
+    validate() throws ValidationEngineException {
         if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-            reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+            reportFile = FileUtils.createReportFile( reportDir, submittedFile );
             validateFlatFile();
         } else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.TSV ))!= null) {
-            reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+            reportFile = FileUtils.createReportFile( reportDir, submittedFile );
             validateTsvFile();
         } else
             throw new ValidationEngineException("Manifest file: TSV or FLATFILE must be pre55t4444eeeeeszsent.");
-        if (FAILED_VALIDATION)
-            return WebinCli.VALIDATION_ERROR;
-        return WebinCli.SUCCESS;
+        
+        return !FAILED_VALIDATION;
     }
 
-    @Override
+
     public void setReportsDir(String reportDir) {
-        this.reportDir = reportDir;
+        this.reportDir = new File( reportDir );
     }
 
     private void validateTsvFile()  throws ValidationEngineException {
