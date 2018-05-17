@@ -1,7 +1,15 @@
 package uk.ac.ebi.ena.assembly;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 import uk.ac.ebi.embl.api.entry.Entry;
 import uk.ac.ebi.embl.api.entry.Text;
@@ -12,8 +20,13 @@ import uk.ac.ebi.embl.api.entry.location.Location;
 import uk.ac.ebi.embl.api.entry.location.LocationFactory;
 import uk.ac.ebi.embl.api.entry.location.Order;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
+import uk.ac.ebi.embl.api.validation.Origin;
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.*;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.embl.api.validation.ValidationScope;
 import uk.ac.ebi.embl.api.validation.plan.EmblEntryValidationPlan;
 import uk.ac.ebi.embl.api.validation.plan.EmblEntryValidationPlanProperty;
 import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
@@ -26,24 +39,15 @@ import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliInterface;
+import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Collection;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
-
-public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
+public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
 	private final String MOL_TYPE = "transcribed RNA";
-	private String reportFile;
-	private String reportDir;
+	private File reportFile;
+	private File reportDir;
 	private String submittedFile;
 	private Sample sample;
     private Study study;
@@ -68,24 +72,22 @@ public class TranscriptomeAssemblyWebinCli implements WebinCliInterface {
 		validationPlan.addMessageBundle(STANDARD_FIXER_BUNDLE);
 	}
 
-	@Override
+
 	public void setReportsDir(String reportDir) {
-		this.reportDir = reportDir;
+		this.reportDir = new File( reportDir );
 	}
 
 	@Override
-	public int validate() throws ValidationEngineException {
+	public boolean validate() throws ValidationEngineException {
 		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-			reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+			reportFile = FileUtils.createReportFile( reportDir, submittedFile );
 			validateFlatFile();
 		} else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
-			reportFile = FileUtils.createReportFile(submittedFile, reportDir);
+			reportFile = FileUtils.createReportFile( reportDir, submittedFile );
 			validateFastaFile();
 		} else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
-		if (FLAILED_VALIDATION)
-			return WebinCli.VALIDATION_ERROR;
-		return WebinCli.SUCCESS;
+		return !FLAILED_VALIDATION;
 	}
 
 	private void validateFlatFile() throws ValidationEngineException {

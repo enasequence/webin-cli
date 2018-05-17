@@ -1,29 +1,49 @@
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.InfoFileValidator;
 import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
-import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.ManifestFileValidator;
+import uk.ac.ebi.ena.manifest.ManifestFileWriter;
+import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.Submit;
-import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.upload.FtpService;
+import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.version.Version;
 
 public class WebinCli {
@@ -109,7 +129,13 @@ public class WebinCli {
 		return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
 	}
 
-	public static void main(String... args) {
+	
+	public static 
+	void main( String... args ) 
+	{
+	    ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
+	    ValidationResult.setDefaultMessageFormatter( null );
+
 		try {
 			if (args != null && args.length > 0) {
 				Optional<String> found = Arrays.stream(args).filter(arg -> "-help".equalsIgnoreCase(arg))
@@ -127,8 +153,8 @@ public class WebinCli {
 			params.manifest = getFullPath(params.manifest);
 			File manifestFile = new File(params.manifest);
 			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
-			outputDir = getFullPath(outputDir);
-			createValidateDir(params.context, name);
+			outputDir = getFullPath( outputDir );
+			createValidateDir( params.context, name );
 			createWebinCliReportFile();
 			infoValidator = new InfoFileValidator();
 			manifestValidator = new ManifestFileValidator();
@@ -150,9 +176,10 @@ public class WebinCli {
 				case VALIDATION_ERROR:
 					System.exit(VALIDATION_ERROR);
 			}
-		} catch(Exception e) {
-			writeMessage(Severity.ERROR, e.getMessage());
-			System.exit(SYSTEM_ERROR);
+		} catch( Throwable t ) 
+		{
+			writeMessage( Severity.ERROR, String.format( "%s: %s", t.getClass().getSimpleName(), t.getMessage() ) );
+			System.exit( SYSTEM_ERROR );
 		}
 	}
 
@@ -194,28 +221,45 @@ public class WebinCli {
 
 	private void doValidation() {
 		Study study = getStudy();
-		WebinCliInterface validator = null;
+		AbstractWebinCli validator = null;
 		switch(contextE) {
 			case transcriptome:
-				validator = new TranscriptomeAssemblyWebinCli(manifestValidator.getReader(), getSample(), study);
+			{
+				TranscriptomeAssemblyWebinCli v = new TranscriptomeAssemblyWebinCli( manifestValidator.getReader(), getSample(), study );
+                v.setReportsDir( reportDir );
+				validator = v;
 				break;
+			}
 			case sequence:
-				validator = new SequenceAssemblyWebinCli(manifestValidator.getReader(), study);
+			{
+				SequenceAssemblyWebinCli v = new SequenceAssemblyWebinCli( manifestValidator.getReader(), study );
+                v.setReportsDir( reportDir );
+				validator = v;
 				break;
+			}	
 			case genome:
-				validator = new GenomeAssemblyWebinCli(manifestValidator.getReader(),getSample(), study,infoValidator.getentry().getMoleculeType());
+			{
+				GenomeAssemblyWebinCli v = new GenomeAssemblyWebinCli( manifestValidator.getReader(),getSample(), study,infoValidator.getentry().getMoleculeType() );
+                v.setReportsDir( reportDir );
+				validator = v;
 				break;
+			}
 		}
 		String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-		validator.setReportsDir(reportDir);
-		int validatorResult;
-		try {
-			validatorResult = validator.validate();
-		} catch (ValidationEngineException e) {
+		try 
+		{
+			if( validator.validate() )
+			{
+				writeMessage( Severity.INFO, VALIDATE_SUCCESS );	
+			} else
+			{
+				throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, reportDir );
+			}
+		} catch( ValidationEngineException e )
+		{
 			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
-		if (validatorResult != SUCCESS)
-			throw WebinCliException.createValidationError(VALIDATE_USER_ERROR, reportDir );
+
 		try {
 			File submitDirectory = createSubmitDirectory( assemblyName);
             // Gzip the files validated directory.
@@ -425,17 +469,22 @@ public class WebinCli {
 		}
 	}
 
-	private static String peekInfoFileForName(String info) throws Exception {
-		InputStream fileIs = Files.newInputStream(Paths.get(info));
-		BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
-		GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs));
-		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(NAME_FIELD))
-				.findFirst();
-		if (optional.isPresent())
-			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
-		else
-			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
+	@Deprecated public static String peekInfoFileForName(String info) throws Exception {
+		try( InputStream fileIs = Files.newInputStream(Paths.get(info) );
+		     BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
+		     GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
+		     BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs) ); )
+		{
+    		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(NAME_FIELD))
+    				.findFirst();
+    		if (optional.isPresent())
+    			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
+    		else
+    			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
+		} catch( ZipException ze )
+		{
+		    throw new ZipException( String.format( "file %s %s", info, ze.getMessage() ) );
+		}
 	}
 
 	private static void checkVersion( boolean test ) {
@@ -449,33 +498,48 @@ public class WebinCli {
 	 * Writes messages to the webin cli report file and to the console. If there is no
 	 * webin-cli.report file then writes only to the console.
 	 */
-	public static void writeMessage(Severity severity, String message) {
-		if (message == null || message.isEmpty())
+	public static void 
+	writeMessage( Severity severity, String message ) 
+	{
+		if( message == null || message.isEmpty() )
 			return;
-		writeMessageIntoConsole(message);
-		if (webinCliReportFile != null) {
-			try {
-				message = severity.name() + ": " + message;
-				Files.write(Paths.get(webinCliReportFile), message.getBytes(), StandardOpenOption.APPEND);
-			} catch (IOException e) {}
+		
+		String msg = FileUtils.formatMessage( severity, message );	
+		
+		writeMessageIntoConsole( msg );
+		
+		if( webinCliReportFile != null )
+		{
+			try
+			{
+				Files.write( Paths.get(webinCliReportFile), msg.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE  );
+			} catch( IOException e ) 
+			{
+
+			}
 		}
 	}
 
 	public static void writeMessageIntoInfoReport(Severity severity, String message) {
-		if (message == null || message.isEmpty())
-			return;
-		if (infoReportFile != null) {
-			try {
-				message = severity.name() + ": " + message;
-				Files.write(Paths.get(infoReportFile), message.getBytes(), StandardOpenOption.APPEND);
-			} catch (IOException e) {}
-		}
-	}
+        if (message == null || message.isEmpty())
+            return;
+        if (infoReportFile != null) {
+            try {
+                String msg = FileUtils.formatMessage( severity, message );
+                Files.write(Paths.get(infoReportFile), msg.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+            } catch (IOException e) {}
+        }
+    }
 
+	
+	
 	/**
 	 * Writes messages to the console.
 	 */
-	private static void writeMessageIntoConsole(String message) {
-		System.out.println(message);
+	private static void 
+	writeMessageIntoConsole( String message ) 
+	{
+		System.out.print( message );
 	}
+
 }
