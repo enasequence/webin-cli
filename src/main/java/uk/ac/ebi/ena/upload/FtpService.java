@@ -1,16 +1,20 @@
 package uk.ac.ebi.ena.upload;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class FtpService {
     private final static String SERVER = "webin.ebi.ac.uk";
@@ -36,6 +40,59 @@ public class FtpService {
         }
     }
 
+    //TODO verbose possible issues with file/folder permissions
+    public void 
+    ftpDirectory( List<File> uploadFilesList, String uploadDir, Path inputDir ) 
+    {
+        if( null == uploadDir || uploadDir.isEmpty() )
+            throw WebinCliException.createUserError( WebinCli.MISSING_CONTEXT );
+        try 
+        {
+            ftpClient.enterLocalPassiveMode();
+            if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) )
+                throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER );
+            
+            if( null == ftpClient.listNames( uploadDir ) )
+                if( !ftpClient.makeDirectory( uploadDir ) )
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CREATE_DIR, uploadDir );
+            
+            if( !ftpClient.changeWorkingDirectory( uploadDir ) )
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, uploadDir );
+            
+            FTPFile[] fileTodeleteA = ftpClient.listFiles();
+            if( fileTodeleteA != null && fileTodeleteA.length > 0 ) 
+            {
+                for( FTPFile ftpFile: fileTodeleteA )
+                    ftpClient.deleteFile( ftpFile.getName() );
+            }
+            
+            for( File file: uploadFilesList ) 
+            {
+                Path f = file.isAbsolute() ? inputDir.relativize( file.toPath() ) : file.toPath();
+                Path subdir = f.subpath( 0, f.getNameCount() - 1 );
+                
+                try( FileInputStream fileInputStream = new FileInputStream( file ) )    
+                {
+                    if( f.getNameCount() > 1 && !Files.isSameFile( subdir, Paths.get( "." ) ) )
+                    {
+                        if( !ftpClient.changeWorkingDirectory( subdir.toString() ) )
+                            throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, subdir.toString() );
+                    }
+
+                    if( !ftpClient.storeFile( f.getFileName().toString(), fileInputStream ) )
+                        throw WebinCliException.createSystemError( SYSTEM_ERROR_UPLOAD_FILE, "Unable to transfer " + file );
+                }finally
+                {
+                    
+                }
+            }
+        } catch( IOException e ) 
+        {
+            throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER, e.getMessage() );
+        }
+    }
+    
+    
     public void ftpDirectory(List<File> uploadFilesList, String context, String name) {
         if (context == null || context.isEmpty() || name == null || name.isEmpty())
             throw WebinCliException.createUserError(WebinCli.MISSING_CONTEXT);

@@ -32,6 +32,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
@@ -107,25 +108,44 @@ public class WebinCli {
 	private static String infoReportFile;
 
 
-	public static class Params	{
-		@Parameter(names = "help", required = false)
+	public static class 
+	Params	
+	{
+	    @Parameter(names = "help", required = false)
 		public boolean help;
+		
 		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
 		public boolean test;
+		
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = contextValidator.class)
 		public String context;
+		
 		@Parameter(names = ParameterDescriptor.userName, description = ParameterDescriptor.userNameFlagDescription, required = true)
 		public String userName;
+		
 		@Parameter(names = ParameterDescriptor.password, description = ParameterDescriptor.passwordFlagDescription, required = true)
 		public String password;
+		
 		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = manifestFileValidator.class)
 		public String manifest;
+		
 		@Parameter(names = ParameterDescriptor.outputDir, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class)
 		public String outputDir;
+		
 		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription, required = false)
 		public boolean validate;
+		
 		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription, required = false)
 		public boolean submit;
+		
+        @Parameter(names = ParameterDescriptor.centerName, description = ParameterDescriptor.centerNameFlagDescription, required = false )
+        public String centerName;
+        
+        @Parameter(names = ParameterDescriptor.version, description = ParameterDescriptor.versionFlagDescription, required = false )
+        public boolean version;
+	
+        @Parameter(names = ParameterDescriptor.inputDir, description = ParameterDescriptor.inputDirFlagDescription, required = false, hidden=true )
+        public String inputDir = ".";
 	}
 
 
@@ -228,7 +248,7 @@ public class WebinCli {
         
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setManifestFile( manifestFile );
-        parameters.setInputDir( new File( "." ) );
+        parameters.setInputDir( new File( params.inputDir ) );
         parameters.setOutputDir( new File( outputDir ) );
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
@@ -298,10 +318,17 @@ public class WebinCli {
 		} catch (IllegalArgumentException e) {
 			throw WebinCliException.createUserError(INVALID_CONTEXT, params.context);
 		}
+		
 		if (params.validate)
 			doValidation();
-		if (params.submit)
-			doSubmit();
+		
+		if( params.submit )
+		{
+		    if( null != validator.getSubmissionBundle() )
+	            doSubmit( validator.getSubmissionBundle() );
+		    else
+		        doSubmit();
+		}
 	}
 
 	@Deprecated private Study getStudy() {
@@ -448,8 +475,8 @@ public class WebinCli {
 		webinCliReportFile = reportPath.toFile().getAbsolutePath();
 	}
 
-	private void doSubmit() {
-		try {
+	@Deprecated private void doSubmit() {
+	    try {
             String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
             String submitDirectory = getSubmitDirectory(assemblyName);
             if (submitDirectory == null) {
@@ -469,7 +496,39 @@ public class WebinCli {
 		}
 	}
 
-    private File createSubmitDirectory(String assemblyName) {
+    private void 
+    doSubmit( SubmissionBundle bundle )
+    {
+        FtpService ftpService = new FtpService();
+        try 
+        {
+            ftpService.connectToFtp( params.userName, params.password );
+            ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), Paths.get( "." ) );
+            writeMessage( Severity.INFO, UPLOAD_SUCCESS );
+            
+        } catch( WebinCliException e ) 
+        {
+            e.throwAddMessage( UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR );
+        } finally 
+        {
+            ftpService.disconnectFtp();
+        }
+
+        try 
+        {
+            AssemblyInfoEntry aie = new AssemblyInfoEntry();
+            aie.setName( "NAME" );
+            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath(), aie );
+            submit.doSubmission( bundle.getPayloadType().toString(), bundle.getXMLFile(), bundle.getCenterName() );
+
+        } catch( WebinCliException e ) 
+        {
+            e.throwAddMessage( SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR );
+        }
+    }
+	
+	
+	private File createSubmitDirectory(String assemblyName) {
         File submitDirectory =new File(new File(outputDir) + File.separator + contextE + File.separator + assemblyName + File.separator + SUBMIT_DIR);
         if (submitDirectory.exists())
             FileUtils.emptyDirectory(submitDirectory);
@@ -508,16 +567,20 @@ public class WebinCli {
 	}
 
 	private static void printUsageHelpAndExit() {
-		StringBuilder usage = new StringBuilder(ParameterDescriptor.context + ParameterDescriptor.contextFlagDescription);;
-		usage.append("\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription);
-		usage.append("\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription);
-		usage.append("\n" + ParameterDescriptor.manifest + ParameterDescriptor.manifestFlagDescription);;
-		usage.append("\n" + ParameterDescriptor.outputDir + ParameterDescriptor.outputDirFlagDescription);;
-		usage.append("\n" + ParameterDescriptor.validate + ParameterDescriptor.validateFlagDescription);;
-		usage.append("\n" + ParameterDescriptor.submit + ParameterDescriptor.submitFlagDescription);;
-		writeMessage(Severity.INFO, usage.toString());
+	    writeMessageIntoConsole( new StringBuilder().append( "Options: " )
+	                                                .append( "\n" + ParameterDescriptor.context + ParameterDescriptor.contextFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.manifest + ParameterDescriptor.manifestFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.outputDir + ParameterDescriptor.outputDirFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.validate + ParameterDescriptor.validateFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.submit + ParameterDescriptor.submitFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.centerName + ParameterDescriptor.centerNameFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.version + ParameterDescriptor.versionFlagDescription )
+	                                                .append( "\n" ).toString() );
+//		usage.append( "\n" + ParameterDescriptor.inputDir + ParameterDescriptor.inputDirFlagDescription );
 		writeReturnCodes();
-		System.exit(SUCCESS);
+		System.exit( SUCCESS );
 	}
 
 	private static void writeReturnCodes()	{
@@ -526,7 +589,7 @@ public class WebinCli {
 		returnCodeMap.put(SYSTEM_ERROR, "INTERNAL ERROR");
 		returnCodeMap.put(USER_ERROR, "USER ERROR");
 		returnCodeMap.put(VALIDATION_ERROR, "VALIDATION ERROR");
-		writeMessage(Severity.INFO, "Exit codes: " + returnCodeMap.toString());
+		writeMessageIntoConsole( "Exit codes: " + returnCodeMap.toString() + "\n" );
 	}
 
 	public static class contextValidator implements IParameterValidator {
