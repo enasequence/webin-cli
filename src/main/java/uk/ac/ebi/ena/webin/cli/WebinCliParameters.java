@@ -9,7 +9,9 @@ WebinCliParameters
     private String  username;
     private String  password;
     private File    outputDir;
-    private File    inputDir;
+    private File    inputDir = new File( "." );
+    private String  centerName;
+    
     
     public File
     getManifestFile()
@@ -78,5 +80,19 @@ WebinCliParameters
     setInputDir( File inputDir )
     {
         this.inputDir = inputDir;
+    }
+    
+    
+    public void
+    setCenterName( String centerName )
+    {
+        this.centerName = centerName;
+    }
+
+    
+    public String
+    getCenterName()
+    {
+        return centerName;
     }
 }

@@ -2,8 +2,20 @@ package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 import uk.ac.ebi.embl.agp.reader.AGPFileReader;
 import uk.ac.ebi.embl.agp.reader.AGPLineReader;
@@ -24,13 +36,17 @@ import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.SubmissionBundle.PAYLOAD_TYPE;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public abstract class 
 SequenceWebinCli extends AbstractWebinCli
 {
+    private static final String DIGEST_NAME = "MD5";
     protected static String REPORT_FILE_SUFFIX = ".report";
+    private final static String ANALYSIS_XML = "analysis.xml";
     private final static String INVALID_INFO = "Info file validation failed. Please check the report file for errors: ";
     
     protected File   validationDir;
@@ -62,7 +78,7 @@ SequenceWebinCli extends AbstractWebinCli
         for( ManifestObj obj : reader.getManifestFileObjects() )
         {
             String fileName = obj.getFileName();
-            File file = fileName.startsWith( "/" ) ? new File( fileName ) : new File( getParameters().getInputDir(), fileName );
+            File file = Paths.get( fileName ).isAbsolute() ? new File( fileName ) : new File( getParameters().getInputDir(), fileName );
             switch( obj.getFileFormat() ) 
             {
             case CHROMOSOME_LIST:
@@ -144,12 +160,14 @@ SequenceWebinCli extends AbstractWebinCli
             setAssemblyInfo( defineInfo( infoFile ) );
             setName( getAssemblyInfo().getName().trim().replaceAll( "\\s+", "_" ) );
             
-            setValidationDir( createOutputDir( String.valueOf( getContext() ), getName(), VALIDATE_DIR ) );
-            setSubmitDir( createOutputDir( String.valueOf( getContext() ), getName(), SUBMIT_DIR ) );
+            setValidationDir( createOutputSubdir( String.valueOf( getContext() ), getName(), VALIDATE_DIR ) );
+            setSubmitDir( createOutputSubdir( String.valueOf( getContext() ), getName(), SUBMIT_DIR ) );
             
             setSample( fetchSample( getAssemblyInfo().getSampleId(), getTestMode() ) );
             setStudy( fetchStudy( getAssemblyInfo().getStudyId(), getTestMode() ) );
-
+        } catch( ValidationEngineException | WebinCliException e )
+        {
+            throw e;
         } catch( Throwable t )
         {
             throw new ValidationEngineException( "Unable to init validator", t );
@@ -294,12 +312,167 @@ SequenceWebinCli extends AbstractWebinCli
     }
 
 
-
-
     public void
     setAssemblyInfo( AssemblyInfoEntry assembly_info )
     {
         this.assembly_info = assembly_info;
     }
 
+    
+    void
+    prepareSubmissionBundle() throws IOException
+    {
+        List<File> uploadFileList = new ArrayList<>();
+//        infoFile;
+//        chromosomeListFile;
+//        unlocalisedListFile;
+//        
+//        fastaFiles;
+//        flatFiles;
+//        agpFiles;
+//        tsvFiles;
+
+        Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
+        List<Element> eList = new ArrayList<>();
+
+        if( null != chromosomeListFile )
+        {
+            eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
+            uploadFileList.add( chromosomeListFile );           
+        }
+        
+        if( null != unlocalisedListFile )
+        {
+            eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
+            uploadFileList.add( unlocalisedListFile );
+        }
+        
+        fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
+        uploadFileList.addAll( fastaFiles );
+        
+        flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
+        uploadFileList.addAll( flatFiles );
+        
+        agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
+        uploadFileList.addAll( agpFiles );
+        
+        tsvFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
+        uploadFileList.addAll( tsvFiles );
+        
+        String xml = createAnalysisXml( eList, getAssemblyInfo() );
+        
+        Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
+        Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+        setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
+                                                   uploadDir.toString(), 
+                                                   uploadFileList, 
+                                                   analysisFile.toFile(), 
+                                                   PAYLOAD_TYPE.ANALYSIS,
+                                                   getParameters().getCenterName() ) );        
+    }
+    
+
+    private Element
+    createTextElement( String name, String text )
+    {
+        Element e = new Element( name );
+        e.setText( text );
+        return e;
+    }
+    
+    
+    String
+    createAnalysisXml( List<Element> fileList, AssemblyInfoEntry entry  ) 
+    {
+        try 
+        {
+            String full_name = getContext().getTitle( getName() );
+            String type      = getContext().getType(); 
+            
+            Element analysisSetE = new Element( "ANALYSIS_SET" );
+            Element analysisE = new Element( "ANALYSIS" );
+            analysisSetE.addContent( analysisE );
+            
+            Document doc = new Document( analysisSetE );
+            analysisE.setAttribute( "alias", "ena-ANALYSIS-" + System.currentTimeMillis() );
+            analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            Element studyRefE = new Element( "STUDY_REF" );
+            analysisE.addContent( studyRefE );
+            studyRefE.setAttribute( "accession", entry.getStudyId() );
+            if( entry.getSampleId() != null && !entry.getSampleId().isEmpty() )
+            {
+                Element sampleRefE = new Element( "SAMPLE_REF" );
+                analysisE.addContent( sampleRefE );
+                sampleRefE.setAttribute( "accession", entry.getSampleId() );
+            }
+            Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
+            analysisE.addContent(analysisTypeE);
+            Element typeE = new Element( type );
+            
+            typeE.addContent( createTextElement( "NAME", entry.getName() ) );
+            typeE.addContent( createTextElement( "PARTIAL", String.valueOf( Boolean.FALSE ) ) ); //as per SraAnalysisParser.setAssemblyInfo
+            typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
+            typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
+            typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
+            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
+            
+            if( null != entry.getMinGapLength() )
+                typeE.addContent( createTextElement( "MIN_GAP_LENGTH", String.valueOf( entry.getMinGapLength() ) ) );
+            
+            if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
+                typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
+            
+            analysisTypeE.addContent( typeE );
+            Element filesE = new Element( "FILES" );
+            analysisE.addContent( filesE );
+            
+            for( Element e: fileList )
+                filesE.addContent( e );
+            
+            XMLOutputter xmlOutput = new XMLOutputter();
+            xmlOutput.setFormat( Format.getPrettyFormat() );
+            StringWriter stringWriter = new StringWriter();
+            xmlOutput.output( doc, stringWriter );
+            return stringWriter.toString();
+            
+        } catch( IOException e ) 
+        {
+            throw WebinCliException.createSystemError( e.getMessage() );
+        }
+    }
+
+
+    private Element
+    createfileElement( Path uploadDir, File file, String file_type )
+    {
+        try
+        {
+            return createfileElement( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ).toString(), 
+                                      String.valueOf( file_type ), 
+                                      DIGEST_NAME, 
+                                      FileUtils.calculateDigest( DIGEST_NAME, file ) );
+        }catch( IOException | NoSuchAlgorithmException e )
+        {
+            throw new RuntimeException( e );
+        }
+    }
+
+    
+    private Element
+    createfileElement( String file_path, String file_type, String digest, String checksum )
+    {
+        Element fileE = new Element( "FILE" );
+        fileE.setAttribute( "filename", file_path );
+        fileE.setAttribute( "filetype", String.valueOf( file_type ) );
+        fileE.setAttribute( "checksum_method", digest );
+        fileE.setAttribute( "checksum", checksum );
+        return fileE;
+    }
+    
+
+    protected String
+    extractSubpath( File inputDir, File file ) throws IOException
+    {
+        return inputDir.toPath().relativize( file.toPath() ).toString();
+    }
 }

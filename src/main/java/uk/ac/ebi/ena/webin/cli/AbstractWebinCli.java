@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.sample.Sample;
@@ -41,6 +40,13 @@ AbstractWebinCli
         return submissionBundle;
     }
 
+    
+    protected void
+    setSubmissionBundle( SubmissionBundle submissionBundle )
+    {
+        this.submissionBundle = submissionBundle;
+    }
+    
 
     public ValidationResult
     getValidationResult()
@@ -57,7 +63,7 @@ AbstractWebinCli
     
     
     protected File 
-    createOutputDir( String...more ) throws Exception 
+    createOutputSubdir( String...more ) throws Exception 
     {
         Path p = Paths.get( getParameters().getOutputDir().getPath(), more );
         File reportDirectory = p.toFile();
