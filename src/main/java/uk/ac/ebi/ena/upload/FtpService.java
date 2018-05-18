@@ -1,8 +1,10 @@
 package uk.ac.ebi.ena.upload;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,6 +42,56 @@ public class FtpService {
         }
     }
 
+    
+    void   
+    storeFile( Path local, Path remote ) throws IOException
+    {
+        Path subdir = remote.subpath( 0, remote.getNameCount() - 1 );
+        try( InputStream fileInputStream = new BufferedInputStream( Files.newInputStream( local ) ) )    
+        {
+            int level = changeToSubdir( subdir );       
+            if( !ftpClient.storeFile( remote.getFileName().toString(), fileInputStream ) )
+                throw WebinCliException.createSystemError( SYSTEM_ERROR_UPLOAD_FILE, "Unable to transfer " + remote.getFileName().toString() );
+            
+            for( int l = 0; l < level; ++l )
+            {
+                if( !ftpClient.changeToParentDirectory() )
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, "Unable to change to parent directory" );
+            }
+        }
+    }
+
+
+    private int
+    changeToSubdir( Path subdir ) throws IOException
+    {
+        int level = 0;
+        for( int l = 0; l < subdir.getNameCount(); ++l )
+        {
+            String dir = subdir.subpath( l, l + 1 ).getFileName().toString();
+            if( dir.equals( "." ) )
+                continue;
+
+            if( dir.equals( ".." ) )
+            {
+                throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, dir );
+            }
+            
+            if( !Arrays.asList( ftpClient.listDirectories() ).stream().anyMatch( f -> dir.equals( f.getName() ) ) )
+            {
+                if( !ftpClient.makeDirectory( dir ) )
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR_CREATE_DIR, dir );
+            }
+            
+            if( !ftpClient.changeWorkingDirectory( dir ) )
+                throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, dir );
+
+            level ++;
+        }
+        return level;
+    }
+    
+    
     //TODO verbose possible issues with file/folder permissions
     public void 
     ftpDirectory( List<File> uploadFilesList, String uploadDir, Path inputDir ) 
@@ -51,13 +103,8 @@ public class FtpService {
             ftpClient.enterLocalPassiveMode();
             if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) )
                 throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER );
-            
-            if( null == ftpClient.listNames( uploadDir ) )
-                if( !ftpClient.makeDirectory( uploadDir ) )
-                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CREATE_DIR, uploadDir );
-            
-            if( !ftpClient.changeWorkingDirectory( uploadDir ) )
-                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, uploadDir );
+           
+            changeToSubdir( Paths.get( uploadDir ) );
             
             FTPFile[] fileTodeleteA = ftpClient.listFiles();
             if( fileTodeleteA != null && fileTodeleteA.length > 0 ) 
@@ -69,22 +116,7 @@ public class FtpService {
             for( File file: uploadFilesList ) 
             {
                 Path f = file.isAbsolute() ? inputDir.relativize( file.toPath() ) : file.toPath();
-                Path subdir = f.subpath( 0, f.getNameCount() - 1 );
-                
-                try( FileInputStream fileInputStream = new FileInputStream( file ) )    
-                {
-                    if( f.getNameCount() > 1 && !Files.isSameFile( subdir, Paths.get( "." ) ) )
-                    {
-                        if( !ftpClient.changeWorkingDirectory( subdir.toString() ) )
-                            throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, subdir.toString() );
-                    }
-
-                    if( !ftpClient.storeFile( f.getFileName().toString(), fileInputStream ) )
-                        throw WebinCliException.createSystemError( SYSTEM_ERROR_UPLOAD_FILE, "Unable to transfer " + file );
-                }finally
-                {
-                    
-                }
+                storeFile( file.toPath(), f );
             }
         } catch( IOException e ) 
         {
