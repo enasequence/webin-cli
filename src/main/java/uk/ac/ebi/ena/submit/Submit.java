@@ -102,7 +102,7 @@ public class Submit {
             switch( responsecode )
             {
                 case HttpStatus.SC_OK:
-                    extractReceipt( resultsList );
+                    extractReceipt( resultsList, payloadType );
                     break;
                     
                 case HttpStatus.SC_UNAUTHORIZED:
@@ -127,7 +127,7 @@ public class Submit {
     }
 
     
-    private void extractReceipt(List<String> resultsList) {
+    private void extractReceipt(List<String> resultsList, String payloadType ) {
         StringBuilder errorsSb = new StringBuilder();
         try {
             String receipt = resultsList.stream()
@@ -145,11 +145,11 @@ public class Submit {
             Files.write(receiptFile, stringWriter.toString().getBytes());
             Element rootNode = doc.getRootElement();
             if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
-                String accession = rootNode.getChild("ANALYSIS").getAttributeValue("accession");
+                String accession = rootNode.getChild( payloadType ).getAttributeValue( "accession" );
                 if (accession != null && !accession.isEmpty())
-                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " The following analysis accession was assigned to the submission: " + accession);
+                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " The following " + payloadType.toLowerCase() +" accession was assigned to the submission: " + accession);
                 else
-                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the analysis XML submission. Please contact the helpdesk.");
+                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the " + payloadType.toLowerCase() + " XML submission. Please contact the helpdesk.");
             } else {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
                 for (Element child : childrenList) {
@@ -157,7 +157,7 @@ public class Submit {
                     if (errorList != null && !errorList.isEmpty())
                         errorList.stream().forEach(e -> errorsSb.append(e.getValue()));
                     else
-                        errorsSb.append("The submission failed because of an analysis XML submission error.");
+                        errorsSb.append("The submission failed because of an " + payloadType.toLowerCase() + " XML submission error.");
                 }
             }
             if (errorsSb.length() != 0) {
