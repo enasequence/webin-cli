@@ -359,7 +359,7 @@ SequenceWebinCli extends AbstractWebinCli
         tsvFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
         uploadFileList.addAll( tsvFiles );
         
-        String xml = createAnalysisXml( eList, getAssemblyInfo() );
+        String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
         
         Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
         Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
@@ -382,7 +382,7 @@ SequenceWebinCli extends AbstractWebinCli
     
     
     String
-    createAnalysisXml( List<Element> fileList, AssemblyInfoEntry entry  ) 
+    createAnalysisXml( List<Element> fileList, AssemblyInfoEntry entry, String centerName  ) 
     {
         try 
         {
@@ -395,6 +395,10 @@ SequenceWebinCli extends AbstractWebinCli
             
             Document doc = new Document( analysisSetE );
             analysisE.setAttribute( "alias", "ena-ANALYSIS-" + System.currentTimeMillis() );
+            
+            if( null != centerName && !centerName.isEmpty() )
+                analysisE.setAttribute( "center_name", centerName );
+            
             analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
             Element studyRefE = new Element( "STUDY_REF" );
             analysisE.addContent( studyRefE );

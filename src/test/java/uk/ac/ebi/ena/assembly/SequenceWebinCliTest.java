@@ -55,7 +55,7 @@ SequenceWebinCliTest
         aie.setSampleId( "sample_id" );
         aie.setStudyId( "study_id" );
         
-        String xml = s.createAnalysisXml( Collections.emptyList(), aie ); 
+        String xml = s.createAnalysisXml( Collections.emptyList(), aie, null ); 
         Assert.assertTrue( xml.contains( "SEQUENCE_ASSEMBLY" ) );
         Assert.assertTrue( xml.contains( "sample_id" ) );
         Assert.assertTrue( xml.contains( "study_id" ) );

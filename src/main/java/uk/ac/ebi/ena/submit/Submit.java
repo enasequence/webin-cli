@@ -173,6 +173,10 @@ public class Submit {
             Element analysisE = new Element("ANALYSIS");
             Document doc = new Document(analysisE);
             analysisE.setAttribute("alias", "ena-ANALYSIS-" + System.currentTimeMillis());
+
+            if( null != centerName && !centerName.isEmpty() )
+                analysisE.setAttribute( "center_name", centerName );
+
             analysisE.addContent(new Element("TITLE").setText(contextE.getTitle(assemblyName)));
             Element studyRefE = new Element("STUDY_REF");
             analysisE.addContent(studyRefE);

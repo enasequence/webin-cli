@@ -251,7 +251,7 @@ public class WebinCli {
         parameters.setOutputDir( new File( outputDir ) );
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
-        
+        parameters.setCenterName( params.centerName );
         validator.init( parameters );
         
         createWebinCliReportFile();
