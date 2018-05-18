@@ -37,7 +37,6 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.InfoFileValidator;
 import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
@@ -172,7 +171,7 @@ public class WebinCli {
                 if( found.contains( "-version" ) )
                 {
                     String version = WebinCli.class.getPackage().getImplementationVersion();
-                    writeMessage( Severity.INFO, String.format( "%s, version %s", WebinCli.class.getSimpleName(), version ) );
+                    writeMessageIntoConsole( String.format( "%s, version %s\n", WebinCli.class.getSimpleName(), version ) );
                     System.exit( SUCCESS );
                 }
 
@@ -258,59 +257,6 @@ public class WebinCli {
         createWebinCliReportFile();
     }
     
-    
-//    public static 
-//	void _main( String... args ) 
-//	{
-//	    ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
-//	    ValidationResult.setDefaultMessageFormatter( null );
-//
-//		try {
-//			if (args != null && args.length > 0) {
-//				Optional<String> found = Arrays.stream(args).filter(arg -> "-help".equalsIgnoreCase(arg))
-//						.findFirst();
-//				if (found.isPresent())
-//					printUsageHelpAndExit();
-//			}
-//			Params params = parseParameters(args);
-//			if (!params.validate &&
-//				!params.submit) {
-//				printUsageErrorAndExit();
-//			}
-//			checkVersion( params.test );
-//			String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
-//			params.manifest = getFullPath(params.manifest);
-//			File manifestFile = new File(params.manifest);
-//			outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
-//			outputDir = getFullPath( outputDir );
-//			createValidateDir( params.context, name );
-//			createWebinCliReportFile();
-//			infoValidator = new InfoFileValidator();
-//			manifestValidator = new ManifestFileValidator();
-//			if (!manifestValidator.validate(manifestFile, reportDir, params.context))
-//				throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
-//			if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context))
-//				throw WebinCliException.createUserError(INVALID_INFO, infoValidator.getReportFile().getAbsolutePath());
-//			infoReportFile = infoValidator.getReportFile().getAbsolutePath();
-//			WebinCli webinCli = new WebinCli(params);
-//			webinCli.execute();
-//			System.exit(SUCCESS);
-//		} catch (WebinCliException e) {
-//            writeMessage(Severity.ERROR, e.getMessage());
-//			switch (e.getErrorType()) {
-//				case SYSTEM_ERROR:
-//					System.exit(SYSTEM_ERROR);
-//				case USER_ERROR:
-//					System.exit(USER_ERROR);
-//				case VALIDATION_ERROR:
-//					System.exit(VALIDATION_ERROR);
-//			}
-//		} catch( Throwable t ) 
-//		{
-//			writeMessage( Severity.ERROR, String.format( "%s: %s", t.getClass().getSimpleName(), t.getMessage() ) );
-//			System.exit( SYSTEM_ERROR );
-//		}
-//	}
 
 	private void execute() {
 		try {
@@ -438,22 +384,6 @@ public class WebinCli {
         return uploadFilesList;
     }
 
-    /*
-    private boolean doFilesExistInUploadArea(List<File> uploadFileList, String assemblyName) {
-        FtpService ftpService = null;
-        boolean success = false;
-        try {
-            ftpService = new FtpService();
-            ftpService.connectToFtp(params.userName, params.password);
-            success = ftpService.doFilesExistInUploadArea(uploadFileList, params.context, assemblyName);
-        } catch (WebinCliException e) {
-            e.throwAddMessage(UPLOAD_CHECK_USER_ERROR, UPLOAD_CHECK_SYSTEM_ERROR);
-        } finally {
-            ftpService.disconnectFtp();
-        }
-        return success;
-    }
-    */
 
     @Deprecated
 	private static void createValidateDir(String context, String name) throws Exception {
