@@ -43,6 +43,7 @@ import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
@@ -57,6 +58,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	private String sequencelessChromosomesCheck= "ChromosomeListSequenelessCheck";
 	private String molType = "genomic DNA";
 	private boolean test;
+    private boolean valid;
 
 	
     public 
@@ -105,7 +107,8 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	}
 
 	
-    public boolean validate() throws ValidationEngineException 
+    @Override public boolean 
+    validate() throws ValidationEngineException 
     {
 		boolean valid = true;
 		try 
@@ -129,6 +132,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 
 			if( !test )
 				deleteFixedFiles(valid);
+			
+			this.valid = valid; 
+			    
 			return valid;
 		} catch (IOException e) 
 		{
@@ -138,6 +144,21 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	}
 
 
+    @Override public SubmissionBundle
+    getSubmissionBundle()
+    {
+        if( valid )
+            try
+            {
+                prepareSubmissionBundle();
+            } catch( IOException e )
+            {
+                e.printStackTrace();
+            }
+        return super.getSubmissionBundle();
+    }
+    
+    
     EmblEntryValidationPlanProperty 
     getValidationProperties() 
     {

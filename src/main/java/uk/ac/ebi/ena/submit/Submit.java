@@ -1,5 +1,21 @@
 package uk.ac.ebi.ena.submit;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -14,21 +30,11 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
-
-import java.io.StringReader;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.List;
-import java.util.stream.Collectors;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class Submit {
     private final static String ANALYSIS_XML = "analysis.xml";
@@ -41,13 +47,14 @@ public class Submit {
     private String assemblyName;
     private final boolean TEST;
     private String submitDir;
+    private String centerName;
 
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit. ";
 
-    public Submit(WebinCli.Params params, String submitDir, AssemblyInfoEntry assemblyInfoEntry) {
+    public Submit(WebinCli.Params params, String submitDir, AssemblyInfoEntry assemblyInfoEntry ) {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {
@@ -60,44 +67,67 @@ public class Submit {
         this.study = assemblyInfoEntry.getStudyId();
         this.sample = assemblyInfoEntry.getSampleId();
         this.assemblyName = assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_");
+        this.centerName = params.centerName;
     }
 
-    public void doSubmission() {
-        try {
+
+    @Deprecated public void 
+    doSubmission() 
+    {
+        doSubmission( "ANALYSIS", createAnalysisXml().toFile(), centerName );
+    }
+            
+    
+    public void 
+    doSubmission( String payloadType, File payload, String centerName ) 
+    {
+        try( InputStream is = new FileInputStream( payload ) )
+        {
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/" : "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"));
-            String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
-            httpPost.setHeader("Authorization", "Basic " + encoding);
+            HttpPost httpPost = new HttpPost( TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/" : "https://www.ebi.ac.uk/ena/submit/drop-box/submit/" );
+            String encoding = Base64.getEncoder().encodeToString( ( userName + ":" + password ).getBytes() );
+            httpPost.setHeader( "Authorization", "Basic " + encoding );
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            File analysisXmlF = createAnalysisXml().toFile();
-            builder.addBinaryBody("ANALYSIS", new FileInputStream(analysisXmlF), ContentType.APPLICATION_OCTET_STREAM, analysisXmlF.getName());
-            builder.addTextBody("ACTION", "ADD");
+            builder.addBinaryBody( payloadType, is, ContentType.APPLICATION_OCTET_STREAM, payload.getName() );
+            builder.addTextBody( "ACTION", "ADD" );
+            
+            if( null != centerName && !centerName.isEmpty() )
+                builder.addTextBody( "CENTER_NAME", centerName );
+            
             HttpEntity multipart = builder.build();
-            httpPost.setEntity(multipart);
-            CloseableHttpResponse response = httpClient.execute(httpPost);
+            httpPost.setEntity( multipart );
+            CloseableHttpResponse response = httpClient.execute( httpPost );
             int responsecode = response.getStatusLine().getStatusCode();
-            List<String> resultsList = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
-            switch (responsecode) {
+            List<String> resultsList = new BufferedReader( new InputStreamReader( response.getEntity().getContent(), StandardCharsets.UTF_8 ) ).lines().collect(Collectors.toList() );
+            switch( responsecode )
+            {
                 case HttpStatus.SC_OK:
-                    extractReceipt(resultsList);
+                    extractReceipt( resultsList, payloadType );
                     break;
+                    
                 case HttpStatus.SC_UNAUTHORIZED:
-                    throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
+                    throw WebinCliException.createUserError( WebinCli.AUTHENTICATION_ERROR );
+                    
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_INTERNAL );
+                    
                 case HttpStatus.SC_BAD_REQUEST:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_BAD_REQUEST);
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_BAD_REQUEST );
+                    
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_UNAVAILABLE );
+                    
                 default:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER );
             }
-        } catch (IOException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER, e.getMessage());
+        } catch( IOException e ) 
+        {
+            throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER, e.getMessage() );
         }
     }
 
-    private void extractReceipt(List<String> resultsList) {
+    
+    private void extractReceipt(List<String> resultsList, String payloadType ) {
         StringBuilder errorsSb = new StringBuilder();
         try {
             String receipt = resultsList.stream()
@@ -115,11 +145,11 @@ public class Submit {
             Files.write(receiptFile, stringWriter.toString().getBytes());
             Element rootNode = doc.getRootElement();
             if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
-                String accession = rootNode.getChild("ANALYSIS").getAttributeValue("accession");
+                String accession = rootNode.getChild( payloadType ).getAttributeValue( "accession" );
                 if (accession != null && !accession.isEmpty())
-                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " The following analysis accession was assigned to the submission: " + accession);
+                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " The following " + payloadType.toLowerCase() +" accession was assigned to the submission: " + accession);
                 else
-                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the analysis XML submission. Please contact the helpdesk.");
+                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the " + payloadType.toLowerCase() + " XML submission. Please contact the helpdesk.");
             } else {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
                 for (Element child : childrenList) {
@@ -127,7 +157,7 @@ public class Submit {
                     if (errorList != null && !errorList.isEmpty())
                         errorList.stream().forEach(e -> errorsSb.append(e.getValue()));
                     else
-                        errorsSb.append("The submission failed because of an analysis XML submission error.");
+                        errorsSb.append("The submission failed because of an " + payloadType.toLowerCase() + " XML submission error.");
                 }
             }
             if (errorsSb.length() != 0) {
@@ -138,11 +168,15 @@ public class Submit {
         }
     }
 
-    private Path createAnalysisXml() {
+    @Deprecated private Path createAnalysisXml() {
         try {
             Element analysisE = new Element("ANALYSIS");
             Document doc = new Document(analysisE);
             analysisE.setAttribute("alias", "ena-ANALYSIS-" + System.currentTimeMillis());
+
+            if( null != centerName && !centerName.isEmpty() )
+                analysisE.setAttribute( "center_name", centerName );
+
             analysisE.addContent(new Element("TITLE").setText(contextE.getTitle(assemblyName)));
             Element studyRefE = new Element("STUDY_REF");
             analysisE.addContent(studyRefE);

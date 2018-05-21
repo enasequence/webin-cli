@@ -25,6 +25,7 @@ import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.manifest.ManifestObj;
 
+@Deprecated
 public class GenomeAssemblyFileUtils
 {
 	public static FlatFileReader<?> getFileReader(FileFormat format,File file,BufferedReader reader) throws IOException

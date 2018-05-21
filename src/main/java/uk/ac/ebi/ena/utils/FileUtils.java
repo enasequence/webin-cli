@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +21,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -90,13 +92,31 @@ FileUtils
 	}
 	
 	
-	public static String 
-	md5CheckSum( String filePath ) throws IOException, NoSuchAlgorithmException 
+	static public String
+	md5CheckSum( String file ) throws NoSuchAlgorithmException, IOException
 	{
-		byte[] b = Files.readAllBytes( Paths.get( filePath ) );
-		return DatatypeConverter.printHexBinary( MessageDigest.getInstance( "MD5" ).digest( b ) );
+	    return calculateDigest( "MD5", new File( file ) );
 	}
-
+	
+	
+    static public String 
+    calculateDigest( String digest_name, 
+                     File   file ) throws IOException, NoSuchAlgorithmException 
+    {
+        MessageDigest digest = MessageDigest.getInstance( digest_name );
+        byte[] buf = new byte[ 4096 ];
+        int  read  = 0;
+        try( BufferedInputStream is = new BufferedInputStream( new FileInputStream( file ) ) )
+        {
+            while( ( read = is.read( buf ) ) > 0 )
+                digest.update( buf, 0, read );
+            
+            byte[] message_digest = digest.digest();
+            BigInteger value = new BigInteger( 1, message_digest );
+            return String.format( String.format( "%%0%dx", message_digest.length << 1 ), value );
+        }
+    }
+    
 	
 	public static boolean 
 	emptyDirectory( File dir )
