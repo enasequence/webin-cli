@@ -1,6 +1,7 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -32,7 +33,7 @@ AbstractWebinCli
     
     
     public abstract boolean validate() throws ValidationEngineException;
-
+    public abstract void prepareSubmissionBundle() throws IOException;
 
     public SubmissionBundle
     getSubmissionBundle()

@@ -48,6 +48,11 @@ SequenceWebinCliTest
             @Override public boolean validate() throws ValidationEngineException { return true; }
             @Override boolean getTestMode() { return true; }
             @Override ContextE getContext() { return ContextE.genome; }
+			@Override
+			public void prepareSubmissionBundle() throws IOException {
+				// TODO Auto-generated method stub
+				
+			}
         };
 
         s.setName( "123" );
@@ -67,12 +72,7 @@ SequenceWebinCliTest
     @Test public void 
     testAssemblywithAGP() throws Exception 
     {
-        SequenceWebinCli s = new SequenceWebinCli() 
-        {
-            @Override public boolean validate() throws ValidationEngineException { return true; }
-            @Override boolean getTestMode() { return true; }
-            @Override ContextE getContext() { return ContextE.genome; }
-        };
+        SequenceWebinCli s = new GenomeAssemblyWebinCli();
 
         Path fasta_file = Files.write( File.createTempFile( "FASTA", "FASTA" ).toPath(), ">123\nACGT".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
         s.getParameters().setInputDir( fasta_file.getParent().toFile() );

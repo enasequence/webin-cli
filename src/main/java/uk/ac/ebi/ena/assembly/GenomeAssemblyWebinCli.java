@@ -2,11 +2,18 @@ package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.jdom2.Element;
 
 import uk.ac.ebi.embl.api.entry.Entry;
 import uk.ac.ebi.embl.api.entry.Text;
@@ -20,7 +27,9 @@ import uk.ac.ebi.embl.api.entry.location.Location;
 import uk.ac.ebi.embl.api.entry.location.LocationFactory;
 import uk.ac.ebi.embl.api.entry.location.Order;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
+import uk.ac.ebi.embl.api.entry.qualifier.QualifierFactory;
 import uk.ac.ebi.embl.api.validation.FileType;
+import uk.ac.ebi.embl.api.validation.SequenceEntryUtils;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
@@ -45,6 +54,7 @@ import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.SubmissionBundle.PAYLOAD_TYPE;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli 
@@ -158,6 +168,55 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         return super.getSubmissionBundle();
     }
     
+    public void
+    prepareSubmissionBundle() throws IOException
+    {
+        List<File> uploadFileList = new ArrayList<>();
+//        infoFile;
+//        chromosomeListFile;
+//        unlocalisedListFile;
+//        
+//        fastaFiles;
+//        flatFiles;
+//        agpFiles;
+//        tsvFiles;
+
+        Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
+        List<Element> eList = new ArrayList<>();
+
+        if( null != chromosomeListFile )
+        {
+            eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
+            uploadFileList.add( chromosomeListFile );           
+        }
+        
+        if( null != unlocalisedListFile )
+        {
+            eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
+            uploadFileList.add( unlocalisedListFile );
+        }
+        
+        fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
+        uploadFileList.addAll( fastaFiles );
+        
+        flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
+        uploadFileList.addAll( flatFiles );
+        
+        agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
+        uploadFileList.addAll( agpFiles );
+        
+        String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
+        
+        Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
+        Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+        setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
+                                                   uploadDir.toString(), 
+                                                   uploadFileList, 
+                                                   analysisFile.toFile(), 
+                                                   PAYLOAD_TYPE.ANALYSIS,
+                                                   getParameters().getCenterName() ) );   
+        
+    }
     
     EmblEntryValidationPlanProperty 
     getValidationProperties() 
@@ -507,8 +566,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	{
 		if (chromosomeFile == null)
 			return null;
-		ChromosomeListFileReader reader = (ChromosomeListFileReader) GenomeAssemblyFileUtils
-				.getFileReader(FileFormat.CHROMOSOME_LIST, chromosomeFile, null);
+		ChromosomeListFileReader reader = (ChromosomeListFileReader)getFileReader(FileFormat.CHROMOSOME_LIST, chromosomeFile);
 		parseResult.append(reader.read());
 		if (reader.isEntry())
 			return reader.getentries();
@@ -520,8 +578,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	{
 		if (unlocalisedFile == null)
 			return null;
-		UnlocalisedListFileReader reader = (UnlocalisedListFileReader) GenomeAssemblyFileUtils
-				.getFileReader(FileFormat.UNLOCALISED_LIST, unlocalisedFile, null);
+		UnlocalisedListFileReader reader = (UnlocalisedListFileReader)getFileReader(FileFormat.UNLOCALISED_LIST, unlocalisedFile);
 		parseResult.append(reader.read());
 		if (reader.isEntry())
 			return reader.getentries();
@@ -544,7 +601,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 		{
 			chromosomeEntryNames.add(chromosomeEntry.getObjectName().toUpperCase());
 			chromosomeQualifierMap.put(chromosomeEntry.getObjectName().toUpperCase(),
-					GenomeAssemblyFileUtils.getChromosomeQualifier(chromosomeEntry, isVirus));
+					getChromosomeQualifier(chromosomeEntry, isVirus));
 		}
 
 		return chromosomeEntryNames;
@@ -583,4 +640,42 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
     {
         return test;
     }
+    
+    public static List<Qualifier> getChromosomeQualifier(ChromosomeEntry entry,boolean isVirus)
+	{
+		String chromosomeType = entry.getChromosomeType();
+		String chromosomeLocation = entry.getChromosomeLocation();
+		String chromosomeName = entry.getChromosomeName();
+		List<Qualifier> chromosomeQualifiers = new ArrayList<Qualifier>();
+		
+		if (chromosomeLocation != null && !chromosomeLocation.isEmpty()&& !isVirus&&!chromosomeLocation.equalsIgnoreCase("Phage"))
+		{
+			String organelleValue =  SequenceEntryUtils.getOrganelleValue(chromosomeLocation);
+			if (organelleValue != null)
+			{									
+				chromosomeQualifiers.add((new QualifierFactory()).createQualifier(Qualifier.ORGANELLE_QUALIFIER_NAME, SequenceEntryUtils.getOrganelleValue(chromosomeLocation)));
+			}
+		}	
+		else if (chromosomeName != null && !chromosomeName.isEmpty())
+		{
+			if (Qualifier.PLASMID_QUALIFIER_NAME.equals(chromosomeType))
+			{
+				chromosomeQualifiers.add((new QualifierFactory()).createQualifier(Qualifier.PLASMID_QUALIFIER_NAME, chromosomeName));
+			}
+			else if (Qualifier.CHROMOSOME_QUALIFIER_NAME.equals(chromosomeType))
+			{
+				chromosomeQualifiers.add((new QualifierFactory()).createQualifier(Qualifier.CHROMOSOME_QUALIFIER_NAME, chromosomeName));
+			}
+			else if("segmented".equals(chromosomeType)||"multipartite".equals(chromosomeType))
+			{
+				chromosomeQualifiers.add((new QualifierFactory()).createQualifier(Qualifier.SEGMENT_QUALIFIER_NAME, chromosomeName));
+
+			}
+			else if("monopartite".equals(chromosomeType))
+			{
+				chromosomeQualifiers.add((new QualifierFactory()).createQualifier(Qualifier.NOTE_QUALIFIER_NAME, chromosomeType));
+			}
+		}
+		return chromosomeQualifiers;
+	}
 }
