@@ -9,7 +9,7 @@ public class ParameterDescriptor {
     public final static String submit     = "-submit";
     public final static String manifest   = "-manifest";
     public final static String test       = "-test";
-    public final static String centerName = "-center";
+    public final static String centerName = "-centerName";
     public final static String version    = "-version";
     public final static String inputDir   = "-inputDir";
     
