@@ -194,4 +194,10 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
         reference.setReferenceNumber(1);
         entry.addReference(reference);
     }
+
+	@Override
+	public void prepareSubmissionBundle() throws IOException {
+		
+		
+	}
 }

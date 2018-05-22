@@ -3,20 +3,15 @@ package uk.ac.ebi.ena.assembly;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
 import uk.ac.ebi.embl.agp.reader.AGPFileReader;
 import uk.ac.ebi.embl.agp.reader.AGPLineReader;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
@@ -36,8 +31,6 @@ import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle.PAYLOAD_TYPE;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
@@ -46,7 +39,7 @@ SequenceWebinCli extends AbstractWebinCli
 {
     private static final String DIGEST_NAME = "MD5";
     protected static String REPORT_FILE_SUFFIX = ".report";
-    private final static String ANALYSIS_XML = "analysis.xml";
+    protected final static String ANALYSIS_XML = "analysis.xml";
     private final static String INVALID_INFO = "Info file validation failed. Please check the report file for errors: ";
     
     protected File   validationDir;
@@ -319,60 +312,7 @@ SequenceWebinCli extends AbstractWebinCli
     }
 
     
-    void
-    prepareSubmissionBundle() throws IOException
-    {
-        List<File> uploadFileList = new ArrayList<>();
-//        infoFile;
-//        chromosomeListFile;
-//        unlocalisedListFile;
-//        
-//        fastaFiles;
-//        flatFiles;
-//        agpFiles;
-//        tsvFiles;
-
-        Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
-        List<Element> eList = new ArrayList<>();
-
-        if( null != chromosomeListFile )
-        {
-            eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
-            uploadFileList.add( chromosomeListFile );           
-        }
-        
-        if( null != unlocalisedListFile )
-        {
-            eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
-            uploadFileList.add( unlocalisedListFile );
-        }
-        
-        fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
-        uploadFileList.addAll( fastaFiles );
-        
-        flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
-        uploadFileList.addAll( flatFiles );
-        
-        agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
-        uploadFileList.addAll( agpFiles );
-        
-        tsvFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
-        uploadFileList.addAll( tsvFiles );
-        
-        String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
-        
-        Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
-        Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-        setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
-                                                   uploadDir.toString(), 
-                                                   uploadFileList, 
-                                                   analysisFile.toFile(), 
-                                                   PAYLOAD_TYPE.ANALYSIS,
-                                                   getParameters().getCenterName() ) );        
-    }
-    
-
-    private Element
+   private Element
     createTextElement( String name, String text )
     {
         Element e = new Element( name );
@@ -446,7 +386,7 @@ SequenceWebinCli extends AbstractWebinCli
     }
 
 
-    private Element
+    protected Element
     createfileElement( Path uploadDir, File file, String file_type )
     {
         try
