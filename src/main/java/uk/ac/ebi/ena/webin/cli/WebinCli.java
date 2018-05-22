@@ -184,7 +184,7 @@ public class WebinCli {
                 printUsageErrorAndExit();
             }
 
-            checkVersion( params.test );
+//            checkVersion( params.test );
     
             WebinCli webinCli = new WebinCli();
             webinCli.init( params );
@@ -226,22 +226,29 @@ public class WebinCli {
         
         params.manifest = getFullPath( params.manifest );
         File manifestFile = new File( params.manifest );
-        
-        String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
-        
+        //TODO remove
+        if( contextE != ContextE.reads )
+        {
+            String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
+            createValidateDir( params.context, name );
+            createWebinCliReportFile();
+        }
+
         outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
         outputDir = getFullPath( outputDir );
+
         
-        createValidateDir( params.context, name );
-        createWebinCliReportFile();
         infoValidator = new InfoFileValidator();
         manifestValidator = new ManifestFileValidator();
-        if (!manifestValidator.validate(manifestFile, reportDir, params.context))
-            throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
-        if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context))
-            throw WebinCliException.createUserError( INVALID_INFO, infoValidator.getReportFile().getAbsolutePath() );
-        infoReportFile = infoValidator.getReportFile().getAbsolutePath();
-
+        //TODO remove
+        if( contextE != ContextE.reads )
+        {
+            if (!manifestValidator.validate(manifestFile, reportDir, params.context))
+                throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
+            if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context))
+                throw WebinCliException.createUserError( INVALID_INFO, infoValidator.getReportFile().getAbsolutePath() );
+            infoReportFile = infoValidator.getReportFile().getAbsolutePath();
+        }
 
         this.validator = contextE.getValidatorClass().newInstance();
         
@@ -253,8 +260,6 @@ public class WebinCli {
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
         validator.init( parameters );
-        
-        createWebinCliReportFile();
     }
     
 
@@ -270,8 +275,9 @@ public class WebinCli {
 		
 		if( params.submit )
 		{
-		    if( null != validator.getSubmissionBundle() )
-	            doSubmit( validator.getSubmissionBundle() );
+		    SubmissionBundle sb = validator.getSubmissionBundle();
+		    if( null != sb )
+	            doSubmit( sb );
 		    else
 		        doSubmit();
 		}
@@ -305,18 +311,17 @@ public class WebinCli {
 	private void 
 	doValidation() 
 	{
-		Study study = getStudy();
 		switch(contextE) {
 			case transcriptome:
 			{
-				TranscriptomeAssemblyWebinCli v = new TranscriptomeAssemblyWebinCli( manifestValidator.getReader(), getSample(), study );
+				TranscriptomeAssemblyWebinCli v = new TranscriptomeAssemblyWebinCli( manifestValidator.getReader(), getSample(), getStudy() );
                 v.setReportsDir( reportDir );
 				validator = v;
 				break;
 			}
 			case sequence:
 			{
-				SequenceAssemblyWebinCli v = new SequenceAssemblyWebinCli( manifestValidator.getReader(), study );
+				SequenceAssemblyWebinCli v = new SequenceAssemblyWebinCli( manifestValidator.getReader(), getStudy() );
                 v.setReportsDir( reportDir );
 				validator = v;
 				break;
@@ -329,14 +334,17 @@ public class WebinCli {
             {
                 throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, reportDir );
             }
-
-            String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-            File submitDirectory = createSubmitDirectory( assemblyName );
-            // Gzip the files validated directory.
-			for( ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects() )
-                FileUtils.gZipFile( Paths.get( manifestObj.getFileName() ).toFile() );
-			// Create the manifest in the submit directory.
-			new ManifestFileWriter().write( new File( submitDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects() );
+            //TODO remove
+            if( contextE != ContextE.reads )
+            {
+                String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
+                File submitDirectory = createSubmitDirectory( assemblyName );
+                // Gzip the files validated directory.
+    			for( ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects() )
+                    FileUtils.gZipFile( Paths.get( manifestObj.getFileName() ).toFile() );
+    			// Create the manifest in the submit directory.
+    			new ManifestFileWriter().write( new File( submitDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects() );
+            }			
 			writeMessage( Severity.INFO, VALIDATE_SUCCESS );
 		} catch( IOException | NoSuchAlgorithmException | ValidationEngineException e ) 
 		{
