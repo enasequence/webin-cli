@@ -31,7 +31,7 @@ public class InfoFileValidator {
     {
         if (assemblyInfoFile == null)
             return null;
-        AssemblyInfoReader reader = (AssemblyInfoReader) GenomeAssemblyFileUtils.getFileReader(FileFormat.INFO, assemblyInfoFile, null);
+        AssemblyInfoReader reader = new AssemblyInfoReader(assemblyInfoFile);;
         parseResult.append(reader.read());
         if (reader.isEntry())
             return (AssemblyInfoEntry) reader.getEntry();
