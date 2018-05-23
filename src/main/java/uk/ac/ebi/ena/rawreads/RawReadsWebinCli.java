@@ -197,7 +197,8 @@ RawReadsWebinCli extends AbstractWebinCli
     }
 
     
-    void
+    //TODO - actually there will be experiment-xml and run-xml. No submission will be possible without creation a new experiment.
+    public void
     prepareSubmissionBundle() throws IOException
     {
         List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
