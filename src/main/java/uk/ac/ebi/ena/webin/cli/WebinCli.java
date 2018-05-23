@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -226,6 +227,10 @@ public class WebinCli {
         
         params.manifest = getFullPath( params.manifest );
         File manifestFile = new File( params.manifest );
+
+        outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
+        outputDir = getFullPath( outputDir );
+        
         //TODO remove
         if( contextE != ContextE.reads )
         {
@@ -233,10 +238,6 @@ public class WebinCli {
             createValidateDir( params.context, name );
             createWebinCliReportFile();
         }
-
-        outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
-        outputDir = getFullPath( outputDir );
-
         
         infoValidator = new InfoFileValidator();
         manifestValidator = new ManifestFileValidator();
@@ -582,9 +583,12 @@ public class WebinCli {
     			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
     		else
     			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
+		} catch( NoSuchFileException no )
+		{
+		    throw WebinCliException.createUserError( String.format( "%s %s", "Unable to locate file", info ) );
 		} catch( ZipException ze )
 		{
-		    throw new ZipException( String.format( "file %s %s", info, ze.getMessage() ) );
+		    throw WebinCliException.createUserError( String.format( "%s %s", ze.getMessage(), info ) );
 		}
 	}
 
