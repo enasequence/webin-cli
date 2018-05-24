@@ -47,6 +47,7 @@ import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.Submit;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.utils.FileUtils;
@@ -458,7 +459,7 @@ public class WebinCli {
             AssemblyInfoEntry aie = new AssemblyInfoEntry();
             aie.setName( "NAME" );
             Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath(), aie );
-            submit.doSubmission( bundle.getPayloadType().toString(), bundle.getXMLFile(), bundle.getCenterName() );
+            submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName() );
 
         } catch( WebinCliException e ) 
         {

@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,10 +52,11 @@ import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle.PAYLOAD_TYPE;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli 
@@ -212,8 +214,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
                                                    uploadDir.toString(), 
                                                    uploadFileList, 
-                                                   analysisFile.toFile(), 
-                                                   PAYLOAD_TYPE.ANALYSIS,
+                                                   Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile() ) ), 
                                                    getParameters().getCenterName() ) );   
         
     }

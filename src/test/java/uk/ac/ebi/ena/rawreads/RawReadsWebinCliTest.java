@@ -14,7 +14,7 @@ import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
@@ -71,14 +71,14 @@ RawReadsWebinCliTest
         parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( fastq_file.getParent().toFile() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "EXPERIMENT-ID ERX123456789\nFASTQ PHRED_33 " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ PHRED_33 " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
         rr.init( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
-        System.out.println( sb.getXMLFile() );
+        System.out.println( sb.getXMLFileList() );
     }
     
     

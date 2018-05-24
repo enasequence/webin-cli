@@ -9,6 +9,7 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public abstract class 
