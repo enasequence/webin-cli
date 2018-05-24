@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,25 +25,33 @@ import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle.PAYLOAD_TYPE;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
 RawReadsWebinCli extends AbstractWebinCli
 {   
+    public enum Platforms { ILLUMINA, LS454, SOLID, COMPLETE_GENOMICS, HELICOS, PACBIO, IONTORRENT, CAPILLARY }
     private static final String RUN_XML = "run.xml";
+    private static final String EXPERIMENT_XML = "experiment.xml";
     List<RawReadsFile> files;
-    private String  experiment_id;
+    private String  experiment_ref;
     private boolean valid;
     private boolean test_mode;
     private File    submit_dir;
     private File    validate_dir;
+    private String study_id;
+    private String sample_id;
+    private String platform;
+    //TODO value should be estimated via validation
+    private String library_layout = "SINGLE";
     
-
+    
     @Override public void 
     init( WebinCliParameters parameters ) throws ValidationEngineException
     {
@@ -117,29 +126,85 @@ RawReadsWebinCli extends AbstractWebinCli
     {
         List<String> lines = Files.readAllLines( manifest_file.toPath() );
         List<RawReadsFile> files = new ArrayList<>();
+        
+        String study_id = null;
+        String sample_id = null;
+        String name = null;
+        String platform = null;
+        
+        
         for( String line : lines )
         {
             String tokens[] = line.split( "\\s+" );
             String token0 = tokens[ 0 ];
             switch( token0 )
             {
-            case "EXPERIMENT":
-            case "EXPERIMENT-ID":
-                this.experiment_id = tokens[ 1 ]; 
-                
-                break;
+            case "SAMPLE":
+            case "SAMPLE-ID":
+            case "SAMPLE_ID":
+                if( null == sample_id )
+                {
+                    sample_id = tokens[ 1 ];
+                    break;
+                } 
+                throw WebinCliException.createUserError( "Sample should not appeared more than once" );
+
+            case "STUDY":
+            case "STUDY-ID":
+            case "STUDY_ID":
+                if( null == study_id )
+                {
+                    study_id = tokens[ 1 ];
+                    break;
+                } 
+                throw WebinCliException.createUserError( "Study should not appeared more than once" );
                 
             case "NAME":
-                setName( tokens[ 1 ] );
-                break;
-                
+                if( null == name )
+                {
+                    name = tokens[ 1 ];
+                    break;
+                } 
+                throw WebinCliException.createUserError( "Name should not appeared more than once" );
+
+            case "PLATFORM":
+                if( null == platform )
+                {
+                    platform = tokens[ 1 ];
+                    break;
+                } 
+                throw WebinCliException.createUserError( "Platform should not appeared more than once" );
+
             default:
                 files.add( parseFileLine( tokens ) );
             }
         }
         
-        if( null == getName() || getName().isEmpty() )
-            setName( String.format( "%s-%s", this.experiment_id, System.currentTimeMillis() ) );
+        if( null == study_id || study_id.isEmpty() )
+            throw WebinCliException.createUserError( "Study should be defined" );
+        
+        if( null == sample_id || sample_id.isEmpty() )
+            throw WebinCliException.createUserError( "Sample should be defined" );
+        
+        if( null == name || name.isEmpty() )
+            setName( String.format( "%s-%s", "WEBIN-CLI-EXPERIMENT", System.currentTimeMillis() ) );
+        else
+            setName( name );
+        
+        if( null == platform )
+            throw WebinCliException.createUserError( "Platform should be defined" );
+        try
+        {
+            Platforms.valueOf( platform );
+        } catch( Throwable t )
+        {
+            throw WebinCliException.createUserError( "Platform value should be one of " + Arrays.asList( Platforms.values() ) );
+        }
+        
+        this.study_id = study_id;
+        this.sample_id = sample_id;
+        this.platform = platform;
+        
         this.files = files;
     }
     
@@ -196,8 +261,7 @@ RawReadsWebinCli extends AbstractWebinCli
         return super.getSubmissionBundle();
     }
 
-    
-    //TODO - actually there will be experiment-xml and run-xml. No submission will be possible without creation a new experiment.
+
     public void
     prepareSubmissionBundle() throws IOException
     {
@@ -219,15 +283,21 @@ RawReadsWebinCli extends AbstractWebinCli
                                    .collect( Collectors.toList() );
 
         //do something
-        String xml = createRunXml( eList, experiment_id, getParameters().getCenterName() );
+        String experiment_ref = String.format( "exp-%s", getName() );
+        
+        String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), study_id, sample_id, platform );
+        String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
         
         Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
-        Files.write( runXmlFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+        Path experimentXmlFile = getSubmitDir().toPath().resolve( EXPERIMENT_XML );
+        
+        Files.write( runXmlFile, r_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+        Files.write( experimentXmlFile, e_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+        
         setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
                                                    uploadDir.toString(), 
-                                                   uploadFileList, 
-                                                   runXmlFile.toFile(), 
-                                                   PAYLOAD_TYPE.RUN,
+                                                   uploadFileList,
+                                                   Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile() ), new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile() ) ),
                                                    getParameters().getCenterName() ) );   
     }
 
@@ -258,7 +328,88 @@ RawReadsWebinCli extends AbstractWebinCli
 */
 
     String
-    createRunXml( List<Element> fileList, String experiment_id, String centerName  ) 
+    createExperimentXml( String experiment_ref, String centerName, String study_id, String sample_id, String platform  ) 
+    {
+        String instrument_model = "unspecified";
+        String design_description = "unspecified";
+        String library_strategy  = "OTHER";
+        String library_source    = "OTHER";
+        String library_selection = "unspecified";
+        
+        try 
+        {
+            String full_name = ContextE.reads.getTitle( getName() );
+            Element experimentSetE = new Element( "EXPERIMENT_SET" );
+            Element experimentE = new Element( "EXPERIMENT" );
+            experimentSetE.addContent( experimentE );
+            
+            Document doc = new Document( experimentSetE );
+            experimentE.setAttribute( "alias", experiment_ref );
+            
+            if( null != centerName && !centerName.isEmpty() )
+                experimentE.setAttribute( "center_name", centerName );
+            
+            experimentE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            
+            Element studyRefE = new Element( "STUDY_REF" );
+            experimentE.addContent( studyRefE );
+            studyRefE.setAttribute( "accession", study_id );
+  
+            Element designE = new Element( "DESIGN" );
+            experimentE.addContent( designE );
+            
+            Element designDescriptionE = new Element( "DESIGN_DESCRIPTION" );
+            designDescriptionE.setText( design_description );
+            designE.addContent( designDescriptionE );
+            
+            Element sampleDescriptorE = new Element( "SAMPLE_DESCRIPTOR" );
+            sampleDescriptorE.setAttribute( "accession", sample_id );
+
+            designE.addContent( sampleDescriptorE );
+
+            Element libraryDescriptorE = new Element( "LIBRARY_DESCRIPTOR" );
+            designE.addContent( libraryDescriptorE );
+            
+            Element libraryStrategyE = new Element( "LIBRARY_STRATEGY" );
+            libraryStrategyE.setText( library_strategy );
+            libraryDescriptorE.addContent( libraryStrategyE );
+            
+            Element librarySourceE = new Element( "LIBRARY_SOURCE" );
+            librarySourceE.setText( library_source );
+            libraryDescriptorE.addContent( librarySourceE );
+            
+            Element librarySelectionE = new Element( "LIBRARY_SELECTION" );
+            librarySelectionE.setText( library_selection );
+            libraryDescriptorE.addContent( librarySelectionE );
+
+            Element libraryLayoutE = new Element( "LIBRARY_LAYOUT" );
+            libraryLayoutE.addContent( new Element( library_layout ) );
+            libraryDescriptorE.addContent( libraryLayoutE );
+            
+            Element platformE = new Element( "PLATFORM" );
+            experimentE.addContent( platformE );
+            
+            Element platformRefE = new Element( platform );
+            platformE.addContent( platformRefE );
+            Element instrumentModelE = new Element( "INSTRUMENT_MODEL" );
+            instrumentModelE.setText( instrument_model );
+            platformRefE.addContent( instrumentModelE );
+            
+            XMLOutputter xmlOutput = new XMLOutputter();
+            xmlOutput.setFormat( Format.getPrettyFormat() );
+            StringWriter stringWriter = new StringWriter();
+            xmlOutput.output( doc, stringWriter );
+            return stringWriter.toString();
+            
+        } catch( IOException e ) 
+        {
+            throw WebinCliException.createSystemError( e.getMessage() );
+        }
+    }
+    
+    
+    String
+    createRunXml( List<Element> fileList, String experiment_ref, String centerName  ) 
     {
         try 
         {
@@ -276,7 +427,7 @@ RawReadsWebinCli extends AbstractWebinCli
             runE.addContent( new Element( "TITLE" ).setText( full_name ) );
             Element experimentRefE = new Element( "EXPERIMENT_REF" );
             runE.addContent( experimentRefE );
-            experimentRefE.setAttribute( "accession", experiment_id );
+            experimentRefE.setAttribute( "refname", experiment_ref );
             
             Element dataBlockE = new Element( "DATA_BLOCK" );
             runE.addContent( dataBlockE );

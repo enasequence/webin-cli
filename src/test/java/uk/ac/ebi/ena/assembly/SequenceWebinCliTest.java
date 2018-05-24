@@ -16,8 +16,7 @@ import org.junit.Test;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.ena.submit.ContextE;
-import uk.ac.ebi.ena.webin.cli.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
 
 public class
 SequenceWebinCliTest
@@ -92,9 +91,9 @@ SequenceWebinCliTest
         
         SubmissionBundle sb = s.getSubmissionBundle();
         Assert.assertTrue( Files.isSameFile( sb.getSubmitDirectory().toPath(), submit_dir.toPath() ) );
-        Assert.assertTrue( sb.getXMLFile().exists() );
+        Assert.assertTrue( sb.getXMLFileList().get( 0 ).file.exists() );
         
-        String xmlfile = new String( Files.readAllBytes( sb.getXMLFile().toPath() ), StandardCharsets.UTF_8 );
+        String xmlfile = new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).file.toPath() ), StandardCharsets.UTF_8 );
         Assert.assertTrue( xmlfile.contains( fasta_file.getFileName() + "\"" ) );
         Assert.assertTrue( xmlfile.contains( "6f82bc96add84ece757afad265d7e341" ) );
         Assert.assertTrue( xmlfile.contains( "FASTA" ) );
