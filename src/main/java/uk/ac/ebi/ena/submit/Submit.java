@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -13,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -37,6 +37,7 @@ import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
+import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -79,7 +80,14 @@ public class Submit {
     @Deprecated public void 
     doSubmission() 
     {
-        doSubmission( Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, createAnalysisXml().toFile() ) ), centerName );
+        File file = createAnalysisXml().toFile(); 
+        try
+        {
+            doSubmission( Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, file, FileUtils.calculateDigest( "MD5", file ) ) ), centerName );
+        } catch( NoSuchAlgorithmException | IOException e )
+        {
+            throw WebinCliException.createSystemError( e.getMessage() );
+        }
     }
             
     
@@ -95,7 +103,7 @@ public class Submit {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             
             for( SubmissionXMLFile p: payload_list )
-                builder.addBinaryBody( String.valueOf( p.type ), new FileInputStream( p.file ), ContentType.APPLICATION_OCTET_STREAM, p.file.getName() );
+                builder.addBinaryBody( String.valueOf( p.getType() ), new FileInputStream( p.getFile() ), ContentType.APPLICATION_OCTET_STREAM, p.getFile().getName() );
             
             builder.addTextBody( "ACTION", "ADD" );                
             
@@ -110,7 +118,7 @@ public class Submit {
             switch( responsecode )
             {
                 case HttpStatus.SC_OK:
-                    payload_list.forEach( e -> extractReceipt( resultsList, String.valueOf( e.type ) ) );
+                    payload_list.forEach( e -> extractReceipt( resultsList, String.valueOf( e.getType() ) ) );
                     break;
                     
                 case HttpStatus.SC_UNAUTHORIZED:

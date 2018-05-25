@@ -240,6 +240,13 @@ RawReadsWebinCli extends AbstractWebinCli
     @Override public boolean
     validate() throws ValidationEngineException
     {
+        if( !FileUtils.emptyDirectory( validate_dir ) )
+            throw WebinCliException.createSystemError( "Unable to empty directory " + validate_dir );
+        
+        if( !FileUtils.emptyDirectory( submit_dir ) )
+            throw WebinCliException.createSystemError( "Unable to empty directory " + submit_dir );
+
+        
         this.valid = true;
         return valid;
     }
@@ -250,55 +257,56 @@ RawReadsWebinCli extends AbstractWebinCli
     {
         if( valid )
         {
-            try
-            {
-                prepareSubmissionBundle();
-            } catch( IOException ioe )
-            {
-                throw new RuntimeException( ioe );
-            }
+            prepareSubmissionBundle();
         }
         return super.getSubmissionBundle();
     }
 
 
     public void
-    prepareSubmissionBundle() throws IOException
+    prepareSubmissionBundle() throws WebinCliException
     {
-        List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
-        Path uploadDir = Paths.get( String.valueOf( ContextE.reads ), getName() );
-        files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
-        files.forEach( e -> {
-            try
-            {
-                e.setChecksum( FileUtils.calculateDigest( String.valueOf( e.getChecksumMethod() ), new File( e.getFilename() ) ) );
-            } catch( NoSuchAlgorithmException | IOException e1 )
-            {
-                throw new RuntimeException( e1 );
-            }
-        } );
-        List<Element> eList = files.stream()
-                                   .sequential()
-                                   .map( e -> e.toElement( "FILE", uploadDir ) )
-                                   .collect( Collectors.toList() );
-
-        //do something
-        String experiment_ref = String.format( "exp-%s", getName() );
-        
-        String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), study_id, sample_id, platform );
-        String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
-        
-        Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
-        Path experimentXmlFile = getSubmitDir().toPath().resolve( EXPERIMENT_XML );
-        
-        Files.write( runXmlFile, r_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-        Files.write( experimentXmlFile, e_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-        
-        setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
-                                                   uploadDir.toString(), 
-                                                   uploadFileList,
-                                                   Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile() ), new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile() ) ),
-                                                   getParameters().getCenterName() ) );   
+        try
+        {
+            List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
+            Path uploadDir = Paths.get( String.valueOf( ContextE.reads ), getName() );
+            files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
+            files.forEach( e -> {
+                try
+                {
+                    e.setChecksum( FileUtils.calculateDigest( String.valueOf( e.getChecksumMethod() ), new File( e.getFilename() ) ) );
+                } catch( NoSuchAlgorithmException | IOException e1 )
+                {
+                    throw new RuntimeException( e1 );
+                }
+            } );
+            List<Element> eList = files.stream()
+                                       .sequential()
+                                       .map( e -> e.toElement( "FILE", uploadDir ) )
+                                       .collect( Collectors.toList() );
+    
+            //do something
+            String experiment_ref = String.format( "exp-%s", getName() );
+            
+            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), study_id, sample_id, platform );
+            String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
+            
+            Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
+            Path experimentXmlFile = getSubmitDir().toPath().resolve( EXPERIMENT_XML );
+            
+            Files.write( runXmlFile, r_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+            Files.write( experimentXmlFile, e_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+            
+            setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
+                                                       uploadDir.toString(), 
+                                                       uploadFileList,
+                                                       Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile(), FileUtils.calculateDigest( "MD5", experimentXmlFile.toFile() ) ), 
+                                                                      new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() ) ) ),
+                                                       getParameters().getCenterName() ) );
+        } catch( NoSuchAlgorithmException | IOException e )
+        {
+            throw WebinCliException.createSystemError( e.getMessage() );
+        }
     }
 
 
@@ -447,5 +455,12 @@ RawReadsWebinCli extends AbstractWebinCli
         {
             throw WebinCliException.createSystemError( e.getMessage() );
         }
+    }
+
+
+    @Override public File
+    getSubmissionBundleFileName()
+    {
+        return new File( submit_dir, "validate.reciept" );
     }
 }
