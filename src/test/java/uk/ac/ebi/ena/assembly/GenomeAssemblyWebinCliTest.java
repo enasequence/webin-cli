@@ -12,7 +12,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 
@@ -36,7 +35,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
 		validator.setInputDir( file.getParentFile() );
-		validator.setValidationDir( file.getParentFile() );
+		validator.setValidationDir( createOutputFolder() );
+		validator.setSubmitDir( createOutputFolder() );
 		validator.defineFileTypes( file );
 		validator.setSample( sample );
 		validator.setStudy( study );
@@ -55,7 +55,8 @@ public class GenomeAssemblyWebinCliTest {
 
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -73,7 +74,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -94,7 +96,8 @@ public class GenomeAssemblyWebinCliTest {
 		study.setLocusTagsList(locusTagsList);
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -112,7 +115,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -130,7 +134,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -148,7 +153,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -162,6 +168,7 @@ public class GenomeAssemblyWebinCliTest {
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setStudy( new Study() );
         validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         Assert.assertTrue( !validator.validateFastaFiles( validator.getValidationProperties(), 
                                                           Arrays.asList( new File( GenomeAssemblyWebinCliTest.class
                                                                                               .getClassLoader()
@@ -176,6 +183,7 @@ public class GenomeAssemblyWebinCliTest {
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setStudy( new Study() );
         validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         Assert.assertTrue( !validator.validateChromosomeList( validator.getValidationProperties(), 
                                                               new File( GenomeAssemblyWebinCliTest.class
                                                                                                   .getClassLoader()
@@ -204,7 +212,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -222,7 +231,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );
@@ -240,7 +250,8 @@ public class GenomeAssemblyWebinCliTest {
 		Study study = new Study();
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
         validator.setInputDir( file.getParentFile() );
-        validator.setValidationDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( study );

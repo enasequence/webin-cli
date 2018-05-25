@@ -56,13 +56,13 @@ import uk.ac.ebi.ena.utils.FileUtils;
 				   result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidFileFormat,m.getFileFormatString(),context,ContextE.getContext(context.toLowerCase()).getFileFormatString())));
 				
 				if (m.getFileName() == null)
-					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidFile)));
+					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, InvalidFile )));
 				else
 				{
 				File file = new File(m.getFileName());
 				if (!file.exists()&&!test)
 				{
-					result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR, fileNotExist)));
+					result.append(new ValidationResult().append(new ValidationMessage<>( Severity.ERROR, fileNotExist, file ) ) );
 				}
 				}
 				

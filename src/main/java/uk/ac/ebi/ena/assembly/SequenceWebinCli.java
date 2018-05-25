@@ -57,6 +57,9 @@ SequenceWebinCli extends AbstractWebinCli
     private Sample sample;
     
     
+    protected abstract boolean validateInternal() throws ValidationEngineException;
+    
+    
     protected void 
     defineFileTypes( File manifest_file ) throws ValidationEngineException, IOException 
     {
@@ -419,4 +422,25 @@ SequenceWebinCli extends AbstractWebinCli
     {
         return inputDir.toPath().relativize( file.toPath() ).toString();
     }
+    
+    
+    @Override public File
+    getSubmissionBundleFileName()
+    {
+        return new File( getSubmitDir(), "validate.reciept" );
+    }
+
+
+    @Override public boolean
+    validate() throws ValidationEngineException
+    {
+        if( !FileUtils.emptyDirectory( getValidationDir() ) )
+            throw WebinCliException.createSystemError( "Unable to empty directory " + getValidationDir() );
+        
+        if( !FileUtils.emptyDirectory( getSubmitDir() ) )
+            throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
+        
+        return validateInternal();
+    }
+
 }
