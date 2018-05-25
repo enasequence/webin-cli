@@ -195,9 +195,16 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
         entry.addReference(reference);
     }
 
-	@Override
-	public void prepareSubmissionBundle() throws IOException {
-		
-		
+	
+    @Override public void 
+	prepareSubmissionBundle() throws IOException
+    {
+        
 	}
+    
+    @Override public File
+    getSubmissionBundleFileName()
+    {
+        return null;
+    }
 }

@@ -277,11 +277,20 @@ public class WebinCli {
 		
 		if( params.submit )
 		{
-		    SubmissionBundle sb = validator.getSubmissionBundle();
-		    if( null != sb )
+		    SubmissionBundle sb = null;
+		    try
+		    {
+		        sb = validator.getSubmissionBundle();
+		    }catch( WebinCliException e )
+		    {
+		        writeMessageIntoInfoReport( Severity.WARNING, e.getMessage() );
+		        throw WebinCliException.createUserError( "Unable to read previous attempt of validation. Please re-run validation again." );
+		    }
+		    
+	        if( null != sb )
 	            doSubmit( sb );
-		    else
-		        doSubmit();
+	        else
+	            doSubmit();
 		}
 	}
 
@@ -336,6 +345,7 @@ public class WebinCli {
             {
                 throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, reportDir );
             }
+            
             //TODO remove
             if( contextE != ContextE.reads )
             {
@@ -346,8 +356,10 @@ public class WebinCli {
                     FileUtils.gZipFile( Paths.get( manifestObj.getFileName() ).toFile() );
     			// Create the manifest in the submit directory.
     			new ManifestFileWriter().write( new File( submitDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects() );
-            }			
-			writeMessage( Severity.INFO, VALIDATE_SUCCESS );
+            }		
+            
+            validator.prepareSubmissionBundle();
+            writeMessage( Severity.INFO, VALIDATE_SUCCESS );
 		} catch( IOException | NoSuchAlgorithmException | ValidationEngineException e ) 
 		{
 			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());

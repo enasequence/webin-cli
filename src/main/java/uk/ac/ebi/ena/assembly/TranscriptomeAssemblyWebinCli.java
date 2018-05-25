@@ -169,4 +169,11 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	
+    @Override public File
+    getSubmissionBundleFileName()
+    {
+        return null;
+    }
 }

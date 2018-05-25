@@ -44,14 +44,11 @@ SequenceWebinCliTest
     {
         SequenceWebinCli s = new SequenceWebinCli() 
         {
-            @Override public boolean validate() throws ValidationEngineException { return true; }
+            @Override public boolean validateInternal() throws ValidationEngineException { return true; }
             @Override boolean getTestMode() { return true; }
             @Override ContextE getContext() { return ContextE.genome; }
-			@Override
-			public void prepareSubmissionBundle() throws IOException {
-				// TODO Auto-generated method stub
-				
-			}
+			@Override public void prepareSubmissionBundle() throws IOException { }
+			@Override public File getSubmissionBundleFileName() { return null; }
         };
 
         s.setName( "123" );
@@ -91,9 +88,9 @@ SequenceWebinCliTest
         
         SubmissionBundle sb = s.getSubmissionBundle();
         Assert.assertTrue( Files.isSameFile( sb.getSubmitDirectory().toPath(), submit_dir.toPath() ) );
-        Assert.assertTrue( sb.getXMLFileList().get( 0 ).file.exists() );
+        Assert.assertTrue( sb.getXMLFileList().get( 0 ).getFile().exists() );
         
-        String xmlfile = new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).file.toPath() ), StandardCharsets.UTF_8 );
+        String xmlfile = new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 );
         Assert.assertTrue( xmlfile.contains( fasta_file.getFileName() + "\"" ) );
         Assert.assertTrue( xmlfile.contains( "6f82bc96add84ece757afad265d7e341" ) );
         Assert.assertTrue( xmlfile.contains( "FASTA" ) );
