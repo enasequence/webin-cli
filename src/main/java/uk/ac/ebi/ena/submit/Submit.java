@@ -3,8 +3,8 @@ package uk.ac.ebi.ena.submit;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,10 +35,14 @@ import org.jdom2.output.XMLOutputter;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
+import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class Submit {
+    
     private final static String ANALYSIS_XML = "analysis.xml";
     private final static String RECEIPT_XML = "receipt.xml";
     private String userName;
@@ -74,22 +80,32 @@ public class Submit {
     @Deprecated public void 
     doSubmission() 
     {
-        doSubmission( "ANALYSIS", createAnalysisXml().toFile(), centerName );
+        File file = createAnalysisXml().toFile(); 
+        try
+        {
+            doSubmission( Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, file, FileUtils.calculateDigest( "MD5", file ) ) ), centerName );
+        } catch( NoSuchAlgorithmException | IOException e )
+        {
+            throw WebinCliException.createSystemError( e.getMessage() );
+        }
     }
             
     
     public void 
-    doSubmission( String payloadType, File payload, String centerName ) 
+    doSubmission( List<SubmissionXMLFile> payload_list, String centerName ) 
     {
-        try( InputStream is = new FileInputStream( payload ) )
+        try
         {
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost( TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/" : "https://www.ebi.ac.uk/ena/submit/drop-box/submit/" );
             String encoding = Base64.getEncoder().encodeToString( ( userName + ":" + password ).getBytes() );
             httpPost.setHeader( "Authorization", "Basic " + encoding );
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.addBinaryBody( payloadType, is, ContentType.APPLICATION_OCTET_STREAM, payload.getName() );
-            builder.addTextBody( "ACTION", "ADD" );
+            
+            for( SubmissionXMLFile p: payload_list )
+                builder.addBinaryBody( String.valueOf( p.getType() ), new FileInputStream( p.getFile() ), ContentType.APPLICATION_OCTET_STREAM, p.getFile().getName() );
+            
+            builder.addTextBody( "ACTION", "ADD" );                
             
             if( null != centerName && !centerName.isEmpty() )
                 builder.addTextBody( "CENTER_NAME", centerName );
@@ -102,7 +118,7 @@ public class Submit {
             switch( responsecode )
             {
                 case HttpStatus.SC_OK:
-                    extractReceipt( resultsList, payloadType );
+                    payload_list.forEach( e -> extractReceipt( resultsList, String.valueOf( e.getType() ) ) );
                     break;
                     
                 case HttpStatus.SC_UNAUTHORIZED:
@@ -120,6 +136,9 @@ public class Submit {
                 default:
                     throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER );
             }
+        } catch( FileNotFoundException fnfe )
+        {
+            throw WebinCliException.createSystemError( "File missing: " + fnfe.getMessage() );
         } catch( IOException e ) 
         {
             throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER, e.getMessage() );

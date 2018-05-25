@@ -258,9 +258,7 @@ FileUtils
 		{
 			StringWriter writer = new StringWriter();
 			for( ValidationMessage<?> validationMessage: validationMessagesList )
-			{   if(Severity.ERROR.equals(validationMessage.getSeverity()))
-				validationMessage.writeMessage( writer,ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END, targetOrigin );
-			}
+			    validationMessage.writeMessage( writer );
             
 			Files.write( reportFile.toPath(), 
 					     writer.toString().getBytes( StandardCharsets.UTF_8 ), 
