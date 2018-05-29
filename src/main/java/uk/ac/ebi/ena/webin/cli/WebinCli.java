@@ -49,7 +49,9 @@ import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.Submit;
+import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
+import uk.ac.ebi.ena.upload.UploadService;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.version.Version;
 
@@ -147,6 +149,9 @@ public class WebinCli {
 	
         @Parameter(names = ParameterDescriptor.inputDir, description = ParameterDescriptor.inputDirFlagDescription, required = false, hidden=true )
         public String inputDir = ".";
+        
+        @Parameter(names = ParameterDescriptor.tryAscp, description = ParameterDescriptor.tryAscpDescription, required = false )
+        public boolean tryAscp;
 	}
 
 
@@ -373,13 +378,13 @@ public class WebinCli {
 		*/
 		FtpService ftpService = new FtpService();
 		try {
-			ftpService.connectToFtp(params.userName, params.password);
+			ftpService.connect(params.userName, params.password);
 			ftpService.ftpDirectory(uploadFileList, params.context, assemblyName);
 			writeMessage(Severity.INFO, UPLOAD_SUCCESS);
 		} catch (WebinCliException e) {
 			e.throwAddMessage(UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR);
 		} finally {
-			ftpService.disconnectFtp();
+			ftpService.disconnect();
 		}
 	}
 
@@ -451,10 +456,11 @@ public class WebinCli {
     private void 
     doSubmit( SubmissionBundle bundle )
     {
-        FtpService ftpService = new FtpService();
+        UploadService ftpService = params.tryAscp && new ASCPService().isAvaliable() ? new ASCPService() : new FtpService();
+        
         try 
         {
-            ftpService.connectToFtp( params.userName, params.password );
+            ftpService.connect( params.userName, params.password );
             ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), Paths.get( "." ) );
             writeMessage( Severity.INFO, UPLOAD_SUCCESS );
             
@@ -463,7 +469,7 @@ public class WebinCli {
             e.throwAddMessage( UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR );
         } finally 
         {
-            ftpService.disconnectFtp();
+            ftpService.disconnect();
         }
 
         try 
@@ -528,6 +534,7 @@ public class WebinCli {
 	                                                .append( "\n" + ParameterDescriptor.validate + ParameterDescriptor.validateFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.submit + ParameterDescriptor.submitFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.centerName + ParameterDescriptor.centerNameFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.tryAscp + ParameterDescriptor.tryAscpDescription )
 	                                                .append( "\n" + ParameterDescriptor.version + ParameterDescriptor.versionFlagDescription )
 	                                                .append( "\n" ).toString() );
 //		usage.append( "\n" + ParameterDescriptor.inputDir + ParameterDescriptor.inputDirFlagDescription );

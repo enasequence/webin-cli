@@ -18,7 +18,7 @@ import org.apache.commons.net.ftp.FTPFile;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-public class FtpService {
+public class FtpService implements UploadService {
     private final static String SERVER = "webin.ebi.ac.uk";
     private final static int FTP_PORT = 21;
     private FTPClient ftpClient = new FTPClient() ;
@@ -28,7 +28,10 @@ public class FtpService {
     private final static String SYSTEM_ERROR_UPLOAD_FILE = "Failed to upload files to webin.ebi.ac.uk file upload area.";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when uploading files to webin.ebi.ac.uk file upload area.";
 
-    public void connectToFtp(String userName, String password) {
+    /* (non-Javadoc)
+     * @see uk.ac.ebi.ena.upload.UploadService#connectToFtp(java.lang.String, java.lang.String)
+     */
+    @Override public void connect(String userName, String password) {
         try {
             ftpClient.connect(SERVER, FTP_PORT);
         } catch (IOException e) {
@@ -93,7 +96,10 @@ public class FtpService {
     
     
     //TODO verbose possible issues with file/folder permissions
-    public void 
+    /* (non-Javadoc)
+     * @see uk.ac.ebi.ena.upload.UploadService#ftpDirectory(java.util.List, java.lang.String, java.nio.file.Path)
+     */
+    @Override public void 
     ftpDirectory( List<File> uploadFilesList, String uploadDir, Path inputDir ) 
     {
         if( null == uploadDir || uploadDir.isEmpty() )
@@ -205,7 +211,10 @@ public class FtpService {
     }
     */
 
-    public void disconnectFtp() {
+    /* (non-Javadoc)
+     * @see uk.ac.ebi.ena.upload.UploadService#disconnectFtp()
+     */
+    @Override public void disconnect() {
         try {
             if (ftpClient != null && ftpClient.isConnected())
                 ftpClient.disconnect();
@@ -214,6 +223,13 @@ public class FtpService {
 
     @Override
     protected void finalize() throws Throwable {
-        disconnectFtp();
+        disconnect();
+    }
+
+
+    @Override public boolean
+    isAvaliable()
+    {
+        return true;
     }
 }
