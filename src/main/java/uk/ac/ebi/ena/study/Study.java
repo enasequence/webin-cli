@@ -30,8 +30,11 @@ public class Study {
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving study information. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving study information. ";
 
-    public void getStudy(String studyId, String userName, String password, boolean TEST) {
+    public static Study 
+    getStudy( String studyId, String userName, String password, boolean TEST ) 
+    {
         try {
+            Study study = new Study();
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/project/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/project/") + studyId.trim());
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
@@ -43,8 +46,8 @@ public class Study {
                     List<String> resultsList = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
                     String result = resultsList.stream()
                             .collect(Collectors.joining(" "));
-                    extractResults(result, studyId);
-                    break;
+                    study.extractResults( result, studyId );
+                    return study;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
                     throw WebinCliException.createValidationError(VALIDATION_ERROR_STUDY, studyId);

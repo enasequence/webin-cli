@@ -162,4 +162,18 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 			throw new ValidationEngineException(e);
 		}
 	}
+
+
+	@Override
+	public void prepareSubmissionBundle() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
+    @Override public File
+    getSubmissionBundleFileName()
+    {
+        return null;
+    }
 }

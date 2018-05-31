@@ -1,15 +1,19 @@
 package uk.ac.ebi.ena.webin.cli;
 
 public class ParameterDescriptor {
-    public final static String context ="-context";
-    public final static String outputDir ="-outputDir";
-    public final static String userName ="-userName";
-    public final static String password ="-password";
-    public final static String validate ="-validate";
-    public final static String submit ="-submit";
-    public final static String manifest ="-manifest";
-    public final static String test ="-test";
-
+    public final static String context    = "-context";
+    public final static String outputDir  = "-outputDir";
+    public final static String userName   = "-userName";
+    public final static String password   = "-password";
+    public final static String validate   = "-validate";
+    public final static String submit     = "-submit";
+    public final static String manifest   = "-manifest";
+    public final static String test       = "-test";
+    public final static String centerName = "-centerName";
+    public final static String version    = "-version";
+    public final static String inputDir   = "-inputDir";
+    
+    
     //Description
     public final static String contextFlagDescription = "\n\tRequired. Valid values are:" +
             "\n\t\t>> genome" +
@@ -39,4 +43,7 @@ public class ParameterDescriptor {
             "\n\t\t>> unlocalised_list (only for genome assemblies)" +
             "\n\tMore information is available from: http://ena-docs.readthedocs.io/en/latest/cli.html";
     public final static String testFlagDescription = "\tWhen this option is used it will use the TEST submission system.";
+    public static final String centerNameFlagDescription = "\n\tMandatory center name for broker accounts";
+    public static final String versionFlagDescription = "\n\tPrints WebinCli version number and exits";
+    public static final String inputDirFlagDescription = "\n\tInput directory for the files declared in manifest file";
 }

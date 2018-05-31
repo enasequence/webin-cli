@@ -6,12 +6,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public class ManifestFileReader
 {
-	public final static String regexSpace = "\\s+";
+    static final Pattern p = Pattern.compile( "^(#|;|\\/\\/|--).*$|^(\\S+)\\s+(\\S+)$" );
 	private List<ManifestObj> manifestObjList = new ArrayList<ManifestObj>();
 	private static String InvalidNoOfColumns= "InvalidNumberOfColumns";
     private static final String MANIFESTMESSAGEBUNDLE = "uk.ac.ebi.ena.manifest.ManifestValidationMessages";
@@ -32,19 +35,26 @@ public class ManifestFileReader
 			try (BufferedReader br = FileUtils.getBufferedReader(new File(manifestFile))) {
 
 				String line;
-				while ((line = br.readLine()) != null) {
-					i++;
-					String[] lineTokens = line.trim().split(regexSpace,2);
-					if (lineTokens.length != 2) 
+				while( ( line = br.readLine() ) != null )
+				{
+					i++;  
+					line = line.trim();
+
+					if( line.isEmpty() )
+					    continue;
+
+					Matcher m = p.matcher( line );
+					if( m.find() )
+					{
+					    if( null == m.group( 1 ) )
+					        manifestObjList.add( new ManifestObj( m.group( 2 ), m.group( 3 ) ) );
+					} else
 					{
 						result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR,InvalidNoOfColumns,i)));
-					}
-					else
-						manifestObjList.add(new ManifestObj(lineTokens[0], lineTokens[1]));
+					} 
 				}
 
 			}
-			
 			return  result;
 	}
 
