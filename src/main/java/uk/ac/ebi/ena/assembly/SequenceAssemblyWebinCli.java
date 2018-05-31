@@ -32,13 +32,7 @@ import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.study.Study;
-import uk.ac.ebi.ena.template.expansion.CSVLine;
-import uk.ac.ebi.ena.template.expansion.CSVReader;
-import uk.ac.ebi.ena.template.expansion.TemplateEntryProcessor;
-import uk.ac.ebi.ena.template.expansion.TemplateException;
-import uk.ac.ebi.ena.template.expansion.TemplateInfo;
-import uk.ac.ebi.ena.template.expansion.TemplateLoader;
-import uk.ac.ebi.ena.template.expansion.TemplateProcessor;
+import uk.ac.ebi.ena.template.expansion.*;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 
@@ -52,14 +46,26 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
     private File reportDir;
     private Study study;
     private final static int MAX_SEQUENCE_COUNT = 100000;
+    private boolean TEST;
+    private StringBuilder resultsSb;
 
     public SequenceAssemblyWebinCli(ManifestFileReader manifestFileReader, Study study) {
         this.manifestFileReader = manifestFileReader;
         this.study = study;
     }
 
-    @Override public boolean 
-    validate() throws ValidationEngineException {
+    public SequenceAssemblyWebinCli() {
+    }
+
+    public StringBuilder validateTestTsv(String submittedFile) throws ValidationEngineException {
+        this.submittedFile = submittedFile;
+        resultsSb = new StringBuilder();
+        TEST = true;
+        validateTsvFile();
+        return resultsSb;
+    }
+
+    @Override public boolean validate() throws ValidationEngineException {
         if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
             reportFile = FileUtils.createReportFile( reportDir, submittedFile );
             validateFlatFile();
@@ -68,10 +74,8 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
             validateTsvFile();
         } else
             throw new ValidationEngineException("Manifest file: TSV or FLATFILE must be pre55t4444eeeeeszsent.");
-        
         return !FAILED_VALIDATION;
     }
-
 
     public void setReportsDir(String reportDir) {
         this.reportDir = new File( reportDir );
@@ -95,12 +99,20 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
                     List<ValidationMessage<Origin>> validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
                     if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
                         FAILED_VALIDATION = true;
-                        FileUtils.writeReport(reportFile, validationMessagesList, "ERROR: Sequence: " + csvLine.getLineNumber().toString() + " ");
+                        if (TEST) {
+                            for( ValidationMessage<?> validationMessage: validationMessagesList)
+                                resultsSb.append("ERROR: Sequence " + csvLine.getLineNumber().toString() + ": " + validationMessage.getMessage() + "\n");
+                        } else
+                            FileUtils.writeReport(reportFile, validationMessagesList, "ERROR: Sequence: " + csvLine.getLineNumber().toString() + " ");
                     }
                 }
             }
-        } catch (TemplateException e) {
-            throw new ValidationEngineException(e.getMessage());
+        } catch (TemplateUserError e) {
+            FAILED_VALIDATION = true;
+            if (TEST)
+                resultsSb.append(e.getMessage());
+            else
+                FileUtils.writeReport(reportFile, Severity.ERROR, e.getMessage());
         } catch (Exception e) {
             throw new ValidationEngineException(e.getMessage());
         }
