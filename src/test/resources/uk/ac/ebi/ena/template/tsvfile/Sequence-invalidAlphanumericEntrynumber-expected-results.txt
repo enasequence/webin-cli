@@ -1,1 +1,1 @@
-{"USER_ERROR":"ENTRYNUMBER A01 must be nummeric and in ascending order."}
+ENTRYNUMBER A01 must be nummeric and in ascending order.
