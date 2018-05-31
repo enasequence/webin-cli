@@ -97,11 +97,11 @@ FileUtils
 	{
 	    return calculateDigest( "MD5", new File( file ) );
 	}
-	
-	
-    static public String 
-    calculateDigest( String digest_name, 
-                     File   file ) throws IOException, NoSuchAlgorithmException 
+
+
+    static public String
+    calculateDigest( String digest_name,
+                     File   file ) throws IOException, NoSuchAlgorithmException
     {
         MessageDigest digest = MessageDigest.getInstance( digest_name );
         byte[] buf = new byte[ 4096 ];
@@ -110,13 +110,13 @@ FileUtils
         {
             while( ( read = is.read( buf ) ) > 0 )
                 digest.update( buf, 0, read );
-            
+
             byte[] message_digest = digest.digest();
             BigInteger value = new BigInteger( 1, message_digest );
             return String.format( String.format( "%%0%dx", message_digest.length << 1 ), value );
         }
     }
-    
+
 	
 	public static boolean 
 	emptyDirectory( File dir )
