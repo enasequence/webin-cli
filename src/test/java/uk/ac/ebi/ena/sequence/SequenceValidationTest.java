@@ -1,14 +1,16 @@
 package uk.ac.ebi.ena.sequence;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
-
-import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Locale;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 
 public class SequenceValidationTest {
     private final static String SEQUENCE_BASE_DIR = "src/test/resources/uk/ac/ebi/ena/template/tsvfile";
@@ -42,6 +44,14 @@ public class SequenceValidationTest {
                                                     "ERT000058-MLmarker.tsv.gz",
                                                     "ERT000060-vUTR.tsv.gz"};
 
+    //TODO Default Locale handling is incorrect
+    @Before public void 
+    before()
+    {
+        Locale.setDefault( Locale.UK );
+    }
+    
+    
     @Test
     public void mandatoryFieldsPresent()  {
         try {
