@@ -382,7 +382,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
             
             reader.read();
          
-                while(reader.isEntry()) 
+                while(reader.isEntry())
                 {
                     agpEntrynames.add(((Entry)reader.getEntry()).getSubmitterAccession().toUpperCase());
                     reader.read();
