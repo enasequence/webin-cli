@@ -131,21 +131,24 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
             
 			TaxonHelper taxonHelper = new TaxonHelperImpl();
 
-			valid = valid & validateChromosomeList( property, chromosomeListFile );
-			valid = valid & validateUnlocalisedList( property );
+			valid = valid && validateChromosomeList( property, chromosomeListFile );
+			valid = valid && validateUnlocalisedList( property );
 			getChromosomeEntryNames( taxonHelper.isChildOf( getSample().getOrganism(), "Virus" ) );
-		    readAGPfiles();
-			valid = valid & validateFastaFiles( property, fastaFiles );
-			valid = valid & validateFlatFiles(property);
+		    valid = valid && readAGPfiles();
+			valid = valid && validateFastaFiles( property, fastaFiles );
+			valid = valid && validateFlatFiles( property );
+			
 			HashMap<String,Long> entryNames= new HashMap<String,Long>();
-			entryNames.putAll(fastaEntryNames);
-			entryNames.putAll(flatfileEntryNames);
-    		property.contigEntryNames.set(entryNames);
-			valid = valid & validateAgpFiles(property);
-		    valid = valid & validateSequenceLessChromosomes( chromosomeListFile );
+			entryNames.putAll( fastaEntryNames );
+			entryNames.putAll( flatfileEntryNames );
+    		
+			property.contigEntryNames.set( entryNames );
+			
+			valid = valid && validateAgpFiles( property );
+		    valid = valid && validateSequenceLessChromosomes( chromosomeListFile );
 
 			if( !test )
-				deleteFixedFiles(valid);
+				deleteFixedFiles( valid );
 			
 			this.valid = valid; 
 			    
@@ -316,22 +319,28 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         return valid;
     }
 	
-	private void readAGPfiles() throws IOException
+	
+	private boolean 
+	readAGPfiles() throws IOException
 	{
+		boolean valid = true;
 		
-       for( File file : agpFiles ) 
+	    for( File file : agpFiles ) 
         {
            FlatFileReader<?> reader = getFileReader( FileFormat.AGP, file );
             
-            reader.read();
-         
-                while(reader.isEntry())
-                {
-                    agpEntrynames.add(((Entry)reader.getEntry()).getSubmitterAccession().toUpperCase());
-                    reader.read();
-                }
+            ValidationResult vr = reader.read();
+            FileUtils.writeReport( getReportFile(  FileFormat.AGP, file.getName() ), vr );
+            
+            while( ( valid &= vr.isValid() ) && reader.isEntry() )
+            {
+                agpEntrynames.add( ( (Entry) reader.getEntry() ).getSubmitterAccession().toUpperCase() );
+                vr = reader.read();
             }
+            
         }
+	    return valid;
+	}
       
 
     private boolean 

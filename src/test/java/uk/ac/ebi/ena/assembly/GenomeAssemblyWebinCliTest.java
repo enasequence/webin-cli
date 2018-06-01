@@ -230,7 +230,26 @@ public class GenomeAssemblyWebinCliTest {
     }
 	
     
-	private File
+    @Test public void 
+    testERZ092580() throws Exception 
+    {
+        GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli( true );
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/genome/ERZ092580/ERZ092580.manifest" );
+        File file = new File( url.getFile() );
+        Sample sample = new Sample();
+        sample.setOrganism( "Quercus robur" );
+        
+        validator.setInputDir( file.getParentFile() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
+        validator.defineFileTypes( file );
+        validator.setSample( sample );
+        validator.setStudy( new Study() );
+        Assert.assertTrue( !validator.validate() );
+    }
+    
+    
+    private File
     createOutputFolder() throws IOException
     {
         File output = File.createTempFile( "test", "test" );
