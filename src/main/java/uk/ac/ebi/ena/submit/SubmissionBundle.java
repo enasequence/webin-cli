@@ -12,6 +12,7 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 
 public class 
 SubmissionBundle implements Serializable
@@ -80,6 +81,7 @@ SubmissionBundle implements Serializable
     private String            uploadDirectory;
     private List<File>        uploadFileList = Collections.emptyList();
     private String            centerName;
+    private String            version;
     
     
     public 
@@ -89,6 +91,7 @@ SubmissionBundle implements Serializable
                       List<SubmissionXMLFile> xmlFileList, 
                       String            centerName )
     {
+        this.version = getVersion();
         this.submitDirectory = submitDirectory;
         this.uploadDirectory = uploadDirectory;
         this.uploadFileList = uploadFileList;
@@ -97,6 +100,13 @@ SubmissionBundle implements Serializable
     }
 
     
+    private String
+    getVersion()
+    {
+        return WebinCli.class.getPackage().getImplementationVersion();
+    }
+    
+
     public File
     getSubmitDirectory()
     {
@@ -136,7 +146,11 @@ SubmissionBundle implements Serializable
     validate( ValidationResult result )
     {
         result = null != result ? result : new ValidationResult();
-        
+ 
+        String current = getVersion();
+        if( null != current && !current.equals( this.version ) )
+            result.append( new ValidationMessage<>( Severity.ERROR, "Incorrect version" ) );
+
         for( SubmissionXMLFile file : getXMLFileList() )
         {
             try
