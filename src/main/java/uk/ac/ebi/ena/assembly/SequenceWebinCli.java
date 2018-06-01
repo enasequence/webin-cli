@@ -3,10 +3,14 @@ package uk.ac.ebi.ena.assembly;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -29,6 +33,9 @@ import uk.ac.ebi.ena.manifest.ManifestObj;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -441,6 +448,58 @@ SequenceWebinCli extends AbstractWebinCli
             throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
         
         return validateInternal();
+    }
+    
+    
+    @Override public void
+    prepareSubmissionBundle() throws WebinCliException
+    {
+        try
+        {
+            List<File> uploadFileList = new ArrayList<>();
+    
+            Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
+            List<Element> eList = new ArrayList<>();
+    
+            if( null != chromosomeListFile )
+            {
+                eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
+                uploadFileList.add( chromosomeListFile );           
+            }
+            
+            if( null != unlocalisedListFile )
+            {
+                eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
+                uploadFileList.add( unlocalisedListFile );
+            }
+            
+            fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
+            uploadFileList.addAll( fastaFiles );
+            
+            flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
+            uploadFileList.addAll( flatFiles );
+            
+            agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
+            uploadFileList.addAll( agpFiles );
+            
+            tsvFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
+            uploadFileList.addAll( tsvFiles );
+            
+            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
+            
+            Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
+    
+            Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+    
+            setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
+                                                       uploadDir.toString(), 
+                                                       uploadFileList, 
+                                                       Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) ), 
+                                                       getParameters().getCenterName() ) );   
+        } catch( IOException | NoSuchAlgorithmException e )
+        {
+            throw WebinCliException.createSystemError( e.getMessage() );
+        }        
     }
 
 }

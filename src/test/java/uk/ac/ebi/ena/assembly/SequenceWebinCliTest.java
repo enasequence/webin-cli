@@ -47,7 +47,6 @@ SequenceWebinCliTest
             @Override public boolean validateInternal() throws ValidationEngineException { return true; }
             @Override boolean getTestMode() { return true; }
             @Override ContextE getContext() { return ContextE.genome; }
-			@Override public void prepareSubmissionBundle() throws IOException { }
 			@Override public File getSubmissionBundleFileName() { return null; }
         };
 

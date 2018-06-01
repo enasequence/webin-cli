@@ -167,63 +167,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
     }
     
     
-    public void
-    prepareSubmissionBundle() throws WebinCliException
-    {
-        try
-        {
-            List<File> uploadFileList = new ArrayList<>();
-    //        infoFile;
-    //        chromosomeListFile;
-    //        unlocalisedListFile;
-    //        
-    //        fastaFiles;
-    //        flatFiles;
-    //        agpFiles;
-    //        tsvFiles;
-    
-            Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
-            List<Element> eList = new ArrayList<>();
-    
-            if( null != chromosomeListFile )
-            {
-                eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
-                uploadFileList.add( chromosomeListFile );           
-            }
-            
-            if( null != unlocalisedListFile )
-            {
-                eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
-                uploadFileList.add( unlocalisedListFile );
-            }
-            
-            fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
-            uploadFileList.addAll( fastaFiles );
-            
-            flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
-            uploadFileList.addAll( flatFiles );
-            
-            agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
-            uploadFileList.addAll( agpFiles );
-            
-            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
-            
-            Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
-    
-            Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-    
-            setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
-                                                       uploadDir.toString(), 
-                                                       uploadFileList, 
-                                                       Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) ), 
-                                                       getParameters().getCenterName() ) );   
-        } catch( IOException | NoSuchAlgorithmException e )
-        {
-            throw WebinCliException.createSystemError( e.getMessage() );
-        }        
-    }
-    
-    
     EmblEntryValidationPlanProperty 
     getValidationProperties() 
     {

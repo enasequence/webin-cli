@@ -6,13 +6,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
+
+import org.jdom2.Element;
 
 import uk.ac.ebi.embl.api.entry.Entry;
 import uk.ac.ebi.embl.api.entry.reference.Person;
@@ -32,11 +39,21 @@ import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
 import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.study.Study;
-import uk.ac.ebi.ena.template.expansion.*;
+import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
+import uk.ac.ebi.ena.template.expansion.CSVLine;
+import uk.ac.ebi.ena.template.expansion.CSVReader;
+import uk.ac.ebi.ena.template.expansion.TemplateEntryProcessor;
+import uk.ac.ebi.ena.template.expansion.TemplateInfo;
+import uk.ac.ebi.ena.template.expansion.TemplateLoader;
+import uk.ac.ebi.ena.template.expansion.TemplateProcessor;
+import uk.ac.ebi.ena.template.expansion.TemplateUserError;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-public class SequenceAssemblyWebinCli extends AbstractWebinCli {
+public class SequenceAssemblyWebinCli extends SequenceWebinCli {
     private static final String TEMPLATE_ID_PATTERN = "(ERT[0-9]+)";
     private final static String TEMPLATE_ACCESSION_LINE = "#template_accession";
     private boolean FAILED_VALIDATION;
@@ -65,7 +82,8 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
         return resultsSb;
     }
 
-    @Override public boolean validate() throws ValidationEngineException {
+
+    @Override protected boolean validateInternal() throws ValidationEngineException {
         if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
             reportFile = FileUtils.createReportFile( reportDir, submittedFile );
             validateFlatFile();
@@ -208,15 +226,16 @@ public class SequenceAssemblyWebinCli extends AbstractWebinCli {
     }
 
 	
-    @Override public void 
-	prepareSubmissionBundle() throws IOException
+    @Override ContextE
+    getContext()
     {
-        
-	}
+        return ContextE.sequence;
+    }
+
     
-    @Override public File
-    getSubmissionBundleFileName()
+    @Override boolean
+    getTestMode()
     {
-        return null;
+        return TEST;
     }
 }
