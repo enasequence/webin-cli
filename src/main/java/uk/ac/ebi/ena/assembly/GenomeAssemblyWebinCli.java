@@ -353,6 +353,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                 while( reader.isEntry() ) 
                 {
                     Entry entry = (Entry) reader.getEntry();
+                    if(entry.getSubmitterAccession()!=null)
                     flatfileEntryNames.put(entry.getSubmitterAccession().toUpperCase(),entry.getSequence().getLength());
                     entry.removeFeature( entry.getPrimarySourceFeature() );
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
