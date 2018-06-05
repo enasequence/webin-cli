@@ -1,7 +1,10 @@
 package uk.ac.ebi.ena.rawreads;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,6 +15,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.jdom2.Document;
@@ -19,9 +24,22 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import uk.ac.ebi.embl.api.validation.DefaultOrigin;
+import uk.ac.ebi.embl.api.validation.Origin;
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.frankenstein.loader.common.FileCompression;
+import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
+import uk.ac.ebi.ena.frankenstein.loader.common.eater.PrintDataEater;
+import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
+import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
+import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
+import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
+import uk.ac.ebi.ena.rawreads.RawReadsFile.Compression;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.submit.ContextE;
@@ -81,6 +99,7 @@ RawReadsWebinCli extends AbstractWebinCli
     {
         RawReadsFile result = new RawReadsFile();
         result.setInputDir( getParameters().getInputDir().toPath() );
+        result.setCompression( Compression.NONE );
         
         for( String token : tokens )
         {
@@ -106,6 +125,14 @@ RawReadsWebinCli extends AbstractWebinCli
             case "LOGODDS":
                 result.setAsciiOffset( null );
                 result.setQualityScoringSystem( QualityScoringSystem.log_odds );
+                break;
+            
+            case "NONE":
+            case "GZ":
+            case "GZIP":
+            case "BZ2":
+            case "ZIP":
+                result.setCompression( Compression.valueOf( token ) );
                 break;
             
             default:
@@ -135,8 +162,18 @@ RawReadsWebinCli extends AbstractWebinCli
         
         for( String line : lines )
         {
+            if( null != line && ( line = line.trim() ).isEmpty() )
+                continue;
+            
             String tokens[] = line.split( "\\s+" );
-            String token0 = tokens[ 0 ];
+
+            if( 0 == tokens.length )
+                continue;
+
+            String token0 = tokens[ 0 ].trim();
+            if( null != token0 && token0.matches( "^[\\s]*#.*$" ) )
+                continue;
+                
             switch( token0 )
             {
             case "SAMPLE":
@@ -236,6 +273,45 @@ RawReadsWebinCli extends AbstractWebinCli
 		return test_mode;
 	}
 
+	
+
+    DataFeederException 
+    read( InputStream is, String name, final QualityNormalizer normalizer ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
+    {
+        AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
+        {
+            final AtomicLong line_no = new AtomicLong( 1 );
+            final AtomicReference<DataSpot.ReadStyle> read_style = new AtomicReference<DataSpot.ReadStyle>();
+            DataSpotParams params = DataSpot.defaultParams();
+            
+            @Override protected DataSpot 
+            newFeedable()
+            {
+                return new DataSpot( normalizer, "", params );
+            }
+        };
+        
+        df.setName( name );
+        df.setEater( new PrintDataEater<DataSpot, Object>() );
+        df.start();
+        df.join();
+        return df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause(); 
+    }
+    
+    
+    Throwable 
+    read( File file, final QualityNormalizer normalizer ) throws Exception
+    {
+        InputStream is = new BufferedInputStream( new FileInputStream( file ) );
+        try
+        {
+            return read( is, file.getPath(), normalizer );
+        } finally
+        {
+            is.close();
+        }
+    }
+
 
     @Override public boolean
     validate() throws ValidationEngineException
@@ -245,9 +321,68 @@ RawReadsWebinCli extends AbstractWebinCli
         
         if( !FileUtils.emptyDirectory( submit_dir ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + submit_dir );
-
         
-        this.valid = true;
+        boolean valid = true;
+        for( RawReadsFile rf : files )
+        {
+            if( Filetype.fastq.equals( rf.getFiletype() ) )
+            {
+                File f = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
+                ValidationResult vr = new ValidationResult();
+                QualityNormalizer qn = QualityNormalizer.NONE;
+                
+                try( InputStream is = FileCompression.valueOf( String.valueOf( rf.getCompression() ) ).open( rf.getFilename(), false ) )
+                {
+                    switch( rf.getQualityScoringSystem() )
+                    {
+                    default:
+                        throw WebinCliException.createSystemError( "Scoring system: " + String.valueOf( rf.getQualityScoringSystem() ) );
+                        
+                    case phred:
+                        switch( rf.getAsciiOffset() )
+                        {
+                        default:
+                            throw WebinCliException.createSystemError( "ASCII offset: " + String.valueOf( rf.getAsciiOffset() ) );
+                            
+                        case FROM33:
+                            qn = QualityNormalizer.X;
+                            break;
+                            
+                        case FROM64:
+                            qn = QualityNormalizer.X_2;
+                            break;
+                        }
+                        break;
+                        
+                    case log_odds:
+                        qn = QualityNormalizer.SOLEXA;
+                        break;
+                        
+                    }
+                    
+                    
+                    DataFeederException t = read( is, rf.getFilename(), qn );
+                                    
+                    if( null != t )
+                    {
+                        ValidationMessage<Origin> vm = new ValidationMessage<>( Severity.ERROR, t.getMessage() );
+                        vm.setThrowable( t );
+                        vm.append( new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ) );
+                        
+                        valid = false;
+                        vr.append( vm );
+                    }
+
+                    FileUtils.writeReport( f, vr );
+                } catch( Exception e )
+                {
+                    throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
+                }
+            }
+        }
+
+        this.valid = valid;
+        
         return valid;
     }
 
@@ -462,5 +597,12 @@ RawReadsWebinCli extends AbstractWebinCli
     getSubmissionBundleFileName()
     {
         return new File( submit_dir, "validate.reciept" );
+    }
+
+
+    @Override public File
+    getValidationDir()
+    {
+        return validate_dir;
     }
 }
