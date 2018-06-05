@@ -12,6 +12,7 @@ public class ParameterDescriptor {
     public final static String centerName = "-centerName";
     public final static String version    = "-version";
     public final static String inputDir   = "-inputDir";
+    public final static String tryAscp    = "-ascp";
     
     
     //Description
@@ -46,4 +47,5 @@ public class ParameterDescriptor {
     public static final String centerNameFlagDescription = "\n\tMandatory center name for broker accounts";
     public static final String versionFlagDescription = "\n\tPrints WebinCli version number and exits";
     public static final String inputDirFlagDescription = "\n\tInput directory for the files declared in manifest file";
+    public static final String tryAscpDescription = "\n\tTry to use Aspera Cli instead of FTP file transfer, if available.\n\tNote: Aspera Cli should be installed and path to executable \"ascp\" should be in PATH variable";
 }
