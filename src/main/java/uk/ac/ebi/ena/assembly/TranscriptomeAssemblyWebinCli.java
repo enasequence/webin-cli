@@ -176,4 +176,11 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
     {
         return null;
     }
+    
+    
+    @Override public File
+    getValidationDir()
+    {
+        return reportDir;
+    }
 }

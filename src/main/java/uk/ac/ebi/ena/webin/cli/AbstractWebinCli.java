@@ -13,6 +13,7 @@ import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -25,7 +26,7 @@ AbstractWebinCli
     protected static final String VALIDATE_SYSTEM_ERROR = "Submission validation failed because of a system error. ";
     protected static final String VALIDATE_DIR = "validate";
     protected static final String SUBMIT_DIR   = "submit";
-    
+    protected static String REPORT_FILE_SUFFIX = ".report";
     
     private String name; 
     private ValidationResult   validationResult;
@@ -42,7 +43,21 @@ AbstractWebinCli
     public abstract boolean validate() throws ValidationEngineException;
     public abstract void prepareSubmissionBundle() throws IOException;
     public abstract File getSubmissionBundleFileName();
-
+    public abstract File getValidationDir();
+    
+    
+    protected File
+    getReportFile( String prefix, String filename )
+    {
+        if( null == getValidationDir() )
+            throw new RuntimeException( "Validation dir cannot be null" );
+        
+        if( getValidationDir().isFile() )
+            throw new RuntimeException( "Validation dir cannot be file" );
+        
+        return new File( getValidationDir(), /*filetype + "-" +*/ filename + REPORT_FILE_SUFFIX ); 
+    }
+    
     
     //TODO consider relative paths in file names
     public SubmissionBundle
@@ -87,6 +102,7 @@ AbstractWebinCli
     }
 
 
+    
     public WebinCliParameters
     getParameters()
     {

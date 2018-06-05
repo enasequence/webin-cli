@@ -79,6 +79,18 @@ RawReadsFile
     }
     
     
+    public enum
+    Compression
+    {
+        NONE,
+        GZ, 
+        GZIP, 
+        BZ2,
+        ZIP;
+    }
+    
+    
+    private Compression          compression;
     private String               filename; 
     private Filetype             filetype; 
     private String               checksum; 
@@ -233,5 +245,19 @@ RawReadsFile
     setInputDir( Path inputDir )
     {
         this.inputDir = inputDir;
+    }
+
+
+    public Compression
+    getCompression()
+    {
+        return compression;
+    }
+
+
+    public void
+    setCompression( Compression compression )
+    {
+        this.compression = compression;
     }
 }
