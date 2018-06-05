@@ -131,21 +131,24 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
             
 			TaxonHelper taxonHelper = new TaxonHelperImpl();
 
-			valid = valid & validateChromosomeList( property, chromosomeListFile );
-			valid = valid & validateUnlocalisedList( property );
+			valid = valid && validateChromosomeList( property, chromosomeListFile );
+			valid = valid && validateUnlocalisedList( property );
 			getChromosomeEntryNames( taxonHelper.isChildOf( getSample().getOrganism(), "Virus" ) );
-		    readAGPfiles();
-			valid = valid & validateFastaFiles( property, fastaFiles );
-			valid = valid & validateFlatFiles(property);
+		    valid = valid && readAGPfiles();
+			valid = valid && validateFastaFiles( property, fastaFiles );
+			valid = valid && validateFlatFiles( property );
+			
 			HashMap<String,Long> entryNames= new HashMap<String,Long>();
-			entryNames.putAll(fastaEntryNames);
-			entryNames.putAll(flatfileEntryNames);
-    		property.contigEntryNames.set(entryNames);
-			valid = valid & validateAgpFiles(property);
-		    valid = valid & validateSequenceLessChromosomes( chromosomeListFile );
+			entryNames.putAll( fastaEntryNames );
+			entryNames.putAll( flatfileEntryNames );
+    		
+			property.contigEntryNames.set( entryNames );
+			
+			valid = valid && validateAgpFiles( property );
+		    valid = valid && validateSequenceLessChromosomes( chromosomeListFile );
 
 			if( !test )
-				deleteFixedFiles(valid);
+				deleteFixedFiles( valid );
 			
 			this.valid = valid; 
 			    
@@ -164,63 +167,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         if( valid )
             prepareSubmissionBundle();
         return super.getSubmissionBundle();
-    }
-    
-    
-    public void
-    prepareSubmissionBundle() throws WebinCliException
-    {
-        try
-        {
-            List<File> uploadFileList = new ArrayList<>();
-    //        infoFile;
-    //        chromosomeListFile;
-    //        unlocalisedListFile;
-    //        
-    //        fastaFiles;
-    //        flatFiles;
-    //        agpFiles;
-    //        tsvFiles;
-    
-            Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
-            List<Element> eList = new ArrayList<>();
-    
-            if( null != chromosomeListFile )
-            {
-                eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
-                uploadFileList.add( chromosomeListFile );           
-            }
-            
-            if( null != unlocalisedListFile )
-            {
-                eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
-                uploadFileList.add( unlocalisedListFile );
-            }
-            
-            fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
-            uploadFileList.addAll( fastaFiles );
-            
-            flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
-            uploadFileList.addAll( flatFiles );
-            
-            agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
-            uploadFileList.addAll( agpFiles );
-            
-            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
-            
-            Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
-    
-            Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-    
-            setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
-                                                       uploadDir.toString(), 
-                                                       uploadFileList, 
-                                                       Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) ), 
-                                                       getParameters().getCenterName() ) );   
-        } catch( IOException | NoSuchAlgorithmException e )
-        {
-            throw WebinCliException.createSystemError( e.getMessage() );
-        }        
     }
     
     
@@ -373,22 +319,28 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         return valid;
     }
 	
-	private void readAGPfiles() throws IOException
+	
+	private boolean 
+	readAGPfiles() throws IOException
 	{
+		boolean valid = true;
 		
-       for( File file : agpFiles ) 
+	    for( File file : agpFiles ) 
         {
            FlatFileReader<?> reader = getFileReader( FileFormat.AGP, file );
             
-            reader.read();
-         
-                while(reader.isEntry())
-                {
-                    agpEntrynames.add(((Entry)reader.getEntry()).getSubmitterAccession().toUpperCase());
-                    reader.read();
-                }
+            ValidationResult vr = reader.read();
+            FileUtils.writeReport( getReportFile(  FileFormat.AGP, file.getName() ), vr );
+            
+            while( ( valid &= vr.isValid() ) && reader.isEntry() )
+            {
+                agpEntrynames.add( ( (Entry) reader.getEntry() ).getSubmitterAccession().toUpperCase() );
+                vr = reader.read();
             }
+            
         }
+	    return valid;
+	}
       
 
     private boolean 
@@ -410,6 +362,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                 while( reader.isEntry() ) 
                 {
                     Entry entry = (Entry) reader.getEntry();
+                    if(entry.getSubmitterAccession()!=null)
                     flatfileEntryNames.put(entry.getSubmitterAccession().toUpperCase(),entry.getSequence().getLength());
                     entry.removeFeature( entry.getPrimarySourceFeature() );
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
