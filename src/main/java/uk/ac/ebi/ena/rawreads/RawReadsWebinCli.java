@@ -32,7 +32,7 @@ import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.frankenstein.loader.common.FileCompression;
 import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
-import uk.ac.ebi.ena.frankenstein.loader.common.eater.PrintDataEater;
+import uk.ac.ebi.ena.frankenstein.loader.common.eater.NullDataEater;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
@@ -131,8 +131,11 @@ RawReadsWebinCli extends AbstractWebinCli
             case "GZ":
             case "GZIP":
             case "BZ2":
-            case "ZIP":
                 result.setCompression( Compression.valueOf( token ) );
+                break;
+                
+            case "ZIP": //Do not support zip
+                result.setCompression( Compression.NONE );
                 break;
             
             default:
@@ -158,10 +161,11 @@ RawReadsWebinCli extends AbstractWebinCli
         String sample_id = null;
         String name = null;
         String platform = null;
-        
+        int line_no = 0;
         
         for( String line : lines )
         {
+            ++line_no;
             if( null != line && ( line = line.trim() ).isEmpty() )
                 continue;
             
@@ -171,7 +175,7 @@ RawReadsWebinCli extends AbstractWebinCli
                 continue;
 
             String token0 = tokens[ 0 ].trim();
-            if( null != token0 && token0.matches( "^[\\s]*#.*$" ) )
+            if( null != token0 && token0.matches( "^[\\s]*(#|;|\\/\\/).*$" ) )
                 continue;
                 
             switch( token0 )
@@ -184,7 +188,7 @@ RawReadsWebinCli extends AbstractWebinCli
                     sample_id = tokens[ 1 ];
                     break;
                 } 
-                throw WebinCliException.createUserError( "Sample should not appeared more than once" );
+                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Sample should not appeared more than once" ) );
 
             case "STUDY":
             case "STUDY-ID":
@@ -194,7 +198,7 @@ RawReadsWebinCli extends AbstractWebinCli
                     study_id = tokens[ 1 ];
                     break;
                 } 
-                throw WebinCliException.createUserError( "Study should not appeared more than once" );
+                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Study should not appeared more than once" ) );
                 
             case "NAME":
                 if( null == name )
@@ -202,7 +206,7 @@ RawReadsWebinCli extends AbstractWebinCli
                     name = tokens[ 1 ];
                     break;
                 } 
-                throw WebinCliException.createUserError( "Name should not appeared more than once" );
+                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Name should not appeared more than once" ) );
 
             case "PLATFORM":
                 if( null == platform )
@@ -210,7 +214,7 @@ RawReadsWebinCli extends AbstractWebinCli
                     platform = tokens[ 1 ];
                     break;
                 } 
-                throw WebinCliException.createUserError( "Platform should not appeared more than once" );
+                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Platform should not appeared more than once" ) );
 
             default:
                 files.add( parseFileLine( tokens ) );
@@ -292,7 +296,7 @@ RawReadsWebinCli extends AbstractWebinCli
         };
         
         df.setName( name );
-        df.setEater( new PrintDataEater<DataSpot, Object>() );
+        df.setEater( new NullDataEater<DataSpot>() );
         df.start();
         df.join();
         return df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause(); 
