@@ -55,7 +55,7 @@ AbstractWebinCli
         if( getValidationDir().isFile() )
             throw new RuntimeException( "Validation dir cannot be file" );
         
-        return new File( getValidationDir(), /*filetype + "-" +*/ filename + REPORT_FILE_SUFFIX ); 
+        return new File( getValidationDir(), /*filetype + "-" +*/ Paths.get( filename ).getFileName().toString() + REPORT_FILE_SUFFIX ); 
     }
     
     
