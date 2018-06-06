@@ -15,15 +15,23 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamFiles;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.cram.ref.ReferenceSource;
+import htsjdk.samtools.util.Log;
+import htsjdk.samtools.util.Log.LogLevel;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
@@ -144,7 +152,7 @@ RawReadsWebinCli extends AbstractWebinCli
             }
         }
         
-        if( !Paths.get( result.getFilename() ).isAbsolute() )
+        if( null != result.getFilename() && !result.getFilename().isEmpty() && !Paths.get( result.getFilename() ).isAbsolute() )
             result.setFilename( result.getInputDir().resolve( Paths.get( result.getFilename() ) ).toString() );
         
         return result;
@@ -217,7 +225,31 @@ RawReadsWebinCli extends AbstractWebinCli
                 throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Platform should not appeared more than once" ) );
 
             default:
-                files.add( parseFileLine( tokens ) );
+                RawReadsFile f = parseFileLine( tokens );
+                if( null == f.getFilename() || f.getFilename().isEmpty() ) 
+                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Filename not supplied" ) );
+                
+                if( null == f.getFiletype() )
+                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "No file type supplied. Valid are: " + Stream.of( Filetype.values() ).map( String::valueOf ).collect( Collectors.joining( ", " ) ) ) );
+
+                if( Compression.NONE != f.getCompression() && ( Filetype.bam == f.getFiletype() || Filetype.cram == f.getFiletype() ) )
+                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Compression not supported for types " + Filetype.bam + " and " + Filetype.cram ) );
+                
+                if( null != f.getQualityScoringSystem() && ( Filetype.bam == f.getFiletype() || Filetype.cram == f.getFiletype() ) )
+                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Scoring system not supported for types " + Filetype.bam + " and " + Filetype.cram ) );
+
+                //TODO externalise scoring types
+                if( Filetype.fastq == f.getFiletype() && null == f.getQualityScoringSystem() )
+                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "No scoring system supplied for fastq file. Valid are: PHRED_33, PHRED_64, LOGODDS" ) );
+                
+                if( !Files.exists( Paths.get( f.getFilename() ) ) )
+                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, String.format( "Cannot locate file %s", f.getFilename() ) ) );
+                
+                if( Files.isDirectory( Paths.get( f.getFilename() ) ) )
+                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, String.format( "Supplied file is a directory %s", f.getFilename() ) ) );
+                
+                files.add( f );
+                break;
             }
         }
         
@@ -245,7 +277,26 @@ RawReadsWebinCli extends AbstractWebinCli
         this.study_id = study_id;
         this.sample_id = sample_id;
         this.platform = platform;
+
+        if( files.isEmpty() )
+            throw WebinCliException.createUserError( "No files supplied" );
         
+        if( 1 != files.stream().map( e -> e.getFiletype() ).collect( Collectors.toSet() ).size() )
+            throw WebinCliException.createUserError( "Cannot mix following file formats in one manifest: " + Arrays.asList( files.stream().map( e -> e.getFiletype() ).collect( Collectors.toSet() ) ) );
+        
+        long cnt = files.stream().filter( e -> Filetype.fastq == e.getFiletype() ).collect( Collectors.counting() );
+        
+        if( 0 != cnt && 1 != cnt && 2 != cnt )
+            throw WebinCliException.createUserError( "Amount of fastq files can be one for single or paired layout and two for paired layout" );
+        
+        cnt = files.stream().filter( e -> Filetype.bam == e.getFiletype() ).collect( Collectors.counting() );
+        if( 0 != cnt && 1 != cnt )
+            throw WebinCliException.createUserError( "Only one bam file accepted" );
+
+        cnt = files.stream().filter( e -> Filetype.cram == e.getFiletype() ).collect( Collectors.counting() );
+        if( 0 != cnt && 1 != cnt )
+            throw WebinCliException.createUserError( "Only one cram file accepted" );
+
         this.files = files;
     }
     
@@ -284,8 +335,8 @@ RawReadsWebinCli extends AbstractWebinCli
     {
         AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
         {
-            final AtomicLong line_no = new AtomicLong( 1 );
-            final AtomicReference<DataSpot.ReadStyle> read_style = new AtomicReference<DataSpot.ReadStyle>();
+//            final AtomicLong line_no = new AtomicLong( 1 );
+//            final AtomicReference<DataSpot.ReadStyle> read_style = new AtomicReference<DataSpot.ReadStyle>();
             DataSpotParams params = DataSpot.defaultParams();
             
             @Override protected DataSpot 
@@ -329,9 +380,10 @@ RawReadsWebinCli extends AbstractWebinCli
         boolean valid = true;
         for( RawReadsFile rf : files )
         {
+            File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
             if( Filetype.fastq.equals( rf.getFiletype() ) )
             {
-                File f = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
+               
                 ValidationResult vr = new ValidationResult();
                 QualityNormalizer qn = QualityNormalizer.NONE;
                 
@@ -377,13 +429,48 @@ RawReadsWebinCli extends AbstractWebinCli
                         vr.append( vm );
                     }
 
-                    FileUtils.writeReport( f, vr );
+                    FileUtils.writeReport( reportFile, vr );
                 } catch( Exception e )
                 {
                     throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
                 }
+            } else if( Filetype.bam.equals( rf.getFiletype() ) )
+            {
+                boolean paired = false;
+                
+                File file = new File( rf.getFilename() );
+                Log.setGlobalLogLevel( LogLevel.ERROR );
+                SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
+                SamReaderFactory factory = SamReaderFactory.make();
+                factory.referenceSource( new ReferenceSource( (File) null ) );
+                SamInputResource ir = SamInputResource.of( file );
+                File indexMaybe = SamFiles.findIndex( file );
+                FileUtils.writeReport( reportFile, Severity.INFO, "proposed index: " + indexMaybe );
+                SamReader reader = factory.open( ir );
+                for( SAMRecord record : reader )
+                {
+                    paired |= record.getReadPairedFlag();
+                }
+
+                try
+                {
+                    reader.close();
+                } catch( IOException e )
+                {
+                    throw new ValidationEngineException( e );
+                }
+                FileUtils.writeReport( reportFile, Severity.INFO, "LibraryLayout: " + ( paired ? "PAIRED" : "SINGLE" ) );
+                valid = true;
+                
+            } else if( Filetype.cram.equals( rf.getFiletype() ) )
+            {
+                throw WebinCliException.createSystemError( "Validation for filetype " + rf.getFiletype() + " is not implemented" );
+                
+            } else
+            {
+                throw WebinCliException.createSystemError( "Filetype " + rf.getFiletype() + " is unknown" );
             }
-        }
+        }  
 
         this.valid = valid;
         
