@@ -49,6 +49,8 @@ dependencies {
     compile("com.googlecode.json-simple:json-simple:1.1.1")
     compile(group: 'uk.ac.ebi.ena-template-expansion', name: 'ena-template-expansion', version: '1.0.4')
     compile("org.jdom:jdom:2.0.2")
+    compile( group: 'uk.ac.ebi', name: 'ena-fastq-validator', version: '1.0.0' ) 
+    compile( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
     testCompile 'junit:junit:4.11'
 }
 

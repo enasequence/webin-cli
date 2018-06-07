@@ -348,7 +348,7 @@ public class WebinCli {
 		{
             if( !validator.validate() )
             {
-                throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, reportDir );
+                throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, String.valueOf( validator.getValidationDir() ) );
             }
             
             //TODO remove
