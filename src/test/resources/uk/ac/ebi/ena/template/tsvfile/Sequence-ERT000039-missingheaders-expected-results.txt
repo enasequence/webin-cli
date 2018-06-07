@@ -1,0 +1,13 @@
+ERROR: Sequence 1: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 2: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 3: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 4: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 5: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 6: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 7: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 8: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 9: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 10: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 11: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 12: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
+ERROR: Sequence 13: The following mandatory field(s) are missing FWD_NAME1,REV_NAME1,FWD_SEQ1,REV_SEQ1 - All headers are capitalised.
