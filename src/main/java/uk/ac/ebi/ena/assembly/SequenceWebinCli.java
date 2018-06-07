@@ -104,7 +104,7 @@ SequenceWebinCli extends AbstractWebinCli
             case AGP:
                 agpFiles.add(file);
                 break;
-            case TSV:
+            case TAB:
                 tsvFiles.add( file );
                 break;
             case INFO:
@@ -151,8 +151,9 @@ SequenceWebinCli extends AbstractWebinCli
             
             setValidationDir( createOutputSubdir( String.valueOf( getContext() ), getName(), VALIDATE_DIR ) );
             setSubmitDir( createOutputSubdir( String.valueOf( getContext() ), getName(), SUBMIT_DIR ) );
-            
-            setSample( fetchSample( getAssemblyInfo().getSampleId(), getTestMode() ) );
+
+            if (getAssemblyInfo().getSampleId() != null)
+                setSample( fetchSample( getAssemblyInfo().getSampleId(), getTestMode() ) );
             setStudy( fetchStudy( getAssemblyInfo().getStudyId(), getTestMode() ) );
         } catch( ValidationEngineException | WebinCliException e )
         {

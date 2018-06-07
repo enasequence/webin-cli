@@ -121,6 +121,8 @@ FileUtils
 	public static boolean 
 	emptyDirectory( File dir )
 	{
+		if (dir == null)
+			return false;
 	    if( dir.exists() )
 	    {
 	        File[] files = dir.listFiles();

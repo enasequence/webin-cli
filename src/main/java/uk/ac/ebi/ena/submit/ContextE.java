@@ -15,7 +15,7 @@ ContextE
 {
  sequence( "Sequence assembly: %s",
            "SEQUENCE_FLATFILE",
-           new FileFormat[] { FileFormat.TSV, 
+           new FileFormat[] { FileFormat.TAB,
                               FileFormat.FLATFILE, 
                               FileFormat.INFO },
            SequenceAssemblyWebinCli.class ),
