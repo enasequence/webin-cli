@@ -1,13 +1,13 @@
 package uk.ac.ebi.ena.manifest;
 
 public enum FileFormat {
-	  FASTA,
-	  AGP,
-	  FLATFILE,
-	  UNLOCALISED_LIST,
-	  INFO,
-	  CHROMOSOME_LIST,
-	  TSV;
+	FASTA,
+	AGP,
+	FLATFILE,
+	UNLOCALISED_LIST,
+	INFO,
+	CHROMOSOME_LIST,
+	TAB;
 	
 	public static FileFormat getFormat(String fileFormat) {
 		try {

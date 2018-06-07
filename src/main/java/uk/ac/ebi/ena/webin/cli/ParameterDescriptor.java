@@ -45,7 +45,7 @@ public class ParameterDescriptor {
             "\n\tMore information is available from: http://ena-docs.readthedocs.io/en/latest/cli.html";
     public final static String testFlagDescription = "\tWhen this option is used it will use the TEST submission system.";
     public static final String centerNameFlagDescription = "\n\tMandatory center name for broker accounts";
-    public static final String versionFlagDescription = "\n\tPrints WebinCli version number and exits";
+    public static final String versionFlagDescription = "\n\tPrints the version number of the program and exists";
     public static final String inputDirFlagDescription = "\n\tInput directory for the files declared in manifest file";
     public static final String tryAscpDescription = "\n\tTry to use Aspera Cli instead of FTP file transfer, if available.\n\tNote: Aspera Cli should be installed and path to executable \"ascp\" should be in PATH variable";
 }
