@@ -15,6 +15,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +25,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import htsjdk.samtools.SAMFormatException;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamFiles;
 import htsjdk.samtools.SamInputResource;
@@ -40,6 +43,7 @@ import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.frankenstein.loader.common.FileCompression;
 import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
+import uk.ac.ebi.ena.frankenstein.loader.common.eater.DataEaterException;
 import uk.ac.ebi.ena.frankenstein.loader.common.eater.NullDataEater;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
@@ -65,6 +69,7 @@ RawReadsWebinCli extends AbstractWebinCli
     public enum Platforms { ILLUMINA, LS454, SOLID, COMPLETE_GENOMICS, HELICOS, PACBIO, IONTORRENT, CAPILLARY }
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
+    private static final String BAM_STAR = "*";
     List<RawReadsFile> files;
     private String  experiment_ref;
     private boolean valid;
@@ -75,7 +80,7 @@ RawReadsWebinCli extends AbstractWebinCli
     private String sample_id;
     private String platform;
     //TODO value should be estimated via validation
-    private String library_layout = "SINGLE";
+    private boolean is_paired;
     
     
     @Override public void 
@@ -331,7 +336,7 @@ RawReadsWebinCli extends AbstractWebinCli
 	
 
     DataFeederException 
-    read( InputStream is, String name, final QualityNormalizer normalizer ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
+    read( InputStream is, String name, final QualityNormalizer normalizer, AtomicLong reads_cnt ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
     {
         AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
         {
@@ -347,7 +352,12 @@ RawReadsWebinCli extends AbstractWebinCli
         };
         
         df.setName( name );
-        df.setEater( new NullDataEater<DataSpot>() );
+        df.setEater( new NullDataEater<DataSpot>() {
+            @Override public void
+            eat( DataSpot object ) throws DataEaterException
+            {
+                reads_cnt.incrementAndGet();
+            }  } );
         df.start();
         df.join();
         return df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause(); 
@@ -355,12 +365,12 @@ RawReadsWebinCli extends AbstractWebinCli
     
     
     Throwable 
-    read( File file, final QualityNormalizer normalizer ) throws Exception
+    read( File file, final QualityNormalizer normalizer, AtomicLong reads_cnt ) throws Exception
     {
         InputStream is = new BufferedInputStream( new FileInputStream( file ) );
         try
         {
-            return read( is, file.getPath(), normalizer );
+            return read( is, file.getPath(), normalizer, reads_cnt );
         } finally
         {
             is.close();
@@ -378,66 +388,124 @@ RawReadsWebinCli extends AbstractWebinCli
             throw WebinCliException.createSystemError( "Unable to empty directory " + submit_dir );
         
         boolean valid = true;
+        AtomicBoolean paired = new AtomicBoolean();
+        
+        for( RawReadsFile rf : files )
+        {
+            if( Filetype.fastq.equals( rf.getFiletype() ) )
+            {
+                valid &= readFastqFile( files, paired );
+                
+            } else if( Filetype.bam.equals( rf.getFiletype() ) )
+            {
+                valid &= readBamFile( files, paired );
+                
+            } else if( Filetype.cram.equals( rf.getFiletype() ) )
+            {
+                valid &= readCramFile( files, paired );
+
+            } else
+            {
+                throw WebinCliException.createSystemError( "Filetype " + rf.getFiletype() + " is unknown" );
+            }
+            
+            break;
+        }  
+
+        this.valid = valid;
+        is_paired = paired.get();
+        
+        return valid;
+    }
+
+    
+    private boolean
+    readCramFile( List<RawReadsFile> files, AtomicBoolean paired ) throws ValidationEngineException
+    {
+        return readBamFile( files, paired );
+    }
+    
+    
+    private boolean
+    readFastqFile( List<RawReadsFile> files, AtomicBoolean paired )
+    {
+        boolean valid = true;
+        ValidationResult vr = new ValidationResult();
+        QualityNormalizer qn = QualityNormalizer.NONE;
+
         for( RawReadsFile rf : files )
         {
             File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
-            if( Filetype.fastq.equals( rf.getFiletype() ) )
+            try( InputStream is = FileCompression.valueOf( String.valueOf( rf.getCompression() ) ).open( rf.getFilename(), false ) )
             {
-               
-                ValidationResult vr = new ValidationResult();
-                QualityNormalizer qn = QualityNormalizer.NONE;
-                
-                try( InputStream is = FileCompression.valueOf( String.valueOf( rf.getCompression() ) ).open( rf.getFilename(), false ) )
+                switch( rf.getQualityScoringSystem() )
                 {
-                    switch( rf.getQualityScoringSystem() )
+                default:
+                    throw WebinCliException.createSystemError( "Scoring system: " + String.valueOf( rf.getQualityScoringSystem() ) );
+                    
+                case phred:
+                    switch( rf.getAsciiOffset() )
                     {
                     default:
-                        throw WebinCliException.createSystemError( "Scoring system: " + String.valueOf( rf.getQualityScoringSystem() ) );
+                        throw WebinCliException.createSystemError( "ASCII offset: " + String.valueOf( rf.getAsciiOffset() ) );
                         
-                    case phred:
-                        switch( rf.getAsciiOffset() )
-                        {
-                        default:
-                            throw WebinCliException.createSystemError( "ASCII offset: " + String.valueOf( rf.getAsciiOffset() ) );
-                            
-                        case FROM33:
-                            qn = QualityNormalizer.X;
-                            break;
-                            
-                        case FROM64:
-                            qn = QualityNormalizer.X_2;
-                            break;
-                        }
+                    case FROM33:
+                        qn = QualityNormalizer.X;
                         break;
                         
-                    case log_odds:
-                        qn = QualityNormalizer.SOLEXA;
+                    case FROM64:
+                        qn = QualityNormalizer.X_2;
                         break;
-                        
                     }
+                    break;
                     
+                case log_odds:
+                    qn = QualityNormalizer.SOLEXA;
+                    break;
                     
-                    DataFeederException t = read( is, rf.getFilename(), qn );
-                                    
-                    if( null != t )
-                    {
-                        ValidationMessage<Origin> vm = new ValidationMessage<>( Severity.ERROR, t.getMessage() );
-                        vm.setThrowable( t );
-                        vm.append( new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ) );
-                        
-                        valid = false;
-                        vr.append( vm );
-                    }
-
-                    FileUtils.writeReport( reportFile, vr );
-                } catch( Exception e )
-                {
-                    throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
                 }
-            } else if( Filetype.bam.equals( rf.getFiletype() ) )
-            {
-                boolean paired = false;
                 
+                AtomicLong reads_cnt = new AtomicLong();
+                DataFeederException t = read( is, rf.getFilename(), qn, reads_cnt );
+                                
+                if( null != t )
+                {
+                    ValidationMessage<Origin> vm = new ValidationMessage<>( Severity.ERROR, ValidationMessage.NO_KEY, t.getMessage() );
+                    vm.setThrowable( t );
+                    vm.append( new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ) );
+                    
+                    valid = false;
+                    vr.append( vm );
+                }
+    
+                FileUtils.writeReport( reportFile, vr );
+                FileUtils.writeReport( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt.get() );
+        
+            } catch( Exception e )
+            {
+                throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
+            }
+        }
+        
+        //TODO: implement properly
+        paired.set( 2 == files.size() );
+                
+        return valid;
+    }
+
+
+    private boolean
+    readBamFile( List<RawReadsFile> files, AtomicBoolean paired ) throws ValidationEngineException
+    {
+        boolean valid = true;
+        for( RawReadsFile rf : files )
+        {
+            File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
+            long read_no = 0;
+            long reads_cnt = 0;
+            
+            try
+            {
                 File file = new File( rf.getFilename() );
                 Log.setGlobalLogLevel( LogLevel.ERROR );
                 SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
@@ -447,33 +515,54 @@ RawReadsWebinCli extends AbstractWebinCli
                 File indexMaybe = SamFiles.findIndex( file );
                 FileUtils.writeReport( reportFile, Severity.INFO, "proposed index: " + indexMaybe );
                 SamReader reader = factory.open( ir );
+                
                 for( SAMRecord record : reader )
                 {
-                    paired |= record.getReadPairedFlag();
+                    read_no ++;
+                    //do not load supplementary reads
+                    if( record.isSecondaryOrSupplementary() )
+                        continue;
+                    
+                    if( record.getDuplicateReadFlag() )
+                        continue;
+                    
+                    if( record.getReadString().equals( BAM_STAR ) && record.getBaseQualityString().equals( BAM_STAR ) )
+                        continue;
+                    
+                    if( record.getReadBases().length != record.getBaseQualities().length )
+                    {
+                        ValidationMessage<Origin> vm = new ValidationMessage<>( Severity.ERROR, ValidationMessage.NO_KEY, "Mismatch between length of read bases and qualities" );
+                        vm.append( new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
+                        
+                        FileUtils.writeReport( reportFile, Arrays.asList( vm ) );
+                        valid &= false;
+                    }
+                    
+                    paired.compareAndSet( false, record.getReadPairedFlag() );
+                    reads_cnt ++;
                 }
-
-                try
-                {
-                    reader.close();
-                } catch( IOException e )
-                {
-                    throw new ValidationEngineException( e );
-                }
-                FileUtils.writeReport( reportFile, Severity.INFO, "LibraryLayout: " + ( paired ? "PAIRED" : "SINGLE" ) );
-                valid = true;
-                
-            } else if( Filetype.cram.equals( rf.getFiletype() ) )
-            {
-                throw WebinCliException.createSystemError( "Validation for filetype " + rf.getFiletype() + " is not implemented" );
-                
-            } else
-            {
-                throw WebinCliException.createSystemError( "Filetype " + rf.getFiletype() + " is unknown" );
-            }
-        }  
-
-        this.valid = valid;
         
+                reader.close();
+                
+                FileUtils.writeReport( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt );
+                FileUtils.writeReport( reportFile, Severity.INFO, "LibraryLayout: " + ( paired.get() ? "PAIRED" : "SINGLE" ) );
+                
+                if( 0 == reads_cnt )
+                {
+                    FileUtils.writeReport( reportFile, Severity.ERROR, "File contains no valid reads" );
+                    valid &= false;
+                }
+                
+            } catch( SAMFormatException e )
+            {
+                FileUtils.writeReport( reportFile, Severity.ERROR, e.getMessage() );
+                valid &= false;
+                
+            } catch( IOException e )
+            {
+                throw new ValidationEngineException( e );
+            }
+        }
         return valid;
     }
 
@@ -514,7 +603,7 @@ RawReadsWebinCli extends AbstractWebinCli
             //do something
             String experiment_ref = String.format( "exp-%s", getName() );
             
-            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), study_id, sample_id, platform );
+            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), study_id, sample_id, platform, is_paired );
             String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
             
             Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
@@ -562,7 +651,7 @@ RawReadsWebinCli extends AbstractWebinCli
 */
 
     String
-    createExperimentXml( String experiment_ref, String centerName, String study_id, String sample_id, String platform  ) 
+    createExperimentXml( String experiment_ref, String centerName, String study_id, String sample_id, String platform, boolean is_paired ) 
     {
         String instrument_model = "unspecified";
         String design_description = "unspecified";
@@ -617,7 +706,7 @@ RawReadsWebinCli extends AbstractWebinCli
             libraryDescriptorE.addContent( librarySelectionE );
 
             Element libraryLayoutE = new Element( "LIBRARY_LAYOUT" );
-            libraryLayoutE.addContent( new Element( library_layout ) );
+            libraryLayoutE.addContent( new Element( is_paired ? "PAIRED" : "SINGLE" ) );
             libraryDescriptorE.addContent( libraryLayoutE );
             
             Element platformE = new Element( "PLATFORM" );
