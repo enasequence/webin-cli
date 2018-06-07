@@ -1,2 +1,2 @@
 INFO    /Users/cleland/git/webin-cli/src/test/resources/uk/ac/ebi/ena/template/tsvfile/templatetsv.info.gz
-TSV    /Users/cleland/git/webin-cli/src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-ERT000039-missingheaders.tsv.gz
+TAB    /Users/cleland/git/webin-cli/src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-ERT000039-missingheaders.tsv.gz
