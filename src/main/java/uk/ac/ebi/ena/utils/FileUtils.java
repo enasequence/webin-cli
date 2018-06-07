@@ -21,12 +21,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 

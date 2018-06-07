@@ -238,7 +238,7 @@ public class WebinCli {
         outputDir = getFullPath( outputDir );
         
         //TODO remove
-        if( contextE != ContextE.reads )
+        if( contextE != ContextE.reads && contextE != ContextE.sequence && contextE != ContextE.genome )
         {
             String name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
             createValidateDir( params.context, name );
@@ -248,7 +248,7 @@ public class WebinCli {
         infoValidator = new InfoFileValidator();
         manifestValidator = new ManifestFileValidator();
         //TODO remove
-        if( contextE != ContextE.reads )
+        if( contextE != ContextE.reads && contextE != ContextE.sequence && contextE != ContextE.genome )
         {
             if (!manifestValidator.validate(manifestFile, reportDir, params.context))
                 throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
@@ -335,13 +335,6 @@ public class WebinCli {
 				validator = v;
 				break;
 			}
-			case sequence:
-			{
-				SequenceAssemblyWebinCli v = new SequenceAssemblyWebinCli( manifestValidator.getReader(), getStudy() );
-                v.setReportsDir( reportDir );
-				validator = v;
-				break;
-			}	
 		}
 		
 		try 

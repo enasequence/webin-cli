@@ -6,9 +6,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +30,6 @@ import uk.ac.ebi.embl.api.validation.ValidationScope;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
 import uk.ac.ebi.ena.manifest.FileFormat;
-import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.template.expansion.CSVLine;
 import uk.ac.ebi.ena.template.expansion.CSVReader;
@@ -41,56 +39,56 @@ import uk.ac.ebi.ena.template.expansion.TemplateLoader;
 import uk.ac.ebi.ena.template.expansion.TemplateProcessor;
 import uk.ac.ebi.ena.template.expansion.TemplateUserError;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+
 
 public class SequenceAssemblyWebinCli extends SequenceWebinCli {
     private static final String TEMPLATE_ID_PATTERN = "(ERT[0-9]+)";
     private final static String TEMPLATE_ACCESSION_LINE = "#template_accession";
     private boolean FAILED_VALIDATION;
-    private ManifestFileReader manifestFileReader;
-    private String submittedFile;
-    private File reportFile;
-    private File reportDir;
-    private Study study;
     private final static int MAX_SEQUENCE_COUNT = 100000;
     private boolean TEST;
     private StringBuilder resultsSb;
 
-    public SequenceAssemblyWebinCli(ManifestFileReader manifestFileReader, Study study) {
-        this.manifestFileReader = manifestFileReader;
-        this.study = study;
-    }
 
     public SequenceAssemblyWebinCli() {
     }
 
     public StringBuilder validateTestTsv(String submittedFile) throws ValidationEngineException {
-        this.submittedFile = submittedFile;
         resultsSb = new StringBuilder();
         TEST = true;
-        validateTsvFile();
+        validateTsvFile( new File( submittedFile ) );
         return resultsSb;
     }
 
 
-    @Override protected boolean validateInternal() throws ValidationEngineException {
-        if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-            reportFile = FileUtils.createReportFile( reportDir, submittedFile );
-            validateFlatFile();
-        } else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.TAB))!= null) {
-            reportFile = FileUtils.createReportFile( reportDir, submittedFile );
-            validateTsvFile();
+    @Override protected boolean 
+    validateInternal() throws ValidationEngineException 
+    {
+        if( !flatFiles.isEmpty() )
+        {
+            if( 1 == flatFiles.size() )
+                validateFlatFile( flatFiles.get( 0 ) );
+            else 
+                throw WebinCliException.createUserError( "Cannot accept more than one FLATFILE file" );
+
+        } else if( !tsvFiles.isEmpty() )
+        {
+            if( 1 == tsvFiles.size() )
+                validateTsvFile( tsvFiles.get( 0 ) );
+            else 
+                throw WebinCliException.createUserError( "Cannot accept more than one TAB file" );
         } else
             throw new ValidationEngineException("Manifest file: TAB or FLATFILE must be pre55t4444eeeeeszsent.");
         return !FAILED_VALIDATION;
     }
 
-    public void setReportsDir(String reportDir) {
-        this.reportDir = new File( reportDir );
-    }
 
-    private void validateTsvFile()  throws ValidationEngineException {
-        Path templatePath = getTemplateAndWriteToValidateDir();
-        try (FileInputStream submittedDataFis = new FileInputStream(submittedFile)) {
+    private void validateTsvFile( File file )  throws ValidationEngineException {
+        File reportFile = getReportFile( FileFormat.TAB, file.getPath() );
+        String templateId = getTemplateIdFromTsvFile( file );
+        Path templatePath = getTemplateAndWriteToValidateDir( templateId );
+        try (FileInputStream submittedDataFis = new FileInputStream(file)) {
             TemplateInfo templateInfo = new TemplateLoader().loadTemplateFromFile(templatePath.toFile());
             TemplateProcessor templateProcessor = new TemplateProcessor(templateInfo, null);
             BufferedInputStream bufferedInputStremSubmittedData = new BufferedInputStream(new GZIPInputStream(submittedDataFis));
@@ -125,15 +123,22 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
         }
     }
 
-    private void validateFlatFile() throws ValidationEngineException {
+    
+    private void 
+    validateFlatFile( File submittedFile ) throws ValidationEngineException 
+    {
+        File reportFile = getReportFile( FileFormat.FLATFILE, submittedFile.getPath() );
         try {
-            File submittedFileF = new File(submittedFile);
-            if (!submittedFileF.exists()) {
+            if( !submittedFile.exists() ) 
+            {
                 FAILED_VALIDATION = true;
-                FileUtils.writeReport(reportFile, Severity.ERROR, submittedFile + " does not exist.");
+                FileUtils.writeReport( reportFile, Severity.ERROR, submittedFile.toPath() + " does not exist." );
                 return;
             }
-            FlatFileReader flatFileReader = new EmblEntryReader(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(submittedFileF)))), EmblEntryReader.Format.EMBL_FORMAT, submittedFileF.getName());
+            
+            FlatFileReader<?> flatFileReader = new EmblEntryReader( new BufferedReader( new InputStreamReader( new GZIPInputStream( new FileInputStream( submittedFile ) ) ) ), 
+                                                                    EmblEntryReader.Format.EMBL_FORMAT, 
+                                                                    submittedFile.getName() );
             ValidationResult validationResult = flatFileReader.read();
             if (!flatFileReader.isEntry()) {
                 FAILED_VALIDATION = true;
@@ -163,11 +168,10 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
         }
     }
 
-    private Path getTemplateAndWriteToValidateDir() throws ValidationEngineException {
+    private Path getTemplateAndWriteToValidateDir( String templateId ) throws ValidationEngineException {
         try {
-            String templateId = getTemplateIdFromTsvFile();
             String template = new TemplateProcessor().getTemplate(templateId);
-            Path path = Paths.get(reportDir + File.separator + templateId + ".xml");
+            Path path = new File( getValidationDir(), templateId + ".xml" ).toPath();
             Files.deleteIfExists(path);
             Files.createFile(path);
             Files.write(path, template.getBytes());
@@ -179,12 +183,13 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
         }
     }
 
-    private String getTemplateIdFromTsvFile() throws ValidationEngineException {
+    private String getTemplateIdFromTsvFile( File submittedFile ) throws ValidationEngineException {
         String templateId = "";
-        try {
-            Optional<String> optional =  new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(Paths.get(submittedFile).toFile())))).lines()
-                    .filter(line -> line.startsWith(TEMPLATE_ACCESSION_LINE))
-                    .findFirst();
+        try( BufferedReader reader = new BufferedReader( new InputStreamReader( new GZIPInputStream( new FileInputStream( submittedFile ) ), StandardCharsets.UTF_8 ) ) )
+        {
+            Optional<String> optional =  reader.lines()
+                                               .filter(line -> line.startsWith( TEMPLATE_ACCESSION_LINE ) )
+                                               .findFirst();
             if (optional.isPresent()) {
                 templateId = optional.get().replace(TEMPLATE_ACCESSION_LINE, "").trim();
                 if (templateId.isEmpty() || !templateId.matches(TEMPLATE_ID_PATTERN))
