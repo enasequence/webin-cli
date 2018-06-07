@@ -45,7 +45,6 @@ public abstract class
 SequenceWebinCli extends AbstractWebinCli
 {
     private static final String DIGEST_NAME = "MD5";
-    protected static String REPORT_FILE_SUFFIX = ".report";
     protected final static String ANALYSIS_XML = "analysis.xml";
     private final static String INVALID_INFO = "Info file validation failed. Please check the report file for errors: ";
     
@@ -66,6 +65,12 @@ SequenceWebinCli extends AbstractWebinCli
     
     protected abstract boolean validateInternal() throws ValidationEngineException;
     
+    
+    protected File
+    getReportFile( FileFormat filetype, String filename )
+    {
+        return super.getReportFile( String.valueOf( filetype ), filename );
+    }
     
     protected void 
     defineFileTypes( File manifest_file ) throws ValidationEngineException, IOException 
@@ -114,8 +119,6 @@ SequenceWebinCli extends AbstractWebinCli
         this.flatFiles  = flatFiles;
         this.agpFiles   = agpFiles;
         this.tsvFiles   = tsvFiles;
-        
-        
     }
 
     
@@ -130,23 +133,6 @@ SequenceWebinCli extends AbstractWebinCli
         return infoValidator.getentry();
     }
     
-    
-    private File 
-    createValidateDir( File outputDir, String context, String name ) throws Exception 
-    {
-        File reportDirectory = new File( outputDir, new File( context , new File( name , VALIDATE_DIR ).getPath() ).getPath() );
-        
-        if( reportDirectory.exists() )
-        {
-            FileUtils.emptyDirectory( reportDirectory );
-        } else if( !reportDirectory.mkdirs() ) 
-        {
-            throw WebinCliException.createSystemError( "Unable to create directory: " + reportDirectory.getPath() );
-        }
-        
-        return reportDirectory;
-    }
-
     
     abstract ContextE getContext();
     abstract boolean  getTestMode();
@@ -217,19 +203,6 @@ SequenceWebinCli extends AbstractWebinCli
     }
        
     
-    protected File
-    getReportFile( FileFormat filetype, String filename )
-    {
-        if( null == validationDir )
-            throw new RuntimeException( "Validation dir cannot be null" );
-        
-        if( validationDir.isFile() )
-            throw new RuntimeException( "Validation dir cannot be file" );
-        
-        return new File( this.validationDir, /*filetype + "-" +*/ filename + REPORT_FILE_SUFFIX ); 
-    }
-
-    
     @SuppressWarnings( "unchecked" ) protected <T> T
     getFileReader( FileFormat format, File file ) throws IOException
     {
@@ -267,7 +240,7 @@ SequenceWebinCli extends AbstractWebinCli
     }
 
 
-    public File
+    @Override public File
     getValidationDir()
     {
         return validationDir;
