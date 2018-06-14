@@ -301,27 +301,23 @@ public class WebinCli {
 	}
 
 	@Deprecated private Study getStudy() {
-		Study study = new Study();
 		try {
-			study.getStudy(infoValidator.getentry().getStudyId(), params.userName, params.password, params.test);
+			return Study.getStudy(infoValidator.getentry().getStudyId(), params.userName, params.password, params.test);
 		}
 		catch (WebinCliException e) {
 			writeMessageIntoInfoReport(Severity.ERROR, e.getMessage());
 			throw e;
 		}
-		return study;
 	}
 
 	@Deprecated private Sample getSample() {
-		Sample sample = new Sample();
 		try {
-			sample.getSample(infoValidator.getentry().getSampleId(), params.userName, params.password, params.test);
+			return Sample.getSample(infoValidator.getentry().getSampleId(), params.userName, params.password, params.test);
 		}
 		catch (WebinCliException e) {
 			writeMessageIntoInfoReport(Severity.ERROR, e.getMessage());
 			throw e;
 		}
-		return sample;
 	}
 
 	
