@@ -191,7 +191,7 @@ public class WebinCli {
                 printUsageErrorAndExit();
             }
 
-//            checkVersion( params.test );
+            checkVersion( params.test );
     
             WebinCli webinCli = new WebinCli();
             webinCli.init( params );
@@ -230,13 +230,13 @@ public class WebinCli {
         this.params = params;
         this.contextE = ContextE.valueOf( String.valueOf( params.context ).toLowerCase() );
         this.test_mode = params.test;
-        
+
         params.manifest = getFullPath( params.manifest );
         File manifestFile = new File( params.manifest );
 
         outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
         outputDir = getFullPath( outputDir );
-        
+
         //TODO remove
         if( contextE != ContextE.reads && contextE != ContextE.sequence && contextE != ContextE.genome )
         {
@@ -258,7 +258,7 @@ public class WebinCli {
         }
 
         this.validator = contextE.getValidatorClass().newInstance();
-        
+
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setManifestFile( manifestFile );
         parameters.setInputDir( new File( params.inputDir ) );
@@ -266,7 +266,8 @@ public class WebinCli {
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
-        validator.init( parameters );
+
+		validator.init( parameters );
     }
     
 
