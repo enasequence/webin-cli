@@ -40,6 +40,7 @@ import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
@@ -54,6 +55,10 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 	private ValidationPlan validationPlan;
 	private boolean FLAILED_VALIDATION;
 	private ManifestFileReader manifestFileReader;
+	private boolean TEST;
+	private StringBuilder resultsSb;
+
+	public TranscriptomeAssemblyWebinCli(){}
 
 	public TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study) {
 		this.manifestFileReader = manifestFileReader;
@@ -72,6 +77,13 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 		validationPlan.addMessageBundle(STANDARD_FIXER_BUNDLE);
 	}
 
+	public StringBuilder validateTestFlatfile(String submittedFile) throws ValidationEngineException {
+		resultsSb = new StringBuilder();
+		TEST = true;
+		this.submittedFile = submittedFile;
+		validateFlatFile();
+		return resultsSb;
+	}
 
 	public void setReportsDir(String reportDir) {
 		this.reportDir = new File( reportDir );
@@ -163,14 +175,12 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 		}
 	}
 
-
 	@Override
 	public void prepareSubmissionBundle() throws IOException {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	
+
     @Override public File
     getSubmissionBundleFileName()
     {
