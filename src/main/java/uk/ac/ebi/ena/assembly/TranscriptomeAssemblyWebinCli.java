@@ -38,9 +38,9 @@ import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
@@ -186,6 +186,14 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
     {
         return null;
     }
+    
+
+    @Override public SubmissionBundle
+    getSubmissionBundle()
+    {
+        return null;
+    }
+
     
     
     @Override public File
