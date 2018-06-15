@@ -1,2 +1,2 @@
-INFO    transcriptome.info.gz
-FASTA   transcriptome.fasta.gz
+INFO    src/test/resources/uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.info.gz
+FASTA   src/test/resources/uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz
