@@ -49,7 +49,7 @@ public class FtpService implements UploadService {
     void   
     storeFile( Path local, Path remote ) throws IOException
     {
-        Path subdir = remote.subpath( 0, remote.getNameCount() - 1 );
+        Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
         try( InputStream fileInputStream = new BufferedInputStream( Files.newInputStream( local ) ) )    
         {
             int level = changeToSubdir( subdir );       

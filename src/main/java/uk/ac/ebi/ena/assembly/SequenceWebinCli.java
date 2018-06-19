@@ -342,13 +342,14 @@ SequenceWebinCli extends AbstractWebinCli
             typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
             typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
             typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
-            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
             
             if( null != entry.getMinGapLength() )
                 typeE.addContent( createTextElement( "MIN_GAP_LENGTH", String.valueOf( entry.getMinGapLength() ) ) );
             
             if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
                 typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
+            
+            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
             
             analysisTypeE.addContent( typeE );
             Element filesE = new Element( "FILES" );
@@ -375,7 +376,7 @@ SequenceWebinCli extends AbstractWebinCli
     {
         try
         {
-            return createfileElement( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ).toString(), 
+            return createfileElement( String.valueOf( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ) ).replaceAll( "\\\\+", "/" ), 
                                       String.valueOf( file_type ), 
                                       DIGEST_NAME, 
                                       FileUtils.calculateDigest( DIGEST_NAME, file ) );
