@@ -342,13 +342,14 @@ SequenceWebinCli extends AbstractWebinCli
             typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
             typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
             typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
-            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
             
             if( null != entry.getMinGapLength() )
                 typeE.addContent( createTextElement( "MIN_GAP_LENGTH", String.valueOf( entry.getMinGapLength() ) ) );
             
             if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
                 typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
+            
+            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
             
             analysisTypeE.addContent( typeE );
             Element filesE = new Element( "FILES" );
