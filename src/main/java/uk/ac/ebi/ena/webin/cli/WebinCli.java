@@ -261,8 +261,8 @@ public class WebinCli {
 
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setManifestFile( manifestFile );
-        parameters.setInputDir( new File( params.inputDir ) );
-        parameters.setOutputDir( new File( outputDir ) );
+        parameters.setInputDir( Paths.get( params.inputDir ).toAbsolutePath().toFile() );
+        parameters.setOutputDir( Paths.get( outputDir ).toAbsolutePath().toFile() );
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
@@ -342,7 +342,7 @@ public class WebinCli {
             }
             
             //TODO remove
-            if( contextE != ContextE.reads )
+            if( contextE != ContextE.reads && contextE != ContextE.sequence && contextE != ContextE.genome )
             {
                 String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
                 File submitDirectory = createSubmitDirectory( assemblyName );
@@ -451,7 +451,7 @@ public class WebinCli {
         try 
         {
             ftpService.connect( params.userName, params.password );
-            ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), Paths.get( "." ) );
+            ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
             writeMessage( Severity.INFO, UPLOAD_SUCCESS );
             
         } catch( WebinCliException e ) 
@@ -604,6 +604,10 @@ public class WebinCli {
 
 	private static void checkVersion( boolean test ) {
 		String version = WebinCli.class.getPackage().getImplementationVersion();
+		
+		if( null == version || version.isEmpty() )
+		    return;
+		
 		Version versionService = new Version();
 		if (!versionService.isVersionValid(version, test ))
 			throw WebinCliException.createUserError(INVALID_VERSION.replaceAll("__VERSION__", version));

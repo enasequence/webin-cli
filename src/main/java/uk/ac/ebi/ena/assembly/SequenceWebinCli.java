@@ -375,7 +375,7 @@ SequenceWebinCli extends AbstractWebinCli
     {
         try
         {
-            return createfileElement( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ).toString(), 
+            return createfileElement( String.valueOf( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ) ).replaceAll( "\\\\+", "/" ), 
                                       String.valueOf( file_type ), 
                                       DIGEST_NAME, 
                                       FileUtils.calculateDigest( DIGEST_NAME, file ) );
