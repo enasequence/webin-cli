@@ -13,7 +13,9 @@ RawReadsFile
     {
         fastq( "fastq" ),
         bam( "bam" ),
-        cram( "cram" );
+        cram( "cram" ),
+        info( "info file" );
+        
         
         public final String xml_name; 
         Filetype( String xml_name )

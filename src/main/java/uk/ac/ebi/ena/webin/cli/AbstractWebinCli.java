@@ -45,12 +45,24 @@ AbstractWebinCli
     public abstract File getSubmissionBundleFileName();
     public abstract File getValidationDir();
     
-    
     protected File
     getReportFile( String prefix, String filename )
     {
+    	try
+    	{
+    		return getReportFile( getValidationDir(), prefix, filename );
+    	} catch( RuntimeException re )
+    	{
+    		return getReportFile( getParameters().getOutputDir(), prefix, filename );
+    	}
+    }
+    
+    
+    private File
+    getReportFile( File output_location, String prefix, String filename )
+    {
         if( null == getValidationDir() )
-            throw new RuntimeException( "Validation dir cannot be null" );
+        	throw new RuntimeException( "Validation dir cannot be null" );
         
         if( getValidationDir().isFile() )
             throw new RuntimeException( "Validation dir cannot be file" );
