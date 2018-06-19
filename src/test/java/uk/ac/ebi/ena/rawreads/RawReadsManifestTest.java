@@ -193,7 +193,7 @@ RawReadsManifestTest
     }
 
 
-    @Test( expected=WebinCliException.class ) public void
+    @Test/*( expected=WebinCliException.class )*/ public void
     instrumentUnspecifiedPlatformMissing() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
@@ -211,6 +211,26 @@ RawReadsManifestTest
         Assert.assertEquals( "unspecified", rm.getInstrument() );
     }
     
+
+    @Test( expected = WebinCliException.class ) public void
+    negativeInsertSize() throws IOException
+    {
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
+                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
+                                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
+                                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
+                                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
+                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
+                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
+                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
+                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+        RawReadsManifest rm = new RawReadsManifest();
+        rm.defineFileTypes( Paths.get( "." ), man.toFile() );
+    }
+     
     
     private File
     createOutputFolder() throws IOException
