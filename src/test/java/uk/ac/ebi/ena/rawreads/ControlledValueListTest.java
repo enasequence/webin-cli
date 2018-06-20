@@ -14,8 +14,9 @@ ControlledValueListTest
     {
         Assert.assertTrue( ControlledValueList.Platform.contains( "pacbiosmrt" ) );
         Assert.assertEquals( "PACBIO_SMRT", ControlledValueList.Platform.getKey( "pacbiosmrt" ) );
+        
         Assert.assertEquals( "PacificBiosciences platform type for the single molecule real time (SMRT) technology.",
-                ControlledValueList.Platform.getValue( "pacbiosmrt" ) );
+                             ControlledValueList.Platform.getValue( "pacbiosmrt" ) );
     }
 
 

@@ -441,7 +441,7 @@ RawReadsManifest
                 reportTokenDuplication( source, line_no, token0 );
 
             default:
-                RawReadsFile f = parseFileLine( input_dir, tokens );
+                RawReadsFile f = parseFileLine( input_dir, line.split( "\\s+" ) );
                 if( null == f.getFilename() || f.getFilename().isEmpty() )
                     reportUserError( source, line_no, "Filename not supplied" );
                 
