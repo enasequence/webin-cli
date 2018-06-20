@@ -14,6 +14,8 @@ import org.junit.Test;
 
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
+import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -27,6 +29,32 @@ RawReadsManifestTest
         ValidationResult.setDefaultMessageFormatter( null );
         Locale.setDefault( Locale.UK );
     }
+    
+    
+    @Test public void
+    parseFileLineTest()
+    {
+        RawReadsManifest rr = new RawReadsManifest();
+        
+        RawReadsFile file = rr.parseFileLine( Paths.get( "." ), new String[] { "FASTQ", "PHRED_33", "fastq.file", "" } );
+        Assert.assertTrue( file.getFilename().contains( "fastq.file" ) );
+        Assert.assertEquals( Filetype.fastq, file.getFiletype() );
+        Assert.assertEquals( QualityScoringSystem.phred, file.getQualityScoringSystem());
+
+        
+        file = rr.parseFileLine( Paths.get( "." ), new String[] { "", "fastq.file", "FASTQ", "PHRED_33", "" } );
+        Assert.assertTrue( file.getFilename().contains( "fastq.file" ) );
+        Assert.assertEquals( Filetype.fastq, file.getFiletype() );
+        Assert.assertEquals( QualityScoringSystem.phred, file.getQualityScoringSystem());
+
+        file = rr.parseFileLine( Paths.get( "." ), new String[] { "", "fastq.file", "BAM", "LOGODDS", "" } );
+        Assert.assertTrue( file.getFilename().contains( "fastq.file" ) );
+        Assert.assertEquals( Filetype.bam, file.getFiletype() );
+        Assert.assertEquals( QualityScoringSystem.log_odds, file.getQualityScoringSystem());
+
+        System.out.println( file );
+    }
+    
     
     
     @Test public void
@@ -193,7 +221,7 @@ RawReadsManifestTest
     }
 
 
-    @Test/*( expected=WebinCliException.class )*/ public void
+    @Test( expected=WebinCliException.class ) public void
     instrumentUnspecifiedPlatformMissing() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 

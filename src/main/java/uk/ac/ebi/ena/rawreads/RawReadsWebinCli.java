@@ -12,13 +12,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -49,11 +47,8 @@ import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
-import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
-import uk.ac.ebi.ena.rawreads.RawReadsFile.Compression;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
-import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
@@ -70,15 +65,12 @@ RawReadsWebinCli extends AbstractWebinCli
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
     private static final String BAM_STAR = "*";
-    List<RawReadsFile> files;
+    RawReadsManifest rrm = new RawReadsManifest();
     private String  experiment_ref;
     private boolean valid;
     private boolean test_mode;
     private File    submit_dir;
     private File    validate_dir;
-    private String study_id;
-    private String sample_id;
-    private String platform;
     //TODO value should be estimated via validation
     private boolean is_paired;
     
@@ -92,7 +84,7 @@ RawReadsWebinCli extends AbstractWebinCli
 
             defineFileTypes( getParameters().getManifestFile() );
 //            setAssemblyInfo( defineInfo( infoFile ) );
-//            setName( getAssemblyInfo().getName().trim().replaceAll( "\\s+", "_" ) );
+            setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
             
             setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
             setSubmitDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), SUBMIT_DIR ) );
@@ -106,203 +98,11 @@ RawReadsWebinCli extends AbstractWebinCli
         }
     }
     
-    
-    RawReadsFile
-    parseFileLine( String[] tokens )
-    {
-        RawReadsFile result = new RawReadsFile();
-        result.setInputDir( getParameters().getInputDir().toPath() );
-        result.setCompression( Compression.NONE );
-        
-        for( String token : tokens )
-        {
-            token = token.trim();
-            switch( token )
-            {
-            case "FASTQ":
-            case "BAM":
-            case "CRAM":
-                result.setFiletype( Filetype.valueOf( token.toLowerCase() ) );
-                break;
-                
-            case "PHRED_33":
-                result.setAsciiOffset( AsciiOffset.FROM33 );
-                result.setQualityScoringSystem( QualityScoringSystem.phred );
-                break;
-                
-            case "PHRED_64":
-                result.setAsciiOffset( AsciiOffset.FROM64 );
-                result.setQualityScoringSystem( QualityScoringSystem.phred );
-                break;
-                
-            case "LOGODDS":
-                result.setAsciiOffset( null );
-                result.setQualityScoringSystem( QualityScoringSystem.log_odds );
-                break;
-            
-            case "NONE":
-            case "GZ":
-            case "GZIP":
-            case "BZ2":
-                result.setCompression( Compression.valueOf( token ) );
-                break;
-                
-            case "ZIP": //Do not support zip
-                result.setCompression( Compression.NONE );
-                break;
-            
-            default:
-                if( null != token && !token.isEmpty() )
-                    result.setFilename( token );
-            }
-        }
-        
-        if( null != result.getFilename() && !result.getFilename().isEmpty() && !Paths.get( result.getFilename() ).isAbsolute() )
-            result.setFilename( result.getInputDir().resolve( Paths.get( result.getFilename() ) ).toString() );
-        
-        return result;
-    }
-    
-    
+
     void
     defineFileTypes( File manifest_file ) throws IOException
     {
-        List<String> lines = Files.readAllLines( manifest_file.toPath() );
-        List<RawReadsFile> files = new ArrayList<>();
-        
-        String study_id = null;
-        String sample_id = null;
-        String name = null;
-        String platform = null;
-        int line_no = 0;
-        
-        for( String line : lines )
-        {
-            ++line_no;
-            if( null != line && ( line = line.trim() ).isEmpty() )
-                continue;
-            
-            String tokens[] = line.split( "\\s+" );
-
-            if( 0 == tokens.length )
-                continue;
-
-            String token0 = tokens[ 0 ].trim();
-            if( null != token0 && token0.matches( "^[\\s]*(#|;|\\/\\/).*$" ) )
-                continue;
-                
-            switch( token0 )
-            {
-            case "SAMPLE":
-            case "SAMPLE-ID":
-            case "SAMPLE_ID":
-                if( null == sample_id )
-                {
-                    sample_id = tokens[ 1 ];
-                    break;
-                } 
-                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Sample should not appeared more than once" ) );
-
-            case "STUDY":
-            case "STUDY-ID":
-            case "STUDY_ID":
-                if( null == study_id )
-                {
-                    study_id = tokens[ 1 ];
-                    break;
-                } 
-                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Study should not appeared more than once" ) );
-                
-            case "NAME":
-                if( null == name )
-                {
-                    name = tokens[ 1 ];
-                    break;
-                } 
-                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Name should not appeared more than once" ) );
-
-            case "PLATFORM":
-                if( null == platform )
-                {
-                    platform = tokens[ 1 ];
-                    break;
-                } 
-                throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Platform should not appeared more than once" ) );
-
-            default:
-                RawReadsFile f = parseFileLine( tokens );
-                if( null == f.getFilename() || f.getFilename().isEmpty() ) 
-                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Filename not supplied" ) );
-                
-                if( null == f.getFiletype() )
-                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "No file type supplied. Valid are: " + Stream.of( Filetype.values() ).map( String::valueOf ).collect( Collectors.joining( ", " ) ) ) );
-
-                if( Compression.NONE != f.getCompression() && ( Filetype.bam == f.getFiletype() || Filetype.cram == f.getFiletype() ) )
-                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Compression not supported for types " + Filetype.bam + " and " + Filetype.cram ) );
-                
-                if( null != f.getQualityScoringSystem() && ( Filetype.bam == f.getFiletype() || Filetype.cram == f.getFiletype() ) )
-                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "Scoring system not supported for types " + Filetype.bam + " and " + Filetype.cram ) );
-
-                //TODO externalise scoring types
-                if( Filetype.fastq == f.getFiletype() && null == f.getQualityScoringSystem() )
-                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, "No scoring system supplied for fastq file. Valid are: PHRED_33, PHRED_64, LOGODDS" ) );
-                
-                if( !Files.exists( Paths.get( f.getFilename() ) ) )
-                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, String.format( "Cannot locate file %s", f.getFilename() ) ) );
-                
-                if( Files.isDirectory( Paths.get( f.getFilename() ) ) )
-                    throw WebinCliException.createUserError( String.format( "Line: %d, %s", line_no, String.format( "Supplied file is a directory %s", f.getFilename() ) ) );
-                
-                files.add( f );
-                break;
-            }
-        }
-        
-        if( null == study_id || study_id.isEmpty() )
-            throw WebinCliException.createUserError( "Study should be defined" );
-        
-        if( null == sample_id || sample_id.isEmpty() )
-            throw WebinCliException.createUserError( "Sample should be defined" );
-        
-        if( null == name || name.isEmpty() )
-            setName( String.format( "%s-%s", "WEBIN-CLI-EXPERIMENT", System.currentTimeMillis() ) );
-        else
-            setName( name );
-        
-        if( null == platform )
-            throw WebinCliException.createUserError( "Platform should be defined" );
-        try
-        {
-            Platforms.valueOf( platform );
-        } catch( Throwable t )
-        {
-            throw WebinCliException.createUserError( "Platform value should be one of " + Arrays.asList( Platforms.values() ) );
-        }
-        
-        this.study_id = study_id;
-        this.sample_id = sample_id;
-        this.platform = platform;
-
-        if( files.isEmpty() )
-            throw WebinCliException.createUserError( "No files supplied" );
-        
-        if( 1 != files.stream().map( e -> e.getFiletype() ).collect( Collectors.toSet() ).size() )
-            throw WebinCliException.createUserError( "Cannot mix following file formats in one manifest: " + Arrays.asList( files.stream().map( e -> e.getFiletype() ).collect( Collectors.toSet() ) ) );
-        
-        long cnt = files.stream().filter( e -> Filetype.fastq == e.getFiletype() ).collect( Collectors.counting() );
-        
-        if( 0 != cnt && 1 != cnt && 2 != cnt )
-            throw WebinCliException.createUserError( "Amount of fastq files can be one for single or paired layout and two for paired layout" );
-        
-        cnt = files.stream().filter( e -> Filetype.bam == e.getFiletype() ).collect( Collectors.counting() );
-        if( 0 != cnt && 1 != cnt )
-            throw WebinCliException.createUserError( "Only one bam file accepted" );
-
-        cnt = files.stream().filter( e -> Filetype.cram == e.getFiletype() ).collect( Collectors.counting() );
-        if( 0 != cnt && 1 != cnt )
-            throw WebinCliException.createUserError( "Only one cram file accepted" );
-
-        this.files = files;
+        rrm.defineFileTypes( getParameters().getInputDir().toPath(), manifest_file );
     }
     
     
@@ -389,6 +189,8 @@ RawReadsWebinCli extends AbstractWebinCli
         
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
+        
+        List<RawReadsFile> files = rrm.getFiles();
         
         for( RawReadsFile rf : files )
         {
@@ -583,6 +385,8 @@ RawReadsWebinCli extends AbstractWebinCli
     {
         try
         {
+            List<RawReadsFile> files = rrm.getFiles().stream().filter( e -> !Filetype.info.equals( e.getFiletype() ) ).collect( Collectors.toList() );
+            
             List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
             Path uploadDir = Paths.get( String.valueOf( ContextE.reads ), getName() );
             files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
@@ -603,7 +407,7 @@ RawReadsWebinCli extends AbstractWebinCli
             //do something
             String experiment_ref = String.format( "exp-%s", getName() );
             
-            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), study_id, sample_id, platform, is_paired );
+            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), rrm, is_paired );
             String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
             
             Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
@@ -651,14 +455,18 @@ RawReadsWebinCli extends AbstractWebinCli
 */
 
     String
-    createExperimentXml( String experiment_ref, String centerName, String study_id, String sample_id, String platform, boolean is_paired ) 
+    createExperimentXml( String experiment_ref, String centerName, RawReadsManifest rrm, boolean is_paired ) 
     {
-        String instrument_model = "unspecified";
+        String instrument_model = rrm.getInstrument();
         String design_description = "unspecified";
-        String library_strategy  = "OTHER";
-        String library_source    = "OTHER";
-        String library_selection = "unspecified";
-        
+        String library_strategy  = rrm.getLibraryStrategy();
+        String library_source    = rrm.getLibrarySource();
+        String library_selection = rrm.getLibrarySelection();
+        String sample_id = rrm.getSampleId();
+        String study_id  = rrm.getStudyId();
+        String platform  = rrm.getPlatform();
+        Integer insert_size = rrm.getInsertSize();
+                
         try 
         {
             String full_name = ContextE.reads.getTitle( getName() );
@@ -706,7 +514,18 @@ RawReadsWebinCli extends AbstractWebinCli
             libraryDescriptorE.addContent( librarySelectionE );
 
             Element libraryLayoutE = new Element( "LIBRARY_LAYOUT" );
-            libraryLayoutE.addContent( new Element( is_paired ? "PAIRED" : "SINGLE" ) );
+            if( !is_paired )
+            {
+                libraryLayoutE.addContent( new Element( "SINGLE" ) );
+            } else
+            {
+                Element pairedE = new Element( "PAIRED" );
+                libraryLayoutE.addContent( pairedE );
+                
+                if( null != insert_size )
+                    pairedE.setAttribute( "NOMINAL_LENGTH", String.valueOf( insert_size ) );
+            }
+
             libraryDescriptorE.addContent( libraryLayoutE );
             
             Element platformE = new Element( "PLATFORM" );
