@@ -39,7 +39,6 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.InfoFileValidator;
-import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.manifest.ManifestFileValidator;
 import uk.ac.ebi.ena.manifest.ManifestFileWriter;
@@ -160,6 +159,14 @@ public class WebinCli {
 	}
 
 	
+	private static String 
+	getFormattedProgramVersion()
+	{
+        String version = WebinCli.class.getPackage().getImplementationVersion();
+        return String.format( "%s:%s\n", WebinCli.class.getSimpleName(), null == version ? "" : version );    
+	}
+	
+	
     public static void 
     main( String... args )
     {
@@ -177,8 +184,7 @@ public class WebinCli {
                 
                 if( found.contains( "-version" ) )
                 {
-                    String version = WebinCli.class.getPackage().getImplementationVersion();
-                    writeMessageIntoConsole( String.format( "%s, version %s\n", WebinCli.class.getSimpleName(), version ) );
+                    writeMessageIntoConsole( getFormattedProgramVersion() );
                     System.exit( SUCCESS );
                 }
 
@@ -436,7 +442,7 @@ public class WebinCli {
                 uploadFileList = getFilesToUpload(submitDirectory, assemblyName);
             }
 		    doFtpUpload(assemblyName, uploadFileList);
-			Submit submit = new Submit(params, submitDirectory, infoValidator.getentry());
+			Submit submit = new Submit( params, submitDirectory, infoValidator.getentry(), getFormattedProgramVersion() );
 			submit.doSubmission();
 		} catch (WebinCliException e) {
 			e.throwAddMessage(SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR);
@@ -466,8 +472,8 @@ public class WebinCli {
         {
             AssemblyInfoEntry aie = new AssemblyInfoEntry();
             aie.setName( "NAME" );
-            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath(), aie );
-            submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName() );
+            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath(), aie, getFormattedProgramVersion() );
+            submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
 
         } catch( WebinCliException e ) 
         {
