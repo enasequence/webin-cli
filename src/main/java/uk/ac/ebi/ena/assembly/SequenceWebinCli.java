@@ -1,7 +1,9 @@
 package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,10 +14,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+
 import uk.ac.ebi.embl.agp.reader.AGPFileReader;
 import uk.ac.ebi.embl.agp.reader.AGPLineReader;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
@@ -72,6 +78,66 @@ SequenceWebinCli extends AbstractWebinCli
         return super.getReportFile( String.valueOf( filetype ), filename );
     }
     
+    
+    protected List<File> 
+    checkFiles( List<File> files, boolean compressed, String...suffixes ) throws ValidationEngineException
+    {
+        for( File f : files )
+        {
+            if( !f.exists() )
+                throw new ValidationEngineException( String.format( "File %s does not exist", f.getPath() ) );
+        
+            if( f.isDirectory() )
+                throw new ValidationEngineException( String.format( "File %s is a directory", f.getPath() ) );
+            
+            if( !f.canRead() )
+                throw new ValidationEngineException( String.format( "Cannot read file %s", f.getPath() ) );
+
+            if( compressed )
+            {
+compression:    do
+                {
+                    try( InputStream is = new FileInputStream( f ) )
+                    {
+                        try( GZIPInputStream gz = new GZIPInputStream( is ) )
+                        {
+                            break compression;
+                        } catch( IOException ioe )
+                        {
+                            try( BZip2CompressorInputStream bz2 = new BZip2CompressorInputStream( is ) )
+                            {
+                                break compression;
+                            }
+                        }
+                    } catch( IOException ioe )
+                    {
+                        throw new ValidationEngineException( String.format( "File %s should be compressed with GZip or with BZip2", f.getPath() ) );
+                    }
+                } while( false );
+            }
+            
+suffix:     while( suffixes.length > 0 )
+            {
+                for( String suffix : suffixes )
+                {
+                    if( compressed )
+                    {
+                        if( f.getName().matches( "^.*\\" + suffix + ".*" ) ) 
+                            break suffix;
+                    } else
+                    {
+                        if( f.getName().endsWith( suffix ) ) 
+                            break suffix;
+                    }    
+                }       
+                throw new ValidationEngineException( String.format( "File %s should have an extention one of %s", f.getPath(), Arrays.asList( suffixes ) ) );
+            }
+        }
+        
+        return files;
+    }
+    
+    
     protected void 
     defineFileTypes( File manifest_file ) throws ValidationEngineException, IOException 
     {
@@ -115,10 +181,10 @@ SequenceWebinCli extends AbstractWebinCli
             }
         }
         
-        this.fastaFiles = fastaFiles;
-        this.flatFiles  = flatFiles;
-        this.agpFiles   = agpFiles;
-        this.tsvFiles   = tsvFiles;
+        this.fastaFiles = checkFiles( fastaFiles, true, ".fasta", ".fa" );
+        this.flatFiles  = checkFiles( flatFiles, true );
+        this.agpFiles   = checkFiles( agpFiles, true, ".agp" );
+        this.tsvFiles   = checkFiles( tsvFiles, true, ".tab", ".tsv" );
     }
 
     
@@ -135,7 +201,6 @@ SequenceWebinCli extends AbstractWebinCli
     
     
     abstract ContextE getContext();
-    abstract boolean  getTestMode();
     
     
     @Override public void 
@@ -146,6 +211,15 @@ SequenceWebinCli extends AbstractWebinCli
             super.init( parameters );
 
             defineFileTypes( getParameters().getManifestFile() );
+            if( null == infoFile )
+                throw WebinCliException.createUserError( "Info file not defined" );
+            
+            if( !infoFile.exists() )
+                throw WebinCliException.createUserError( String.format( "Info %s file does not exist", infoFile.getPath() ) );
+            
+            if( infoFile.isDirectory() )
+                throw WebinCliException.createUserError( String.format( "Info %s file is directory", infoFile.getPath() ) );
+
             setAssemblyInfo( defineInfo( infoFile ) );
             setName( getAssemblyInfo().getName().trim().replaceAll( "\\s+", "_" ) );
             

@@ -47,7 +47,6 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
     private final static String TEMPLATE_ACCESSION_LINE = "#template_accession";
     private boolean FAILED_VALIDATION;
     private final static int MAX_SEQUENCE_COUNT = 100000;
-    private boolean TEST;
     private StringBuilder resultsSb;
 
 
@@ -56,7 +55,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
 
     public StringBuilder validateTestTsv(String submittedFile) throws ValidationEngineException {
         resultsSb = new StringBuilder();
-        TEST = true;
+        setTestMode( true );
         validateTsvFile( new File( submittedFile ) );
         return resultsSb;
     }
@@ -104,7 +103,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
                     List<ValidationMessage<Origin>> validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
                     if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
                         FAILED_VALIDATION = true;
-                        if (TEST) {
+                        if ( getTestMode() ) {
                             for( ValidationMessage<?> validationMessage: validationMessagesList)
                                 resultsSb.append("ERROR: Sequence " + csvLine.getLineNumber().toString() + ": " + validationMessage.getMessage() + "\n");
                         } else
@@ -114,7 +113,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
             }
         } catch (TemplateUserError e) {
             FAILED_VALIDATION = true;
-            if (TEST)
+            if ( getTestMode() )
                 resultsSb.append(e.getMessage());
             else
                 FileUtils.writeReport(reportFile, Severity.ERROR, e.getMessage());
@@ -224,12 +223,5 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
     getContext()
     {
         return ContextE.sequence;
-    }
-
-    
-    @Override boolean
-    getTestMode()
-    {
-        return TEST;
     }
 }

@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 
@@ -22,6 +23,7 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
@@ -63,7 +65,8 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ PHRED_33 " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
         rr.init( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -324,7 +327,8 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }
@@ -333,8 +337,8 @@ RawReadsWebinCliTest
     private String
     getInfoPart()
     {
-        return    RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
+        return    RawReadsManifestTags.STUDY             + " ERP109454\n"
+                + RawReadsManifestTags.SAMPLE            + " ERS2713291\n"
                 + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
                 + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
                 + RawReadsManifestTags.INSERT_SIZE       + " 1\n"
@@ -360,6 +364,9 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
+        
         rr.init( parameters );
         
         Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
@@ -384,7 +391,8 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ GZ PHRED_33 " + file ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }
@@ -404,7 +412,8 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ GZ PHRED_33 " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
         Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
@@ -428,7 +437,8 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
         Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
@@ -452,7 +462,8 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }

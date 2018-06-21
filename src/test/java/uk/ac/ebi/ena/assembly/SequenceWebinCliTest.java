@@ -45,7 +45,7 @@ SequenceWebinCliTest
         SequenceWebinCli s = new SequenceWebinCli() 
         {
             @Override public boolean validateInternal() throws ValidationEngineException { return true; }
-            @Override boolean getTestMode() { return true; }
+            @Override public boolean getTestMode() { return true; }
             @Override ContextE getContext() { return ContextE.genome; }
 			@Override public File getSubmissionBundleFileName() { return null; }
         };

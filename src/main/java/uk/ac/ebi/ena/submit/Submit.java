@@ -54,13 +54,14 @@ public class Submit {
     private final boolean TEST;
     private String submitDir;
     private String centerName;
+    private String submission_tool;
 
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit. ";
 
-    public Submit(WebinCli.Params params, String submitDir, AssemblyInfoEntry assemblyInfoEntry ) {
+    public Submit(WebinCli.Params params, String submitDir, AssemblyInfoEntry assemblyInfoEntry, String submission_tool ) {
         try {
             this.contextE = ContextE.valueOf(params.context);
         } catch (IllegalArgumentException e) {
@@ -74,6 +75,7 @@ public class Submit {
         this.sample = assemblyInfoEntry.getSampleId();
         this.assemblyName = assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_");
         this.centerName = params.centerName;
+        this.submission_tool = submission_tool;
     }
 
 
@@ -83,7 +85,7 @@ public class Submit {
         File file = createAnalysisXml().toFile(); 
         try
         {
-            doSubmission( Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, file, FileUtils.calculateDigest( "MD5", file ) ) ), centerName );
+            doSubmission( Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, file, FileUtils.calculateDigest( "MD5", file ) ) ), centerName, submission_tool );
         } catch( NoSuchAlgorithmException | IOException e )
         {
             throw WebinCliException.createSystemError( e.getMessage() );
@@ -92,24 +94,28 @@ public class Submit {
             
     
     public void 
-    doSubmission( List<SubmissionXMLFile> payload_list, String centerName ) 
+    doSubmission( List<SubmissionXMLFile> payload_list, String centerName, String submission_tool ) 
     {
         try
         {
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost( TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/" : "https://www.ebi.ac.uk/ena/submit/drop-box/submit/" );
+ 
             String encoding = Base64.getEncoder().encodeToString( ( userName + ":" + password ).getBytes() );
             httpPost.setHeader( "Authorization", "Basic " + encoding );
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             
             for( SubmissionXMLFile p: payload_list )
                 builder.addBinaryBody( String.valueOf( p.getType() ), new FileInputStream( p.getFile() ), ContentType.APPLICATION_OCTET_STREAM, p.getFile().getName() );
-            
+
             builder.addTextBody( "ACTION", "ADD" );                
             
             if( null != centerName && !centerName.isEmpty() )
                 builder.addTextBody( "CENTER_NAME", centerName );
-            
+           
+            if( null != submission_tool && !submission_tool.isEmpty() )
+                builder.addTextBody( "ENA_SUBMISSION_TOOL", submission_tool );
+
             HttpEntity multipart = builder.build();
             httpPost.setEntity( multipart );
             CloseableHttpResponse response = httpClient.execute( httpPost );

@@ -39,7 +39,6 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.InfoFileValidator;
-import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.manifest.ManifestFileValidator;
 import uk.ac.ebi.ena.manifest.ManifestFileWriter;
@@ -160,6 +159,14 @@ public class WebinCli {
 	}
 
 	
+	private static String 
+	getFormattedProgramVersion()
+	{
+        String version = WebinCli.class.getPackage().getImplementationVersion();
+        return String.format( "%s:%s\n", WebinCli.class.getSimpleName(), null == version ? "" : version );    
+	}
+	
+	
     public static void 
     main( String... args )
     {
@@ -177,8 +184,7 @@ public class WebinCli {
                 
                 if( found.contains( "-version" ) )
                 {
-                    String version = WebinCli.class.getPackage().getImplementationVersion();
-                    writeMessageIntoConsole( String.format( "%s, version %s\n", WebinCli.class.getSimpleName(), version ) );
+                    writeMessageIntoConsole( getFormattedProgramVersion() );
                     System.exit( SUCCESS );
                 }
 
@@ -224,7 +230,7 @@ public class WebinCli {
     }
 
   
-    private void 
+    void 
     init( Params params ) throws Exception, IOException, FileNotFoundException, ValidationEngineException 
     {
         this.params = params;
@@ -266,12 +272,14 @@ public class WebinCli {
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
-
+        validator.setTestMode( params.test );
 		validator.init( parameters );
     }
     
 
-	private void execute() {
+	void 
+	execute()
+	{
 		try {
 			contextE = ContextE.valueOf(params.context);
 		} catch (IllegalArgumentException e) {
@@ -348,7 +356,7 @@ public class WebinCli {
                 File submitDirectory = createSubmitDirectory( assemblyName );
                 // Gzip the files validated directory.
     			for( ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects() )
-                    FileUtils.gZipFile( Paths.get( manifestObj.getFileName() ).toFile() );
+                    manifestObj.setFileName( FileUtils.gZipFile( Paths.get( manifestObj.getFileName() ).toFile() ).getPath() );
     			// Create the manifest in the submit directory.
     			new ManifestFileWriter().write( new File( submitDirectory.getAbsolutePath() + File.separator + assemblyName + ".manifest"), manifestValidator.getReader().getManifestFileObjects() );
             }		
@@ -436,7 +444,7 @@ public class WebinCli {
                 uploadFileList = getFilesToUpload(submitDirectory, assemblyName);
             }
 		    doFtpUpload(assemblyName, uploadFileList);
-			Submit submit = new Submit(params, submitDirectory, infoValidator.getentry());
+			Submit submit = new Submit( params, submitDirectory, infoValidator.getentry(), getFormattedProgramVersion() );
 			submit.doSubmission();
 		} catch (WebinCliException e) {
 			e.throwAddMessage(SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR);
@@ -466,8 +474,8 @@ public class WebinCli {
         {
             AssemblyInfoEntry aie = new AssemblyInfoEntry();
             aie.setName( "NAME" );
-            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath(), aie );
-            submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName() );
+            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath(), aie, getFormattedProgramVersion() );
+            submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
 
         } catch( WebinCliException e ) 
         {
@@ -581,25 +589,32 @@ public class WebinCli {
 		}
 	}
 
-	@Deprecated public static String peekInfoFileForName(String info) throws Exception {
-		try( InputStream fileIs = Files.newInputStream(Paths.get(info) );
-		     BufferedInputStream bufferedIs = new BufferedInputStream(fileIs);
-		     GZIPInputStream gzipIs = new GZIPInputStream(bufferedIs);
-		     BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs) ); )
+	@Deprecated public static String 
+	peekInfoFileForName(String info) throws Exception 
+	{
+		try( BufferedInputStream fileIs = new BufferedInputStream( Files.newInputStream( Paths.get( info ) ) ) )
 		{
-    		Optional<String> optional = reader.lines().filter(line -> line.toUpperCase().startsWith(NAME_FIELD))
-    				.findFirst();
+		    fileIs.mark( (int)Files.size( Paths.get( info ) ) );
+		    BufferedReader reader = new BufferedReader( new InputStreamReader( fileIs, StandardCharsets.UTF_8 ) );
+			try
+    		{
+			    reader = new BufferedReader( new InputStreamReader( new GZIPInputStream( fileIs ), StandardCharsets.UTF_8 ) );   
+    		} catch( ZipException ioe )
+			{
+    		    fileIs.reset();
+			}
+    		Optional<String> optional = reader.lines()
+    		                                  .filter( line -> line.toUpperCase().startsWith( NAME_FIELD ) )
+    		                                  .findFirst();
     		if (optional.isPresent())
     			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
     		else
     			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
+    		
 		} catch( NoSuchFileException no )
 		{
 		    throw WebinCliException.createUserError( String.format( "%s %s", "Unable to locate file", info ) );
-		} catch( ZipException ze )
-		{
-		    throw WebinCliException.createUserError( String.format( "%s %s", ze.getMessage(), info ) );
-		}
+		} 
 	}
 
 	private static void checkVersion( boolean test ) {
