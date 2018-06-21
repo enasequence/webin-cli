@@ -92,7 +92,7 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 	@Override
 	public boolean validate() throws ValidationEngineException {
 		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-			reportFile = FileUtils.createReportFile( reportDir, submittedFile );
+			reportFile = FileUtils.createReportFile( reportDir,submittedFile );
 			validateFlatFile();
 		} else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
 			reportFile = FileUtils.createReportFile( reportDir, submittedFile );

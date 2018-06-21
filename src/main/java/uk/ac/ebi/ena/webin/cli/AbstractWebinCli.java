@@ -31,6 +31,7 @@ AbstractWebinCli
     private String name; 
     private ValidationResult   validationResult;
     private WebinCliParameters parameters = new WebinCliParameters();
+    private boolean test_mode;
 
     
     public void 
@@ -163,5 +164,20 @@ AbstractWebinCli
     setName( String name )
     {
         this.name = name;
+    }
+
+
+    public void 
+    setTestMode( boolean test_mode )
+    {
+        this.test_mode = test_mode;
+    }
+    
+    
+    public boolean 
+    getTestMode()
+    {
+        return this.test_mode;
+        
     }
 }

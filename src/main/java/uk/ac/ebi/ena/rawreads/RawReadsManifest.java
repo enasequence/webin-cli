@@ -29,7 +29,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 public class
 RawReadsManifest
 {
-    interface 
+    public interface 
     RawReadsManifestTags
     {
         String LIBRARY_SELECTION = "LIBRARY_SELECTION";

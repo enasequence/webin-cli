@@ -12,6 +12,21 @@ repositories {
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
 
+test {
+	jvmArgs "-Dfile.encoding=UTF-8"
+    environment 'webin-cli-password', webinCliPassword
+	environment 'webin-cli-username', webinCliUsername
+}
+
+
+task printProps {
+    doLast {
+        println webinCliPassword
+        println webinCliUsername
+    }
+}
+
+
 jar {
     from {
         configurations.compile.collect {

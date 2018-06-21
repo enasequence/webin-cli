@@ -49,6 +49,8 @@ import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
+import uk.ac.ebi.ena.sample.Sample;
+import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
@@ -68,11 +70,12 @@ RawReadsWebinCli extends AbstractWebinCli
     RawReadsManifest rrm = new RawReadsManifest();
     private String  experiment_ref;
     private boolean valid;
-    private boolean test_mode;
     private File    submit_dir;
     private File    validate_dir;
     //TODO value should be estimated via validation
     private boolean is_paired;
+    private boolean verify_sample = true;
+    private boolean verify_study  = true;
     
     
     @Override public void 
@@ -99,6 +102,34 @@ RawReadsWebinCli extends AbstractWebinCli
     }
     
 
+    public boolean 
+    getVerifyStudy()
+    {
+        return verify_study;
+    }
+
+
+    public boolean 
+    getVerifySample()
+    {
+        return verify_sample;
+    }
+
+
+    public void 
+    setVerifySample( boolean verify_sample )
+    {
+        this.verify_sample = verify_sample;
+    }
+    
+    
+    public void 
+    setVerifyStudy( boolean verify_study )
+    {
+        this.verify_study = verify_study;
+    }
+
+    
     void
     defineFileTypes( File manifest_file ) throws IOException
     {
@@ -119,21 +150,6 @@ RawReadsWebinCli extends AbstractWebinCli
         this.validate_dir = validate_dir; 
     }
 
-
-    public void 
-	setTestMode( boolean test_mode ) 
-	{
-	    this.test_mode = test_mode;
-	}
-	
-
-	public boolean 
-	getTestMode() 
-	{
-		return test_mode;
-	}
-
-	
 
     DataFeederException 
     read( InputStream is, String name, final QualityNormalizer normalizer, AtomicLong reads_cnt ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
@@ -186,6 +202,12 @@ RawReadsWebinCli extends AbstractWebinCli
         
         if( !FileUtils.emptyDirectory( submit_dir ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + submit_dir );
+        
+        if( getVerifySample() )
+            Sample.getSample( rrm.getSampleId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
+        
+        if( getVerifyStudy() )
+            Study.getStudy( rrm.getStudyId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
         
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();

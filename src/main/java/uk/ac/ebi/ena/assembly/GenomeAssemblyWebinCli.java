@@ -71,7 +71,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	private HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<String, List<Qualifier>>();
 	private String sequencelessChromosomesCheck= "ChromosomeListSequenelessCheck";
 	private String molType = "genomic DNA";
-	private boolean test;
     private boolean valid;
 
 	
@@ -85,7 +84,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	public 
 	GenomeAssemblyWebinCli( boolean test_mode )
 	{
-	    this.test = test_mode;
+	    setTestMode( test_mode );
 	}
 	
 	
@@ -117,7 +116,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	        boolean test )
 	{
 		__init( manifestFileReader, sample, study, molType );
-		this.test = test;
+		setTestMode( test ); 
 	}
 
 	
@@ -147,7 +146,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 			valid = valid && validateAgpFiles( property );
 		    valid = valid && validateSequenceLessChromosomes( chromosomeListFile );
 
-			if( !test )
+			if( !getTestMode() )
 				deleteFixedFiles( valid );
 			
 			this.valid = valid; 
@@ -594,12 +593,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
     }
 
 
-    @Override boolean 
-    getTestMode()
-    {
-        return test;
-    }
-    
     public static List<Qualifier> getChromosomeQualifier(ChromosomeEntry entry,boolean isVirus)
 	{
 		String chromosomeType = entry.getChromosomeType();
