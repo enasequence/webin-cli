@@ -67,7 +67,7 @@ SequenceWebinCliTest
     @Test public void 
     testAssemblywithAGP() throws Exception 
     {
-        SequenceWebinCli s = new GenomeAssemblyWebinCli();
+        SequenceWebinCli s = new GenomeAssemblyWebinCli( true );
 
         Path fasta_file = Files.write( File.createTempFile( "FASTA", "FASTA" ).toPath(), ">123\nACGT".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
         s.getParameters().setInputDir( fasta_file.getParent().toFile() );

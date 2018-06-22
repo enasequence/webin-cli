@@ -20,6 +20,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
+import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Compression;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
@@ -43,6 +44,7 @@ RawReadsManifest
         String LIBRARY_CONSTRUCTION_PROTOCOL = "LIBRARY_CONSTRUCTION_PROTOCOL";
         String INSTRUMENT = "INSTRUMENT";
         String LIBRARY_NAME = "LIBRARY_NAME";
+        String __HORIZON = "__HORIZON";
         
     }
 
@@ -137,6 +139,7 @@ RawReadsManifest
     private String platform = null;
     private List<RawReadsFile> files;
     private Integer insert_size;
+    private Integer pairing_horizon = 1000;
     private String library_construction_protocol;
     private String library_name;
     private String instrument;
@@ -144,10 +147,9 @@ RawReadsManifest
     private String library_selection;
     private String library_strategy;
 
-
     
     RawReadsFile
-    parseFileLine( Path input_dir, String[] tokens )
+    parseFileLine( Path input_dir, String[] tokens ) throws ValidationEngineException
     {
         RawReadsFile result = new RawReadsFile();
         result.setInputDir( input_dir );
@@ -156,12 +158,15 @@ RawReadsManifest
         for( String token : tokens )
         {
             token = token.trim();
-            switch( token )
+            switch( token.toUpperCase() )
             {
             case "INFO":
             case "FASTQ":
             case "BAM":
             case "CRAM":
+                if( null != result.getFiletype() )
+                    throw new ValidationEngineException( "File type appeared more than once" );
+                
                 result.setFiletype( Filetype.valueOf( token.toLowerCase() ) );
                 break;
                 
@@ -193,7 +198,11 @@ RawReadsManifest
             
             default:
                 if( null != token && !token.isEmpty() )
+                {
+                    if( null != result.getFilename() )
+                        throw new ValidationEngineException( "File name appeared more than once" );
                     result.setFilename( token );
+                }
             }
         }
         
@@ -318,9 +327,22 @@ RawReadsManifest
             String token0 = tokens[ 0 ].trim();
             if( null != token0 && token0.matches( "^[\\s]*(#|;|\\/\\/).*$" ) )
                 continue;
-                
+            
+            token0 = token0.toUpperCase();
             switch( token0 )
             {
+            case RawReadsManifestTags.__HORIZON:
+                try
+                {
+                    pairing_horizon = Integer.valueOf( tokens[ 1 ] );
+                    if( pairing_horizon < 0 )
+                        reportUserError( source, line_no, "Non-negative integer expected" );
+                    break;
+                } catch( NumberFormatException nfe )
+                {
+                    reportUserError( source, line_no, "Non-negative integer expected" );
+                }
+            
             //paired with PLATFORM
             case RawReadsManifestTags.INSTRUMENT:
                 if( null == instrument )
@@ -403,8 +425,6 @@ RawReadsManifest
                 reportTokenDuplication( source, line_no, token0 );
             
             case RawReadsManifestTags.SAMPLE:
-//            case "SAMPLE-ID":
-//            case "SAMPLE_ID":
                 if( null == sample_id )
                 {
                     sample_id = tokens[ 1 ];
@@ -413,8 +433,6 @@ RawReadsManifest
                 reportTokenDuplication( source, line_no, token0 );
 
             case RawReadsManifestTags.STUDY:
-//            case "STUDY-ID":
-//            case "STUDY_ID":
                 if( null == study_id )
                 {
                     study_id = tokens[ 1 ];
@@ -441,7 +459,15 @@ RawReadsManifest
                 reportTokenDuplication( source, line_no, token0 );
 
             default:
-                RawReadsFile f = parseFileLine( input_dir, line.split( "\\s+" ) );
+                RawReadsFile f = null;
+                try
+                {
+                    f = parseFileLine( input_dir, line.split( "\\s+" ) );
+                } catch( ValidationEngineException vee )
+                {
+                    reportUserError( source, line_no, vee.getMessage() );
+                    break;
+                }
                 if( null == f.getFilename() || f.getFilename().isEmpty() )
                     reportUserError( source, line_no, "Filename not supplied" );
                 
@@ -455,9 +481,6 @@ RawReadsManifest
                     reportUserError( source, line_no, "Scoring system not supported for types " + Filetype.bam + " and " + Filetype.cram );
 
                 //TODO externalise scoring types
-                if( Filetype.fastq == f.getFiletype() && null == f.getQualityScoringSystem() )
-                    reportUserError( source, line_no, "No scoring system supplied for fastq file. Valid are: PHRED_33, PHRED_64, LOGODDS" );
-                
                 if( !Files.exists( Paths.get( f.getFilename() ) ) )
                     reportUserError( source, line_no, String.format( "Cannot locate file %s", f.getFilename() ) );
                 
@@ -501,6 +524,12 @@ RawReadsManifest
                                                                     tag_name, 
                                                                     null != value_list ? " Possible values: " + value_list.stream().collect( Collectors.joining( ", " ) ) : "" ) );
     }
-
+    
+    
+    public Integer 
+    getPairingHorizon()
+    {
+        return pairing_horizon;
+    }
 
 }

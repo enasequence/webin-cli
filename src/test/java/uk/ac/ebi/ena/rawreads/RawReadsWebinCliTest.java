@@ -23,6 +23,7 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -395,8 +396,150 @@ RawReadsWebinCliTest
         rr.setVerifyStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
+        String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+                                   StandardCharsets.UTF_8 );
+        Assert.assertTrue( lines.contains( "<SINGLE />" ) );
     }
     
+    
+    @Test(expected = WebinCliException.class) public void
+    sameFilePairedFastq() throws IOException, ValidationEngineException
+    {
+        RawReadsWebinCli rr = new RawReadsWebinCli();
+        
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz" );
+        Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setCenterName( "C E N T E R N A M E" );
+        parameters.setInputDir( createOutputFolder() );
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                                 ( getInfoPart() 
+                                                 + "FASTQ " + file + "\n"
+                                                 + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
+                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
+        rr.init( parameters );
+        Assert.assertTrue( "Should validate correctly", rr.validate() );
+    }
+    
+    
+    @Test(expected = WebinCliException.class) public void
+    samePairedFastq() throws IOException, ValidationEngineException
+    {
+        RawReadsWebinCli rr = new RawReadsWebinCli();
+        
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.TXT.GZ" );
+        Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setCenterName( "C E N T E R N A M E" );
+        parameters.setInputDir( createOutputFolder() );
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                                 ( getInfoPart() 
+                                                 + "FASTQ " + file + "\n"
+                                                 + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
+                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
+        rr.init( parameters );
+        Assert.assertTrue( "Should validate correctly", rr.validate() );
+    }
+    
+    
+    @Test public void
+    pairedFastq() throws IOException, ValidationEngineException
+    {
+        RawReadsWebinCli rr = new RawReadsWebinCli();
+        
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.TXT.GZ" );
+        Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setCenterName( "C E N T E R N A M E" );
+        parameters.setInputDir( createOutputFolder() );
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                                 ( getInfoPart() 
+                                                 + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
+                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
+        rr.init( parameters );
+        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+                                   StandardCharsets.UTF_8 );
+        Assert.assertTrue( lines.contains( "<PAIRED" ) );
+    }
+    
+    
+    @Test public void
+    fastqPair() throws IOException, ValidationEngineException
+    {
+        RawReadsWebinCli rr = new RawReadsWebinCli();
+        
+        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.TXT.GZ" );
+        Path file1 = Paths.get( new File( url1.getFile() ).getCanonicalPath() );
+        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.TXT.GZ" );
+        Path file2 = Paths.get( new File( url2.getFile() ).getCanonicalPath() );
+
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setCenterName( "C E N T E R N A M E" );
+        parameters.setInputDir( createOutputFolder() );
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                                 ( getInfoPart() 
+                                                 + "FASTQ " + file1 + "\n" 
+                                                 + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
+                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
+        rr.init( parameters );
+        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+                                    StandardCharsets.UTF_8 );
+        Assert.assertTrue( rlines.contains( file1.getFileName().toString() ) );
+        Assert.assertTrue( rlines.contains( file2.getFileName().toString() ) );
+        
+        String elines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+                                   StandardCharsets.UTF_8 );
+        Assert.assertTrue( elines.contains( "<PAIRED" ) );
+    }
+    
+    
+    @Test( expected = WebinCliException.class ) public void
+    fastqFalsePair() throws IOException, ValidationEngineException
+    {
+        RawReadsWebinCli rr = new RawReadsWebinCli();
+        
+        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_P1.TXT.GZ" );
+        Path file1 = Paths.get( new File( url1.getFile() ).getCanonicalPath() );
+        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_P2.TXT.GZ" );
+        Path file2 = Paths.get( new File( url2.getFile() ).getCanonicalPath() );
+
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setCenterName( "C E N T E R N A M E" );
+        parameters.setInputDir( createOutputFolder() );
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                                 ( getInfoPart() 
+                                                 + "FASTQ " + file1 + "\n" 
+                                                 + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
+                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+        rr.setVerifySample( false );
+        rr.setVerifyStudy( false );
+        rr.init( parameters );
+        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+                                    StandardCharsets.UTF_8 );
+        Assert.assertTrue( rlines.contains( file1.getFileName().toString() ) );
+        Assert.assertTrue( rlines.contains( file2.getFileName().toString() ) );
+        
+        String elines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+                                   StandardCharsets.UTF_8 );
+        Assert.assertTrue( elines.contains( "<PAIRED" ) );
+    }
+
     
     @Test public void
     testIncorrectFastq() throws IOException, ValidationEngineException
