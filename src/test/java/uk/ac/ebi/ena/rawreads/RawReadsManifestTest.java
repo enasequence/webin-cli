@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
@@ -32,7 +33,7 @@ RawReadsManifestTest
     
     
     @Test public void
-    parseFileLineTest()
+    parseFileLineTest() throws ValidationEngineException
     {
         RawReadsManifest rr = new RawReadsManifest();
         

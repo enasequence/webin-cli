@@ -93,7 +93,7 @@ SequenceWebinCli extends AbstractWebinCli
             if( !f.canRead() )
                 throw new ValidationEngineException( String.format( "Cannot read file %s", f.getPath() ) );
 
-            if( compressed )
+            if( !getTestMode() && compressed )
             {
 compression:    do
                 {
@@ -115,7 +115,9 @@ compression:    do
                     }
                 } while( false );
             }
-            
+
+if( !getTestMode() )
+{            
 suffix:     while( suffixes.length > 0 )
             {
                 for( String suffix : suffixes )
@@ -133,7 +135,7 @@ suffix:     while( suffixes.length > 0 )
                 throw new ValidationEngineException( String.format( "File %s should have an extention one of %s", f.getPath(), Arrays.asList( suffixes ) ) );
             }
         }
-        
+ }       
         return files;
     }
     

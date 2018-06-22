@@ -2,7 +2,6 @@ package uk.ac.ebi.ena.rawreads;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -12,12 +11,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -39,7 +43,6 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.frankenstein.loader.common.FileCompression;
 import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
 import uk.ac.ebi.ena.frankenstein.loader.common.eater.DataEaterException;
 import uk.ac.ebi.ena.frankenstein.loader.common.eater.NullDataEater;
@@ -152,12 +155,10 @@ RawReadsWebinCli extends AbstractWebinCli
 
 
     DataFeederException 
-    read( InputStream is, String name, final QualityNormalizer normalizer, AtomicLong reads_cnt ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
+    read( InputStream is, String stream_name, final QualityNormalizer normalizer, AtomicLong reads_cnt, Set<String> names, Set<String>labels ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
     {
         AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
         {
-//            final AtomicLong line_no = new AtomicLong( 1 );
-//            final AtomicReference<DataSpot.ReadStyle> read_style = new AtomicReference<DataSpot.ReadStyle>();
             DataSpotParams params = DataSpot.defaultParams();
             
             @Override protected DataSpot 
@@ -167,32 +168,32 @@ RawReadsWebinCli extends AbstractWebinCli
             }
         };
         
-        df.setName( name );
-        df.setEater( new NullDataEater<DataSpot>() {
+        df.setName( stream_name );
+        
+        df.setEater( new NullDataEater<DataSpot>() 
+        {
             @Override public void
-            eat( DataSpot object ) throws DataEaterException
+            eat( DataSpot spot ) throws DataEaterException
             {
-                reads_cnt.incrementAndGet();
-            }  } );
+                int slash_idx = spot.bname.lastIndexOf( '/' );
+                String name = slash_idx == -1 ? spot.bname 
+                                              : spot.bname.substring( 0, slash_idx );
+                String label = slash_idx == -1 ? stream_name
+                                               : spot.bname.substring( slash_idx + 1 );
+                
+                if( reads_cnt.incrementAndGet() <= rrm.getPairingHorizon() )
+                    names.add( name );
+                
+                if( labels.size() < rrm.getPairingHorizon() )
+                    labels.add( label );
+            }  
+        } );
+        
         df.start();
         df.join();
         return df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause(); 
     }
     
-    
-    Throwable 
-    read( File file, final QualityNormalizer normalizer, AtomicLong reads_cnt ) throws Exception
-    {
-        InputStream is = new BufferedInputStream( new FileInputStream( file ) );
-        try
-        {
-            return read( is, file.getPath(), normalizer, reads_cnt );
-        } finally
-        {
-            is.close();
-        }
-    }
-
 
     @Override public boolean
     validate() throws ValidationEngineException
@@ -250,47 +251,89 @@ RawReadsWebinCli extends AbstractWebinCli
     }
     
     
+    InputStream 
+    openFileInputStream( Path path )
+    {
+        final int marksize = 256;
+        BufferedInputStream is = null;
+        try 
+        {
+            is = new BufferedInputStream( Files.newInputStream( path ) );
+            is.mark( marksize );
+            try
+            {
+                return new GZIPInputStream( is );
+            } catch( IOException gzip )
+            {
+                is.reset();
+                try
+                {
+                    is.mark( marksize );
+                    return new BZip2CompressorInputStream( is );
+                } catch( IOException bzip )
+                {
+                    is.reset();
+                    return is;
+                }
+            }
+        } catch( IOException ioe )
+        {
+            throw WebinCliException.createSystemError( ioe.getMessage() );
+        }
+    }
+    
+    
     private boolean
     readFastqFile( List<RawReadsFile> files, AtomicBoolean paired )
     {
         boolean valid = true;
         ValidationResult vr = new ValidationResult();
         QualityNormalizer qn = QualityNormalizer.NONE;
-
+        List<Set<String>> names = new ArrayList<>( files.size() );
+        List<Set<String>> labels = new ArrayList<>( files.size() );
+        
         for( RawReadsFile rf : files )
         {
             File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
-            try( InputStream is = FileCompression.valueOf( String.valueOf( rf.getCompression() ) ).open( rf.getFilename(), false ) )
+            try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
             {
-                switch( rf.getQualityScoringSystem() )
+                if( null != rf.getQualityScoringSystem() )
                 {
-                default:
-                    throw WebinCliException.createSystemError( "Scoring system: " + String.valueOf( rf.getQualityScoringSystem() ) );
-                    
-                case phred:
-                    switch( rf.getAsciiOffset() )
+                    switch( rf.getQualityScoringSystem() )
                     {
                     default:
-                        throw WebinCliException.createSystemError( "ASCII offset: " + String.valueOf( rf.getAsciiOffset() ) );
-                        
-                    case FROM33:
-                        qn = QualityNormalizer.X;
+                        throw WebinCliException.createSystemError( "Scoring system: " + String.valueOf( rf.getQualityScoringSystem() ) );
+    
+                    case phred:
+                        switch( rf.getAsciiOffset() )
+                        {
+                        default:
+                            throw WebinCliException.createSystemError( "ASCII offset: " + String.valueOf( rf.getAsciiOffset() ) );
+                            
+                        case FROM33:
+                            qn = QualityNormalizer.X;
+                            break;
+                            
+                        case FROM64:
+                            qn = QualityNormalizer.X_2;
+                            break;
+                        }
                         break;
                         
-                    case FROM64:
-                        qn = QualityNormalizer.X_2;
+                    case log_odds:
+                        qn = QualityNormalizer.SOLEXA;
                         break;
+                        
                     }
-                    break;
-                    
-                case log_odds:
-                    qn = QualityNormalizer.SOLEXA;
-                    break;
-                    
                 }
-                
                 AtomicLong reads_cnt = new AtomicLong();
-                DataFeederException t = read( is, rf.getFilename(), qn, reads_cnt );
+                Set<String> nameset  = new HashSet<>( rrm.getPairingHorizon() );
+                Set<String> labelset = new HashSet<>( rrm.getPairingHorizon() );
+                
+                names.add( nameset );
+                labels.add( labelset );
+                
+                DataFeederException t = read( is, rf.getFilename(), qn, reads_cnt, nameset, labelset );
                                 
                 if( null != t )
                 {
@@ -304,19 +347,83 @@ RawReadsWebinCli extends AbstractWebinCli
     
                 FileUtils.writeReport( reportFile, vr );
                 FileUtils.writeReport( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt.get() );
-        
+                FileUtils.writeReport( reportFile, Severity.INFO, "Collected " + labelset.size() +" read pair label(s): " + ( labelset.size() < 10 ? labelset : "" ) );
             } catch( Exception e )
             {
                 throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
             }
         }
         
-        //TODO: implement properly
-        paired.set( 2 == files.size() );
+        //check paired
+        if( valid )
+        {
+            if( 2 == files.size() )
+            {
+                Set<String> n0 = names.get( 0 );
+                Set<String> n1 = names.get( 1 );
+                int max_size = Math.max( n0.size(), n1.size() );
+                int resulted_size = max_size;
+                if( n0.size() > n1.size() )
+                {
+                    n0.removeAll( n1 );
+                    resulted_size = n0.size();
+                } else
+                {
+                    n1.removeAll( n0 );
+                    resulted_size = n1.size();
+                }
                 
+                if( resulted_size >= ( max_size / 2 ) )
+                    throw WebinCliException.createValidationError( "Fastq files from different runs are submitted: " + files );
+                
+                
+                if( labels.get( 0 ).containsAll( labels.get( 1 ) ) 
+                 && labels.get( 1 ).containsAll( labels.get( 0 ) ) )
+                {
+                    valid = false;
+                    throw WebinCliException.createValidationError( "Same fastq files are submitted: " + files );
+                }
+                
+                for( int index = 0; index < files.size(); ++ index )
+                {
+                    if( getPaired( labels.get( index ) ) )
+                    {
+                        valid = false;
+                        throw WebinCliException.createValidationError( "Paired fastq file should be single file in submission: " + files.get( index ) );
+                    }
+                }
+                
+                paired.set( true );
+                
+            } else if( 1 == files.size() )
+            {
+                paired.set( getPaired( labels.get( 0 ) ) );
+            } else
+            {
+                valid = false;
+                throw WebinCliException.createValidationError( "Unable to validate unusual amount of files: " + files ); 
+            }
+        }
         return valid;
     }
 
+
+    private boolean
+    getPaired( Set<String> labelset )
+    {
+        if( 1 == labelset.size() )
+        {
+            return false;
+        } else if( 2 == labelset.size() )
+        {
+            return true;
+        } else
+        {
+            throw WebinCliException.createValidationError( "Unable to determine pairing from set: " + labelset.stream().limit( 10 ).collect( Collectors.joining( ",", "", 10 < labelset.size() ? "..." : "" ) ) );    
+        }
+
+    }
+    
 
     private boolean
     readBamFile( List<RawReadsFile> files, AtomicBoolean paired ) throws ValidationEngineException
