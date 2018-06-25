@@ -338,6 +338,10 @@ RawReadsManifest
                     if( pairing_horizon < 0 )
                         reportUserError( source, line_no, "Non-negative integer expected" );
                     break;
+                } catch( ArrayIndexOutOfBoundsException a )
+                {
+                    ;// ignore - optional
+                    break;
                 } catch( NumberFormatException nfe )
                 {
                     reportUserError( source, line_no, "Non-negative integer expected" );
@@ -347,10 +351,13 @@ RawReadsManifest
             case RawReadsManifestTags.INSTRUMENT:
                 if( null == instrument )
                 {
-                    if( !ControlledValueList.Instrument.contains( tokens[ 1 ] ) )
+                    if( tokens.length < 2 && !ControlledValueList.Instrument.contains( tokens[ 1 ] ) )
+                    {
                         reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Instrument.keyList() );
-                    
-                    instrument = ControlledValueList.Instrument.getKey( tokens[ 1 ] );
+                    } else
+                    {
+                        instrument = ControlledValueList.Instrument.getKey( tokens[ 1 ] );
+                    }
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -359,7 +366,7 @@ RawReadsManifest
             case RawReadsManifestTags.LIBRARY_NAME:
                 if( null == library_name )
                 {
-                    library_name = tokens[ 1 ];
+                    library_name = tokens.length >= 2 ? tokens[ 1 ] : null;
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -367,10 +374,13 @@ RawReadsManifest
             case RawReadsManifestTags.LIBRARY_SOURCE:
                 if( null == library_source )
                 {
-                    if( !ControlledValueList.Source.contains( tokens[ 1 ] ) )
+                    if( tokens.length < 2 || !ControlledValueList.Source.contains( tokens[ 1 ] ) )
+                    {
                         reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Source.keyList() );
-                    
-                    library_source = ControlledValueList.Source.getKey( tokens[ 1 ] );
+                    } else
+                    {
+                        library_source = ControlledValueList.Source.getKey( tokens[ 1 ] );
+                    }
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -378,10 +388,13 @@ RawReadsManifest
             case RawReadsManifestTags.LIBRARY_SELECTION:
                 if( null == library_selection )
                 {
-                    if( !ControlledValueList.Selection.contains( tokens[ 1 ] ) )
+                    if( tokens.length < 2 || !ControlledValueList.Selection.contains( tokens[ 1 ] ) )
+                    {
                         reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Selection.keyList() );
-                    
-                    library_selection = ControlledValueList.Selection.getKey( tokens[ 1 ] );
+                    } else
+                    {
+                        library_selection = ControlledValueList.Selection.getKey( tokens[ 1 ] );
+                    }
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -390,10 +403,13 @@ RawReadsManifest
             case RawReadsManifestTags.LIBRARY_STRATEGY:
                 if( null == library_strategy )
                 {
-                    if( !ControlledValueList.Strategy.contains( tokens[ 1 ] ) )
+                    if( tokens.length < 2 || !ControlledValueList.Strategy.contains( tokens[ 1 ] ) )
+                    {
                         reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Strategy.keyList() );
-                    
-                    library_strategy = ControlledValueList.Strategy.getKey( tokens[ 1 ] );
+                    } else
+                    {
+                        library_strategy = ControlledValueList.Strategy.getKey( tokens[ 1 ] );
+                    }
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -402,7 +418,7 @@ RawReadsManifest
             case RawReadsManifestTags.LIBRARY_CONSTRUCTION_PROTOCOL:
                 if( null == library_construction_protocol )
                 {
-                    library_construction_protocol = tokens[ 1 ];
+                    library_construction_protocol = tokens.length >= 2 ? tokens[ 1 ] : null;
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -417,6 +433,10 @@ RawReadsManifest
                             reportUserError( source, line_no, "Non-negative integer expected" );
                         
                         break;
+                    } catch( ArrayIndexOutOfBoundsException ae )
+                    {
+                        ;//ignore
+                        break;
                     } catch( NumberFormatException nfe )
                     {
                         reportUserError( source, line_no, "Non-negative integer expected" );
@@ -427,7 +447,7 @@ RawReadsManifest
             case RawReadsManifestTags.SAMPLE:
                 if( null == sample_id )
                 {
-                    sample_id = tokens[ 1 ];
+                    sample_id = tokens.length >= 2 ? tokens[ 1 ] : null;
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -435,7 +455,7 @@ RawReadsManifest
             case RawReadsManifestTags.STUDY:
                 if( null == study_id )
                 {
-                    study_id = tokens[ 1 ];
+                    study_id = tokens.length >= 2 ? tokens[ 1 ] : null;
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -443,7 +463,7 @@ RawReadsManifest
             case RawReadsManifestTags.NAME:
                 if( null == name )
                 {
-                    name = tokens[ 1 ];
+                    name = tokens.length >= 2 ? tokens[ 1 ] : null;
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -451,9 +471,14 @@ RawReadsManifest
             case RawReadsManifestTags.PLATFORM:
                 if( null == platform )
                 {
-                    if( !ControlledValueList.Platform.contains( tokens[ 1 ] ) )
+                    if( tokens.length < 2 || !ControlledValueList.Platform.contains( tokens[ 1 ] ) )
+                    {
                         reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Platform.keyList() );
-                    platform = ControlledValueList.Platform.getKey( tokens[ 1 ] );
+                    } else 
+                    {
+                        platform = ControlledValueList.Platform.getKey( tokens[ 1 ] );
+                    }
+                    
                     break;
                 } 
                 reportTokenDuplication( source, line_no, token0 );
@@ -508,7 +533,7 @@ RawReadsManifest
         throw WebinCliException.createUserError( String.format( "%s: %d, Value of %s should be one from the list %s", source, line_no, token, values ) );
     }
     
-
+    
     private void 
     reportUserError( String source, int line_no, String error )
     {
