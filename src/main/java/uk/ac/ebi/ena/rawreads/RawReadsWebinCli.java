@@ -262,14 +262,14 @@ RawReadsWebinCli extends AbstractWebinCli
             is.mark( marksize );
             try
             {
-                return new GZIPInputStream( is );
+                return new BufferedInputStream( new GZIPInputStream( is ) );
             } catch( IOException gzip )
             {
                 is.reset();
                 try
                 {
                     is.mark( marksize );
-                    return new BZip2CompressorInputStream( is );
+                    return new BufferedInputStream( new BZip2CompressorInputStream( is ) );
                 } catch( IOException bzip )
                 {
                     is.reset();
@@ -374,13 +374,18 @@ RawReadsWebinCli extends AbstractWebinCli
                 }
                 
                 if( resulted_size >= ( max_size / 2 ) )
+                {
+                    String msg = "Fastq files from different runs are submitted: " + files;
+                    reportToFileList( files, msg );
                     throw WebinCliException.createValidationError( "Fastq files from different runs are submitted: " + files );
-                
+                }
                 
                 if( labels.get( 0 ).containsAll( labels.get( 1 ) ) 
                  && labels.get( 1 ).containsAll( labels.get( 0 ) ) )
                 {
                     valid = false;
+                    String msg = "Same fastq files are submitted: " + files;
+                    reportToFileList( files, msg );
                     throw WebinCliException.createValidationError( "Same fastq files are submitted: " + files );
                 }
                 
@@ -389,6 +394,8 @@ RawReadsWebinCli extends AbstractWebinCli
                     if( getPaired( labels.get( index ) ) )
                     {
                         valid = false;
+                        String msg = "Paired fastq file should be single file in submission: " + files.get( index ); 
+                        reportToFileList( files, msg );
                         throw WebinCliException.createValidationError( "Paired fastq file should be single file in submission: " + files.get( index ) );
                     }
                 }
@@ -401,6 +408,8 @@ RawReadsWebinCli extends AbstractWebinCli
             } else
             {
                 valid = false;
+                String msg = "Unable to validate unusual amount of files: " + files;
+                reportToFileList( files, msg );
                 throw WebinCliException.createValidationError( "Unable to validate unusual amount of files: " + files ); 
             }
         }
@@ -408,6 +417,18 @@ RawReadsWebinCli extends AbstractWebinCli
     }
 
 
+    private void reportToFileList( List<RawReadsFile> files, String msg )
+    {
+        for( RawReadsFile rf : files )
+        {
+            File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
+            FileUtils.writeReport( reportFile, Severity.ERROR, msg );
+        }
+    }
+
+
+    
+    
     private boolean
     getPaired( Set<String> labelset )
     {
