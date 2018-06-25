@@ -126,14 +126,14 @@ RawReadsFile
     @Override public String 
     toString()
     {
-        return String.format( "filename=\"%s\" filetype=\"%s\" checksum=\"%s\" checksum_method=\"%s\" %s %s %s",
+        return String.format( "filename=\"%s\" filetype=\"%s\"%s%s%s%s%s",
                               filename,
                               filetype.xml_name,
-                              checksum,
-                              checksum_method,
-                              null == quality_scoring_system ? "" : String.format( "quality_scoring_system=\"%s\"", quality_scoring_system.xml_name ),
-                              null == ascii_offset           ? "" : String.format( "ascii_offset=\"%s\"", ascii_offset.xml_name ),
-                              null == quality_encoding       ? "" : String.format( "quality_encoding=\"%s\"", quality_encoding.xml_name )
+                              null == checksum ?               "" : String.format( " checksum=\"%s\"", checksum ),
+                              null == checksum_method ?        "" : String.format( " checksum_method=\"%s\"", checksum_method ),
+                              null == quality_scoring_system ? "" : String.format( " quality_scoring_system=\"%s\"", quality_scoring_system.xml_name ),
+                              null == ascii_offset           ? "" : String.format( " ascii_offset=\"%s\"", ascii_offset.xml_name ),
+                              null == quality_encoding       ? "" : String.format( " quality_encoding=\"%s\"", quality_encoding.xml_name )
                             );
     }
 
