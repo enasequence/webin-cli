@@ -112,6 +112,19 @@ WebinCliTest
     }
     
     
+    public String 
+    getAssemblyInfoForSequence( String name )
+    {
+        return   "ASSEMBLYNAME " + name + "\n"
+               + "COVERAGE 45\n"
+               + "PROGRAM assembly\n"
+               + "PLATFORM fghgf\n"
+               + "MINGAPLENGTH 34\n"
+               + "MOLECULETYPE genomic DNA\n"
+               + "STUDY PRJEB20083\n";
+    }
+    
+    
     @Test public void
     testGenomeSubmission() throws Exception
     {
@@ -155,7 +168,7 @@ WebinCliTest
         
         Path tabfile = copyRandomized( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
         Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE" ), 
-                                     getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                     getAssemblyInfoForSequence( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
                                      StandardOpenOption.TRUNCATE_EXISTING );
 
         
