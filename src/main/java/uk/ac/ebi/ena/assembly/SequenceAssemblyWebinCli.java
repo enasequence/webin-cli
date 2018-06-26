@@ -40,6 +40,7 @@ import uk.ac.ebi.ena.template.expansion.TemplateProcessor;
 import uk.ac.ebi.ena.template.expansion.TemplateUserError;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 
 public class SequenceAssemblyWebinCli extends SequenceWebinCli {
@@ -53,6 +54,17 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
     public SequenceAssemblyWebinCli() {
     }
 
+    
+    public void
+    init( WebinCliParameters parameters ) throws ValidationEngineException
+    {
+        super.init( parameters );
+        //TODO temporary. replace.
+        if( null != getSample() )
+            throw WebinCliException.createUserError( String.format( "context " + ContextE.sequence + " not allowed to have SAMPLE field.", infoFile.getPath() ) );
+    }
+    
+    
     public StringBuilder validateTestTsv(String submittedFile) throws ValidationEngineException {
         resultsSb = new StringBuilder();
         setTestMode( true );
