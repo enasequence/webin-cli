@@ -27,6 +27,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import htsjdk.samtools.DefaultSAMRecordFactory;
 import htsjdk.samtools.SAMFormatException;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamFiles;
@@ -462,10 +463,17 @@ RawReadsWebinCli extends AbstractWebinCli
                 Log.setGlobalLogLevel( LogLevel.ERROR );
                 SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
                 SamReaderFactory factory = SamReaderFactory.make();
+                factory.enable( SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX );
+                factory.validationStringency( ValidationStringency.SILENT );
                 factory.referenceSource( new ReferenceSource( (File) null ) );
+                factory.samRecordFactory( DefaultSAMRecordFactory.getInstance() );
                 SamInputResource ir = SamInputResource.of( file );
                 File indexMaybe = SamFiles.findIndex( file );
                 FileUtils.writeReport( reportFile, Severity.INFO, "proposed index: " + indexMaybe );
+                
+                if( null!= indexMaybe )
+                    ir.index( indexMaybe );
+                
                 SamReader reader = factory.open( ir );
                 
                 for( SAMRecord record : reader )
