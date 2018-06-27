@@ -8,6 +8,8 @@ The following types of submissions are supported:
 
 - genome assemblies
 - transcriptome assemblies
+- sequence assemblies
+- read data submissions
 
 The latest version of the Webin command line submission interface can be downloaded from: 
 
