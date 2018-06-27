@@ -471,7 +471,7 @@ RawReadsWebinCli extends AbstractWebinCli
                 File indexMaybe = SamFiles.findIndex( file );
                 FileUtils.writeReport( reportFile, Severity.INFO, "proposed index: " + indexMaybe );
                 
-                if( null!= indexMaybe )
+                if( null != indexMaybe )
                     ir.index( indexMaybe );
                 
                 SamReader reader = factory.open( ir );

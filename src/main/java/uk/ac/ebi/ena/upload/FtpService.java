@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -80,10 +81,10 @@ public class FtpService implements UploadService {
                 throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, dir );
             }
             
-            if( !Arrays.asList( ftpClient.listDirectories() ).stream().anyMatch( f -> dir.equals( f.getName() ) ) )
+            if( !Stream.of( ftpClient.listDirectories() ).anyMatch( f -> dir.equals( f.getName() ) ) )
             {
                 if( !ftpClient.makeDirectory( dir ) )
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_CREATE_DIR, dir );
+                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CREATE_DIR, dir );
             }
             
             if( !ftpClient.changeWorkingDirectory( dir ) )
