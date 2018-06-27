@@ -478,9 +478,9 @@ RawReadsWebinCliTest
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
-        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.TXT.GZ" );
+        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.gz" );
         Path file1 = Paths.get( new File( url1.getFile() ).getCanonicalPath() );
-        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.TXT.GZ" );
+        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
         Path file2 = Paths.get( new File( url2.getFile() ).getCanonicalPath() );
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -512,9 +512,9 @@ RawReadsWebinCliTest
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
-        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_P1.TXT.GZ" );
+        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_P1.txt.gz" );
         Path file1 = Paths.get( new File( url1.getFile() ).getCanonicalPath() );
-        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_P2.TXT.GZ" );
+        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_P2.txt.gz" );
         Path file2 = Paths.get( new File( url2.getFile() ).getCanonicalPath() );
 
         WebinCliParameters parameters = new WebinCliParameters();
