@@ -9,3 +9,5 @@ bin
 /*.report
 /webin-cli.log
 /reads/
+.idea
+

@@ -304,6 +304,8 @@ RawReadsManifest
         cnt = files.stream().filter( e -> Filetype.cram == e.getFiletype() ).collect( Collectors.counting() );
         if( 0 != cnt && 1 != cnt )
             throw WebinCliException.createUserError( "Only one cram file accepted" );
+
+        this.files = files;
     }
 
 
