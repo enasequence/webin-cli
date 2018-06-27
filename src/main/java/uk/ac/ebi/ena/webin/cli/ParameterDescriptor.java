@@ -1,6 +1,8 @@
 package uk.ac.ebi.ena.webin.cli;
 
-public class ParameterDescriptor {
+import uk.ac.ebi.ena.submit.ContextE;
+
+public interface ParameterDescriptor {
     public final static String context    = "-context";
     public final static String outputDir  = "-outputDir";
     public final static String userName   = "-userName";
@@ -16,9 +18,12 @@ public class ParameterDescriptor {
     
     
     //Description
-    public final static String contextFlagDescription = "\n\tRequired. Valid values are:" +
-            "\n\t\t>> genome" +
-            "\n\t\t>> transcriptome";
+    public final static String contextFlagDescription = "\n\tRequired. Valid values are:"
+          + "\n\t\t>> " + "genome"
+          + "\n\t\t>> " + "sequence"
+          + "\n\t\t>> " + "transcriptome"
+          + "\n\t\t>> " + "reads";
+    
     public final static String outputDirFlagDescription =
             "\n\tDirectory for output files with the following structure:" +
             "\n\t\t>> <context>/<name>/validate" +
@@ -27,6 +32,7 @@ public class ParameterDescriptor {
             "\n\tThe 'validate' directory contains validation reports." +
             "\n\tThe 'submit' directory contains the file manifest and the XMLs created during the submission" +
             "\n\tincluding the Receipt XML.";
+    
     public final static String userNameFlagDescription = "\n\tRequired. Your submission account name or your e-mail address.";
     public final static String passwordFlagDescription = "\n\tRequired. Your submission account password.";
     public final static String validateFlagDescription = "\n\tValidates the files defined in the manifest file.";
