@@ -156,7 +156,7 @@ RawReadsManifestTest
         Assert.assertEquals( "library construction protocol", rm.getLibraryConstructionProtocol() );
         Assert.assertEquals( new Integer( 100500 ), rm.getInsertSize() );
         Assert.assertEquals( "SOME-FANCY-NAME", rm.getName() );
-        Assert.assertEquals( 2, rm.getFiles().size() );
+        Assert.assertEquals( 1, rm.getFiles().size() );
     }
 
     
