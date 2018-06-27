@@ -620,6 +620,8 @@ RawReadsWebinCli extends AbstractWebinCli
         String library_strategy  = rrm.getLibraryStrategy();
         String library_source    = rrm.getLibrarySource();
         String library_selection = rrm.getLibrarySelection();
+        String library_name      = rrm.getLibraryName();
+        
         String sample_id = rrm.getSampleId();
         String study_id  = rrm.getStudyId();
         String platform  = rrm.getPlatform();
@@ -658,6 +660,13 @@ RawReadsWebinCli extends AbstractWebinCli
 
             Element libraryDescriptorE = new Element( "LIBRARY_DESCRIPTOR" );
             designE.addContent( libraryDescriptorE );
+            
+            if( null != library_name )
+            {
+                Element libraryNameE = new Element( "LIBRARY_NAME" );
+                libraryNameE.setText( library_name );
+                libraryDescriptorE.addContent( libraryNameE );
+            }   
             
             Element libraryStrategyE = new Element( "LIBRARY_STRATEGY" );
             libraryStrategyE.setText( library_strategy );
