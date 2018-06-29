@@ -21,6 +21,7 @@ import uk.ac.ebi.embl.api.entry.Text;
 import uk.ac.ebi.embl.api.entry.XRef;
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
+import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.entry.location.Location;
 import uk.ac.ebi.embl.api.entry.location.LocationFactory;
 import uk.ac.ebi.embl.api.entry.location.Order;
@@ -246,5 +247,12 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
         eList.add( createfileElement( uploadDir, infoFile, "info" ) );
         return eList;
     }
+
     
+    Element 
+    makeAnalysisType( AssemblyInfoEntry entry )
+    {
+        Element typeE = new Element( ContextE.transcriptome.getType() );
+        return typeE;
+    }
 }

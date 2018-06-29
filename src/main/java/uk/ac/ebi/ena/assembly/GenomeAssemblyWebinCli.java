@@ -585,6 +585,28 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	}
 
 
+    Element 
+    makeAnalysisType( AssemblyInfoEntry entry )
+    {
+        Element typeE = new Element( ContextE.genome.getType() );
+        
+        typeE.addContent( createTextElement( "NAME", entry.getName() ) );
+        typeE.addContent( createTextElement( "PARTIAL", String.valueOf( Boolean.FALSE ) ) ); //as per SraAnalysisParser.setAssemblyInfo
+        typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
+        typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
+        typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
+        
+        if( null != entry.getMinGapLength() )
+            typeE.addContent( createTextElement( "MIN_GAP_LENGTH", String.valueOf( entry.getMinGapLength() ) ) );
+        
+        if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
+            typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
+        
+        typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
+        return typeE;
+    }
+    
+	
     @Override ContextE
     getContext()
     {

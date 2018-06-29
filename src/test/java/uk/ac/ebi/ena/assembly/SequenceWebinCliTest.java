@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.Locale;
 
+import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +49,10 @@ SequenceWebinCliTest
             @Override public boolean getTestMode() { return true; }
             @Override ContextE getContext() { return ContextE.genome; }
 			@Override public File getSubmissionBundleFileName() { return null; }
+            @Override Element makeAnalysisType( AssemblyInfoEntry entry )
+            {
+                return new GenomeAssemblyWebinCli().makeAnalysisType( entry );
+            }
         };
 
         s.setName( "123" );

@@ -2,13 +2,11 @@ package uk.ac.ebi.ena.upload;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -134,96 +132,20 @@ public class FtpService implements UploadService {
     }
     
     
-    public void ftpDirectory(List<File> uploadFilesList, String context, String name) {
-        if (context == null || context.isEmpty() || name == null || name.isEmpty())
-            throw WebinCliException.createUserError(WebinCli.MISSING_CONTEXT);
-        try {
-            ftpClient.enterLocalPassiveMode();
-            if (!ftpClient.setFileType(FTP.BINARY_FILE_TYPE))
-                throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
-            FTPFile[] ftpFilesA = ftpClient.listDirectories();
-            if (!Arrays.asList(ftpFilesA).stream()
-                    .anyMatch(f -> context.equalsIgnoreCase(f.getName()))) {
-                if (!ftpClient.makeDirectory(context))
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_CREATE_DIR, context);
-            }
-            if (!ftpClient.changeWorkingDirectory(context))
-                throw WebinCliException.createSystemError(SYSTEM_ERROR_CHANGE_DIR, context);
-            ftpFilesA = ftpClient.listDirectories();
-            if (!Arrays.asList(ftpFilesA).stream()
-                    .anyMatch(f -> name.equalsIgnoreCase(f.getName()))) {
-                if (!ftpClient.makeDirectory(name))
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_CREATE_DIR, name);
-                if (!ftpClient.changeWorkingDirectory(name))
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_CHANGE_DIR, name);
-            } else {
-                if (!ftpClient.changeWorkingDirectory(name))
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_CHANGE_DIR, name);
-                FTPFile[] fileTodeleteA = ftpClient.listFiles();
-                if (fileTodeleteA != null && fileTodeleteA.length > 0) {
-                    for (FTPFile ftpFile: fileTodeleteA)
-                        ftpClient.deleteFile(ftpFile.getName());
-                }
-            }
-            for (File file: uploadFilesList) {
-                try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                    if (!ftpClient.storeFile(file.getName(), fileInputStream))
-                        throw WebinCliException.createSystemError(SYSTEM_ERROR_UPLOAD_FILE);
-                }
-            }
-        } catch (IOException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER, e.getMessage());
-        }
-    }
-
-    /*
-    public boolean doFilesExistInUploadArea(List<File> uploadFilesList, String context, String assemblyName)  {
-        if (context == null || context.isEmpty() || assemblyName == null || assemblyName.isEmpty())
-            throw WebinCliException.createUserError(WebinCli.MISSING_CONTEXT);
-        try {
-            List<FTPFile> ftpFileList = Arrays.asList(ftpClient.listDirectories());
-            if (ftpFileList == null || ftpFileList.isEmpty())
-                return false;
-            Optional<FTPFile> found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(context))
-                    .findFirst();
-            if (!found.isPresent())
-                return false;
-            if (!ftpClient.changeWorkingDirectory(context))
-                throw WebinCliException.createSystemError(SYSTEM_ERROR_CHANGE_DIR);
-            ftpFileList = Arrays.asList(ftpClient.listDirectories());
-            if (ftpFileList == null || ftpFileList.isEmpty())
-                return false;
-            found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(assemblyName)).findFirst();
-            if (!found.isPresent())
-                return false;
-            if (!ftpClient.changeWorkingDirectory(assemblyName))
-                throw WebinCliException.createSystemError(SYSTEM_ERROR_CHANGE_DIR);
-            ftpFileList = Arrays.asList(ftpClient.listFiles());
-            if (ftpFileList == null || ftpFileList.isEmpty())
-                return false;
-            for (File fileName: uploadFilesList) {
-                found = ftpFileList.stream().filter(f -> f.getName().equalsIgnoreCase(fileName.getName()))
-                        .findFirst();
-                if (!found.isPresent())
-                    return false;
-            }
-        } catch (IOException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_CHECK);
-        }
-        return true;
-    }
-    */
-
-    /* (non-Javadoc)
+     /* (non-Javadoc)
      * @see uk.ac.ebi.ena.upload.UploadService#disconnectFtp()
      */
-    @Override public void disconnect() {
-        try {
-            if (ftpClient != null && ftpClient.isConnected())
+    @Override public void 
+    disconnect() 
+    {
+        try 
+        {
+            if( ftpClient != null && ftpClient.isConnected() )
                 ftpClient.disconnect();
         } catch (IOException e) {}
     }
 
+    
     @Override
     protected void finalize() throws Throwable {
         disconnect();

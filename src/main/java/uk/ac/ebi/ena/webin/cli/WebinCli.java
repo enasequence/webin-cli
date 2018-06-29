@@ -1,32 +1,19 @@
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipException;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
@@ -38,13 +25,6 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.assembly.InfoFileValidator;
-import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
-import uk.ac.ebi.ena.manifest.ManifestFileValidator;
-import uk.ac.ebi.ena.manifest.ManifestFileWriter;
-import uk.ac.ebi.ena.manifest.ManifestObj;
-import uk.ac.ebi.ena.sample.Sample;
-import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.Submit;
@@ -74,11 +54,6 @@ public class WebinCli {
 	private static final String UPLOAD_USER_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
 	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
 
-	/*
-	private static final String UPLOAD_CHECK_USER_ERROR = "Failed to check if files have been uploaded to webin.ebi.ac.uk because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
-	private static final String UPLOAD_CHECK_SYSTEM_ERROR = "Failed to check if files have been uploaded to webin.ebi.ac.uk because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
-	*/
-
 	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully. ";
 
 	private static final String SUBMIT_USER_ERROR = "The submission has failed because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
@@ -89,23 +64,14 @@ public class WebinCli {
 	public static final String INVALID_CONTEXT = "Invalid context: ";
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
-	private final static String INVALID_MANIFEST = "Manifest file validation failed. Please check the report file for errors: ";
-	@Deprecated private final static String INVALID_INFO = "Info file validation failed. Please check the report file for errors: ";
 	
 	private Params params;
 	private ContextE contextE;
-	private final static String VALIDATE_DIR = "validate";
     private String SUBMIT_DIR = "submit";
     private boolean test_mode;
     private AbstractWebinCli validator;
-	private final static String INFO_FIELD = "INFO";
-	private final static String NAME_FIELD = "ASSEMBLYNAME";
-
-//	private static ManifestFileValidator manifestValidator = null;
-//	private static InfoFileValidator infoValidator = null;
 
 	private static String outputDir;
-	private static String reportDir;
 	private static String webinCliReportFile;
 	private static String infoReportFile;
 
@@ -243,34 +209,6 @@ public class WebinCli {
         outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
         outputDir = getFullPath( outputDir );
 
-//        //TODO remove
-//        if( contextE != ContextE.reads && contextE != ContextE.sequence && contextE != ContextE.genome )
-//        {
-//        	String name = null;
-//        	try
-//        	{
-//        		name = peekInfoFileForName(peekManifestForInfoFile(params.manifest));
-//        	} catch( WebinCliException wce )
-//        	{
-//        		name = peekInfoFileForName( params.manifest );
-//        	}
-//        	
-//            createValidateDir( params.context, name );
-//            createWebinCliReportFile();
-//        }
-//        
-//        infoValidator = new InfoFileValidator();
-//        manifestValidator = new ManifestFileValidator();
-//        //TODO remove
-//        if( contextE != ContextE.reads && contextE != ContextE.sequence && contextE != ContextE.genome )
-//        {
-//            if (!manifestValidator.validate(manifestFile, reportDir, params.context))
-//                throw WebinCliException.createUserError(INVALID_MANIFEST, manifestValidator.getReportFile().getAbsolutePath());
-//            if (!infoValidator.validate(manifestValidator.getReader(), reportDir, params.context))
-//                throw WebinCliException.createUserError( INVALID_INFO, infoValidator.getReportFile().getAbsolutePath() );
-//            infoReportFile = infoValidator.getReportFile().getAbsolutePath();
-//        }
-
         this.validator = contextE.getValidatorClass().newInstance();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -313,64 +251,19 @@ public class WebinCli {
 	            doSubmit( sb );
 	        else
 	        	throw WebinCliException.createSystemError( "Unable to find attempt of validation. Please re-run validation again." );
-//              doSubmit();
 		}
 	}
-
-//	@Deprecated private Study getStudy() {
-//		try {
-//			return Study.getStudy(infoValidator.getentry().getStudyId(), params.userName, params.password, params.test);
-//		}
-//		catch (WebinCliException e) {
-//			writeMessageIntoInfoReport(Severity.ERROR, e.getMessage());
-//			throw e;
-//		}
-//	}
-//
-//	@Deprecated private Sample getSample() {
-//		try {
-//			return Sample.getSample(infoValidator.getentry().getSampleId(), params.userName, params.password, params.test);
-//		}
-//		catch (WebinCliException e) {
-//			writeMessageIntoInfoReport(Severity.ERROR, e.getMessage());
-//			throw e;
-//		}
-//	}
 
 	
 	private void 
 	doValidation() 
 	{
-//		switch(contextE) {
-//			case transcriptome:
-//			{
-//				TranscriptomeAssemblyWebinCli v = new TranscriptomeAssemblyWebinCli( manifestValidator.getReader(), getSample(), getStudy() );
-//                v.setReportsDir( reportDir );
-//				validator = v;
-//				break;
-//			}
-//		}
-		
 		try 
 		{
             if( !validator.validate() )
             {
                 throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, String.valueOf( validator.getValidationDir() ) );
             }
-            
-//            //TODO remove
-//            if( contextE != ContextE.reads && contextE != ContextE.sequence && contextE != ContextE.genome )
-//            {
-//                String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-//                File submitDirectory = createSubmitDirectory( assemblyName );
-//                // Gzip the files validated directory.
-//    			for( ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects() )
-//                    manifestObj.setFileName( FileUtils.gZipFile( Paths.get( manifestObj.getFileName() ).toFile() ).getPath() );
-//    			// Create the manifest in the submit directory.
-//    			new ManifestFileWriter().write( new File( submitDirectory.getAbsolutePath(), assemblyName + ".manifest" ), 
-//    					                        manifestValidator.getReader().getManifestFileObjects() );
-//            }		
-//            
             validator.prepareSubmissionBundle();
             writeMessage( Severity.INFO, VALIDATE_SUCCESS );
 		} catch( IOException /*| NoSuchAlgorithmException */| ValidationEngineException e ) 
@@ -379,89 +272,8 @@ public class WebinCli {
 		}
 	}
 
-	private void doFtpUpload(String assemblyName, List<File> uploadFileList) {
-	    /*
-		if (doFilesExistInUploadArea(uploadFileList, assemblyName))
-		    return;
-		*/
-		FtpService ftpService = new FtpService();
-		try {
-			ftpService.connect(params.userName, params.password);
-			ftpService.ftpDirectory(uploadFileList, params.context, assemblyName);
-			writeMessage(Severity.INFO, UPLOAD_SUCCESS);
-		} catch (WebinCliException e) {
-			e.throwAddMessage(UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR);
-		} finally {
-			ftpService.disconnect();
-		}
-	}
 
-//    private List<File> getFilesToUpload(String submitDirectory, String assemblyName ) {
-//        List<File> uploadFilesList = new ArrayList<>();
-//        for (ManifestObj manifestObj: manifestValidator.getReader().getManifestFileObjects())
-//            uploadFilesList.add(Paths.get(manifestObj.getFileName()).toFile());
-//        boolean SUBMITTER_FILES_EXIST = true;
-//        String missingSubmitterFile = "";
-//        for (File file: uploadFilesList) {
-//            if (!file.exists()) {
-//                missingSubmitterFile += file.getName() + ", ";
-//                SUBMITTER_FILES_EXIST = false;
-//            }
-//        }
-//        if (!SUBMITTER_FILES_EXIST)
-//            throw WebinCliException.createUserError("File(s) " + missingSubmitterFile + " do not exist. Please supply file that you would like to submit." );
-//        File fileManifect = new File(submitDirectory + File.separator + assemblyName + ".manifest");
-//        File fileManifectMD5 = new File(submitDirectory + File.separator + assemblyName + ".manifest.md5");
-//        if (!fileManifect.exists() || !fileManifectMD5.exists())
-//            return null;
-//        uploadFilesList.add(fileManifect);
-//        uploadFilesList.add(fileManifectMD5);
-//        return uploadFilesList;
-//    }
-//
-
-    @Deprecated
-	private static void createValidateDir(String context, String name) throws Exception {
-		File reportDirectory = new File(outputDir + File.separator + context + File.separator + name + File.separator + VALIDATE_DIR);
-		if (reportDirectory.exists())
-			FileUtils.emptyDirectory(reportDirectory);
-		else if (!reportDirectory.mkdirs()) {
-            throw WebinCliException.createSystemError("Unable to create directory: " + reportDirectory.getPath());
-		}
-		reportDir = reportDirectory.getAbsolutePath();
-	}
-
-    @Deprecated
-	private static void createWebinCliReportFile() throws IOException {
-		Path reportPath = Paths.get(reportDir + File.separator + "webin-cli.report");
-		if (Files.exists(reportPath))
-			Files.delete(reportPath);
-		Files.createFile(reportPath);
-		webinCliReportFile = reportPath.toFile().getAbsolutePath();
-	}
-
-//	@Deprecated private void doSubmit() {
-//	    try {
-//            String assemblyName = infoValidator.getentry().getName().trim().replaceAll("\\s+", "_");
-//            String submitDirectory = getSubmitDirectory(assemblyName);
-//            if (submitDirectory == null) {
-//                doValidation();
-//                submitDirectory = getSubmitDirectory(assemblyName);
-//            }
-//            List<File> uploadFileList = getFilesToUpload(submitDirectory, assemblyName);
-//            if (uploadFileList == null || uploadFileList.isEmpty()) {
-//                doValidation();
-//                uploadFileList = getFilesToUpload(submitDirectory, assemblyName);
-//            }
-//		    doFtpUpload(assemblyName, uploadFileList);
-//			Submit submit = new Submit( params, submitDirectory, infoValidator.getentry(), getFormattedProgramVersion() );
-//			submit.doSubmission();
-//		} catch (WebinCliException e) {
-//			e.throwAddMessage(SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR);
-//		}
-//	}
-//
-    private void 
+	private void 
     doSubmit( SubmissionBundle bundle )
     {
         UploadService ftpService = params.tryAscp && new ASCPService().isAvaliable() ? new ASCPService() : new FtpService();
@@ -544,8 +356,8 @@ public class WebinCli {
 	                                                .append( "\n" + ParameterDescriptor.centerName + ParameterDescriptor.centerNameFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.tryAscp + ParameterDescriptor.tryAscpDescription )
 	                                                .append( "\n" + ParameterDescriptor.version + ParameterDescriptor.versionFlagDescription )
+	                                                .append( "\n" + ParameterDescriptor.inputDir + ParameterDescriptor.inputDirFlagDescription )
 	                                                .append( "\n" ).toString() );
-//		usage.append( "\n" + ParameterDescriptor.inputDir + ParameterDescriptor.inputDirFlagDescription );
 		writeReturnCodes();
 		System.exit( SUCCESS );
 	}
@@ -588,46 +400,6 @@ public class WebinCli {
 		}
 	}
 
-	
-	@Deprecated private static String 
-	peekManifestForInfoFile(String manifest) throws Exception {
-		try (Stream<String> stream = Files.lines(Paths.get(manifest))) {
-			Optional<String> optional = stream.filter(line -> line.toUpperCase().startsWith(INFO_FIELD))
-					.findFirst();
-			if (optional.isPresent())
-				return optional.get().substring(INFO_FIELD.length()).trim();
-			else
-				throw WebinCliException.createUserError("Manifest file " + manifest + " is missing the " + INFO_FIELD + " field.");
-		}
-	}
-
-	@Deprecated public static String 
-	peekInfoFileForName(String info) throws Exception 
-	{
-		try( BufferedInputStream fileIs = new BufferedInputStream( Files.newInputStream( Paths.get( info ) ) ) )
-		{
-		    fileIs.mark( (int)Files.size( Paths.get( info ) ) );
-		    BufferedReader reader = new BufferedReader( new InputStreamReader( fileIs, StandardCharsets.UTF_8 ) );
-			try
-    		{
-			    reader = new BufferedReader( new InputStreamReader( new GZIPInputStream( fileIs ), StandardCharsets.UTF_8 ) );   
-    		} catch( ZipException ioe )
-			{
-    		    fileIs.reset();
-			}
-    		Optional<String> optional = reader.lines()
-    		                                  .filter( line -> line.toUpperCase().startsWith( NAME_FIELD ) )
-    		                                  .findFirst();
-    		if (optional.isPresent())
-    			return optional.get().substring(NAME_FIELD.length()).trim().replaceAll("\\s+", "_");
-    		else
-    			throw WebinCliException.createUserError("Info file " + info + " is missing the " + NAME_FIELD + " field.");
-    		
-		} catch( NoSuchFileException no )
-		{
-		    throw WebinCliException.createUserError( String.format( "%s %s", "Unable to locate file", info ) );
-		} 
-	}
 
 	private static void checkVersion( boolean test ) {
 		String version = WebinCli.class.getPackage().getImplementationVersion();
@@ -666,7 +438,8 @@ public class WebinCli {
 		}
 	}
 
-	public static void writeMessageIntoInfoReport(Severity severity, String message) {
+	private static void 
+	writeMessageIntoInfoReport(Severity severity, String message) {
         if (message == null || message.isEmpty())
             return;
         if (infoReportFile != null) {
