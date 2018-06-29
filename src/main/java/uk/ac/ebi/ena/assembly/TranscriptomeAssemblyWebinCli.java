@@ -8,8 +8,13 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+
+import org.jdom2.Element;
 
 import uk.ac.ebi.embl.api.entry.Entry;
 import uk.ac.ebi.embl.api.entry.Text;
@@ -38,70 +43,98 @@ import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.manifest.ManifestFileReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
-public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
+public class 
+TranscriptomeAssemblyWebinCli extends SequenceWebinCli 
+{
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
 	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
 	private final String MOL_TYPE = "transcribed RNA";
 	private File reportFile;
-	private File reportDir;
 	private String submittedFile;
-	private Sample sample;
-    private Study study;
 	private ValidationPlan validationPlan;
 	private boolean FLAILED_VALIDATION;
 	private ManifestFileReader manifestFileReader;
-	private boolean TEST;
 	private StringBuilder resultsSb;
 
-	public TranscriptomeAssemblyWebinCli(){}
+	public 
+	TranscriptomeAssemblyWebinCli()
+	{
+	}
 
-	public TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study) {
+	
+	private ValidationPlan
+	getValidationPlan()
+	{
+	    ValidationPlan validationPlan;
+	    EmblEntryValidationPlanProperty emblEntryValidationProperty = new EmblEntryValidationPlanProperty();
+	    emblEntryValidationProperty.validationScope.set( ValidationScope.ASSEMBLY_TRANSCRIPTOME );
+	    emblEntryValidationProperty.isDevMode.set( false );
+	    emblEntryValidationProperty.isFixMode.set( true );
+	    emblEntryValidationProperty.isAssembly.set( false );
+	    emblEntryValidationProperty.minGapLength.set( 0 );
+	    emblEntryValidationProperty.locus_tag_prefixes.set( getStudy().getLocusTagsList() );
+
+	    validationPlan = new EmblEntryValidationPlan( emblEntryValidationProperty );
+	    validationPlan.addMessageBundle( VALIDATION_MESSAGES_BUNDLE );
+	    validationPlan.addMessageBundle( STANDARD_VALIDATION_BUNDLE );
+	    validationPlan.addMessageBundle( STANDARD_FIXER_BUNDLE );
+	    return validationPlan;
+	}
+
+	
+	@Override public void
+	init( WebinCliParameters parameters ) throws ValidationEngineException
+	{
+	    super.init( parameters );
+	    this.validationPlan = getValidationPlan();
+	}
+		
+	
+	@Deprecated public 
+	TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study) throws ValidationEngineException {
 		this.manifestFileReader = manifestFileReader;
-		this.sample = sample;
-		this.study = study;
-		EmblEntryValidationPlanProperty emblEntryValidationProperty = new EmblEntryValidationPlanProperty();
-		emblEntryValidationProperty.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
-		emblEntryValidationProperty.isDevMode.set(false);
-		emblEntryValidationProperty.isFixMode.set(true);
-		emblEntryValidationProperty.isAssembly.set(false);
-		emblEntryValidationProperty.minGapLength.set(0);
-		emblEntryValidationProperty.locus_tag_prefixes.set(study.getLocusTagsList());
-		validationPlan = new EmblEntryValidationPlan(emblEntryValidationProperty);
-		validationPlan.addMessageBundle(VALIDATION_MESSAGES_BUNDLE);
-		validationPlan.addMessageBundle(STANDARD_VALIDATION_BUNDLE);
-		validationPlan.addMessageBundle(STANDARD_FIXER_BUNDLE);
+		setSample( sample );
+		setStudy( study );
+		this.validationPlan = getValidationPlan();
+		flatFiles  = null == manifestFileReader.getFilenameFromManifest( FileFormat.FLATFILE ) ? Collections.emptyList() 
+		                                                                                       : Arrays.asList( new File( manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ) ) );
+        fastaFiles = null == manifestFileReader.getFilenameFromManifest( FileFormat.FASTA )    ? Collections.emptyList() 
+                                                                                               : Arrays.asList( new File( manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ) ) );  
 	}
 
 	public StringBuilder validateTestFlatfile(String submittedFile) throws ValidationEngineException {
 		resultsSb = new StringBuilder();
-		TEST = true;
+		setTestMode( true );
 		this.submittedFile = submittedFile;
 		validateFlatFile();
 		return resultsSb;
 	}
 
-	public void setReportsDir(String reportDir) {
-		this.reportDir = new File( reportDir );
-	}
-
-	@Override
-	public boolean validate() throws ValidationEngineException {
-		if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FLATFILE ))!= null) {
-			reportFile = FileUtils.createReportFile( reportDir,submittedFile );
+	
+	@Override protected boolean 
+	validateInternal() throws ValidationEngineException 
+	{
+		if( !flatFiles.isEmpty() )
+		{
+		    submittedFile = flatFiles.get( 0 ).getPath();
+		    reportFile = getReportFile( FileFormat.FLATFILE, submittedFile );
 			validateFlatFile();
-		} else if ((submittedFile = manifestFileReader.getFilenameFromManifest(FileFormat.FASTA ))!= null) {
-			reportFile = FileUtils.createReportFile( reportDir, submittedFile );
+		} else if( !fastaFiles.isEmpty() )
+		{   submittedFile = fastaFiles.get( 0 ).getPath();
+		    reportFile = getReportFile( FileFormat.FASTA, submittedFile );
 			validateFastaFile();
 		} else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
 		return !FLAILED_VALIDATION;
 	}
 
+	
 	private void validateFlatFile() throws ValidationEngineException {
 		try  {
 			Path path = Paths.get(submittedFile);
@@ -118,11 +151,11 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 			List<ValidationMessage<Origin>> validationMessagesList;
 			while (flatFileReader.isEntry()) {
 				Entry entry = (Entry)flatFileReader.getEntry();
-				entry.getPrimarySourceFeature().setScientificName(sample.getOrganism());
-				if(sample.getBiosampleId()!=null)
-				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
-				if(study.getProjectId()!=null)
-					 entry.addProjectAccession(new Text(study.getProjectId()));
+				entry.getPrimarySourceFeature().setScientificName( getSample().getOrganism());
+				if( getSample().getBiosampleId()!=null)
+				entry.addXRef(new XRef("BioSample", getSample().getBiosampleId()));
+				if( getStudy().getProjectId() != null )
+					 entry.addProjectAccession( new Text( getStudy().getProjectId() ) );
 				validationPlanResult = validationPlan.execute(entry);
 				validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
 				if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
@@ -152,11 +185,14 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 			while (fastaFileReader.isEntry()) {
 				Entry entry = fastaFileReader.getEntry();
 				SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();
-				sourceFeature.setScientificName(sample.getOrganism());
-				if(sample.getBiosampleId()!=null)
-				entry.addXRef(new XRef("BioSample", sample.getBiosampleId()));
-				if(study.getProjectId()!=null)
-				 entry.addProjectAccession(new Text(study.getProjectId()));
+				sourceFeature.setScientificName( getSample().getOrganism() );
+				
+				if( getSample().getBiosampleId() != null )
+					entry.addXRef( new XRef( "BioSample", getSample().getBiosampleId() ) );
+				
+				if( getStudy().getProjectId() != null )
+                    entry.addProjectAccession( new Text( getStudy().getProjectId() ) );
+				
 				sourceFeature.addQualifier(Qualifier.MOL_TYPE_QUALIFIER_NAME, MOL_TYPE);
 				Order<Location> featureLocation = new Order<Location>();
 				featureLocation.addLocation(new LocationFactory().createLocalRange(1l, entry.getSequence().getLength()));
@@ -175,30 +211,40 @@ public class TranscriptomeAssemblyWebinCli extends AbstractWebinCli {
 		}
 	}
 
-	@Override
-	public void prepareSubmissionBundle() throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
-
-    @Override public File
-    getSubmissionBundleFileName()
-    {
-        return null;
-    }
     
-
     @Override public SubmissionBundle
     getSubmissionBundle()
     {
-        return null;
+        if( !FLAILED_VALIDATION )
+            prepareSubmissionBundle();
+        return super.getSubmissionBundle();
     }
-
     
     
-    @Override public File
-    getValidationDir()
+	@Override ContextE 
+	getContext()
+	{
+		return ContextE.transcriptome;
+	}
+	
+	
+    protected List<File>
+    getUploadFiles() throws IOException
     {
-        return reportDir;
+        List<File> uploadFileList = super.getUploadFiles();
+        infoFile = FileUtils.gZipFile( infoFile );
+        uploadFileList.add( infoFile );
+        return uploadFileList;
     }
+    
+    
+    protected List<Element>
+    getXMLFiles( Path uploadDir ) throws IOException
+    {
+        List<Element> eList = super.getXMLFiles( uploadDir );
+        infoFile = FileUtils.gZipFile( infoFile );
+        eList.add( createfileElement( uploadDir, infoFile, "info" ) );
+        return eList;
+    }
+    
 }

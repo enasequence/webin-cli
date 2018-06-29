@@ -14,7 +14,7 @@ import uk.ac.ebi.ena.utils.FileUtils;
 
 public class ManifestFileReader
 {
-    static final Pattern p = Pattern.compile( "^(#|;|\\/\\/|--).*$|^(\\S+)\\s+(\\S+)$" );
+    static final Pattern p = Pattern.compile( "^(#|;|\\/\\/|--).*$|^(\\S+)\\s+(.+)$" );
 	private List<ManifestObj> manifestObjList = new ArrayList<ManifestObj>();
 	private static String InvalidNoOfColumns= "InvalidNumberOfColumns";
     private static final String MANIFESTMESSAGEBUNDLE = "uk.ac.ebi.ena.manifest.ManifestValidationMessages";

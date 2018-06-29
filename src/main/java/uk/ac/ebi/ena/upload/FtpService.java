@@ -122,7 +122,9 @@ public class FtpService implements UploadService {
             
             for( File file: uploadFilesList ) 
             {
-                Path f = file.isAbsolute() ? inputDir.relativize( file.toPath() ) : file.toPath();
+                Path f = file.isAbsolute() ? file.toPath().startsWith( inputDir ) ? inputDir.relativize( file.toPath() ) 
+                                                                                  : file.toPath().getFileName()
+                                           : file.toPath();
                 storeFile( file.toPath(), f );
             }
         } catch( IOException e ) 

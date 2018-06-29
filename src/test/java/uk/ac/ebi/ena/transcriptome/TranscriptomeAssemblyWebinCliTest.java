@@ -54,7 +54,8 @@ public class TranscriptomeAssemblyWebinCliTest {
 
         TranscriptomeAssemblyWebinCli validator = new TranscriptomeAssemblyWebinCli(
                 getManifestFileReader("simple_fasta/transcriptome.manifest"), sample, study);
-        validator.setReportsDir( createOutputFolder().getPath() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.setName( "test" );
         Assert.assertTrue( validator.validate() );
     }
@@ -69,7 +70,8 @@ public class TranscriptomeAssemblyWebinCliTest {
 
         TranscriptomeAssemblyWebinCli validator = new TranscriptomeAssemblyWebinCli(
                 getManifestFileReader("simple_fasta/transcriptome.manifest"), sample, study);
-        validator.setReportsDir( createOutputFolder().getPath() );
+        validator.setValidationDir( createOutputFolder() );
+        validator.setSubmitDir( createOutputFolder() );
         validator.setName( "test" );
         Assert.assertFalse( validator.validate() );
     }

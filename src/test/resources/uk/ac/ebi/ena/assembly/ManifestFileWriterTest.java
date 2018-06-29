@@ -37,6 +37,6 @@ public class ManifestFileWriterTest
 			  r.lines().forEach(l->fileContent.append(l));
 			}
 		
-		assertEquals( "FASTA\tvalid_fasta.txt\tnull", fileContent.toString() );
+		assertEquals( "FASTA\tvalid_fasta.txt", fileContent.toString() );
 	}
 }

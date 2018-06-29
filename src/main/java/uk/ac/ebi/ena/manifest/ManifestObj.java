@@ -41,9 +41,15 @@ public class ManifestObj {
 		this.md5chkSum = md5chkSum;
 	}
 
-	@Override
-	public String toString() {
-		return this.getFileFormat().toString()+"\t"+new File(this.getFileName()).getName()+"\t"+this.getMd5chkSum();
+	@Override public String 
+	toString() 
+	{
+		return String.format( "%s\t%s%s", 
+				              getFileFormatString(), 
+				              new File( getFileName() ).getName(), 
+				              null == getMd5chkSum() ? "" : String.format( "\t%s", getMd5chkSum() ) );
+		
+		
 	}
 		
 }
