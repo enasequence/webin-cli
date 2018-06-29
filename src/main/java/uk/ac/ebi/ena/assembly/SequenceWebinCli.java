@@ -384,22 +384,25 @@ suffix:     while( suffixes.length > 0 )
     }
 
     
-   private Element
+    protected Element
     createTextElement( String name, String text )
     {
         Element e = new Element( name );
         e.setText( text );
         return e;
     }
+   
     
-    
+   abstract Element makeAnalysisType( AssemblyInfoEntry entry );
+
+   
     String
     createAnalysisXml( List<Element> fileList, AssemblyInfoEntry entry, String centerName  ) 
     {
         try 
         {
             String full_name = getContext().getTitle( getName() );
-            String type      = getContext().getType(); 
+            //String type      = getContext().getType(); 
             
             Element analysisSetE = new Element( "ANALYSIS_SET" );
             Element analysisE = new Element( "ANALYSIS" );
@@ -423,23 +426,9 @@ suffix:     while( suffixes.length > 0 )
             }
             Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
             analysisE.addContent(analysisTypeE);
-            Element typeE = new Element( type );
-            
-            typeE.addContent( createTextElement( "NAME", entry.getName() ) );
-            typeE.addContent( createTextElement( "PARTIAL", String.valueOf( Boolean.FALSE ) ) ); //as per SraAnalysisParser.setAssemblyInfo
-            typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
-            typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
-            typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
-            
-            if( null != entry.getMinGapLength() )
-                typeE.addContent( createTextElement( "MIN_GAP_LENGTH", String.valueOf( entry.getMinGapLength() ) ) );
-            
-            if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
-                typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
-            
-            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
-            
+            Element typeE = makeAnalysisType( entry );
             analysisTypeE.addContent( typeE );
+
             Element filesE = new Element( "FILES" );
             analysisE.addContent( filesE );
             

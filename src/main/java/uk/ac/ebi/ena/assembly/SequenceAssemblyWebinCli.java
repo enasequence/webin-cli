@@ -14,7 +14,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
+import org.jdom2.Element;
+
 import uk.ac.ebi.embl.api.entry.Entry;
+import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.entry.reference.Person;
 import uk.ac.ebi.embl.api.entry.reference.Publication;
 import uk.ac.ebi.embl.api.entry.reference.Reference;
@@ -235,5 +238,13 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
     getContext()
     {
         return ContextE.sequence;
+    }
+    
+    
+    Element 
+    makeAnalysisType( AssemblyInfoEntry entry )
+    {
+        Element typeE = new Element( ContextE.sequence.getType() );
+        return typeE;
     }
 }

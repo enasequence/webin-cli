@@ -12,8 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,14 +34,12 @@ import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
-import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
-import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-public class Submit {
-    
-    private final static String ANALYSIS_XML = "analysis.xml";
+public class 
+Submit 
+{
     private final static String RECEIPT_XML = "receipt.xml";
     private String userName;
     private String password;
@@ -77,21 +73,7 @@ public class Submit {
         this.centerName = params.centerName;
         this.submission_tool = submission_tool;
     }
-
-
-    @Deprecated public void 
-    doSubmission() 
-    {
-        File file = createAnalysisXml().toFile(); 
-        try
-        {
-            doSubmission( Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, file, FileUtils.calculateDigest( "MD5", file ) ) ), centerName, submission_tool );
-        } catch( NoSuchAlgorithmException | IOException e )
-        {
-            throw WebinCliException.createSystemError( e.getMessage() );
-        }
-    }
-            
+           
     
     public void 
     doSubmission( List<SubmissionXMLFile> payload_list, String centerName, String submission_tool ) 
@@ -189,51 +171,6 @@ public class Submit {
                 throw WebinCliException.createSystemError(errorsSb.toString());
             }
         } catch (IOException | JDOMException e) {
-            throw WebinCliException.createSystemError(e.getMessage());
-        }
-    }
-
-    @Deprecated private Path createAnalysisXml() {
-        try {
-            Element analysisE = new Element("ANALYSIS");
-            Document doc = new Document(analysisE);
-            analysisE.setAttribute("alias", "ena-ANALYSIS-" + System.currentTimeMillis());
-
-            if( null != centerName && !centerName.isEmpty() )
-                analysisE.setAttribute( "center_name", centerName );
-
-            analysisE.addContent(new Element("TITLE").setText(contextE.getTitle(assemblyName)));
-            Element studyRefE = new Element("STUDY_REF");
-            analysisE.addContent(studyRefE);
-            studyRefE.setAttribute("accession", study);
-            if (sample != null && !sample.isEmpty()) {
-                Element sampleRefE = new Element("SAMPLE_REF");
-                analysisE.addContent(sampleRefE);
-                sampleRefE.setAttribute("accession", sample);
-            }
-            Element analysisTypeE = new Element("ANALYSIS_TYPE");
-            analysisE.addContent(analysisTypeE);
-            analysisTypeE.addContent(new Element(contextE.getType()));
-            Element filesE = new Element("FILES");
-            analysisE.addContent(filesE);
-            Element fileE = new Element("FILE");
-            filesE.addContent(fileE);
-            // Using unix path separator in the Analysis XML.
-            fileE.setAttribute("filename", contextE + "/" + assemblyName + "/" + assemblyName + ".manifest");
-            fileE.setAttribute("filetype", "manifest");
-            fileE.setAttribute("checksum_method", "MD5");
-            fileE.setAttribute("checksum", "");
-            XMLOutputter xmlOutput = new XMLOutputter();
-            xmlOutput.setFormat(Format.getPrettyFormat());
-            StringWriter stringWriter = new StringWriter();
-            xmlOutput.output(doc, stringWriter);
-            Path analysisFile = Paths.get(submitDir + File.separator + ANALYSIS_XML);
-            if (Files.exists(analysisFile))
-                Files.delete(analysisFile);
-            Files.createFile(analysisFile);
-            Files.write(analysisFile, stringWriter.toString().getBytes());
-            return analysisFile;
-        } catch (IOException e) {
             throw WebinCliException.createSystemError(e.getMessage());
         }
     }
