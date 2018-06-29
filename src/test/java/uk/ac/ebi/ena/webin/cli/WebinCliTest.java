@@ -303,8 +303,8 @@ WebinCliTest
         parameters.inputDir   = input_dir.toString();
         parameters.outputDir  = createOutputFolder().getPath();
         parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "INFO " + /*input_dir.relativize( */infofile /*)*/ + "\n"
-                                             + "FASTA " + /*input_dir.relativize( */fastafile /*)*/ ).getBytes( StandardCharsets.UTF_8 ), 
+                                             ( "INFO "  + input_dir.relativize( infofile ) + "\n"
+                                             + "FASTA " + input_dir.relativize( fastafile ) ).getBytes( StandardCharsets.UTF_8 ), 
                                              StandardOpenOption.TRUNCATE_EXISTING ).toString();
         parameters.test = true;
         parameters.validate = true;
@@ -332,7 +332,7 @@ WebinCliTest
         parameters.inputDir   = input_dir.toString();
         parameters.outputDir  = createOutputFolder().getPath();
         parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "FASTA " + /*input_dir.relativize( */fastafile /*)*/ + "\n"
+                                             ( "FASTA " + input_dir.relativize( fastafile ) + "\n"
                                              + getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
                                              StandardOpenOption.TRUNCATE_EXISTING ).toString();
         parameters.test = true;

@@ -350,13 +350,13 @@ public class WebinCli {
 	                                                .append( "\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.manifest + ParameterDescriptor.manifestFlagDescription )
+                                                    .append( "\n" + ParameterDescriptor.inputDir + ParameterDescriptor.inputDirFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.outputDir + ParameterDescriptor.outputDirFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.validate + ParameterDescriptor.validateFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.submit + ParameterDescriptor.submitFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.centerName + ParameterDescriptor.centerNameFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.tryAscp + ParameterDescriptor.tryAscpDescription )
 	                                                .append( "\n" + ParameterDescriptor.version + ParameterDescriptor.versionFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.inputDir + ParameterDescriptor.inputDirFlagDescription )
 	                                                .append( "\n" ).toString() );
 		writeReturnCodes();
 		System.exit( SUCCESS );
