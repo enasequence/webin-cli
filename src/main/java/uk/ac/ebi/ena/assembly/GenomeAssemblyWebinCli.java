@@ -156,7 +156,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 		{
 			throw new ValidationEngineException(e.getMessage());
 		}
-
 	}
 
 

@@ -150,11 +150,22 @@ suffix:     while( suffixes.length > 0 )
         List<File> flatFiles  = new ArrayList<>();
         List<File> agpFiles   = new ArrayList<>();
         List<File> tsvFiles   = new ArrayList<>();
+        File infoFile = null; 
+        File __infoFile = File.createTempFile( manifest_file.getName() + ".", ".info" );
         
         for( ManifestObj obj : reader.getManifestFileObjects() )
         {
+            if( null == obj.getFileFormat() )
+            {
+            	Files.write( __infoFile.toPath(), 
+				     	     String.format( "%s\n", String.valueOf( obj ) ).getBytes( StandardCharsets.UTF_8 ),
+				             StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.SYNC );
+            	continue;
+            }
+
             String fileName = obj.getFileName();
             File file = Paths.get( fileName ).isAbsolute() ? new File( fileName ) : new File( getParameters().getInputDir(), fileName );
+            
             switch( obj.getFileFormat() ) 
             {
             case CHROMOSOME_LIST:
@@ -179,7 +190,7 @@ suffix:     while( suffixes.length > 0 )
                 infoFile = file;
                 break;                
             default:
-                break;
+            	break;
             }
         }
         
@@ -187,6 +198,7 @@ suffix:     while( suffixes.length > 0 )
         this.flatFiles  = checkFiles( flatFiles, true );
         this.agpFiles   = checkFiles( agpFiles, true, ".agp" );
         this.tsvFiles   = checkFiles( tsvFiles, true, ".tab", ".tsv" );
+        this.infoFile   = null == infoFile ? __infoFile : infoFile; 
     }
 
     
@@ -478,7 +490,7 @@ suffix:     while( suffixes.length > 0 )
     protected String
     extractSubpath( File inputDir, File file ) throws IOException
     {
-        return inputDir.toPath().relativize( file.toPath() ).toString();
+        return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
     
     
@@ -502,40 +514,54 @@ suffix:     while( suffixes.length > 0 )
     }
     
     
+    protected List<File>
+    getUploadFiles() throws IOException
+    {
+        List<File> uploadFileList = new ArrayList<>();
+        if( null != chromosomeListFile )
+            uploadFileList.add( chromosomeListFile );           
+        
+        if( null != unlocalisedListFile )
+            uploadFileList.add( unlocalisedListFile );
+        
+        uploadFileList.addAll( fastaFiles );
+        uploadFileList.addAll( flatFiles );
+        uploadFileList.addAll( agpFiles );
+        uploadFileList.addAll( tsvFiles );
+       
+        return uploadFileList;
+    }
+    
+    
+    protected List<Element>
+    getXMLFiles( Path uploadDir ) throws IOException
+    {
+        List<Element> eList = new ArrayList<>();
+
+        if( null != chromosomeListFile )
+            eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
+        
+        if( null != unlocalisedListFile )
+            eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
+        
+        fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
+        flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
+        agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
+        tsvFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
+
+        return eList;
+    }
+    
+    
     @Override public void
     prepareSubmissionBundle() throws WebinCliException
     {
         try
         {
-            List<File> uploadFileList = new ArrayList<>();
-    
             Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
-            List<Element> eList = new ArrayList<>();
-    
-            if( null != chromosomeListFile )
-            {
-                eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
-                uploadFileList.add( chromosomeListFile );           
-            }
-            
-            if( null != unlocalisedListFile )
-            {
-                eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
-                uploadFileList.add( unlocalisedListFile );
-            }
-            
-            fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
-            uploadFileList.addAll( fastaFiles );
-            
-            flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
-            uploadFileList.addAll( flatFiles );
-            
-            agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
-            uploadFileList.addAll( agpFiles );
-            
-            tsvFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
-            uploadFileList.addAll( tsvFiles );
-            
+            List<File> uploadFileList = getUploadFiles();
+            List<Element> eList = getXMLFiles( uploadDir );
+
             String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
             
             Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );

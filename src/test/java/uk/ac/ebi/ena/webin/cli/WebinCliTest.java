@@ -58,6 +58,37 @@ WebinCliTest
     {
         Path input_dir = createOutputFolder().toPath();
         Path cram_file = copyRandomized( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
+        Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE" ), 
+                                     getRawReadsInfoPart( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                     StandardOpenOption.TRUNCATE_EXISTING );
+
+        WebinCli.Params parameters = new WebinCli.Params();
+        parameters.userName = usernm;
+        parameters.password = passwd;
+        parameters.context  = ContextE.reads.toString();
+        parameters.centerName = "C E N T E R N A M E";
+        parameters.inputDir   = input_dir.toString();
+        parameters.outputDir  = createOutputFolder().getPath();
+        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
+                                             ( "INFO " + input_dir.relativize( infofile ) + "\n"
+                                             + "CRAM " + input_dir.relativize( cram_file ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
+        parameters.test = true;
+        parameters.validate = true;
+        parameters.submit   = true;
+        
+        WebinCli webinCli = new WebinCli();
+        webinCli.init( parameters );
+        webinCli.setTestMode( true );
+        webinCli.execute();
+    }
+    
+    
+    @Test public void
+    testRawReadsSubmissionEmbeddedInfo() throws Exception
+    {
+        Path input_dir = createOutputFolder().toPath();
+        Path cram_file = copyRandomized( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
         
         WebinCli.Params parameters = new WebinCli.Params();
         parameters.userName = usernm;
@@ -77,9 +108,8 @@ WebinCliTest
         webinCli.init( parameters );
         webinCli.setTestMode( true );
         webinCli.execute();
-
     }
-    
+
     
     public Path
     copyRandomized( String resource_name, Path folder, boolean compress, String...suffix ) throws IOException
@@ -157,8 +187,40 @@ WebinCliTest
         webinCli.init( parameters );
         webinCli.setTestMode( true );
         webinCli.execute();
-
     }
+    
+    
+    @Test public void
+    testGenomeSubmissionEmbeddedInfo() throws Exception
+    {
+        Path input_dir = createOutputFolder().toPath();
+        
+        Path flatfile = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
+        Path agpfile  = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
+
+        WebinCli.Params parameters = new WebinCli.Params();
+        parameters.userName = usernm;
+        parameters.password = passwd;
+        parameters.context  = ContextE.genome.toString();
+        parameters.centerName = "C E N T E R N A M E";
+        parameters.inputDir   = input_dir.toString();
+        parameters.outputDir  = createOutputFolder().getPath();
+        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
+                                             ( "FLATFILE " + input_dir.relativize( flatfile ) + "\n"
+                                             + "AGP " + input_dir.relativize(  agpfile ) + "\n" 
+                                             + getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
+        
+        parameters.test = true;
+        parameters.validate = true;
+        parameters.submit   = true;
+        
+        WebinCli webinCli = new WebinCli();
+        webinCli.init( parameters );
+        webinCli.setTestMode( true );
+        webinCli.execute();
+    }
+    
     
     
     @Test public void
@@ -192,6 +254,35 @@ WebinCliTest
         webinCli.setTestMode( true );
         webinCli.execute();
     }
+    
+    
+    @Test public void
+    testSequenceSubmissionEmbeddedInfo() throws Exception
+    {
+        Path input_dir = createOutputFolder().toPath();
+        
+        Path tabfile = copyRandomized( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
+        WebinCli.Params parameters = new WebinCli.Params();
+        parameters.userName = usernm;
+        parameters.password = passwd;
+        parameters.context  = ContextE.sequence.toString();
+        parameters.centerName = "C E N T E R N A M E";
+        parameters.inputDir   = input_dir.toString();
+        parameters.outputDir  = createOutputFolder().getPath();
+        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
+                                             ( "TAB " + input_dir.relativize( tabfile ) + "\n"
+                                             + getAssemblyInfoForSequence( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
+        parameters.test = true;
+        parameters.validate = true;
+        parameters.submit   = true;
+        
+        WebinCli webinCli = new WebinCli();
+        webinCli.init( parameters );
+        webinCli.setTestMode( true );
+        webinCli.execute();
+    }
+
 
     //TODO update when inputDir supported
     @Test public void
@@ -214,6 +305,35 @@ WebinCliTest
         parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
                                              ( "INFO " + /*input_dir.relativize( */infofile /*)*/ + "\n"
                                              + "FASTA " + /*input_dir.relativize( */fastafile /*)*/ ).getBytes( StandardCharsets.UTF_8 ), 
+                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
+        parameters.test = true;
+        parameters.validate = true;
+        parameters.submit   = true;
+        
+        WebinCli webinCli = new WebinCli();
+        webinCli.init( parameters );
+        webinCli.setTestMode( true );
+        webinCli.execute();
+    }
+
+    
+    //TODO update when inputDir supported
+    @Test public void
+    testTranscriptomeSubmissionEmbeddedInfo() throws Exception
+    {
+        Path input_dir = createOutputFolder().toPath();
+
+        Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
+        WebinCli.Params parameters = new WebinCli.Params();
+        parameters.userName = usernm;
+        parameters.password = passwd;
+        parameters.context  = ContextE.transcriptome.toString();
+        parameters.centerName = "C E N T E R N A M E";
+        parameters.inputDir   = input_dir.toString();
+        parameters.outputDir  = createOutputFolder().getPath();
+        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
+                                             ( "FASTA " + /*input_dir.relativize( */fastafile /*)*/ + "\n"
+                                             + getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
                                              StandardOpenOption.TRUNCATE_EXISTING ).toString();
         parameters.test = true;
         parameters.validate = true;
