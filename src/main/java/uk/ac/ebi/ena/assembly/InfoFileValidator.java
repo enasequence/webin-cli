@@ -2,11 +2,15 @@ package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.FileType;
+import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
@@ -15,62 +19,102 @@ import uk.ac.ebi.embl.api.validation.plan.EmblEntryValidationPlanProperty;
 import uk.ac.ebi.embl.api.validation.plan.GenomeAssemblyValidationPlan;
 import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.AssemblyInfoReader;
-import uk.ac.ebi.ena.manifest.FileFormat;
-import uk.ac.ebi.ena.manifest.ManifestFileReader;
-import uk.ac.ebi.ena.manifest.ManifestObj;
+import uk.ac.ebi.embl.flatfile.validation.FlatFileOrigin;
 import uk.ac.ebi.ena.submit.ContextE;
-import uk.ac.ebi.ena.utils.FileUtils;
 
-public class InfoFileValidator {
+public class 
+InfoFileValidator 
+{
+	private AssemblyInfoEntry assemblyInfoEntry = null;
+	ValidationResult validationResult = new ValidationResult();
 	
-	private AssemblyInfoEntry assemblyInfoEntry=null;
-	private File reportFile =null;
 	
-    @Deprecated public AssemblyInfoEntry 
-    getAssemblyEntry( File assemblyInfoFile, ValidationResult parseResult) throws IOException
+	public AssemblyInfoEntry
+	getAssemblyEntry()
+	{
+	    return this.assemblyInfoEntry;
+	}
+	
+	
+    AssemblyInfoEntry 
+    parseAssemblyEntry( File assemblyInfoFile, ValidationResult parseResult ) throws IOException
     {
-        if (assemblyInfoFile == null)
+        if( assemblyInfoFile == null )
             return null;
-        AssemblyInfoReader reader = new AssemblyInfoReader(assemblyInfoFile);;
-        parseResult.append(reader.read());
-        if (reader.isEntry())
-            return (AssemblyInfoEntry) reader.getEntry();
+        
+        AssemblyInfoReader reader = new AssemblyInfoReader( assemblyInfoFile );
+        parseResult.append( reader.read() );
+        if( reader.isEntry() )
+            return ( AssemblyInfoEntry ) reader.getEntry();
+        
         return null;
     }
 
-	
-    public boolean 
-    validate( File assembly_info, String reportDir, ContextE context ) throws IOException, ValidationEngineException 
-    {
-        ValidationResult assemblyInfoParseResult= new ValidationResult();
-        assemblyInfoEntry = getAssemblyEntry( assembly_info, assemblyInfoParseResult );
-        reportFile=new File( reportDir, assembly_info.getName() + ".report" );
 
-        boolean valid = assemblyInfoParseResult.isValid();
+    boolean
+    read( File assembly_info, Map<Integer, Integer> line_number_list ) throws IOException
+    {
+        assemblyInfoEntry = parseAssemblyEntry( assembly_info, validationResult );
+        if( null != line_number_list && !line_number_list.isEmpty() )
+            translateLineNumbers( validationResult, line_number_list );
         
-        FileUtils.writeReport( reportFile, assemblyInfoParseResult.getMessages(), reportFile.getName() );
-        if (assemblyInfoEntry != null) {
-            EmblEntryValidationPlanProperty property= new EmblEntryValidationPlanProperty();
-            property.isRemote.set(true);
-            property.fileType.set(FileType.ASSEMBLYINFO);
-            ValidationPlan validationPlan = getValidationPlan(assemblyInfoEntry, property);
-            ValidationPlanResult vpr = validationPlan.execute( assemblyInfoEntry );
-            
-            valid &= vpr.isValid(); 
-            FileUtils.writeReport( reportFile, vpr.getMessages(), reportFile.getName() );
-            if( ContextE.transcriptome.equals( context ) )
-                property.validationScope.set(ValidationScope.ASSEMBLY_TRANSCRIPTOME);
-        }
-        return valid;
+        return validationResult.isValid();
+    }
+   
+    
+    public ValidationResult
+    getValidationResult()
+    {
+        return validationResult;
     }
     
     
-	public boolean 
-	validate( ManifestFileReader manifestFileReader,String reportDir,String context ) throws IOException, ValidationEngineException {
-		Optional<ManifestObj> obj=manifestFileReader.getManifestFileObjects().stream().filter(p->(FileFormat.INFO.equals(p.getFileFormat()))).findFirst();
-		return validate( new File( obj.get().getFileName() ), reportDir, ContextE.getContext( context ) );
-   	}
-	
+    public boolean 
+    validate( ContextE context ) throws IOException, ValidationEngineException 
+    {
+        if( assemblyInfoEntry != null )
+        {
+            EmblEntryValidationPlanProperty property = new EmblEntryValidationPlanProperty();
+            property.isRemote.set( true );
+            property.fileType.set( FileType.ASSEMBLYINFO );
+            
+            if( ContextE.transcriptome.equals( context ) )
+                property.validationScope.set( ValidationScope.ASSEMBLY_TRANSCRIPTOME );
+
+            ValidationPlan validationPlan = getValidationPlan( assemblyInfoEntry, property );
+            ValidationPlanResult vpr = validationPlan.execute( assemblyInfoEntry );
+            validationResult.append( vpr.getMessages() );
+             
+        }
+        
+        return validationResult.isValid(); 
+    }
+    
+    
+	private void 
+	translateLineNumbers( ValidationResult assemblyInfoParseResult, Map<Integer, Integer> line_number_list )
+    {
+	    for( ValidationMessage<Origin> m : assemblyInfoParseResult.getMessages() )
+	    {
+	        List<Origin> tset = new ArrayList<>( m.getOrigins().size() );
+	        for( Origin o :  m.getOrigins() )
+	        {
+	            if( o instanceof FlatFileOrigin )
+	            {
+	                FlatFileOrigin ffo = ( (FlatFileOrigin) o);
+	                FlatFileOrigin nf = new FlatFileOrigin( ffo.getFileId(), line_number_list.get( ffo.getFirstLineNumber() ), line_number_list.get( ffo.getLastLineNumber() ) ); 
+	                tset.add( nf );
+	            } else
+	            {
+	                tset.add( o );
+	            }
+	        }
+	        
+	        m.getOrigins().clear();
+	        m.getOrigins().addAll( tset );
+	    }
+    }
+
 
 	public ValidationPlan getValidationPlan(Object entry,EmblEntryValidationPlanProperty property)
 	{
@@ -78,15 +122,5 @@ public class InfoFileValidator {
 		validationPlan.addMessageBundle(ValidationMessageManager.GENOMEASSEMBLY_VALIDATION_BUNDLE);
 		validationPlan.addMessageBundle(ValidationMessageManager.GENOMEASSEMBLY_FIXER_BUNDLE);
 		return validationPlan;
-	}
-	
-	public AssemblyInfoEntry getentry()
-	{
-		return assemblyInfoEntry;
-	}
-	
-	public File getReportFile()
-	{
-		return reportFile;
 	}
 }

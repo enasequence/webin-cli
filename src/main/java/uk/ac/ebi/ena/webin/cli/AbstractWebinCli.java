@@ -37,7 +37,7 @@ AbstractWebinCli
     public void 
     init( WebinCliParameters parameters ) throws ValidationEngineException
     {
-        this.parameters = parameters;
+        setParameters( parameters );
     }
     
     
@@ -120,6 +120,13 @@ AbstractWebinCli
     getParameters()
     {
         return this.parameters;
+    }
+    
+   
+    protected void
+    setParameters( WebinCliParameters parameters )
+    {
+        this.parameters = parameters;
     }
     
     
