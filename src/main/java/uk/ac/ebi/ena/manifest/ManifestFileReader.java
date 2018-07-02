@@ -47,10 +47,14 @@ public class ManifestFileReader
 					if( m.find() )
 					{
 					    if( null == m.group( 1 ) )
-					        manifestObjList.add( new ManifestObj( m.group( 2 ), m.group( 3 ) ) );
+					    {
+					        ManifestObj mo = new ManifestObj( m.group( 2 ), m.group( 3 ) );
+					        mo.setLineNo( i );
+					        manifestObjList.add( mo );
+					    }
 					} else
 					{
-						result.append(new ValidationResult().append(new ValidationMessage<>(Severity.ERROR,InvalidNoOfColumns,i)));
+						result.append( new ValidationResult().append( new ValidationMessage<>( Severity.ERROR, InvalidNoOfColumns, i ) ) );
 					} 
 				}
 
