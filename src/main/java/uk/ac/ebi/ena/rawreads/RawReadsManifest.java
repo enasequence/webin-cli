@@ -501,6 +501,9 @@ RawReadsManifest
                 if( null == f.getFiletype() )
                     reportUserError( source, line_no, "No file type supplied. Valid are: " + Stream.of( Filetype.values() ).map( String::valueOf ).collect( Collectors.joining( ", " ) ) );
 
+                if( !checkFileSuffixes( f.getFilename(), f.getFiletype().permitted_suffixes ) )
+                    reportUserError( source, line_no, "Only following file suffixes are allowed: " + Arrays.asList( f.getFiletype().permitted_suffixes ) );
+                    
                 if( Compression.NONE != f.getCompression() && ( Filetype.bam == f.getFiletype() || Filetype.cram == f.getFiletype() ) )
                     reportUserError( source, line_no, "Compression not supported for types " + Filetype.bam + " and " + Filetype.cram );
                 
@@ -521,6 +524,22 @@ RawReadsManifest
         return files;
     }
 
+    
+    private boolean
+    checkFileSuffixes( String filename, String...suffixes )
+    {
+        if( null == suffixes || 0 == suffixes.length )
+            return true;
+                    
+        for( String suffix : suffixes )
+        {
+            if( filename.endsWith( suffix ) ) 
+                return true;
+        }       
+        
+        return false;
+    }
+ 
 
     private void 
     reportTokenDuplication( String source, int line_no, String token )
