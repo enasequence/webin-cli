@@ -116,6 +116,58 @@ SequenceWebinCliTest
     }
     
     
+    @Test public void 
+    testTranscriptomeXML() throws Exception 
+    {
+        final String __trname = "transcriptome-assembly-name";
+        final String __trprogram = "p-r-o-g-r-a-m";
+        final String __trplatform = "p-l-a-t-f-o-r-m";
+        
+        SequenceWebinCli s = new TranscriptomeAssemblyWebinCli();
+
+        Path fasta_file = Files.write( File.createTempFile( "FASTA", "FASTA" ).toPath(), ">123\nACGT".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
+        s.getParameters().setInputDir( fasta_file.getParent().toFile() );
+        s.setTestMode( true );
+        s.setName( "123" );
+        AssemblyInfoEntry aie = new AssemblyInfoEntry();
+        aie.setSampleId( "sample_id" );
+        aie.setStudyId( "study_id" );
+        aie.setPlatform( __trplatform );
+        aie.setName( __trname );
+        aie.setProgram( __trprogram );
+        File submit_dir = createOutputFolder();
+        s.setSubmitDir( submit_dir );
+        s.setAssemblyInfo( aie );
+        s.defineFileTypes( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                        ( "INFO 123.gz\nFASTA " + fasta_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
+                                        StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        
+        s.prepareSubmissionBundle();
+        
+        SubmissionBundle sb = s.getSubmissionBundle();
+        Assert.assertTrue( Files.isSameFile( sb.getSubmitDirectory().toPath(), submit_dir.toPath() ) );
+        Assert.assertTrue( sb.getXMLFileList().get( 0 ).getFile().exists() );
+        
+        String xmlfile = new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 );
+
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<NAME>" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<NAME>" + __trname ) );
+        
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PROGRAM>" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PROGRAM>" + __trprogram ) );
+        
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PLATFORM>" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PLATFORM>" + __trplatform ) );
+
+        Assert.assertTrue( xmlfile, xmlfile.contains( fasta_file.getFileName() + "\"" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "6f82bc96add84ece757afad265d7e341" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "FASTA" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "MD5" ) );
+        Assert.assertTrue( xmlfile, !xmlfile.contains( "123.gz" ) );
+        Assert.assertTrue( xmlfile, !xmlfile.contains( "INFO" ) );
+    }
+
+    
     public Path
     copyRandomized( String resource_name, Path folder, boolean compress, String...suffix ) throws IOException
     {
