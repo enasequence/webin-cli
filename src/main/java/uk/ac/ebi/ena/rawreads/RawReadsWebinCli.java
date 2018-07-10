@@ -90,7 +90,7 @@ RawReadsWebinCli extends AbstractWebinCli
             super.init( parameters );
 
             defineFileTypes( getParameters().getManifestFile() );
-            
+//            setAssemblyInfo( defineInfo( infoFile ) );
             setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
             
             setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
@@ -418,8 +418,7 @@ RawReadsWebinCli extends AbstractWebinCli
     }
 
 
-    private void 
-    reportToFileList( List<RawReadsFile> files, String msg )
+    private void reportToFileList( List<RawReadsFile> files, String msg )
     {
         for( RawReadsFile rf : files )
         {

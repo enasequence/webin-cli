@@ -199,7 +199,7 @@ suffix:     while( suffixes.length > 0 )
             }
         }
         
-        this.fastaFiles = checkFiles( fastaFiles, true, ".fasta", ".fas", ".fsa", ".fna", ".fa" );
+        this.fastaFiles = checkFiles( fastaFiles, true, ".fasta", ".fa" );
         this.flatFiles  = checkFiles( flatFiles, true );
         this.agpFiles   = checkFiles( agpFiles, true, ".agp" );
         this.tsvFiles   = checkFiles( tsvFiles, true, ".tab", ".tsv" );

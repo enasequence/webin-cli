@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -227,15 +228,31 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 		return ContextE.transcriptome;
 	}
 	
+	
+    protected List<File>
+    getUploadFiles() throws IOException
+    {
+        List<File> uploadFileList = super.getUploadFiles();
+        infoFile = FileUtils.gZipFile( infoFile );
+        uploadFileList.add( infoFile );
+        return uploadFileList;
+    }
+    
+    
+    protected List<Element>
+    getXMLFiles( Path uploadDir ) throws IOException
+    {
+        List<Element> eList = super.getXMLFiles( uploadDir );
+        infoFile = FileUtils.gZipFile( infoFile );
+        eList.add( createfileElement( uploadDir, infoFile, "info" ) );
+        return eList;
+    }
+
     
     Element 
     makeAnalysisType( AssemblyInfoEntry entry )
     {
         Element typeE = new Element( ContextE.transcriptome.getType() );
-        typeE.addContent( createTextElement( "NAME", entry.getName() ) );
-        typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
-        typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
-
         return typeE;
     }
 }
