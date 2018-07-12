@@ -78,6 +78,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	private String sequencelessChromosomesCheck= "ChromosomeListSequenelessCheck";
 	private String molType = "genomic DNA";
     private boolean valid;
+    private int i;
 
 	
     public 
@@ -130,6 +131,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
     validateInternal() throws ValidationEngineException 
     {
 		boolean valid = true;
+		i=1;
 		try 
 		{
             EmblEntryValidationPlanProperty property = getValidationProperties();
@@ -340,19 +342,20 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
             
             ValidationResult vr = reader.read();
             int i=1;
-            for(AgpRow agpRow: ((Entry)reader.getEntry()).getSequence().getSortedAGPRows())
-            {
-            	i++;
-              	if(!agpRow.isGap())
-            	{
-            	   contigRangeMap.put(agpRow.getComponent_id().toUpperCase()+"_"+i,agpRow);
-            	}
-            }
+            
             FileUtils.writeReport( getReportFile(  FileFormat.AGP, file.getName() ), vr );
             
             while( ( valid &= vr.isValid() ) && reader.isEntry() )
             {
                 agpEntrynames.add( ( (Entry) reader.getEntry() ).getSubmitterAccession().toUpperCase() );
+                for(AgpRow agpRow: ((Entry)reader.getEntry()).getSequence().getSortedAGPRows())
+                {
+                	i++;
+                  	if(!agpRow.isGap())
+                	{
+                	   contigRangeMap.put(agpRow.getComponent_id().toUpperCase()+"_"+i,agpRow);
+                	}
+                }
                 vr = reader.read();
             }
             
@@ -680,8 +683,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
     
     public void constructAGPSequence(Entry entry)
     {
-    	 int i=1;
-    	 
  		ByteBuffer sequenceBuffer=ByteBuffer.wrap(new byte[new Long(entry.getSequence().getLength()).intValue()]);
  
          for(AgpRow agpRow: entry.getSequence().getSortedAGPRows())
@@ -702,6 +703,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
            		sequenceBuffer.put(StringUtils.repeat("N".toLowerCase(), agpRow.getGap_length().intValue()).getBytes());           	
          }
          entry.getSequence().setSequence(sequenceBuffer);
+         String v = new String(sequenceBuffer.array());
+         System.out.println(v);
+
     }
     
 }
