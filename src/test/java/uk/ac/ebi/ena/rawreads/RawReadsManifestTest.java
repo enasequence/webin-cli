@@ -73,7 +73,7 @@ RawReadsManifestTest
                                 + RawReadsManifestTags.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
                                 + RawReadsManifestTags.INSERT_SIZE       + " 100500\n"
                                 + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
         Assert.assertNull( rm.getStudyId() );
@@ -125,7 +125,7 @@ RawReadsManifestTest
 
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
                                 ( "INFO " + inf.getFileName() + "\n"
-                                + "BAM " + Files.createTempFile( inf.getParent(), "TEMP", "FILE" ).getFileName() ).getBytes(),
+                                + "CRAM " + Files.createTempFile( inf.getParent(), "TEMP", "FILE.cram" ).getFileName() ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
                                 
         RawReadsManifest rm = new RawReadsManifest();
@@ -171,7 +171,7 @@ RawReadsManifestTest
                                 + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
                                 + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
                                 + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
         rm.defineFileTypes( Paths.get( "." ), man.toFile() );
@@ -192,7 +192,7 @@ RawReadsManifestTest
                                 + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
                                 + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
                                 + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
         rm.defineFileTypes( Paths.get( "." ), man.toFile() );
@@ -213,7 +213,7 @@ RawReadsManifestTest
                                 + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
                                 + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
                                 + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
         rm.defineFileTypes( Paths.get( "." ), man.toFile() );
