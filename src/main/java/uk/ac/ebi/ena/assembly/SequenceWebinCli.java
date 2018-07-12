@@ -13,7 +13,9 @@ import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
@@ -67,6 +69,7 @@ SequenceWebinCli extends AbstractWebinCli
     protected List<File> tsvFiles;
     private Study  study;
     private Sample sample;
+    private Map<Integer, Integer> line_number_map;
     
     
     protected abstract boolean validateInternal() throws ValidationEngineException;
@@ -145,13 +148,14 @@ suffix:     while( suffixes.length > 0 )
     {
         ManifestFileReader reader = new ManifestFileReader();
         reader.read( manifest_file.getPath() );
-
+        Map<Integer, Integer> line_number_map = new HashMap<>();
         List<File> fastaFiles = new ArrayList<>();
         List<File> flatFiles  = new ArrayList<>();
         List<File> agpFiles   = new ArrayList<>();
         List<File> tsvFiles   = new ArrayList<>();
         File infoFile = null; 
         File __infoFile = File.createTempFile( manifest_file.getName() + ".", ".info" );
+        int __info_lineno = 1;
         
         for( ManifestObj obj : reader.getManifestFileObjects() )
         {
@@ -160,6 +164,7 @@ suffix:     while( suffixes.length > 0 )
             	Files.write( __infoFile.toPath(), 
 				     	     String.format( "%s\n", String.valueOf( obj ) ).getBytes( StandardCharsets.UTF_8 ),
 				             StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.SYNC );
+            	line_number_map.put( __info_lineno ++, obj.getLineNo() );
             	continue;
             }
 
@@ -194,23 +199,40 @@ suffix:     while( suffixes.length > 0 )
             }
         }
         
-        this.fastaFiles = checkFiles( fastaFiles, true, ".fasta", ".fa" );
+        this.fastaFiles = checkFiles( fastaFiles, true, ".fasta", ".fas", ".fsa", ".fna", ".fa" );
         this.flatFiles  = checkFiles( flatFiles, true );
         this.agpFiles   = checkFiles( agpFiles, true, ".agp" );
         this.tsvFiles   = checkFiles( tsvFiles, true, ".tab", ".tsv" );
         this.infoFile   = null == infoFile ? __infoFile : infoFile; 
+        this.line_number_map = line_number_map;
     }
 
-    
-    
     
     protected AssemblyInfoEntry
     defineInfo( File info_file ) throws IOException, ValidationEngineException
     {
         InfoFileValidator infoValidator = new InfoFileValidator();
-        if( !infoValidator.validate( info_file, getParameters().getOutputDir().getPath(), getContext() ) )
-            throw WebinCliException.createUserError( INVALID_INFO, infoValidator.getReportFile().getAbsolutePath() );
-        return infoValidator.getentry();
+        
+        File reportFile = getReportFile( "", line_number_map.isEmpty() ? infoFile.getName() : getParameters().getManifestFile().getName() );
+        
+        if( infoValidator.read( infoFile, line_number_map ) )
+        {
+            AssemblyInfoEntry assembly_info = infoValidator.getAssemblyEntry();
+            reportFile = getReportFile( FileFormat.INFO, assembly_info.getName() );
+            
+            if( !infoValidator.validate( getContext() ) )
+            {
+                FileUtils.writeReport( reportFile, infoValidator.getValidationResult() );
+                throw WebinCliException.createUserError( INVALID_INFO, reportFile.getPath() );
+            }
+            
+            return assembly_info;
+            
+        } else
+        {
+            FileUtils.writeReport( reportFile, infoValidator.getValidationResult() );
+            throw WebinCliException.createUserError( INVALID_INFO, reportFile.getPath() );
+        }
     }
     
     
@@ -222,8 +244,10 @@ suffix:     while( suffixes.length > 0 )
     {
         try
         {
+            
             super.init( parameters );
 
+            setValidationDir( createOutputSubdir( "." ) );
             defineFileTypes( getParameters().getManifestFile() );
             if( null == infoFile )
                 throw WebinCliException.createUserError( "Info file not defined" );
@@ -567,5 +591,4 @@ suffix:     while( suffixes.length > 0 )
             throw WebinCliException.createSystemError( e.getMessage() );
         }        
     }
-
 }

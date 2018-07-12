@@ -2,12 +2,19 @@ package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 
 import org.jdom2.Element;
 import org.junit.Assert;
@@ -16,8 +23,11 @@ import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class
 SequenceWebinCliTest
@@ -105,4 +115,181 @@ SequenceWebinCliTest
         //System.out.println( xmlfile );
     }
     
+    
+    @Test public void 
+    testTranscriptomeXML() throws Exception 
+    {
+        final String __trname = "transcriptome-assembly-name";
+        final String __trprogram = "p-r-o-g-r-a-m";
+        final String __trplatform = "p-l-a-t-f-o-r-m";
+        
+        SequenceWebinCli s = new TranscriptomeAssemblyWebinCli();
+
+        Path fasta_file = Files.write( File.createTempFile( "FASTA", "FASTA" ).toPath(), ">123\nACGT".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
+        s.getParameters().setInputDir( fasta_file.getParent().toFile() );
+        s.setTestMode( true );
+        s.setName( "123" );
+        AssemblyInfoEntry aie = new AssemblyInfoEntry();
+        aie.setSampleId( "sample_id" );
+        aie.setStudyId( "study_id" );
+        aie.setPlatform( __trplatform );
+        aie.setName( __trname );
+        aie.setProgram( __trprogram );
+        File submit_dir = createOutputFolder();
+        s.setSubmitDir( submit_dir );
+        s.setAssemblyInfo( aie );
+        s.defineFileTypes( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                        ( "INFO 123.gz\nFASTA " + fasta_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
+                                        StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        
+        s.prepareSubmissionBundle();
+        
+        SubmissionBundle sb = s.getSubmissionBundle();
+        Assert.assertTrue( Files.isSameFile( sb.getSubmitDirectory().toPath(), submit_dir.toPath() ) );
+        Assert.assertTrue( sb.getXMLFileList().get( 0 ).getFile().exists() );
+        
+        String xmlfile = new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 );
+
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<NAME>" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<NAME>" + __trname ) );
+        
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PROGRAM>" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PROGRAM>" + __trprogram ) );
+        
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PLATFORM>" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "<PLATFORM>" + __trplatform ) );
+
+        Assert.assertTrue( xmlfile, xmlfile.contains( fasta_file.getFileName() + "\"" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "6f82bc96add84ece757afad265d7e341" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "FASTA" ) );
+        Assert.assertTrue( xmlfile, xmlfile.contains( "MD5" ) );
+        Assert.assertTrue( xmlfile, !xmlfile.contains( "123.gz" ) );
+        Assert.assertTrue( xmlfile, !xmlfile.contains( "INFO" ) );
+    }
+
+    
+    public Path
+    copyRandomized( String resource_name, Path folder, boolean compress, String...suffix ) throws IOException
+    {
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( resource_name );
+        File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
+        Path path = Files.createTempFile( folder, "COPY", file.getName() + ( suffix.length > 0 ? Stream.of( suffix ).collect( Collectors.joining( "" ) ) : "" ) );
+        OutputStream os;
+        Files.copy( file.toPath(), ( os = compress ? new GZIPOutputStream( Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) 
+                                            : Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) );
+        os.flush();
+        os.close();
+        Assert.assertTrue( Files.exists( path ) );
+        Assert.assertTrue( Files.isRegularFile( path ) );
+        return path;
+    }
+    
+    
+    @Test( expected = WebinCliException.class ) public void
+    manifestEmbeddedInfo() throws ValidationEngineException, IOException
+    {
+        SequenceWebinCli s = new SequenceWebinCli() {
+            @Override protected boolean validateInternal() throws ValidationEngineException { return false; }
+            @Override Element makeAnalysisType(AssemblyInfoEntry entry) { return null; }
+            @Override ContextE getContext() { return null; }
+            @Override public void init( WebinCliParameters parameters ) { setParameters( parameters ); setValidationDir( parameters.getOutputDir() ); } 
+            
+        };
+        
+        Path input_dir = createOutputFolder().toPath();
+        Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
+        
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
+                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
+                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
+                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
+                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
+                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
+                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
+                + "FASTA " + input_dir.relativize( fastafile ).toString() ).getBytes(),
+                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
+        WebinCliParameters parameters = new WebinCliParameters();
+                
+        parameters.setManifestFile( man.toFile() );
+        parameters.setInputDir( input_dir.toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+
+        s.init( parameters );
+        s.getParameters().setManifestFile( man.toFile() );
+        s.getParameters().setInputDir( input_dir.toFile() );
+        s.getParameters().setOutputDir( createOutputFolder() );
+        s.defineFileTypes( man.toFile() );
+        
+        Assert.assertTrue( s.infoFile.getName().contains( man.getFileName().toString() ) );
+        Assert.assertEquals( 1, s.fastaFiles.size() );
+        
+        s.defineInfo( s.infoFile );
+    }
+
+
+    @Test public void
+    manifestSeparatedInfo() throws ValidationEngineException, IOException
+    {
+        SequenceWebinCli s = new SequenceWebinCli() {
+            @Override protected boolean validateInternal() throws ValidationEngineException { return false; }
+            @Override Element makeAnalysisType(AssemblyInfoEntry entry) { return null; }
+            @Override ContextE getContext() { return null; }
+            @Override public void init( WebinCliParameters parameters ) { 
+                setParameters( parameters ); 
+                setValidationDir( parameters.getOutputDir() ); 
+            } 
+            
+        };
+        
+        Path input_dir = createOutputFolder().toPath();
+        Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
+
+        Path info = Files.write( Files.createTempFile( input_dir, "TEMP", ".info" ), 
+                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
+                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
+                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
+                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
+                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
+                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
+                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n " ).getBytes(),
+                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+        
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+                ( "INFO "  + input_dir.relativize( info ) + "\n"
+                + "FASTA " + input_dir.relativize( fastafile ).toString() ).getBytes(),
+                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
+        WebinCliParameters parameters = new WebinCliParameters();
+                
+        parameters.setManifestFile( man.toFile() );
+        parameters.setInputDir( input_dir.toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+
+        s.init( parameters );
+        s.defineFileTypes( man.toFile() );
+        
+        Assert.assertTrue( Files.isSameFile( info, s.infoFile.toPath() ) );
+        Assert.assertEquals( 1, s.fastaFiles.size() );
+        
+        try
+        {
+            s.defineInfo( s.infoFile );
+            Assert.assertTrue( false );
+            
+        } catch( WebinCliException e )
+        {
+            List<Path> files = Files.find( s.getParameters().getOutputDir().toPath(), 
+                                           1, 
+                                           ( path, attr ) -> { return String.valueOf( path.getFileName() ).contains( info.getFileName().toString() ); } )
+                                    .collect( Collectors.toList() );
+            Assert.assertEquals( 1, files.size() );
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ package uk.ac.ebi.ena.manifest;
 import java.io.File;
 
 public class ManifestObj {
+    private int    lineno;
 	private String fileFormat;
 	private String fileName;
 	private String md5chkSum;
@@ -41,15 +42,28 @@ public class ManifestObj {
 		this.md5chkSum = md5chkSum;
 	}
 
-	@Override public String 
+ 
+	public void
+	setLineNo( int lineno )
+	{
+	    this.lineno = lineno;
+	}
+	
+	
+    public int    
+    getLineNo()
+    {
+        return this.lineno;
+    }
+
+    
+    @Override public String 
 	toString() 
 	{
 		return String.format( "%s\t%s%s", 
 				              getFileFormatString(), 
 				              new File( getFileName() ).getName(), 
 				              null == getMd5chkSum() ? "" : String.format( "\t%s", getMd5chkSum() ) );
-		
-		
 	}
 		
 }
