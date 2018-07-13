@@ -148,8 +148,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 			HashMap<String,Long> entryNames= new HashMap<String,Long>();
 			entryNames.putAll( fastaEntryNames );
 			entryNames.putAll( flatfileEntryNames );
-    		
+    		property.isFixCds.set(true);
 			property.contigEntryNames.set( entryNames );
+			
 			
 			valid = valid && validateAgpFiles( property );
 		    valid = valid && validateSequenceLessChromosomes( chromosomeListFile );
