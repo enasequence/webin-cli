@@ -31,6 +31,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 public class 
 FastqScanner 
 {
+    private static final String S_READ_D = "%s, Read %d";
     private static final int BLOOM_EXPECTED_READS = 800_000_000;
     protected static final int MAX_LABEL_SET_SIZE = 10;
     
@@ -124,7 +125,7 @@ FastqScanner
     read( RawReadsFile rf,
           String       stream_name,
           Set<String>labels, 
-          ReadNameSet<SimpleEntry<String, Long>> rns,
+          ReadNameSet<String> rns,
           AtomicLong count ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
     {
         try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
@@ -161,7 +162,7 @@ FastqScanner
                         labels.add( label );
                     
                     count.incrementAndGet();
-                    rns.add( spot.bname, new SimpleEntry<String, Long>( stream_name, read_no.getAndIncrement() ) );
+                    rns.add( spot.bname, String.format( S_READ_D, stream_name, read_no.getAndIncrement() ) );
                 }  
             } );
             
@@ -176,7 +177,7 @@ FastqScanner
     checkSingleFile( RawReadsFile rf, 
                      String stream_name, 
                      Set<String> labelset, 
-                     ReadNameSet<SimpleEntry<String, Long>> rns ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+                     ReadNameSet<String> rns ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
         ValidationResult vr = new ValidationResult();
         AtomicLong count = new AtomicLong();
@@ -195,7 +196,7 @@ FastqScanner
             vr.append( new ValidationMessage<>( labelset.size() > 2 ? Severity.ERROR : Severity.INFO, 
                                                 ValidationMessage.NO_KEY, 
                                                 String.format( "%s: Collected %d read labels: %s", stream_name, labelset.size(), labelset ) ) );
-            vr.append( new ValidationMessage<>( Severity.INFO, ValidationMessage.NO_KEY, String.format( "%s: Has possible dublicates: " + rns.hasPossibleDuplicates(), stream_name ) ) );
+            vr.append( new ValidationMessage<>( Severity.INFO, ValidationMessage.NO_KEY, String.format( "%s: Has possible dublicate(s): " + rns.hasPossibleDuplicates(), stream_name ) ) );
         }
         return vr;
     }
@@ -204,7 +205,7 @@ FastqScanner
     private String
     formatStreamName( int index, String filename )
     {
-        return String.format( "File[%d]: %s", index++, filename );
+        return String.format( "File[%d]: %s", index, filename );
     }
     
     
@@ -212,7 +213,7 @@ FastqScanner
     checkFiles( RawReadsFile...rfs ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
         Set<String> labelset = new HashSet<>();
-        ReadNameSet<SimpleEntry<String, Long>> rns = new ReadNameSet<>( expected_size );
+        ReadNameSet<String> rns = new ReadNameSet<>( expected_size );
         ValidationResult vr = new ValidationResult();
         int index = 1;
         for( RawReadsFile rf : rfs )
@@ -242,7 +243,7 @@ FastqScanner
     private ValidationResult
     checkSuspected( RawReadsFile rf,
                     String stream_name,
-                    ReadNameSet<SimpleEntry<String, Long>> rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException, IOException
+                    ReadNameSet<String> rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException, IOException
     {
         ValidationResult vr = new ValidationResult();
         try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
@@ -273,19 +274,19 @@ FastqScanner
 //                                                  : spot.bname.substring( 0, slash_idx );
                     String label = slash_idx == -1 ? stream_name
                                                    : spot.bname.substring( slash_idx + 1 );
-                    
-                    Set<SimpleEntry<String, Long>> set = rns.getDuplicateLocations( spot.bname, new SimpleEntry<>( stream_name, read_no.getAndIncrement() ) );
+                    long read_n = read_no.getAndIncrement();
+                    Set<String> set = rns.getDuplicateLocations( spot.bname, String.format( S_READ_D,  stream_name, read_n ) );
                     if( !set.isEmpty() )
                     {
-                        for( SimpleEntry<String, Long> e : set )
+                        //for( String e : set )
                         {
-                         //   if( e.getKey().equals( label ) )
+                           //if( e.getKey().equals( label ) )
                             {
                                 vr.append( new ValidationMessage<>( Severity.ERROR, 
                                                                     ValidationMessage.NO_KEY, 
-                                                                    String.format( "%s Read %d: %s has dublicate(s) %s", 
+                                                                    String.format( "%s, Read %d: %s has duplicate(s): %s", 
                                                                                    stream_name,
-                                                                                   read_no.get(), 
+                                                                                   read_n, 
                                                                                    spot.bname, 
                                                                                    set.toString() ) ) );
                             }

@@ -82,7 +82,43 @@ FastqScannerTest
         RawReadsFile rf2 = new RawReadsFile();
         rf2.setFilename( new File( url2.getFile() ).getCanonicalPath() );
 
-        ValidationResult vr = fs.checkFiles( rf1, rf1 );
+        ValidationResult vr = fs.checkFiles( rf1, rf2 );
+        
+        Assert.assertEquals( toString( vr ), 0, vr.getMessages( Severity.ERROR ).size() );
+    }
+    
+    
+    @Test public void 
+    testPairWithDuplication() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    {
+        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
+        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
+        FastqScanner fs = new FastqScanner();
+        RawReadsFile rf1 = new RawReadsFile();
+        rf1.setFilename( new File( url1.getFile() ).getCanonicalPath() );
+        
+        RawReadsFile rf2 = new RawReadsFile();
+        rf2.setFilename( new File( url2.getFile() ).getCanonicalPath() );
+
+        ValidationResult vr = fs.checkFiles( rf1, rf2 );
+        
+        Assert.assertEquals( toString( vr ), 0, vr.getMessages( Severity.ERROR ).size() );
+    }
+    
+
+    @Test public void 
+    testPairWithDuplication2() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    {
+        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
+        //URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
+        FastqScanner fs = new FastqScanner();
+        //RawReadsFile rf1 = new RawReadsFile();
+        //rf1.setFilename( new File( url1.getFile() ).getCanonicalPath() );
+        
+        RawReadsFile rf2 = new RawReadsFile();
+        rf2.setFilename( new File( url2.getFile() ).getCanonicalPath() );
+
+        ValidationResult vr = fs.checkFiles( rf2, rf2 );
         
         Assert.assertEquals( toString( vr ), 0, vr.getMessages( Severity.ERROR ).size() );
     }
