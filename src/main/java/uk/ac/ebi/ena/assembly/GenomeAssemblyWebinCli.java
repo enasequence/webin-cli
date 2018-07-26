@@ -2,12 +2,14 @@ package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
+import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,8 +17,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.Range;
 import org.jdom2.Element;
 
+import uk.ac.ebi.embl.api.entry.AgpRow;
 import uk.ac.ebi.embl.api.entry.Entry;
 import uk.ac.ebi.embl.api.entry.Text;
 import uk.ac.ebi.embl.api.entry.XRef;
@@ -68,10 +73,12 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	private HashMap<String,Long> fastaEntryNames = new HashMap<String,Long>();
 	private HashMap<String,Long> flatfileEntryNames = new HashMap<String,Long>();
 	private HashSet<String> agpEntrynames = new HashSet<String>();
+    private HashMap<String,AgpRow> contigRangeMap= new HashMap<String,AgpRow>();
 	private HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<String, List<Qualifier>>();
 	private String sequencelessChromosomesCheck= "ChromosomeListSequenelessCheck";
 	private String molType = "genomic DNA";
     private boolean valid;
+    private int i;
 
 	
     public 
@@ -124,6 +131,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
     validateInternal() throws ValidationEngineException 
     {
 		boolean valid = true;
+		i=1;
 		try 
 		{
             EmblEntryValidationPlanProperty property = getValidationProperties();
@@ -140,8 +148,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 			HashMap<String,Long> entryNames= new HashMap<String,Long>();
 			entryNames.putAll( fastaEntryNames );
 			entryNames.putAll( flatfileEntryNames );
-    		
+    		property.isFixCds.set(true);
 			property.contigEntryNames.set( entryNames );
+			
 			
 			valid = valid && validateAgpFiles( property );
 		    valid = valid && validateSequenceLessChromosomes( chromosomeListFile );
@@ -272,9 +281,14 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
                     source.setScientificName( getSample().getOrganism() );
                     source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
-                    
                     Entry entry = (Entry) reader.getEntry();
-                    if( getSample().getBiosampleId() != null )
+                   	List<String> contigKeys=contigRangeMap.entrySet().stream().filter(e -> e.getKey().contains(entry.getSubmitterAccession().toUpperCase())).map(e -> e.getKey()).collect(Collectors.toList());
+                    	for(String contigKey:contigKeys)
+                    	{
+                    		contigRangeMap.get(contigKey).setSequence(entry.getSequence().getSequenceByte(contigRangeMap.get(contigKey).getComponent_beg(),contigRangeMap.get(contigKey).getComponent_end()));
+                    		
+                    	}
+                        if( getSample().getBiosampleId() != null )
                         entry.addXRef( new XRef( "BioSample", getSample().getBiosampleId() ) );
                     
                     if( getStudy().getProjectId() != null )
@@ -328,11 +342,21 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
            FlatFileReader<?> reader = getFileReader( FileFormat.AGP, file );
             
             ValidationResult vr = reader.read();
+            int i=1;
+            
             FileUtils.writeReport( getReportFile(  FileFormat.AGP, file.getName() ), vr );
             
             while( ( valid &= vr.isValid() ) && reader.isEntry() )
             {
                 agpEntrynames.add( ( (Entry) reader.getEntry() ).getSubmitterAccession().toUpperCase() );
+                for(AgpRow agpRow: ((Entry)reader.getEntry()).getSequence().getSortedAGPRows())
+                {
+                	i++;
+                  	if(!agpRow.isGap())
+                	{
+                	   contigRangeMap.put(agpRow.getComponent_id().toUpperCase()+"_"+i,agpRow);
+                	}
+                }
                 vr = reader.read();
             }
             
@@ -399,7 +423,12 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                     source.setLocations( featureLocation );
                     entry.addFeature( source );
                     entry.getSequence().setMoleculeType( molType );
-
+                	List<String> contigKeys=contigRangeMap.entrySet().stream().filter(e -> e.getKey().contains(entry.getSubmitterAccession().toUpperCase())).map(e -> e.getKey()).collect(Collectors.toList());
+                	for(String contigKey:contigKeys)
+                	{
+                		contigRangeMap.get(contigKey).setSequence(entry.getSequence().getSequenceByte(contigRangeMap.get(contigKey).getComponent_beg(),contigRangeMap.get(contigKey).getComponent_end()));
+                		
+                	}
                     ValidationPlanResult validationPlanResult = getValidationPlan( entry, property ).execute( entry );
                     valid &= validationPlanResult.isValid();
                     FileUtils.writeReport( f, validationPlanResult.getMessages(), file.getName() );
@@ -442,6 +471,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
                     source.setScientificName( getSample().getOrganism() );
                     source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
                     Entry entry = (Entry) reader.getEntry();
+                    constructAGPSequence(entry);
                     if( getSample().getBiosampleId() != null )
                         entry.addXRef( new XRef( "BioSample", getSample().getBiosampleId() ) );
                     
@@ -651,4 +681,32 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 		}
 		return chromosomeQualifiers;
 	}
+    
+    public void constructAGPSequence(Entry entry)
+    {
+ 		ByteBuffer sequenceBuffer=ByteBuffer.wrap(new byte[new Long(entry.getSequence().getLength()).intValue()]);
+ 
+         for(AgpRow agpRow: entry.getSequence().getSortedAGPRows())
+         {
+         	i++;
+           	if(!agpRow.isGap())
+         	{
+           		if(contigRangeMap.get(agpRow.getComponent_id().toUpperCase()+"_"+i)==null||contigRangeMap.get(agpRow.getComponent_id().toUpperCase()+"_"+i).getSequence()==null)
+           		{//error
+           			
+           		}
+           		else
+           		{
+           			sequenceBuffer.put(contigRangeMap.get(agpRow.getComponent_id().toUpperCase()+"_"+i).getSequence());
+           		}
+         	}
+           	else
+           		sequenceBuffer.put(StringUtils.repeat("N".toLowerCase(), agpRow.getGap_length().intValue()).getBytes());           	
+         }
+         entry.getSequence().setSequence(sequenceBuffer);
+         String v = new String(sequenceBuffer.array());
+         System.out.println(v);
+
+    }
+    
 }

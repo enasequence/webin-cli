@@ -79,7 +79,7 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 	    emblEntryValidationProperty.isAssembly.set( false );
 	    emblEntryValidationProperty.minGapLength.set( 0 );
 	    emblEntryValidationProperty.locus_tag_prefixes.set( getStudy().getLocusTagsList() );
-
+	    emblEntryValidationProperty.isFixCds.set(true);
 	    validationPlan = new EmblEntryValidationPlan( emblEntryValidationProperty );
 	    validationPlan.addMessageBundle( VALIDATION_MESSAGES_BUNDLE );
 	    validationPlan.addMessageBundle( STANDARD_VALIDATION_BUNDLE );
