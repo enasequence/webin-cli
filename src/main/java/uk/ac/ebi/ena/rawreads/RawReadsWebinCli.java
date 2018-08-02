@@ -763,7 +763,7 @@ RawReadsWebinCli extends AbstractWebinCli
     @Override public File
     getSubmissionBundleFileName()
     {
-        return new File( submit_dir, "validate.reciept" );
+        return new File( submit_dir, "validate.receipt" );
     }
 
 
