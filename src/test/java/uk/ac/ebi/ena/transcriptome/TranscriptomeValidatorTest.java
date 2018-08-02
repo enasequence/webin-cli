@@ -1,6 +1,7 @@
 package uk.ac.ebi.ena.transcriptome;
 
 public class TranscriptomeValidatorTest {
+    private final static String TRANSCRIPTOME_BASE_DIR = "src/test/resources/uk/ac/ebi/ena/transcriptome/tsvfile";
     /*
     @Test
     public void testValidFastaFile() throws Exception {
