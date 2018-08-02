@@ -510,7 +510,7 @@ suffix:     while( suffixes.length > 0 )
     @Override public File
     getSubmissionBundleFileName()
     {
-        return new File( getSubmitDir(), "validate.reciept" );
+        return new File( getSubmitDir(), "validate.receipt" );
     }
 
 
