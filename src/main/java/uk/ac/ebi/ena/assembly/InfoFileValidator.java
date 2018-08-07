@@ -8,6 +8,7 @@ import java.util.Map;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.FileType;
+import uk.ac.ebi.embl.api.validation.FlatFileOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
@@ -19,7 +20,6 @@ import uk.ac.ebi.embl.api.validation.plan.EmblEntryValidationPlanProperty;
 import uk.ac.ebi.embl.api.validation.plan.GenomeAssemblyValidationPlan;
 import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.AssemblyInfoReader;
-import uk.ac.ebi.embl.flatfile.validation.FlatFileOrigin;
 import uk.ac.ebi.ena.submit.ContextE;
 
 public class 

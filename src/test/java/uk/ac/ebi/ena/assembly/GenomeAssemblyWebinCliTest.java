@@ -207,7 +207,7 @@ public class GenomeAssemblyWebinCliTest {
         validator.defineFileTypes( file );
         validator.setSample( sample );
         validator.setStudy( new Study() );
-        Assert.assertTrue( !validator.validate() );
+        Assert.assertTrue( validator.validate() );
     }
 
     

@@ -60,7 +60,7 @@ public class SequenceValidationTest {
             sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-mandatory-field-missing-expected-results.txt")));
-            assertEquals(resultsSb.toString().trim(), expectedResults.trim());
+            assertEquals(resultsSb.toString().replaceAll("\\s+", ""), expectedResults.replaceAll("\\s+", ""));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -105,7 +105,7 @@ public class SequenceValidationTest {
             sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-ERT000039-missingheaders-expected-results.txt")));
-            assertEquals(resultsSb.toString().trim(), expectedResults.trim());
+            assertEquals(resultsSb.toString().replaceAll("\\s+", ""), expectedResults.replaceAll("\\s+", ""));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -161,7 +161,7 @@ public class SequenceValidationTest {
             sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-nonAsciiCharacters-expected-results.txt")));
-            assertEquals(resultsSb.toString().trim(), expectedResults.trim());
+            assertEquals(resultsSb.toString().replaceAll("\\s+",""), expectedResults.replaceAll("\\s+", ""));
         } catch (Exception e) {
             e.printStackTrace();
         }
