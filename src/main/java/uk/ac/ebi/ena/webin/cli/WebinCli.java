@@ -129,7 +129,7 @@ public class WebinCli {
 	getFormattedProgramVersion()
 	{
         String version = WebinCli.class.getPackage().getImplementationVersion();
-        return String.format( "%s:%s\n", WebinCli.class.getSimpleName(), null == version ? "" : version );    
+        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );    
 	}
 	
 	
