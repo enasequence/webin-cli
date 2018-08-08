@@ -1,5 +1,7 @@
 # Webin command line submission interface
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4fa2bcf5593436da9ea27149f84ee6e)](https://app.codacy.com/app/enasequence/webin-cli?utm_source=github.com&utm_medium=referral&utm_content=enasequence/webin-cli&utm_campaign=badger)
+
 The Webin command line submission interface can be used to validate, upload and submit files to the European Nucleotide Archive (ENA).
 
 Webin submission account credentials are required to use the Webin command line submission interface.
