@@ -208,6 +208,7 @@ suffix:     while( suffixes.length > 0 )
                 break;
             case TAB:
                 tsvFiles.add( file );
+                tsvFileExists=true;
                 break;
             case INFO:
                 infoFile = file;
@@ -216,9 +217,12 @@ suffix:     while( suffixes.length > 0 )
             	break;
             }
             
+            if(getContext()!=null)
+            {
             boolean validFileFormat= ArrayUtils.contains(getContext().getFileFormats(),obj.getFileFormat());
             if(!validFileFormat)
                 throw WebinCliException.createUserError( "File format : "+obj.getFileFormatString() +" is not permitted for context : "+ getContext().name());
+            }
 
             	
         }

@@ -248,7 +248,7 @@ SequenceWebinCliTest
         SequenceWebinCli s = new SequenceWebinCli() {
             @Override protected boolean validateInternal() throws ValidationEngineException { return false; }
             @Override Element makeAnalysisType(AssemblyInfoEntry entry) { return null; }
-            @Override ContextE getContext() { return null; }
+            @Override ContextE getContext() { return ContextE.genome; }
             @Override public void init( WebinCliParameters parameters ) { 
                 setParameters( parameters ); 
                 setValidationDir( parameters.getOutputDir() ); 
