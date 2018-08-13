@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.lang.ArrayUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -70,6 +71,9 @@ SequenceWebinCli extends AbstractWebinCli
     private Study  study;
     private Sample sample;
     private Map<Integer, Integer> line_number_map;
+    protected boolean fastaFileExists = false;
+    protected boolean flatFileExists = false; 
+    protected boolean tsvFileExists = false;
     
     
     protected abstract boolean validateInternal() throws ValidationEngineException;
@@ -146,6 +150,7 @@ suffix:     while( suffixes.length > 0 )
     protected void 
     defineFileTypes( File manifest_file ) throws ValidationEngineException, IOException 
     {
+    	
         ManifestFileReader reader = new ManifestFileReader();
         reader.read( manifest_file.getPath() );
         Map<Integer, Integer> line_number_map = new HashMap<>();
@@ -156,7 +161,7 @@ suffix:     while( suffixes.length > 0 )
         File infoFile = null; 
         File __infoFile = File.createTempFile( manifest_file.getName() + ".", ".info" );
         int __info_lineno = 1;
-        
+                
         for( ManifestObj obj : reader.getManifestFileObjects() )
         {
             if( null == obj.getFileFormat() )
@@ -170,7 +175,7 @@ suffix:     while( suffixes.length > 0 )
 
             String fileName = obj.getFileName();
             File file = Paths.get( fileName ).isAbsolute() ? new File( fileName ) : new File( getParameters().getInputDir(), fileName );
-            
+      
             switch( obj.getFileFormat() ) 
             {
             case CHROMOSOME_LIST:
@@ -181,9 +186,11 @@ suffix:     while( suffixes.length > 0 )
                 break;
             case FASTA:
                 fastaFiles.add(file);
+                fastaFileExists =true;
                 break;
             case FLATFILE:
                 flatFiles.add(file);
+                flatFileExists =true;
                 break;
             case AGP:
                 agpFiles.add(file);
@@ -197,6 +204,12 @@ suffix:     while( suffixes.length > 0 )
             default:
             	break;
             }
+            
+            boolean validFileFormat= ArrayUtils.contains(getContext().getFileFormats(),obj.getFileFormat());
+            if(!validFileFormat)
+                throw WebinCliException.createUserError( "File format : "+obj.getFileFormatString() +" is not permitted for context : "+ getContext().name());
+
+            	
         }
         
         this.fastaFiles = checkFiles( fastaFiles, true, ".fasta", ".fas", ".fsa", ".fna", ".fa" );

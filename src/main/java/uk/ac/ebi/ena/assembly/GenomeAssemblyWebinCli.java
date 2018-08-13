@@ -101,6 +101,15 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	    super.init( parameters );
 	}
 	
+	  @Override
+	    protected void defineFileTypes(File manifest_file) throws ValidationEngineException, IOException {
+	    	
+		  super.defineFileTypes(manifest_file);
+	    	
+	    	if(!flatFileExists&&!fastaFileExists)
+	            throw WebinCliException.createUserError( "Fasta or flatfile missing from submission" );
+	 		
+	    }
 	
 	void 
 	__init( ManifestFileReader manifestFileReader, 

@@ -46,6 +46,7 @@ import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
@@ -133,6 +134,15 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
 		return !FLAILED_VALIDATION;
 	}
+
+	@Override
+    protected void defineFileTypes(File manifest_file) throws ValidationEngineException, IOException {
+    	
+	  super.defineFileTypes(manifest_file);
+	  	if(!flatFileExists&&!fastaFileExists)
+           throw WebinCliException.createUserError( "Fasta or flatfile missing from submission" );
+ 		
+    }
 
 	
 	private void validateFlatFile() throws ValidationEngineException {

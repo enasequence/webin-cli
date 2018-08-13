@@ -186,18 +186,24 @@ public class WebinCli {
                 case VALIDATION_ERROR:
                     System.exit( VALIDATION_ERROR );
             }
-        } catch( Throwable e ) 
+        } 
+        catch( ValidationEngineException e ) 
+        {
+            writeMessage( Severity.ERROR, e.getMessage() );
+            System.exit( SYSTEM_ERROR );
+        }
+        catch( Throwable e ) 
         {
             StringWriter sw = new StringWriter();
             e.printStackTrace( new PrintWriter( sw ) );
-            writeMessage( Severity.ERROR, sw.toString() );
+            writeMessage( Severity.ERROR, e.getMessage() );
             System.exit( SYSTEM_ERROR );
         }
     }
 
   
     void 
-    init( Params params ) throws Exception, IOException, FileNotFoundException, ValidationEngineException 
+    init( Params params ) throws Exception, IOException, FileNotFoundException 
     {
         this.params = params;
         this.contextE = ContextE.valueOf( String.valueOf( params.context ).toLowerCase() );
