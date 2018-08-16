@@ -641,6 +641,8 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         Element typeE = new Element( ContextE.genome.getType() );
         
         typeE.addContent( createTextElement( "NAME", entry.getName() ) );
+        if( null != entry.getAssemblyType() && !entry.getAssemblyType().isEmpty() )
+            typeE.addContent( createTextElement( "ASSEMBLY_TYPE", entry.getAssemblyType()));
         typeE.addContent( createTextElement( "PARTIAL", String.valueOf( Boolean.FALSE ) ) ); //as per SraAnalysisParser.setAssemblyInfo
         typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
         typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
@@ -652,8 +654,8 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
             typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
         
-        if( null != entry.getAssemblyType() && !entry.getAssemblyType().isEmpty() )
-            typeE.addContent( createTextElement( "ASSEMBLY_TYPE", entry.getAssemblyType()));
+        if ( entry.isTpa()) 
+            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
         
         typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
         return typeE;
