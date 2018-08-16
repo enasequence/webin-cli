@@ -652,6 +652,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
             typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
         
+        if( null != entry.getAssemblyType() && !entry.getAssemblyType().isEmpty() )
+            typeE.addContent( createTextElement( "ASSEMBLY_TYPE", entry.getAssemblyType()));
+        
         typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
         return typeE;
     }

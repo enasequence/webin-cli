@@ -467,6 +467,7 @@ suffix:     while( suffixes.length > 0 )
                 analysisE.setAttribute( "center_name", centerName );
             
             analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
             Element studyRefE = new Element( "STUDY_REF" );
             analysisE.addContent( studyRefE );
             studyRefE.setAttribute( "accession", entry.getStudyId() );
