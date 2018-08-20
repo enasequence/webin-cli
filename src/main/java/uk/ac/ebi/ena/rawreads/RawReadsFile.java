@@ -141,7 +141,7 @@ RawReadsFile
     {
         return String.format( "filename=\"%s\" filetype=\"%s\"%s%s%s%s%s",
                               filename,
-                              filetype.xml_name,
+                              null == filetype ?               "" : filetype.xml_name,
                               null == checksum ?               "" : String.format( " checksum=\"%s\"", checksum ),
                               null == checksum_method ?        "" : String.format( " checksum_method=\"%s\"", checksum_method ),
                               null == quality_scoring_system ? "" : String.format( " quality_scoring_system=\"%s\"", quality_scoring_system.xml_name ),
