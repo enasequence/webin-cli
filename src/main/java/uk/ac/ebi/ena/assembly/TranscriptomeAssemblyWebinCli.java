@@ -71,7 +71,6 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 	private String submittedFile;
 	private ValidationPlan validationPlan;
 	private boolean FLAILED_VALIDATION;
-	private ManifestFileReader manifestFileReader;
 	private StringBuilder resultsSb;
 
 	public 
@@ -110,7 +109,6 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 	
 	@Deprecated public 
 	TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study) throws ValidationEngineException {
-		this.manifestFileReader = manifestFileReader;
 		setSample( sample );
 		setStudy( study );
 		this.validationPlan = getValidationPlan();

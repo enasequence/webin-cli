@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import uk.ac.ebi.ena.utils.FileUtils;
 
+@Deprecated
 public class ManifestFileWriter {
 	private boolean test =false;
 	public ManifestFileWriter()

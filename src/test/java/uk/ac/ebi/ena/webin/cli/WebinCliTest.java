@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 import uk.ac.ebi.ena.submit.ContextE;
 
 public class 
@@ -51,16 +51,16 @@ WebinCliTest
     private String
     getRawReadsInfoPart( String name )
     {
-        return    RawReadsManifestTags.STUDY             + " SRP052303\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS2554688\n"
-                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifestTags.INSERT_SIZE       + " 1\n"
-                + RawReadsManifestTags.LIBRARY_NAME      + " YOBA LIB\n"
-                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifestTags.NAME              + " " + name + "\n ";
+        return    Fields.STUDY             + " SRP052303\n"
+                + Fields.SAMPLE            + " ERS2554688\n"
+                + Fields.PLATFORM          + " ILLUMINA\n"
+                + Fields.INSTRUMENT        + " unspecifieD\n"
+                + Fields.INSERT_SIZE       + " 1\n"
+                + Fields.LIBRARY_NAME      + " YOBA LIB\n"
+                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Fields.NAME              + " " + name + "\n ";
     }
     
     

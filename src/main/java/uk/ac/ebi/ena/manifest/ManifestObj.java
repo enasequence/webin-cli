@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.manifest;
 
 import java.io.File;
 
+@Deprecated
 public class ManifestObj {
     private int    lineno;
 	private String fileFormat;

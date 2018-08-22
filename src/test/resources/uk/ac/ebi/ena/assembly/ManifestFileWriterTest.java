@@ -16,7 +16,7 @@ import uk.ac.ebi.ena.manifest.ManifestFileWriter;
 public class ManifestFileWriterTest 
 {
  	@Test
-	public void testValidateValidManifest() throws Exception 
+	public void testValidateValidManifest()
 	{
 		File inputFile = null;
 		File outputFile = File.createTempFile( "testValidateValidManifest", "FILE" );

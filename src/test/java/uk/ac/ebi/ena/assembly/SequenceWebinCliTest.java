@@ -34,7 +34,8 @@ import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -211,15 +212,15 @@ SequenceWebinCliTest
         Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
         
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
-                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
+                ( Fields.STUDY             + " SRP123456789\n"
+                + Fields.SAMPLE            + " ERS198522\n"
+                + Fields.PLATFORM          + " ILLUMINA\n"
+                + Fields.INSTRUMENT        + " unspecifieD\n"
+                + Fields.INSERT_SIZE       + " -1\n"
+                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Fields.NAME              + " SOME-FANCY-NAME\n "
                 + "FASTA " + input_dir.relativize( fastafile ).toString() ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
@@ -260,15 +261,15 @@ SequenceWebinCliTest
         Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
 
         Path info = Files.write( Files.createTempFile( input_dir, "TEMP", ".info" ), 
-                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
-                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n " ).getBytes(),
+                ( Fields.STUDY             + " SRP123456789\n"
+                + Fields.SAMPLE            + " ERS198522\n"
+                + Fields.PLATFORM          + " ILLUMINA\n"
+                + Fields.INSTRUMENT        + " unspecifieD\n"
+                + Fields.INSERT_SIZE       + " -1\n"
+                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Fields.NAME              + " SOME-FANCY-NAME\n " ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 

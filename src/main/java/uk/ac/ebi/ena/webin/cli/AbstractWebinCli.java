@@ -142,7 +142,7 @@ AbstractWebinCli
     
     
     protected File 
-    createOutputSubdir( String...more ) throws Exception 
+    createOutputSubdir( String...more ) throws WebinCliException
     {
         Path p = Paths.get( getParameters().getOutputDir().getPath(), more );
         File reportDirectory = p.toFile();

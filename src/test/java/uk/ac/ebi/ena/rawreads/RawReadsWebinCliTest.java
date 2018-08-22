@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 
@@ -32,10 +31,9 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
@@ -74,7 +72,7 @@ RawReadsWebinCliTest
         parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( fastq_file.getParent().toFile() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "FASTQ PHRED_33 " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 ( getInfoPart() + "FASTQ " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         rr.setVerifySample( false );
@@ -275,7 +273,7 @@ RawReadsWebinCliTest
         parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM GZIP file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
@@ -295,7 +293,7 @@ RawReadsWebinCliTest
         parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM PHRED_64 file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
@@ -315,7 +313,7 @@ RawReadsWebinCliTest
         parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM GZIP file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
@@ -349,15 +347,15 @@ RawReadsWebinCliTest
     private String
     getInfoPart()
     {
-        return    RawReadsManifestTags.STUDY             + " ERP109454\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS2713291\n"
-                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifestTags.INSERT_SIZE       + " 1\n"
-                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n ";
+        return    Fields.STUDY             + " ERP109454\n"
+                + Fields.SAMPLE            + " ERS2713291\n"
+                + Fields.PLATFORM          + " ILLUMINA\n"
+                + Fields.INSTRUMENT        + " unspecifieD\n"
+                + Fields.INSERT_SIZE       + " 1\n"
+                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Fields.NAME              + " SOME-FANCY-NAME\n ";
     }
     
     
@@ -400,7 +398,7 @@ RawReadsWebinCliTest
         parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "FASTQ GZ PHRED_33 " + file ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         rr.setVerifySample( false );
@@ -563,7 +561,7 @@ RawReadsWebinCliTest
         parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "FASTQ GZ PHRED_33 " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 ( getInfoPart() + "FASTQ " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         rr.setVerifySample( false );

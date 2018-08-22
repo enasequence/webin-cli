@@ -24,8 +24,7 @@ RawReadsFile
     {
         fastq( "fastq" ),
         bam( "bam", ".bam" ),
-        cram( "cram", ".cram" ),
-        info( "info file" );
+        cram( "cram", ".cram" );
         
         
         public final String xml_name;

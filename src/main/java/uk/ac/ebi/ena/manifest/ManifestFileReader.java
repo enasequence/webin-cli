@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.ena.utils.FileUtils;
 
+@Deprecated
 public class ManifestFileReader
 {
     static final Pattern p = Pattern.compile( "^(#|;|\\/\\/|--).*$|^(\\S+)\\s+(.+)$" );
