@@ -11,58 +11,58 @@
 
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.submit.ContextE;
-
 public interface ParameterDescriptor {
-    public final static String context    = "-context";
-    public final static String outputDir  = "-outputDir";
-    public final static String userName   = "-userName";
-    public final static String password   = "-password";
-    public final static String validate   = "-validate";
-    public final static String submit     = "-submit";
-    public final static String manifest   = "-manifest";
-    public final static String test       = "-test";
-    public final static String centerName = "-centerName";
-    public final static String version    = "-version";
-    public final static String inputDir   = "-inputDir";
-    public final static String tryAscp    = "-ascp";
-    
-    
+    String context    = "-context";
+    String outputDir  = "-outputDir";
+    String userName   = "-userName";
+    String password   = "-password";
+    String validate   = "-validate";
+    String submit     = "-submit";
+    String manifest   = "-manifest";
+    String test       = "-test";
+    String centerName = "-centerName";
+    String version    = "-version";
+    String inputDir   = "-inputDir";
+    String tryAscp    = "-ascp";
+
+    String OPTION_LINE = "\n\t";
+    String MANDATORY_LINE = "[Required] ";
+    String VALUE_LINE = "\n\t\t";
+
     //Description
-    public final static String contextFlagDescription = "\n\tRequired. Valid values are:"
-          + "\n\t\t>> " + "genome"
-          + "\n\t\t>> " + "sequence"
-          + "\n\t\t>> " + "transcriptome"
-          + "\n\t\t>> " + "reads";
+    String contextFlagDescription =
+            OPTION_LINE + MANDATORY_LINE + "The submission type:" +
+            VALUE_LINE + "genome" +
+            VALUE_LINE + "sequence" +
+            VALUE_LINE + "transcriptome" +
+            VALUE_LINE + "reads";
     
-    public final static String outputDirFlagDescription =
-            "\n\tDirectory for output files with the following structure:" +
-            "\n\t\t>> <context>/<name>/validate" +
-            "\n\t\t>> <context>/<name>/submit" +
-            "\n\tThe <name> is the unique name provided in the info file." +
-            "\n\tThe 'validate' directory contains validation reports." +
-            "\n\tThe 'submit' directory contains the file manifest and the XMLs created during the submission" +
-            "\n\tincluding the Receipt XML.";
-    
-    public final static String userNameFlagDescription = "\n\tRequired. Your submission account name or your e-mail address.";
-    public final static String passwordFlagDescription = "\n\tRequired. Your submission account password.";
-    public final static String validateFlagDescription = "\n\tValidates the files defined in the manifest file.";
-    public final static String submitFlagDescription = "\n\tValidates and submits the files defined in the manifest file.";
-    public final static String manifestFlagDescription = "\n\tRequired. Path to a manifest file. The manifest file lists the files within the submission." +
-            "\n\tThe manifest file is a text file with two columns separated by a tab:" +
-            "\n\t\t>> file type" +
-            "\n\t\t>> file path" +
-            "\n\tThe following file types are supported:" +
-            "\n\t\t>> info" +
-            "\n\t\t>> fasta" +
-            "\n\t\t>> flatfile" +
-            "\n\t\t>> agp (only for genome assemblies)" +
-            "\n\t\t>> chromosome_list (only for genome assemblies)" +
-            "\n\t\t>> unlocalised_list (only for genome assemblies)" +
-            "\n\tMore information is available from: http://ena-docs.readthedocs.io/en/latest/cli.html";
-    public final static String testFlagDescription = "\tWhen this option is used it will use the TEST submission system.";
-    public static final String centerNameFlagDescription = "\n\tMandatory center name for broker accounts";
-    public static final String versionFlagDescription = "\n\tPrints the version number of the program and exists";
-    public static final String inputDirFlagDescription = "\n\tInput directory for files declared in manifest file";
-    public static final String tryAscpDescription = "\n\tTry to use Aspera Cli instead of FTP file transfer, if available.\n\tNote: Aspera Cli should be installed and path to executable \"ascp\" should be in PATH variable";
+    String outputDirFlagDescription =
+            OPTION_LINE + "Root directory for output files with the following structure:" +
+            VALUE_LINE + "<context>/<name>/validate" +
+            VALUE_LINE + "<context>/<name>/submit" +
+            OPTION_LINE + "The <name> is the unique name provided in the manifest file." +
+            OPTION_LINE + "The 'validate' directory contains validation reports." +
+            OPTION_LINE + "The 'submit' directory contains the submitted and the receipt XMLs.";
+
+    String userNameFlagDescription = OPTION_LINE + MANDATORY_LINE +"Your submission account name or your e-mail address.";
+    String passwordFlagDescription = OPTION_LINE + MANDATORY_LINE +"Your submission account password.";
+    String validateFlagDescription = OPTION_LINE + "Only validates the submission.";
+    String submitFlagDescription = OPTION_LINE + "First validates and then makes the submission.";
+
+    String manifestFlagDescription =
+            OPTION_LINE + MANDATORY_LINE +"Path to the manifest file. The manifest file is" +
+            OPTION_LINE + "a text file with two columns separated by a tab:" +
+            VALUE_LINE + "field name" +
+            VALUE_LINE + "file value" +
+            OPTION_LINE + "Full details of the supported fields are available from: " +
+            OPTION_LINE + "http://ena-docs.readthedocs.io/en/latest/cli.html";
+
+   String testFlagDescription = "\tUse the test submission system.";
+   String centerNameFlagDescription = OPTION_LINE + "Mandatory center name for broker accounts.";
+   String versionFlagDescription = OPTION_LINE + "Prints the version number of the program and exists.";
+   String inputDirFlagDescription = OPTION_LINE + "Input directory for files declared in the manifest file.";
+   String tryAscpDescription =
+           OPTION_LINE + "Use Aspera (if Aspera Cli is available) instead of FTP when uploading files." +
+           OPTION_LINE + "The path to the installed \"ascp\" program must be in the PATH variable.";
 }

@@ -64,7 +64,7 @@ public abstract class ManifestReader {
         }
         State state = State.INIT;
         final Path inputDir;
-        final String fileName;
+        String fileName;
         int lineNo = 0;
     }
 
@@ -133,7 +133,20 @@ public abstract class ManifestReader {
                  error("MANIFEST_ERROR_READING_INFO_FILE", infoFile.getPath());
                 return result.isValid();
             }
-            parseManifest(inputDir, infoLines);
+
+            String savedManifestFileName = state.fileName;
+            int savedManifestLineNo = state.lineNo;
+
+            try {
+                state.fileName = infoFile.getPath();
+                state.lineNo = 0;
+
+                parseManifest(inputDir, infoLines);
+            }
+            finally {
+                state.fileName = savedManifestFileName;
+                state.lineNo = savedManifestLineNo;
+            }
         }
 
         // Remove info fields.
@@ -193,7 +206,7 @@ public abstract class ManifestReader {
                     .get();
 
             if (fieldValue != null) {
-                ManifestFieldValue field = new ManifestFieldValue(fieldDefinition, fieldValue, createOrigin());
+                ManifestFieldValue field = new ManifestFieldValue(fieldDefinition, fieldValue, createParseOrigin());
                 result.getFields().add(field);
 
                 if (field.getDefinition().getType() == ManifestFieldType.FILE) {
@@ -321,13 +334,13 @@ public abstract class ManifestReader {
             }
             else {
                 //fieldError(fieldName, String.format("Invalid file path: %s", fieldValue));
-                error("MANIFEST_INVALID_FILE_FIELD", fieldName, fieldValue);
+                error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
                 return false;
             }
         }
         catch (Throwable ex) {
             //fieldError(fieldName, String.format("Invalid file path: %s", fieldValue));
-            error("MANIFEST_INVALID_FILE_FIELD", fieldName, fieldValue);
+            error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
             return false;
         }
         return true;
@@ -350,6 +363,7 @@ public abstract class ManifestReader {
         }
 
         error("MANIFEST_INVALID_FILE_SUFFIX",
+            field.getOrigin(),
             field.getName(),
             field.getValue(),
             suffixes.stream().collect( Collectors.joining( ", " )));
@@ -424,12 +438,12 @@ public abstract class ManifestReader {
         {
             int value = Integer.valueOf( fieldValue );
             if( value < 0 )
-                error("MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", field.getName());
+                error("MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", field.getOrigin(), field.getName());
             return value;
         }
         catch( NumberFormatException nfe )
         {
-            error("MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", field.getName());
+            error("MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", field.getOrigin(), field.getName());
         }
 
         return null;
@@ -515,10 +529,10 @@ public abstract class ManifestReader {
     appendOrigin(ValidationMessage validationMessage) {
         switch (state.state) {
             case PARSE:
-                validationMessage.append(() -> String.format("File name: %s, line number: %s", state.fileName, state.lineNo));
-                return;
+                validationMessage.append(createParseOrigin());
+                break;
             case VALIDATE:
-                validationMessage.append(() -> String.format("File name: %s", state.fileName));
+                validationMessage.append(createValidateOrigin());
                 break;
         }
     }
@@ -563,7 +577,14 @@ public abstract class ManifestReader {
 
 
     protected final Origin
-    createOrigin() {
-        return () -> String.format("File name: %s, line number: %s", state.fileName, state.lineNo);
+    createParseOrigin() {
+        String origin = String.format("File name: " + state.fileName + ", line number: " + state.lineNo );
+        return () -> origin;
+    }
+
+    protected final Origin
+    createValidateOrigin() {
+        String origin = String.format("File name: " + state.fileName );
+        return () -> origin;
     }
 }

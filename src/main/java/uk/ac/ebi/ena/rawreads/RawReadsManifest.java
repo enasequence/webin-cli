@@ -12,6 +12,7 @@
 package uk.ac.ebi.ena.rawreads;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -299,7 +300,13 @@ RawReadsManifest extends ManifestReader {
         RawReadsFile f = new RawReadsFile();
         f.setInputDir(inputDir);
         f.setFiletype(Filetype.valueOf(field.getName().toLowerCase()));
-        f.setFilename(field.getValue());
+
+        String fileName = field.getValue();
+        if( !Paths.get( fileName ).isAbsolute() )
+            f.setFilename( inputDir.resolve( Paths.get( fileName ) ).toString() );
+        else
+            f.setFilename(fileName);
+
         return f;
     }
 }

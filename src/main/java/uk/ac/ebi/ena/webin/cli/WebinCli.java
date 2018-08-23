@@ -21,9 +21,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.beust.jcommander.IParameterValidator;
@@ -90,7 +88,10 @@ public class WebinCli {
 	public static class 
 	Params	
 	{
-	    @Parameter(names = "help", required = false)
+		@Parameter()
+		private List<String> unrecognisedOptions = new ArrayList<>();
+
+		@Parameter(names = "help", required = false)
 		public boolean help;
 		
 		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
@@ -345,6 +346,12 @@ public class WebinCli {
 		JCommander jCommander = new JCommander(params);
 		try {
 			jCommander.parse(args);
+
+			if (params.unrecognisedOptions.size() > 1) {
+				writeMessage(Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", ")));
+				printUsageErrorAndExit();
+			}
+
 		} catch (Exception e) {
 			writeMessage(Severity.ERROR, e.getMessage());
 			printUsageErrorAndExit();
@@ -353,16 +360,12 @@ public class WebinCli {
 	}
 
 	private static void printUsageErrorAndExit() {
-		StringBuilder usage = new StringBuilder();
-		//usage.append("The following options are required:\n\t[-context], [-userName], [-password], [-manifest]");
-		usage.append("In addition, one of the following options must be provided: [-validate], [-submit]");
-		usage.append("\nFor full help please use the option: [-help]");
-		writeMessage(Severity.INFO, usage.toString());
+		printUsageHelpAndExit();
 		System.exit(USER_ERROR);
 	}
 
 	private static void printUsageHelpAndExit() {
-	    writeMessageIntoConsole( new StringBuilder().append( "Options: " )
+	    writeMessageIntoConsole( new StringBuilder().append( "Program options: " )
 	                                                .append( "\n" + ParameterDescriptor.context + ParameterDescriptor.contextFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription )
