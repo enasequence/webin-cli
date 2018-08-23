@@ -1,13 +1,14 @@
 .project
 .classpath
 .settings
-target
-embl-api-core.iml
-build
-.gradle
-bin
-/*.report
-/webin-cli.log
-/reads/
-.idea
+build/
+gradle/
+out/
+webin-cli.iml
+webin-cli.log
+reads/
+reports/
+.idea/
+gradlew
+gradlew.bat
 
