@@ -42,7 +42,6 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
@@ -54,35 +53,19 @@ Submit
     private final static String RECEIPT_XML = "receipt.xml";
     private String userName;
     private String password;
-    private ContextE contextE;
-    private String study;
-    private String sample;
-    private String assemblyName;
     private final boolean TEST;
     private String submitDir;
-    private String centerName;
-    private String submission_tool;
 
     private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to submit. ";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to submit. ";
 
-    public Submit(WebinCli.Params params, String submitDir, AssemblyInfoEntry assemblyInfoEntry, String submission_tool ) {
-        try {
-            this.contextE = ContextE.valueOf(params.context);
-        } catch (IllegalArgumentException e) {
-            throw WebinCliException.createUserError(WebinCli.INVALID_CONTEXT, params.context);
-        }
+    public Submit(WebinCli.Params params, String submitDir ) {
         this.TEST = params.test;
         this.userName = params.userName;
         this.password = params.password;
         this.submitDir = submitDir;
-        this.study = assemblyInfoEntry.getStudyId();
-        this.sample = assemblyInfoEntry.getSampleId();
-        this.assemblyName = assemblyInfoEntry.getName().trim().replaceAll("\\s+", "_");
-        this.centerName = params.centerName;
-        this.submission_tool = submission_tool;
     }
            
     
