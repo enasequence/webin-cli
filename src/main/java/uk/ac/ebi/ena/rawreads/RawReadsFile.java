@@ -12,19 +12,17 @@ RawReadsFile
     Filetype
     {
         fastq( "fastq" ),
-        bam( "bam", ".bam" ),
-        cram( "cram", ".cram" ),
+        bam( "bam" ),
+        cram( "cram" ),
         info( "info file" );
         
         
-        public final String xml_name;
-        public final String[] permitted_suffixes;
-        Filetype( String xml_name, String... permitted_suffixes )
+        public final String xml_name; 
+        Filetype( String xml_name )
         {
             this.xml_name = xml_name;
-            this.permitted_suffixes = permitted_suffixes;
-        }
-        
+        } 
+
     }
     
     

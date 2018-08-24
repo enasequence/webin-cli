@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,7 +94,7 @@ RawReadsWebinCli extends AbstractWebinCli
             super.init( parameters );
 
             defineFileTypes( getParameters().getManifestFile() );
-            
+//            setAssemblyInfo( defineInfo( infoFile ) );
             setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
             
             setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
