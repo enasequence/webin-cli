@@ -90,9 +90,9 @@ RawReadsManifest extends ManifestReader {
                 add(new ManifestFieldDefinition(Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1));
                 add(new ManifestFieldDefinition(Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList(QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS) ));
                 add(new ManifestFieldDefinition(Fields.__HORIZON, ManifestFieldType.META, 0, 1));
-                add(new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2));
-                add(new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1));
-                add(new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1));
+                add(new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2, Arrays.asList(".gz", ".bz2")));
+                add(new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1, Arrays.asList(".bam")));
+                add(new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1, Arrays.asList(".cram")));
         }},
             // File groups.
             new HashSet<List<ManifestFileCount>>() {{
