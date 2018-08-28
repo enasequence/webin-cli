@@ -4,9 +4,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.Test;
 
@@ -16,7 +18,7 @@ import uk.ac.ebi.ena.manifest.ManifestFileWriter;
 public class ManifestFileWriterTest 
 {
  	@Test
-	public void testValidateValidManifest() throws Exception 
+	public void testValidateValidManifest() throws IOException, NoSuchAlgorithmException
 	{
 		File inputFile = null;
 		File outputFile = File.createTempFile( "testValidateValidManifest", "FILE" );

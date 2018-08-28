@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
@@ -23,7 +34,8 @@ import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -148,15 +160,15 @@ SequenceWebinCliTest
         Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
         
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
-                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
+                ( Fields.STUDY             + " SRP123456789\n"
+                + Fields.SAMPLE            + " ERS198522\n"
+                + Fields.PLATFORM          + " ILLUMINA\n"
+                + Fields.INSTRUMENT        + " unspecifieD\n"
+                + Fields.INSERT_SIZE       + " -1\n"
+                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Fields.NAME              + " SOME-FANCY-NAME\n "
                 + "FASTA " + input_dir.relativize( fastafile ).toString() ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
@@ -185,7 +197,7 @@ SequenceWebinCliTest
         SequenceWebinCli s = new SequenceWebinCli() {
             @Override protected boolean validateInternal() throws ValidationEngineException { return false; }
             @Override Element makeAnalysisType(AssemblyInfoEntry entry) { return null; }
-            @Override ContextE getContext() { return null; }
+            @Override ContextE getContext() { return ContextE.genome; }
             @Override public void init( WebinCliParameters parameters ) { 
                 setParameters( parameters ); 
                 setValidationDir( parameters.getOutputDir() ); 
@@ -197,15 +209,15 @@ SequenceWebinCliTest
         Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
 
         Path info = Files.write( Files.createTempFile( input_dir, "TEMP", ".info" ), 
-                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
-                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n " ).getBytes(),
+                ( Fields.STUDY             + " SRP123456789\n"
+                + Fields.SAMPLE            + " ERS198522\n"
+                + Fields.PLATFORM          + " ILLUMINA\n"
+                + Fields.INSTRUMENT        + " unspecifieD\n"
+                + Fields.INSERT_SIZE       + " -1\n"
+                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Fields.NAME              + " SOME-FANCY-NAME\n " ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 

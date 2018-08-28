@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.rawreads;
 
 import java.nio.file.Path;
@@ -12,17 +23,19 @@ RawReadsFile
     Filetype
     {
         fastq( "fastq" ),
-        bam( "bam" ),
-        cram( "cram" ),
-        info( "info file" );
+        bam( "bam", ".bam" ),
+        cram( "cram", ".cram" );
+       
         
         
-        public final String xml_name; 
-        Filetype( String xml_name )
+        public final String xml_name;
+        public final String[] permitted_suffixes;
+        Filetype( String xml_name, String... permitted_suffixes )
         {
             this.xml_name = xml_name;
-        } 
-
+            this.permitted_suffixes = permitted_suffixes;
+        }
+        
     }
     
     
@@ -128,7 +141,7 @@ RawReadsFile
     {
         return String.format( "filename=\"%s\" filetype=\"%s\"%s%s%s%s%s",
                               filename,
-                              filetype.xml_name,
+                              null == filetype ?               "" : filetype.xml_name,
                               null == checksum ?               "" : String.format( " checksum=\"%s\"", checksum ),
                               null == checksum_method ?        "" : String.format( " checksum_method=\"%s\"", checksum_method ),
                               null == quality_scoring_system ? "" : String.format( " quality_scoring_system=\"%s\"", quality_scoring_system.xml_name ),

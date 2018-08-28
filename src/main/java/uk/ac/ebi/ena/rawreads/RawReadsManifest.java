@@ -1,143 +1,66 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.rawreads;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import org.apache.commons.lang.StringUtils;
+import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
+import uk.ac.ebi.ena.manifest.*;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
-import uk.ac.ebi.ena.rawreads.RawReadsFile.Compression;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class
-RawReadsManifest
-{
-    public interface 
-    RawReadsManifestTags
-    {
-        String LIBRARY_SELECTION = "LIBRARY_SELECTION";
-        String LIBRARY_SOURCE    = "LIBRARY_SOURCE";
-        String LIBRARY_STRATEGY  = "LIBRARY_STRATEGY";
-        String PLATFORM = "PLATFORM";
+RawReadsManifest extends ManifestReader {
+
+    public interface
+    Fields {
         String NAME = "NAME";
         String STUDY = "STUDY";
         String SAMPLE = "SAMPLE";
-        String INSERT_SIZE = "INSERT_SIZE";
-        String LIBRARY_CONSTRUCTION_PROTOCOL = "LIBRARY_CONSTRUCTION_PROTOCOL";
+        String PLATFORM = "PLATFORM";
         String INSTRUMENT = "INSTRUMENT";
+        String INSERT_SIZE = "INSERT_SIZE";
+        String LIBRARY_SOURCE = "LIBRARY_SOURCE";
+        String LIBRARY_SELECTION = "LIBRARY_SELECTION";
+        String LIBRARY_STRATEGY = "LIBRARY_STRATEGY";
+        String LIBRARY_CONSTRUCTION_PROTOCOL = "LIBRARY_CONSTRUCTION_PROTOCOL";
         String LIBRARY_NAME = "LIBRARY_NAME";
+        String QUALITY_SCORE = "QUALITY_SCORE";
         String __HORIZON = "__HORIZON";
-        
+        String FASTQ = "FASTQ";
+        String BAM = "BAM";
+        String CRAM = "CRAM";
     }
 
+    private final static String QUALITY_SCORE_PHRED_33 = "PHRED_33";
+    private final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
+    private final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
 
-    public String 
-    getStudyId()
-    {
-        return study_id;
-    }
+    private final static String UNSPECIFIED_INSTRUMENT = "unspecified";
 
-
-    public String 
-    getSampleId()
-    {
-        return sample_id;
-    }
-
-
-    public String 
-    getName()
-    {
-        return name;
-    }
-
-
-    public String 
-    getPlatform()
-    {
-        return platform;
-    }
-
-    
-    public List<RawReadsFile> 
-    getFiles()
-    {
-        return files;
-    }
-
-
-    public Integer 
-    getInsertSize()
-    {
-        return insert_size;
-    }
-
-
-    public String 
-    getLibraryConstructionProtocol()
-    {
-        return library_construction_protocol;
-    }
-
-
-    public String 
-    getLibraryName()
-    {
-        return library_name;
-    }
-
-
-    public String 
-    getInstrument()
-    {
-        return instrument;
-    }
-
-
-    public String 
-    getLibrarySource()
-    {
-        return library_source;
-    }
-
-
-    public String 
-    getLibrarySelection()
-    {
-        return library_selection;
-    }
-
-
-    public String 
-    getLibraryStrategy()
-    {
-        return library_strategy;
-    }
-
-
+    private String name = null;
     private String study_id = null;
     private String sample_id = null;
-    private String name = null;
     private String platform = null;
-    private List<RawReadsFile> files;
     private Integer insert_size;
     private Integer pairing_horizon = 1000;
     private String library_construction_protocol;
@@ -146,417 +69,245 @@ RawReadsManifest
     private String library_source;
     private String library_selection;
     private String library_strategy;
+    private QualityScoringSystem qualityScoringSystem;
+    private AsciiOffset asciiOffset;
+    private List<RawReadsFile> files;
 
-    
-    RawReadsFile
-    parseFileLine( Path input_dir, String[] tokens ) throws ValidationEngineException
-    {
-        RawReadsFile result = new RawReadsFile();
-        result.setInputDir( input_dir );
-        result.setCompression( Compression.NONE );
-        
-        for( String token : tokens )
-        {
-            token = token.trim();
-            switch( token.toUpperCase() )
-            {
-            case "INFO":
-            case "FASTQ":
-            case "BAM":
-            case "CRAM":
-                if( null != result.getFiletype() )
-                    throw new ValidationEngineException( "File type appeared more than once" );
-                
-                result.setFiletype( Filetype.valueOf( token.toLowerCase() ) );
-                break;
-                
-            case "PHRED_33":
-                result.setAsciiOffset( AsciiOffset.FROM33 );
-                result.setQualityScoringSystem( QualityScoringSystem.phred );
-                break;
-                
-            case "PHRED_64":
-                result.setAsciiOffset( AsciiOffset.FROM64 );
-                result.setQualityScoringSystem( QualityScoringSystem.phred );
-                break;
-                
-            case "LOGODDS":
-                result.setAsciiOffset( null );
-                result.setQualityScoringSystem( QualityScoringSystem.log_odds );
-                break;
-            
-            case "NONE":
-            case "GZ":
-            case "GZIP":
-            case "BZ2":
-                result.setCompression( Compression.valueOf( token ) );
-                break;
-                
-            case "ZIP": //Do not support zip
-                result.setCompression( Compression.NONE );
-                break;
-            
-            default:
-                if( null != token && !token.isEmpty() )
-                {
-                    if( null != result.getFilename() )
-                        throw new ValidationEngineException( "File name appeared more than once" );
-                    result.setFilename( token );
-                }
-            }
-        }
-        
-        if( null != result.getFilename() && !result.getFilename().isEmpty() && !Paths.get( result.getFilename() ).isAbsolute() )
-            result.setFilename( result.getInputDir().resolve( Paths.get( result.getFilename() ) ).toString() );
-        
-        return result;
-    }
-    
-    
-    private static List<String>
-    readAllLines( InputStream is )
-    {
-        return new BufferedReader( new InputStreamReader( is, StandardCharsets.UTF_8 ) ).lines().collect( Collectors.toList() ); 
-    }
-    
-    
-    public static List<String>
-    readAllLines( File file ) throws FileNotFoundException
-    {
-        try( InputStream is = new GZIPInputStream( new FileInputStream( file ) ) )
-        {
-            return readAllLines( is ); 
-        }catch( IOException ioe )
-        {
-            try( InputStream is = new BZip2CompressorInputStream( new FileInputStream( file ) ) )
-            {
-                return readAllLines( is );
-            }catch( IOException ie )
-            {
-                return readAllLines( new FileInputStream( file ) );
-            }
-        }
-    }
-    
-    
-    void
-    defineFileTypes( Path input_dir, File manifest_file ) throws IOException
-    {
-        List<String> lines = Files.readAllLines( manifest_file.toPath() );
-        String source = manifest_file.getPath();
-
-        this.files = parseContent( input_dir, lines, source );
-        RawReadsFile info = files.stream().filter( e -> Filetype.info.equals( e.getFiletype() ) ).findFirst().orElse( null );
-        if( null != info )
-            parseContent( input_dir, readAllLines( new File( info.getFilename() ) ), info.getFilename() );
-        
-        
-        if( null == study_id || study_id.isEmpty() )
-            throw WebinCliException.createUserError( "Study should be defined" );
-        
-        if( null == sample_id || sample_id.isEmpty() )
-            throw WebinCliException.createUserError( "Sample should be defined" );
-        
-        if( null == platform && null == instrument )
-            throw WebinCliException.createUserError( "Platform or/and instrument should be defined. Available platforms: " + ControlledValueList.Platform.keyList() + "; available instruments: " + ControlledValueList.Instrument.keyList() );
-
-        if( null != instrument )
-        {
-            String[] platforms = ControlledValueList.Instrument.getValue( instrument ).split( "[;,]" );
-            if( 1 == platforms.length )
-            {
-                platform = ControlledValueList.Platform.getKey( platforms[ 0 ] );
-            } else if( !Stream.of( platforms ).anyMatch( e -> e.equals( platform ) ) )
-            {
-                throw WebinCliException.createUserError( String.format( "Platform %s. Available platforms for instrument %s: %s", 
-                                                                        null == platform || platform.isEmpty() ? "not defined" : platform + " not supported", 
-                                                                        instrument, 
-                                                                        ControlledValueList.Instrument.getValue( instrument ) ) );    
-            }
-        } else
-        {
-            instrument = ControlledValueList.Instrument.getKey( "unspecified" );
-            if( null == instrument || instrument.isEmpty() )
-                throw WebinCliException.createSystemError( "Instrument unspecified value is missing" ); 
-        }
-        
-        reportIfManatoryValueMissing( library_strategy,  RawReadsManifestTags.LIBRARY_STRATEGY,  ControlledValueList.Strategy.keyList() );
-        reportIfManatoryValueMissing( library_source,    RawReadsManifestTags.LIBRARY_SOURCE,    ControlledValueList.Source.keyList() );
-        reportIfManatoryValueMissing( library_selection, RawReadsManifestTags.LIBRARY_SELECTION, ControlledValueList.Selection.keyList() );
-        
-        List<RawReadsFile> files = this.files.stream().filter( e -> !Filetype.info.equals( e.getFiletype() ) ).collect( Collectors.toList() );
-        
-        if( files.isEmpty() )
-            throw WebinCliException.createUserError( "No files supplied" );
-        
-        if( 1 != files.stream().map( e -> e.getFiletype() ).collect( Collectors.toSet() ).size() )
-            throw WebinCliException.createUserError( "Cannot mix following file formats in one manifest: " + Arrays.asList( files.stream().map( e -> e.getFiletype() ).collect( Collectors.toSet() ) ) );
-        
-        long cnt = files.stream().filter( e -> Filetype.fastq == e.getFiletype() ).collect( Collectors.counting() );
-        
-        if( 0 != cnt && 1 != cnt && 2 != cnt )
-            throw WebinCliException.createUserError( "Amount of fastq files can be one for single or paired layout and two for paired layout" );
-        
-        cnt = files.stream().filter( e -> Filetype.bam == e.getFiletype() ).collect( Collectors.counting() );
-        if( 0 != cnt && 1 != cnt )
-            throw WebinCliException.createUserError( "Only one bam file accepted" );
-
-        cnt = files.stream().filter( e -> Filetype.cram == e.getFiletype() ).collect( Collectors.counting() );
-        if( 0 != cnt && 1 != cnt )
-            throw WebinCliException.createUserError( "Only one cram file accepted" );
-
-        this.files = files;
+    public RawReadsManifest() {
+        super(
+            // Fields.
+            new ArrayList<ManifestFieldDefinition>() {{
+                add(new ManifestFieldDefinition(Fields.NAME, ManifestFieldType.META, 1, 1));
+                add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1));
+                add(new ManifestFieldDefinition(Fields.SAMPLE, ManifestFieldType.META, 1, 1));
+                add(new ManifestFieldDefinition(Fields.INSTRUMENT, ManifestFieldType.META, 0, 1, ControlledValueList.Instrument.keyList()));
+                add(new ManifestFieldDefinition(Fields.PLATFORM, ManifestFieldType.META, 0, 1, ControlledValueList.Platform.keyList()));
+                add(new ManifestFieldDefinition(Fields.INSERT_SIZE, ManifestFieldType.META, 0, 1));
+                add(new ManifestFieldDefinition(Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1, ControlledValueList.Source.keyList()));
+                add(new ManifestFieldDefinition(Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1, ControlledValueList.Selection.keyList()));
+                add(new ManifestFieldDefinition(Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1, ControlledValueList.Strategy.keyList()));
+                add(new ManifestFieldDefinition(Fields.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1));
+                add(new ManifestFieldDefinition(Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1));
+                add(new ManifestFieldDefinition(Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList(QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS) ));
+                add(new ManifestFieldDefinition(Fields.__HORIZON, ManifestFieldType.META, 0, 1));
+                add(new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2));
+                add(new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1));
+                add(new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1));
+        }},
+            // File groups.
+            new HashSet<List<ManifestFileCount>>() {{
+                add(new ArrayList<ManifestFileCount>() {{
+                    add(new ManifestFileCount(Fields.FASTQ, 1, 2));
+                }});
+                add(new ArrayList<ManifestFileCount>() {{
+                    add(new ManifestFileCount(Fields.CRAM, 1, 1));
+                }});
+                add(new ArrayList<ManifestFileCount>() {{
+                    add(new ManifestFileCount(Fields.BAM, 1, 1));
+                }});
+        }});
     }
 
+    private static final String MESSAGE_BUNDLE = "uk.ac.ebi.ena.rawreads.RawReadsManifestMessages";
 
-    private List<RawReadsFile> 
-    parseContent( Path input_dir, List<String> lines, String source )
+    static
     {
-        List<RawReadsFile> files = new ArrayList<>();
-        int line_no = 0;
-        
-        for( String line : lines )
-        {
-            ++line_no;
-            if( null != line && ( line = line.trim() ).isEmpty() )
-                continue;
-            
-            String tokens[] = line.split( "\\s+", 2 );
 
-            if( 0 == tokens.length )
-                continue;
-
-            String token0 = tokens[ 0 ].trim();
-            if( null != token0 && token0.matches( "^[\\s]*(#|;|\\/\\/).*$" ) )
-                continue;
-            
-            token0 = token0.toUpperCase();
-            switch( token0 )
-            {
-            case RawReadsManifestTags.__HORIZON:
-                try
-                {
-                    pairing_horizon = Integer.valueOf( tokens[ 1 ] );
-                    if( pairing_horizon < 0 )
-                        reportUserError( source, line_no, "Non-negative integer expected" );
-                    break;
-                } catch( ArrayIndexOutOfBoundsException a )
-                {
-                    ;// ignore - optional
-                    break;
-                } catch( NumberFormatException nfe )
-                {
-                    reportUserError( source, line_no, "Non-negative integer expected" );
-                }
-            
-            //paired with PLATFORM
-            case RawReadsManifestTags.INSTRUMENT:
-                if( null == instrument )
-                {
-                    if( tokens.length < 2 && !ControlledValueList.Instrument.contains( tokens[ 1 ] ) )
-                    {
-                        reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Instrument.keyList() );
-                    } else
-                    {
-                        instrument = ControlledValueList.Instrument.getKey( tokens[ 1 ] );
-                    }
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-                
-            //optional, free text
-            case RawReadsManifestTags.LIBRARY_NAME:
-                if( null == library_name )
-                {
-                    library_name = tokens.length >= 2 ? tokens[ 1 ] : null;
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-                
-            case RawReadsManifestTags.LIBRARY_SOURCE:
-                if( null == library_source )
-                {
-                    if( tokens.length < 2 || !ControlledValueList.Source.contains( tokens[ 1 ] ) )
-                    {
-                        reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Source.keyList() );
-                    } else
-                    {
-                        library_source = ControlledValueList.Source.getKey( tokens[ 1 ] );
-                    }
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-                
-            case RawReadsManifestTags.LIBRARY_SELECTION:
-                if( null == library_selection )
-                {
-                    if( tokens.length < 2 || !ControlledValueList.Selection.contains( tokens[ 1 ] ) )
-                    {
-                        reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Selection.keyList() );
-                    } else
-                    {
-                        library_selection = ControlledValueList.Selection.getKey( tokens[ 1 ] );
-                    }
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-                
-
-            case RawReadsManifestTags.LIBRARY_STRATEGY:
-                if( null == library_strategy )
-                {
-                    if( tokens.length < 2 || !ControlledValueList.Strategy.contains( tokens[ 1 ] ) )
-                    {
-                        reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Strategy.keyList() );
-                    } else
-                    {
-                        library_strategy = ControlledValueList.Strategy.getKey( tokens[ 1 ] );
-                    }
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-
-            //optional, free text
-            case RawReadsManifestTags.LIBRARY_CONSTRUCTION_PROTOCOL:
-                if( null == library_construction_protocol )
-                {
-                    library_construction_protocol = tokens.length >= 2 ? tokens[ 1 ] : null;
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-                
-            case RawReadsManifestTags.INSERT_SIZE:
-                if( null == insert_size )
-                {
-                    try
-                    {
-                        insert_size = Integer.valueOf( tokens[ 1 ] );
-                        if( insert_size < 0 )
-                            reportUserError( source, line_no, "Non-negative integer expected" );
-                        
-                        break;
-                    } catch( ArrayIndexOutOfBoundsException ae )
-                    {
-                        ;//ignore
-                        break;
-                    } catch( NumberFormatException nfe )
-                    {
-                        reportUserError( source, line_no, "Non-negative integer expected" );
-                    }
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-            
-            case RawReadsManifestTags.SAMPLE:
-                if( null == sample_id )
-                {
-                    sample_id = tokens.length >= 2 ? tokens[ 1 ] : null;
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-
-            case RawReadsManifestTags.STUDY:
-                if( null == study_id )
-                {
-                    study_id = tokens.length >= 2 ? tokens[ 1 ] : null;
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-                
-            case RawReadsManifestTags.NAME:
-                if( null == name )
-                {
-                    name = tokens.length >= 2 ? tokens[ 1 ] : null;
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-
-            case RawReadsManifestTags.PLATFORM:
-                if( null == platform )
-                {
-                    if( tokens.length < 2 || !ControlledValueList.Platform.contains( tokens[ 1 ] ) )
-                    {
-                        reportTokenValueConstrains( source, line_no, token0, ControlledValueList.Platform.keyList() );
-                    } else 
-                    {
-                        platform = ControlledValueList.Platform.getKey( tokens[ 1 ] );
-                    }
-                    
-                    break;
-                } 
-                reportTokenDuplication( source, line_no, token0 );
-
-            default:
-                RawReadsFile f = null;
-                try
-                {
-                    f = parseFileLine( input_dir, line.split( "\\s+" ) );
-                } catch( ValidationEngineException vee )
-                {
-                    reportUserError( source, line_no, vee.getMessage() );
-                    break;
-                }
-                if( null == f.getFilename() || f.getFilename().isEmpty() )
-                    reportUserError( source, line_no, "Filename not supplied" );
-                
-                if( null == f.getFiletype() )
-                    reportUserError( source, line_no, "No file type supplied. Valid are: " + Stream.of( Filetype.values() ).map( String::valueOf ).collect( Collectors.joining( ", " ) ) );
-
-                if( Compression.NONE != f.getCompression() && ( Filetype.bam == f.getFiletype() || Filetype.cram == f.getFiletype() ) )
-                    reportUserError( source, line_no, "Compression not supported for types " + Filetype.bam + " and " + Filetype.cram );
-                
-                if( null != f.getQualityScoringSystem() && ( Filetype.bam == f.getFiletype() || Filetype.cram == f.getFiletype() ) )
-                    reportUserError( source, line_no, "Scoring system not supported for types " + Filetype.bam + " and " + Filetype.cram );
-
-                //TODO externalise scoring types
-                if( !Files.exists( Paths.get( f.getFilename() ) ) )
-                    reportUserError( source, line_no, String.format( "Cannot locate file %s", f.getFilename() ) );
-                
-                if( Files.isDirectory( Paths.get( f.getFilename() ) ) )
-                    reportUserError( source, line_no, "Supplied file is a directory " + f.getFilename() );
-                
-                files.add( f );
-                break;
-            }
-        }
-        return files;
+        ValidationMessageManager.addBundle(MESSAGE_BUNDLE);
     }
 
-
-    private void 
-    reportTokenDuplication( String source, int line_no, String token )
-    {
-        throw WebinCliException.createUserError( String.format( "%s: %d, %s should not appeared more than once", source, line_no, token ) );
+    public String
+    getName() {
+        return name;
     }
 
-    
-    private void 
-    reportTokenValueConstrains( String source, int line_no, String token, List<String> values )
-    {
-        throw WebinCliException.createUserError( String.format( "%s: %d, Value of %s should be one from the list %s", source, line_no, token, values ) );
+    public String
+    getStudyId() {
+        return study_id;
     }
-    
-    
-    private void 
-    reportUserError( String source, int line_no, String error )
-    {
-        throw WebinCliException.createUserError( String.format( "%s: %d, %s", source, line_no, error ) );
+
+    public String
+    getSampleId() {
+        return sample_id;
     }
-    
-    //TODO maybe merge with reportTokenValueConstrains
-    private void
-    reportIfManatoryValueMissing( String value, String tag_name, List<String> value_list )
-    {
-        if( null == value || value.isEmpty() )
-            throw WebinCliException.createUserError( String.format( "%s is mandatory.%s", 
-                                                                    tag_name, 
-                                                                    null != value_list ? " Possible values: " + value_list.stream().collect( Collectors.joining( ", " ) ) : "" ) );
+
+    public String
+    getInstrument() {
+        return instrument;
     }
-    
-    
-    public Integer 
+
+    public String
+    getPlatform() {
+        return platform;
+    }
+
+    public Integer
+    getInsertSize() {
+        return insert_size;
+    }
+
+    public String
+    getLibrarySource() {
+        return library_source;
+    }
+
+    public String
+    getLibrarySelection() {
+        return library_selection;
+    }
+
+    public String
+    getLibraryStrategy() {
+        return library_strategy;
+    }
+
+    public String
+    getLibraryConstructionProtocol() {
+        return library_construction_protocol;
+    }
+
+    public String
+    getLibraryName() {
+        return library_name;
+    }
+
+    public Integer
     getPairingHorizon()
     {
         return pairing_horizon;
     }
 
+    public List<RawReadsFile>
+    getFiles() {
+        return files;
+    }
+
+    @Override
+    public void
+    processManifest() {
+
+        name = getResult().getValue(Fields.NAME);
+        study_id = getResult().getValue(Fields.STUDY);
+        sample_id = getResult().getValue(Fields.SAMPLE);
+
+        if (getResult().getCount(Fields.INSTRUMENT) > 0 &&
+            getResult().getField(Fields.INSTRUMENT).isValidFieldValueOrFileSuffix())
+            instrument = getResult().getValue(Fields.INSTRUMENT);
+
+        if (getResult().getCount(Fields.PLATFORM) > 0 &&
+            getResult().getField(Fields.PLATFORM).isValidFieldValueOrFileSuffix())
+            platform = getResult().getValue(Fields.PLATFORM);
+
+        insert_size = getAndValidateNonNegativeInteger(getResult().getField(Fields.INSERT_SIZE));
+
+        if (getResult().getCount(Fields.LIBRARY_SOURCE) > 0 &&
+            getResult().getField(Fields.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
+            library_source = getResult().getValue(Fields.LIBRARY_SOURCE);
+
+        if (getResult().getCount(Fields.LIBRARY_SELECTION) > 0 &&
+            getResult().getField(Fields.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
+            library_selection = getResult().getValue(Fields.LIBRARY_SELECTION);
+
+        if (getResult().getCount(Fields.LIBRARY_STRATEGY) > 0 &&
+            getResult().getField(Fields.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
+            library_strategy = getResult().getValue(Fields.LIBRARY_STRATEGY);
+
+        library_construction_protocol = getResult().getValue(Fields.LIBRARY_CONSTRUCTION_PROTOCOL);
+        library_name = getResult().getValue(Fields.LIBRARY_NAME);
+
+        if (getResult().getValue(Fields.QUALITY_SCORE) != null) {
+            switch (getResult().getValue(Fields.QUALITY_SCORE)) {
+                case QUALITY_SCORE_PHRED_33:
+                    asciiOffset = AsciiOffset.FROM33;
+                    qualityScoringSystem = QualityScoringSystem.phred;
+                    break;
+                case QUALITY_SCORE_PHRED_64:
+                    asciiOffset = AsciiOffset.FROM64;
+                    qualityScoringSystem = QualityScoringSystem.phred;
+                    break;
+                case QUALITY_SCORE_LOGODDS:
+                    asciiOffset = null;
+                    qualityScoringSystem = QualityScoringSystem.log_odds;
+                    break;
+            }
+        }
+
+        if (getResult().getCount(Fields.__HORIZON) > 0)
+            pairing_horizon = getAndValidateNonNegativeInteger(getResult().getField(Fields.__HORIZON));
+
+        processInstrumentAndPlatform();
+        processFiles();
+    }
+
+    private void processInstrumentAndPlatform() {
+
+        if( null == platform && (null == instrument || instrument.equals(UNSPECIFIED_INSTRUMENT)))
+        {
+            error("MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT",
+                    ControlledValueList.Platform.keyList().stream().collect(Collectors.joining(", ")),
+                    ControlledValueList.Instrument.keyList().stream().collect(Collectors.joining(", ")));
+        }
+
+        if( instrument != null )
+        {
+            // Set platform.
+
+            String platforms = ControlledValueList.Instrument.getValue( instrument );
+            if (StringUtils.isBlank(platforms)) {
+                throw WebinCliException.createSystemError("Missing platform for instrument: " + instrument);
+            }
+
+            String[] platformList = platforms.split("[;,]");
+
+            if( 1 == platformList.length )
+            {
+                platform = ControlledValueList.Platform.getKey( platformList[ 0 ] );
+            }
+            else if( !Stream.of( platformList ).anyMatch(e -> e.equals( platform ) ) )
+            {
+                error("MANIFEST_INVALID_PLATFORM_FOR_INSTRUMENT",
+                        StringUtils.isBlank(platform) ? "is not defined" : platform + " is not supported",
+                        instrument,
+                        ControlledValueList.Instrument.getValue( instrument ));
+            }
+        }
+        else {
+            instrument = UNSPECIFIED_INSTRUMENT;
+        }
+    }
+
+    private void processFiles() {
+        files = getResult().getFields().stream()
+                .filter( field -> field.getDefinition().getType() == ManifestFieldType.FILE )
+                .map( field -> createReadFile(getInputDir(), field) )
+                .collect( Collectors.toList() );
+
+        // Set FASTQ quality scoring system and ascii offset.
+
+        for (RawReadsFile f: files) {
+            if (f.getFiletype().equals(Filetype.fastq)) {
+                if (qualityScoringSystem != null)
+                    f.setQualityScoringSystem(qualityScoringSystem);
+                if (asciiOffset != null)
+                    f.setAsciiOffset(asciiOffset);
+            }
+        }
+    }
+
+    static RawReadsFile
+    createReadFile(Path inputDir, ManifestFieldValue field) {
+        assert (field.getDefinition().getType() == ManifestFieldType.FILE);
+
+        RawReadsFile f = new RawReadsFile();
+        f.setInputDir(inputDir);
+        f.setFiletype(Filetype.valueOf(field.getName().toLowerCase()));
+
+        String fileName = field.getValue();
+        if( !Paths.get( fileName ).isAbsolute() )
+            f.setFilename( inputDir.resolve( Paths.get( fileName ) ).toString() );
+        else
+            f.setFilename(fileName);
+
+        return f;
+    }
 }

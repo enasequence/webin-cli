@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
@@ -101,6 +112,15 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
 	    super.init( parameters );
 	}
 	
+	  @Override
+	    protected void defineFileTypes(File manifest_file) throws ValidationEngineException, IOException {
+	    	
+		  super.defineFileTypes(manifest_file);
+	    	
+	    	if(!flatFileExists&&!fastaFileExists)
+	            throw WebinCliException.createUserError( "Fasta or flatfile missing from submission" );
+	 		
+	    }
 	
 	void 
 	__init( ManifestFileReader manifestFileReader, 
@@ -621,6 +641,8 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         Element typeE = new Element( ContextE.genome.getType() );
         
         typeE.addContent( createTextElement( "NAME", entry.getName() ) );
+        if( null != entry.getAssemblyType() && !entry.getAssemblyType().isEmpty() )
+            typeE.addContent( createTextElement( "ASSEMBLY_TYPE", entry.getAssemblyType()));
         typeE.addContent( createTextElement( "PARTIAL", String.valueOf( Boolean.FALSE ) ) ); //as per SraAnalysisParser.setAssemblyInfo
         typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
         typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
@@ -631,6 +653,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli
         
         if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
             typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
+        
+        if ( entry.isTpa()) 
+            typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
         
         typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
         return typeE;

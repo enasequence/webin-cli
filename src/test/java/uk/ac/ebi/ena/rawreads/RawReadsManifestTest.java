@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.rawreads;
 
 import java.io.File;
@@ -12,13 +23,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
-import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 
 public class 
 RawReadsManifestTest
@@ -33,47 +45,42 @@ RawReadsManifestTest
     
     
     @Test public void
-    parseFileLineTest() throws ValidationEngineException
+    testCreateReadFile()
     {
-        RawReadsManifest rr = new RawReadsManifest();
-        
-        RawReadsFile file = rr.parseFileLine( Paths.get( "." ), new String[] { "FASTQ", "PHRED_33", "fastq.file", "" } );
-        Assert.assertTrue( file.getFilename().contains( "fastq.file" ) );
-        Assert.assertEquals( Filetype.fastq, file.getFiletype() );
-        Assert.assertEquals( QualityScoringSystem.phred, file.getQualityScoringSystem());
+        Path inputDir = Paths.get( "." );
 
-        
-        file = rr.parseFileLine( Paths.get( "." ), new String[] { "", "fastq.file", "FASTQ", "PHRED_33", "" } );
-        Assert.assertTrue( file.getFilename().contains( "fastq.file" ) );
+        RawReadsFile file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
+                new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2), "file.fastq", null));
+        Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
-        Assert.assertEquals( QualityScoringSystem.phred, file.getQualityScoringSystem());
 
-        file = rr.parseFileLine( Paths.get( "." ), new String[] { "", "fastq.file", "BAM", "LOGODDS", "" } );
-        Assert.assertTrue( file.getFilename().contains( "fastq.file" ) );
+        file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
+                new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1), "file.bam", null));
+        Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
-        Assert.assertEquals( QualityScoringSystem.log_odds, file.getQualityScoringSystem());
 
-        System.out.println( file );
+        file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
+                new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1), "file.cram", null));
+        Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
+        Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }
     
-    
-    
     @Test public void
-    testManifestFields() throws IOException
+    testValidManifest() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                                + RawReadsManifestTags.PLATFORM          + " illumina\n"
-                                + RawReadsManifestTags.INSTRUMENT        + " Illumina HiScanSQ\n"
-                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + RawReadsManifestTags.LIBRARY_NAME      + " Name library\n"
-                                + RawReadsManifestTags.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
-                                + RawReadsManifestTags.INSERT_SIZE       + " 100500\n"
-                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                ( Fields.STUDY             + " SRP123456789\n"
+                                + Fields.SAMPLE            + " ERS198522\n"
+                                + Fields.PLATFORM          + " illumina\n"
+                                + Fields.INSTRUMENT        + " Illumina HiScanSQ\n"
+                                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                                + Fields.LIBRARY_NAME      + " Name library\n"
+                                + Fields.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
+                                + Fields.INSERT_SIZE       + " 100500\n"
+                                + Fields.NAME              + " SOME-FANCY-NAME\n "
+                                + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
         Assert.assertNull( rm.getStudyId() );
@@ -89,7 +96,7 @@ RawReadsManifestTest
         Assert.assertNull( rm.getName() );
         Assert.assertNull( rm.getFiles() );
         
-        rm.defineFileTypes( Paths.get( "." ), man.toFile() );
+        rm.readManifest( Paths.get( "." ), man.toFile() );
 
         Assert.assertEquals( "SRP123456789", rm.getStudyId() );
         Assert.assertEquals( "ERS198522", rm.getSampleId() );
@@ -107,29 +114,29 @@ RawReadsManifestTest
 
 
     @Test public void
-    testManifestFieldsWithInfo() throws IOException
+    testValidManifestWithInfo() throws IOException
     {
-        Path inf = Files.write( Files.createTempFile( Files.createTempDirectory( "TEMP" ), "TEMP", "INFO" ), 
-                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                                + RawReadsManifestTags.PLATFORM          + " illumina\n"
-                                + RawReadsManifestTags.INSTRUMENT        + " Illumina HiScanSQ\n"
-                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + RawReadsManifestTags.LIBRARY_NAME      + " Name library\n"
-                                + RawReadsManifestTags.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
-                                + RawReadsManifestTags.INSERT_SIZE       + " 100500\n"
-                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n" ).getBytes(),
+        Path inf = Files.write( Files.createTempFile( Files.createTempDirectory( "TEMP" ), "TEMP", "INFO" ),
+                                ( Fields.STUDY             + " SRP123456789\n"
+                                + Fields.SAMPLE            + " ERS198522\n"
+                                + Fields.PLATFORM          + " illumina\n"
+                                + Fields.INSTRUMENT        + " Illumina HiScanSQ\n"
+                                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                                + Fields.LIBRARY_NAME      + " Name library\n"
+                                + Fields.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
+                                + Fields.INSERT_SIZE       + " 100500\n"
+                                + Fields.NAME              + " SOME-FANCY-NAME\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
                                 ( "INFO " + inf.getFileName() + "\n"
                                 + "BAM " + Files.createTempFile( inf.getParent(), "TEMP", "FILE" ).getFileName() ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-                                
+
         RawReadsManifest rm = new RawReadsManifest();
-        
+
         Assert.assertNull( rm.getStudyId() );
         Assert.assertNull( rm.getSampleId() );
         Assert.assertNull( rm.getPlatform() );
@@ -142,8 +149,8 @@ RawReadsManifestTest
         Assert.assertNull( rm.getInsertSize() );
         Assert.assertNull( rm.getName() );
         Assert.assertNull( rm.getFiles() );
-        
-        rm.defineFileTypes( inf.getParent(), man.toFile() );
+
+        rm.readManifest( inf.getParent(), man.toFile() );
 
         Assert.assertEquals( "SRP123456789", rm.getStudyId() );
         Assert.assertEquals( "ERS198522", rm.getSampleId() );
@@ -159,108 +166,123 @@ RawReadsManifestTest
         Assert.assertEquals( 1, rm.getFiles().size() );
     }
 
-    
+
     @Test public void
-    testInstrumentUnspecified() throws IOException
+    testUnspecifiedInstrument() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                                + RawReadsManifestTags.PLATFORM          + " illumina\n"
-                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                ( Fields.PLATFORM + " illumina\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
         RawReadsManifest rm = new RawReadsManifest();
-        rm.defineFileTypes( Paths.get( "." ), man.toFile() );
+
+        Assert.assertNull( rm.getPlatform() );
+        Assert.assertNull( rm.getInstrument() );
+
+        rm.readManifest( Paths.get( "." ), man.toFile() );
+
         Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
         Assert.assertEquals( "unspecified", rm.getInstrument() );
     }
-    
-    
+
     @Test public void
-    platformOverride() throws IOException
+    testUnspecifiedInstrument2() throws IOException
+    {
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
+                (  Fields.PLATFORM + " ILLUMINA\n" +
+                Fields.INSTRUMENT + " unspecifieD\n" ).getBytes(),
+                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
+        RawReadsManifest rm = new RawReadsManifest();
+
+        Assert.assertNull( rm.getPlatform() );
+        Assert.assertNull( rm.getInstrument() );
+
+        rm.readManifest( Paths.get( "." ), man.toFile() );
+
+        Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
+        Assert.assertEquals( "unspecified", rm.getInstrument() );
+    }
+
+    @Test public void
+    testPlatformOverride() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                                + RawReadsManifestTags.INSTRUMENT        + " 454 GS FLX Titanium\n"
-                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                ( Fields.PLATFORM + " ILLUMINA\n"
+                                + Fields.INSTRUMENT + " 454 GS FLX Titanium\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
         RawReadsManifest rm = new RawReadsManifest();
-        rm.defineFileTypes( Paths.get( "." ), man.toFile() );
+
+        Assert.assertNull( rm.getPlatform() );
+        Assert.assertNull( rm.getInstrument() );
+
+        rm.readManifest( Paths.get( "." ), man.toFile() );
+
         Assert.assertEquals( "LS454", rm.getPlatform() );
         Assert.assertEquals( "454 GS FLX Titanium", rm.getInstrument() );
     }
 
-    
+
     @Test public void
-    instrumentUnspecified() throws IOException
+    testUnspecifiedInstrumentNoPlatform() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
+                                ( "" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
         RawReadsManifest rm = new RawReadsManifest();
-        rm.defineFileTypes( Paths.get( "." ), man.toFile() );
-        Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
+
+        Assert.assertNull( rm.getPlatform() );
+        Assert.assertNull( rm.getInstrument() );
+
+        rm.readManifest( Paths.get( "." ), man.toFile() );
+
+        Assert.assertNull( rm.getPlatform() );
         Assert.assertEquals( "unspecified", rm.getInstrument() );
+        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT", Severity.ERROR));
+    }
+
+    @Test public void
+    testUnspecifiedInstrumentNoPlatform2() throws IOException
+    {
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
+                ( Fields.INSTRUMENT + " unspecifieD\n" ).getBytes(),
+                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
+        RawReadsManifest rm = new RawReadsManifest();
+
+        Assert.assertNull( rm.getPlatform() );
+        Assert.assertNull( rm.getInstrument() );
+
+        rm.readManifest( Paths.get( "." ), man.toFile() );
+
+        Assert.assertNull( rm.getPlatform() );
+        Assert.assertEquals( "unspecified", rm.getInstrument() );
+        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT", Severity.ERROR));
     }
 
 
-    @Test( expected=WebinCliException.class ) public void
-    instrumentUnspecifiedPlatformMissing() throws IOException
-    {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-        RawReadsManifest rm = new RawReadsManifest();
-        rm.defineFileTypes( Paths.get( "." ), man.toFile() );
-        Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
-        Assert.assertEquals( "unspecified", rm.getInstrument() );
-    }
-    
-
-    @Test( expected = WebinCliException.class ) public void
+    @Test public void
     negativeInsertSize() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( RawReadsManifestTags.STUDY             + " SRP123456789\n"
-                                + RawReadsManifestTags.SAMPLE            + " ERS198522\n"
-                                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                                + RawReadsManifestTags.INSERT_SIZE       + " -1\n"
-                                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + RawReadsManifestTags.NAME              + " SOME-FANCY-NAME\n "
+                                ( Fields.STUDY             + " SRP123456789\n"
+                                + Fields.SAMPLE            + " ERS198522\n"
+                                + Fields.PLATFORM          + " ILLUMINA\n"
+                                + Fields.INSTRUMENT        + " unspecifieD\n"
+                                + Fields.INSERT_SIZE       + " -1\n"
+                                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                                + Fields.NAME              + " SOME-FANCY-NAME\n "
                                 + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
-        rm.defineFileTypes( Paths.get( "." ), man.toFile() );
+        rm.readManifest( Paths.get( "." ), man.toFile() );
+        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", Severity.ERROR));
     }
-     
-    
+
     private File
     createOutputFolder() throws IOException
     {

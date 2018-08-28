@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.assembly;
 
 import java.io.BufferedReader;
@@ -47,6 +58,7 @@ import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
@@ -60,7 +72,6 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 	private String submittedFile;
 	private ValidationPlan validationPlan;
 	private boolean FLAILED_VALIDATION;
-	private ManifestFileReader manifestFileReader;
 	private StringBuilder resultsSb;
 
 	public 
@@ -99,7 +110,6 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 	
 	@Deprecated public 
 	TranscriptomeAssemblyWebinCli(ManifestFileReader manifestFileReader, Sample sample, Study study) throws ValidationEngineException {
-		this.manifestFileReader = manifestFileReader;
 		setSample( sample );
 		setStudy( study );
 		this.validationPlan = getValidationPlan();
@@ -134,6 +144,15 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
 		return !FLAILED_VALIDATION;
 	}
+
+	@Override
+    protected void defineFileTypes(File manifest_file) throws ValidationEngineException, IOException {
+    	
+	  super.defineFileTypes(manifest_file);
+	  	if(!flatFileExists&&!fastaFileExists)
+           throw WebinCliException.createUserError( "Fasta or flatfile missing from submission" );
+ 		
+    }
 
 	
 	private void validateFlatFile() throws ValidationEngineException {

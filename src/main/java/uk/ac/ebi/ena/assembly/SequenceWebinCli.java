@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
@@ -19,6 +30,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.lang.ArrayUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -70,6 +82,9 @@ SequenceWebinCli extends AbstractWebinCli
     private Study  study;
     private Sample sample;
     private Map<Integer, Integer> line_number_map;
+    protected boolean fastaFileExists = false;
+    protected boolean flatFileExists = false; 
+    protected boolean tsvFileExists = false;
     
     
     protected abstract boolean validateInternal() throws ValidationEngineException;
@@ -146,6 +161,7 @@ suffix:     while( suffixes.length > 0 )
     protected void 
     defineFileTypes( File manifest_file ) throws ValidationEngineException, IOException 
     {
+    	
         ManifestFileReader reader = new ManifestFileReader();
         reader.read( manifest_file.getPath() );
         Map<Integer, Integer> line_number_map = new HashMap<>();
@@ -156,7 +172,7 @@ suffix:     while( suffixes.length > 0 )
         File infoFile = null; 
         File __infoFile = File.createTempFile( manifest_file.getName() + ".", ".info" );
         int __info_lineno = 1;
-        
+                
         for( ManifestObj obj : reader.getManifestFileObjects() )
         {
             if( null == obj.getFileFormat() )
@@ -170,7 +186,7 @@ suffix:     while( suffixes.length > 0 )
 
             String fileName = obj.getFileName();
             File file = Paths.get( fileName ).isAbsolute() ? new File( fileName ) : new File( getParameters().getInputDir(), fileName );
-            
+      
             switch( obj.getFileFormat() ) 
             {
             case CHROMOSOME_LIST:
@@ -181,15 +197,18 @@ suffix:     while( suffixes.length > 0 )
                 break;
             case FASTA:
                 fastaFiles.add(file);
+                fastaFileExists =true;
                 break;
             case FLATFILE:
                 flatFiles.add(file);
+                flatFileExists =true;
                 break;
             case AGP:
                 agpFiles.add(file);
                 break;
             case TAB:
                 tsvFiles.add( file );
+                tsvFileExists=true;
                 break;
             case INFO:
                 infoFile = file;
@@ -197,6 +216,15 @@ suffix:     while( suffixes.length > 0 )
             default:
             	break;
             }
+            
+            if(getContext()!=null)
+            {
+            boolean validFileFormat= ArrayUtils.contains(getContext().getFileFormats(),obj.getFileFormat());
+            if(!validFileFormat)
+                throw WebinCliException.createUserError( "File format : "+obj.getFileFormatString() +" is not permitted for context : "+ getContext().name());
+            }
+
+            	
         }
         
         this.fastaFiles = checkFiles( fastaFiles, true, ".fasta", ".fa" );
@@ -510,7 +538,7 @@ suffix:     while( suffixes.length > 0 )
     @Override public File
     getSubmissionBundleFileName()
     {
-        return new File( getSubmitDir(), "validate.reciept" );
+        return new File( getSubmitDir(), "validate.receipt" );
     }
 
 

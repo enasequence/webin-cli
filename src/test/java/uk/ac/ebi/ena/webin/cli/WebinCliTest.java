@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
@@ -19,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.RawReadsManifestTags;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 import uk.ac.ebi.ena.submit.ContextE;
 
 public class 
@@ -40,16 +51,16 @@ WebinCliTest
     private String
     getRawReadsInfoPart( String name )
     {
-        return    RawReadsManifestTags.STUDY             + " SRP052303\n"
-                + RawReadsManifestTags.SAMPLE            + " ERS2554688\n"
-                + RawReadsManifestTags.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifestTags.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifestTags.INSERT_SIZE       + " 1\n"
-                + RawReadsManifestTags.LIBRARY_NAME      + " YOBA LIB\n"
-                + RawReadsManifestTags.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifestTags.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifestTags.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifestTags.NAME              + " " + name + "\n ";
+        return    Fields.STUDY             + " SRP052303\n"
+                + Fields.SAMPLE            + " ERS2554688\n"
+                + Fields.PLATFORM          + " ILLUMINA\n"
+                + Fields.INSTRUMENT        + " unspecifieD\n"
+                + Fields.INSERT_SIZE       + " 1\n"
+                + Fields.LIBRARY_NAME      + " YOBA LIB\n"
+                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Fields.NAME              + " " + name + "\n ";
     }
     
     

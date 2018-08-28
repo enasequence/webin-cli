@@ -74,6 +74,14 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
         validateTsvFile( new File( submittedFile ) );
         return resultsSb;
     }
+    @Override
+    protected void defineFileTypes(File manifest_file) throws ValidationEngineException, IOException {
+    	super.defineFileTypes(manifest_file);
+    	
+    	if(!flatFileExists&&!tsvFileExists)
+            throw WebinCliException.createUserError( "tsv or flatfile is missing from submission" );
+ 		
+    }
 
 
     @Override protected boolean 

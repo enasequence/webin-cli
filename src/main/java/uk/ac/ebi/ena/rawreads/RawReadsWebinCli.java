@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.rawreads;
 
 import java.io.BufferedInputStream;
@@ -23,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -66,17 +78,14 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
-RawReadsWebinCli extends AbstractWebinCli
+    RawReadsWebinCli extends AbstractWebinCli
 {   
     private static final int BLOOM_EXPECTED_READS = 800_000_000;
 
-
-    public enum Platforms { ILLUMINA, LS454, SOLID, COMPLETE_GENOMICS, HELICOS, PACBIO, IONTORRENT, CAPILLARY }
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
     private static final String BAM_STAR = "*";
     RawReadsManifest rrm = new RawReadsManifest();
-    private String  experiment_ref;
     private boolean valid;
     private File    submit_dir;
     private File    validate_dir;
@@ -84,31 +93,43 @@ RawReadsWebinCli extends AbstractWebinCli
     private boolean is_paired;
     private boolean verify_sample = true;
     private boolean verify_study  = true;
+
+    private final static String INVALID_MANIFEST = "Manifest file validation failed. Please check the report file for errors: ";
     
     
     @Override public void 
     init( WebinCliParameters parameters ) throws ValidationEngineException
     {
+        super.init( parameters );
+
+        setValidationDir(createOutputSubdir("."));
+        File manifestFile = getParameters().getManifestFile();
+        File reportFile = getReportFile( "", manifestFile.getName() );
+
         try
         {
-            super.init( parameters );
+            rrm.readManifest( getParameters().getInputDir().toPath(), manifestFile );
 
-            defineFileTypes( getParameters().getManifestFile() );
-//            setAssemblyInfo( defineInfo( infoFile ) );
-            setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
-            
-            setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
-            setSubmitDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), SUBMIT_DIR ) );
-            
-        } catch( ValidationEngineException | WebinCliException e )
-        {
-            throw e;
+            if (!StringUtils.isBlank(rrm.getName())) {
+                setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
+                setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
+                setSubmitDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), SUBMIT_DIR ) );
+            }
         } catch( Throwable t )
         {
             throw new ValidationEngineException( "Unable to init validator", t );
         }
+        finally {
+            if (!rrm.getValidationResult().isValid()) {
+                reportFile.delete();
+                FileUtils.writeReport( reportFile, rrm.getValidationResult() );
+            }
+        }
+
+        if (!rrm.getValidationResult().isValid()) {
+            throw WebinCliException.createUserError( INVALID_MANIFEST, reportFile.getPath() );
+        }
     }
-    
 
     public boolean 
     getVerifyStudy()
@@ -137,14 +158,7 @@ RawReadsWebinCli extends AbstractWebinCli
         this.verify_study = verify_study;
     }
 
-    
-    void
-    defineFileTypes( File manifest_file ) throws IOException
-    {
-        rrm.defineFileTypes( getParameters().getInputDir().toPath(), manifest_file );
-    }
-    
-    
+
 	private void
     setSubmitDir( File submit_dir )
     {
@@ -720,7 +734,7 @@ RawReadsWebinCli extends AbstractWebinCli
     {
         try
         {
-            List<RawReadsFile> files = rrm.getFiles().stream().filter( e -> !Filetype.info.equals( e.getFiletype() ) ).collect( Collectors.toList() );
+            List<RawReadsFile> files = rrm.getFiles();
             
             List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
             Path uploadDir = Paths.get( String.valueOf( ContextE.reads ), getName() );
@@ -939,7 +953,7 @@ RawReadsWebinCli extends AbstractWebinCli
     @Override public File
     getSubmissionBundleFileName()
     {
-        return new File( submit_dir, "validate.reciept" );
+        return new File( submit_dir, "validate.receipt" );
     }
 
 

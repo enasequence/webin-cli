@@ -1,3 +1,14 @@
+/*
+ * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
@@ -10,9 +21,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.beust.jcommander.IParameterValidator;
@@ -79,7 +88,10 @@ public class WebinCli {
 	public static class 
 	Params	
 	{
-	    @Parameter(names = "help", required = false)
+		@Parameter()
+		private List<String> unrecognisedOptions = new ArrayList<>();
+
+		@Parameter(names = "help", required = false)
 		public boolean help;
 		
 		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
@@ -129,7 +141,7 @@ public class WebinCli {
 	getFormattedProgramVersion()
 	{
         String version = WebinCli.class.getPackage().getImplementationVersion();
-        return String.format( "%s:%s\n", WebinCli.class.getSimpleName(), null == version ? "" : version );    
+        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );    
 	}
 	
 	
@@ -186,18 +198,24 @@ public class WebinCli {
                 case VALIDATION_ERROR:
                     System.exit( VALIDATION_ERROR );
             }
-        } catch( Throwable e ) 
+        } 
+        catch( ValidationEngineException e ) 
+        {
+            writeMessage( Severity.ERROR, e.getMessage() );
+            System.exit( SYSTEM_ERROR );
+        }
+        catch( Throwable e ) 
         {
             StringWriter sw = new StringWriter();
             e.printStackTrace( new PrintWriter( sw ) );
-            writeMessage( Severity.ERROR, sw.toString() );
+            writeMessage( Severity.ERROR, e.getMessage() );
             System.exit( SYSTEM_ERROR );
         }
     }
 
   
     void 
-    init( Params params ) throws Exception, IOException, FileNotFoundException, ValidationEngineException 
+    init( Params params ) throws Exception, IOException, FileNotFoundException 
     {
         this.params = params;
         this.contextE = ContextE.valueOf( String.valueOf( params.context ).toLowerCase() );
@@ -328,6 +346,12 @@ public class WebinCli {
 		JCommander jCommander = new JCommander(params);
 		try {
 			jCommander.parse(args);
+
+			if (params.unrecognisedOptions.size() > 1) {
+				writeMessage(Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", ")));
+				printUsageErrorAndExit();
+			}
+
 		} catch (Exception e) {
 			writeMessage(Severity.ERROR, e.getMessage());
 			printUsageErrorAndExit();
@@ -336,16 +360,12 @@ public class WebinCli {
 	}
 
 	private static void printUsageErrorAndExit() {
-		StringBuilder usage = new StringBuilder();
-		//usage.append("The following options are required:\n\t[-context], [-userName], [-password], [-manifest]");
-		usage.append("In addition, one of the following options must be provided: [-validate], [-submit]");
-		usage.append("\nFor full help please use the option: [-help]");
-		writeMessage(Severity.INFO, usage.toString());
+		printUsageHelpAndExit();
 		System.exit(USER_ERROR);
 	}
 
 	private static void printUsageHelpAndExit() {
-	    writeMessageIntoConsole( new StringBuilder().append( "Options: " )
+	    writeMessageIntoConsole( new StringBuilder().append( "Program options: " )
 	                                                .append( "\n" + ParameterDescriptor.context + ParameterDescriptor.contextFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription )
