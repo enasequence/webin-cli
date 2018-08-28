@@ -314,7 +314,7 @@ public class WebinCli {
         {
             AssemblyInfoEntry aie = new AssemblyInfoEntry();
             aie.setName( "NAME" );
-            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath(), aie, getFormattedProgramVersion() );
+            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath());
             submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
 
         } catch( WebinCliException e ) 

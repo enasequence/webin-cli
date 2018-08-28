@@ -66,7 +66,7 @@ RawReadsWebinCliTest
     parseManifest() throws IOException, ValidationEngineException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
-        Path fastq_file = Files.write( File.createTempFile( "FASTQ", "FASTQ" ).toPath(), "@1.1\nACGT\n@\n!@#$\n".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
+        Path fastq_file = Files.write( File.createTempFile( "FASTQ", "fastq.gz" ).toPath(), "@1.1\nACGT\n@\n!@#$\n".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
 
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setCenterName( "C E N T E R N A M E" );
@@ -439,7 +439,7 @@ RawReadsWebinCliTest
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
-        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.TXT.GZ" );
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.txt.gz" );
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setCenterName( "C E N T E R N A M E" );
@@ -462,7 +462,7 @@ RawReadsWebinCliTest
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
-        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.TXT.GZ" );
+        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.txt.gz" );
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setCenterName( "C E N T E R N A M E" );

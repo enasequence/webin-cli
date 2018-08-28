@@ -24,7 +24,6 @@ import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -33,14 +32,11 @@ import uk.ac.ebi.ena.utils.FileUtils;
 public abstract class 
 AbstractWebinCli
 {
-    protected static final String VALIDATE_SUCCESS = "The submission has been validated successfully. ";
-    protected static final String VALIDATE_SYSTEM_ERROR = "Submission validation failed because of a system error. ";
     protected static final String VALIDATE_DIR = "validate";
     protected static final String SUBMIT_DIR   = "submit";
     protected static String REPORT_FILE_SUFFIX = ".report";
     
     private String name; 
-    private ValidationResult   validationResult;
     private WebinCliParameters parameters = new WebinCliParameters();
     private boolean test_mode;
 
@@ -117,14 +113,6 @@ AbstractWebinCli
             throw WebinCliException.createSystemError( "Unable to write " + getSubmissionBundleFileName() );
         }
     }
-    
-
-    public ValidationResult
-    getValidationResult()
-    {
-        return validationResult;
-    }
-
 
     
     public WebinCliParameters
