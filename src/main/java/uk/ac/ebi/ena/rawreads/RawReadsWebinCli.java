@@ -77,7 +77,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
-    RawReadsWebinCli extends AbstractWebinCli
+RawReadsWebinCli extends AbstractWebinCli
 {   
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
@@ -99,7 +99,7 @@ public class
     {
         super.init( parameters );
 
-        setValidationDir(createOutputSubdir("."));
+        setValidationDir( createOutputSubdir( "." ) );
         File manifestFile = getParameters().getManifestFile();
         File reportFile = getReportFile( "", manifestFile.getName() );
 
@@ -107,7 +107,8 @@ public class
         {
             rrm.readManifest( getParameters().getInputDir().toPath(), manifestFile );
 
-            if (!StringUtils.isBlank(rrm.getName())) {
+            if( !StringUtils.isBlank( rrm.getName() ) )
+            {
                 setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
                 setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
                 setSubmitDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), SUBMIT_DIR ) );
@@ -115,19 +116,22 @@ public class
         } catch( Throwable t )
         {
             throw new ValidationEngineException( "Unable to init validator", t );
-        }
-        finally {
-            if (!rrm.getValidationResult().isValid()) {
+        } finally
+        {
+            if( !rrm.getValidationResult().isValid() )
+            {
                 reportFile.delete();
                 FileUtils.writeReport( reportFile, rrm.getValidationResult() );
             }
         }
 
-        if (!rrm.getValidationResult().isValid()) {
+        if( !rrm.getValidationResult().isValid() )
+        {
             throw WebinCliException.createUserError( INVALID_MANIFEST, reportFile.getPath() );
         }
     }
 
+    
     public boolean 
     getVerifyStudy()
     {

@@ -11,4 +11,4 @@ reports/
 .idea/
 gradlew
 gradlew.bat
-
+bin/

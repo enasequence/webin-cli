@@ -13,46 +13,69 @@ package uk.ac.ebi.ena.manifest;
 
 import uk.ac.ebi.embl.api.validation.Origin;
 
-public class ManifestFieldValue {
-
+public class 
+ManifestFieldValue 
+{
     private ManifestFieldDefinition definition;
     private String value;
     private Origin origin;
     private boolean validFieldValueOrFileSuffix = true;
 
-    public ManifestFieldValue(ManifestFieldDefinition definition, String value, Origin origin) {
-        assert(definition != null);
-        assert(value != null);
+    public 
+    ManifestFieldValue( ManifestFieldDefinition definition, String value, Origin origin )
+    {
+        assert( definition != null );
+        assert( value != null );
         this.definition = definition;
         this.value = value;
         this.origin = origin;
     }
-
-    public String getName() {
+    
+    public String 
+    getName() 
+    {
         return definition.getName();
     }
 
-    public ManifestFieldDefinition getDefinition() {
+    
+    public ManifestFieldDefinition 
+    getDefinition() 
+    {
         return definition;
     }
 
-    public String getValue() {
+    
+    public String 
+    getValue() 
+    {
         return value;
     }
 
-    public void setValue(String value) {
+    
+    public void 
+    setValue( String value )
+    {
         this.value = value;
     }
 
-    public boolean isValidFieldValueOrFileSuffix() {
+    
+    public boolean 
+    isValidFieldValueOrFileSuffix() 
+    {
         return validFieldValueOrFileSuffix;
     }
 
-    public void setValidFieldValueOrFileSuffix(boolean validFieldValueOrFileSuffix) {
+    
+    public void 
+    setValidFieldValueOrFileSuffix( boolean validFieldValueOrFileSuffix )
+    {
         this.validFieldValueOrFileSuffix = validFieldValueOrFileSuffix;
     }
 
-    public Origin getOrigin() {
+    
+    public Origin 
+    getOrigin() 
+    {
         return origin;
     }
 }
