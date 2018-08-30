@@ -28,6 +28,12 @@ import uk.ac.ebi.ena.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.manifest.ManifestReader;
+import uk.ac.ebi.ena.manifest.fields.CVFieldValidator;
+import uk.ac.ebi.ena.manifest.fields.CVKeyFieldCorrector;
+import uk.ac.ebi.ena.manifest.fields.EmptyValidator;
+import uk.ac.ebi.ena.manifest.fields.ManifestFieldValidator;
+import uk.ac.ebi.ena.manifest.fields.SampleValidator;
+import uk.ac.ebi.ena.manifest.fields.StudyValidator;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
@@ -77,22 +83,49 @@ RawReadsManifest extends ManifestReader {
     private QualityScoringSystem qualityScoringSystem;
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
+    
+    
+    public 
+    RawReadsManifest()
+    {
+        this( new EmptyValidator(), new EmptyValidator() );
+    }
+    
 
-    public RawReadsManifest() {
+    public 
+    RawReadsManifest( ManifestFieldValidator sample_validator, ManifestFieldValidator study_validator )
+    {
         super(
             // Fields.
             new ArrayList<ManifestFieldDefinition>() 
             {
                 {
                         add( new ManifestFieldDefinition( Fields.NAME, ManifestFieldType.META, 1, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.INSTRUMENT, ManifestFieldType.META, 0, 1, ControlledValueList.Instrument.keyList() ) );
-                        add( new ManifestFieldDefinition( Fields.PLATFORM, ManifestFieldType.META, 0, 1, ControlledValueList.Platform.keyList() ) );
+                        add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, study_validator ) );
+                        add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1, sample_validator ) );
+                        
+                        add( new ManifestFieldDefinition( Fields.INSTRUMENT, ManifestFieldType.META, 0, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Instrument ), 
+                                                          new CVFieldValidator( ControlledValueList.Instrument ) ) );
+                        
+                        add( new ManifestFieldDefinition( Fields.PLATFORM, ManifestFieldType.META, 0, 1, 
+                                                          new CVKeyFieldCorrector( ControlledValueList.Platform ), 
+                                                          new CVFieldValidator( ControlledValueList.Platform ) ) );
+                        
                         add( new ManifestFieldDefinition( Fields.INSERT_SIZE, ManifestFieldType.META, 0, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1, ControlledValueList.Source.keyList() ) );
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1, ControlledValueList.Selection.keyList() ) );
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1, ControlledValueList.Strategy.keyList() ) );
+                        
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1, 
+                                                          new CVKeyFieldCorrector( ControlledValueList.Source), 
+                                                          new CVFieldValidator( ControlledValueList.Source ) ) );
+                        
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Selection ), 
+                                                          new CVFieldValidator( ControlledValueList.Selection ) ) );
+
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Strategy ), 
+                                                          new CVFieldValidator( ControlledValueList.Strategy ) ) );
+                        
                         add( new ManifestFieldDefinition( Fields.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1 ) );
                         add( new ManifestFieldDefinition( Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1 ) );
                         add( new ManifestFieldDefinition( Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList( QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS ) ) );

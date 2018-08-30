@@ -23,10 +23,13 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
+
+import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.manifest.fields.ManifestFieldValidator;
 
 import static uk.ac.ebi.ena.manifest.ManifestReader.Fields.INFO;
 import static uk.ac.ebi.ena.manifest.ManifestReader.ManifestReaderState.State.PARSE;
@@ -279,11 +282,13 @@ public abstract class ManifestReader {
         fields.stream()
               .filter( field -> field.getMinCount() > 0 )
               .forEach( minCountField -> {
-                  if( result.getFields().stream()
+                  if( result.getFields()
+                            .stream()
                             .filter( field -> field.getName().equals( minCountField.getName() ) )
                             .count() < 1 )
                   {
-                      if( minCountField.getFieldValueOrFileSuffix() != null )
+                      if( minCountField.getFieldValueOrFileSuffix() != null 
+                      && !minCountField.getFieldValueOrFileSuffix().isEmpty() )
                       {
                           error( "MANIFEST_MISSING_MANDATORY_FIELD_WITH_VALUES",
                                   minCountField.getName(),
@@ -352,6 +357,28 @@ public abstract class ManifestReader {
                   }
               } );
 
+        
+        for( ManifestFieldValue field_value : result.getFields() )
+        {
+            ManifestFieldDefinition field = field_value.getDefinition();
+            ValidationResult vresult = new ValidationResult( field_value.getOrigin() );
+
+            for( ManifestFieldValidator v : field.getFieldValidators() )
+            {
+                ValidationMessage<Origin> m = v.validate( field_value );
+                if( null != m )
+                    vresult.append( m );
+            }
+            
+            if( vresult.isValid() )
+            {
+                ValidationMessage<Origin> m = field.getFieldCorrector().correct( field_value );
+                if( null != m )
+                    vresult.append( m );
+            }
+            
+            result.getValidationResult().append( vresult ); 
+        }
         // Validate file count.
 
         validateFileCount();
@@ -402,7 +429,7 @@ public abstract class ManifestReader {
 
         List<String> suffixes = field.getDefinition().getFieldValueOrFileSuffix();
 
-        if( null == suffixes || 0 == suffixes.size() )
+        if( null == suffixes || suffixes.isEmpty() )
             return true;
 
         for( String suffix : suffixes )

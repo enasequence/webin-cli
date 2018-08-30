@@ -63,6 +63,9 @@ import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
+import uk.ac.ebi.ena.manifest.fields.EmptyValidator;
+import uk.ac.ebi.ena.manifest.fields.SampleValidator;
+import uk.ac.ebi.ena.manifest.fields.StudyValidator;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.sample.Sample;
@@ -105,6 +108,9 @@ RawReadsWebinCli extends AbstractWebinCli
 
         try
         {
+            rrm = new RawReadsManifest( getVerifySample() ? new SampleValidator( parameters.getUsername(), parameters.getPassword(), getTestMode() ) : new EmptyValidator(),
+                                        getVerifyStudy() ? new StudyValidator( parameters.getUsername(), parameters.getPassword(), getTestMode() ) : new EmptyValidator() );
+            reportFile.delete();
             rrm.readManifest( getParameters().getInputDir().toPath(), manifestFile );
 
             if( !StringUtils.isBlank( rrm.getName() ) )
@@ -118,11 +124,7 @@ RawReadsWebinCli extends AbstractWebinCli
             throw new ValidationEngineException( "Unable to init validator", t );
         } finally
         {
-            if( !rrm.getValidationResult().isValid() )
-            {
-                reportFile.delete();
-                FileUtils.writeReport( reportFile, rrm.getValidationResult() );
-            }
+            FileUtils.writeReport( reportFile, rrm.getValidationResult() );
         }
 
         if( !rrm.getValidationResult().isValid() )
@@ -223,13 +225,7 @@ RawReadsWebinCli extends AbstractWebinCli
         
         if( !FileUtils.emptyDirectory( submit_dir ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + submit_dir );
-        
-        if( getVerifySample() )
-            Sample.getSample( rrm.getSampleId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
-        
-        if( getVerifyStudy() )
-            Study.getStudy( rrm.getStudyId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
-        
+
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
         

@@ -78,4 +78,11 @@ ManifestFieldValue
     {
         return origin;
     }
+    
+    
+    public String
+    toString()
+    {
+        return String.format( "%s = %s [%s], %s", definition, value, null != origin ? origin.getOriginText() : "", validFieldValueOrFileSuffix );
+    }
 }
