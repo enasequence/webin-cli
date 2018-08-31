@@ -391,18 +391,22 @@ RawReadsWebinCli extends AbstractWebinCli
                 
                 if( resulted_size >= ( max_size / 2 ) )
                 {
-                    String msg = "Fastq files from different runs are submitted: " + files;
+                    String msg = "When submitting paired reads using two Fastq files the reads must follow Illumina paired read naming conventions. " 
+                               + "This was not the case for the submitted Fastq files: "
+                               + files;
                     reportToFileList( files, msg );
-                    throw WebinCliException.createValidationError( "Fastq files from different runs are submitted: " + files );
+                    throw WebinCliException.createValidationError( msg );
                 }
                 
                 if( labels.get( 0 ).containsAll( labels.get( 1 ) ) 
                  && labels.get( 1 ).containsAll( labels.get( 0 ) ) )
                 {
                     valid = false;
-                    String msg = "Same fastq files are submitted: " + files;
+                    String msg = "When submitting paired reads using two Fastq files two different files must be provided. "
+                               + "The same file was specified twice: " 
+                               + files;
                     reportToFileList( files, msg );
-                    throw WebinCliException.createValidationError( "Same fastq files are submitted: " + files );
+                    throw WebinCliException.createValidationError( msg );
                 }
                 
                 for( int index = 0; index < files.size(); ++ index )
@@ -410,9 +414,11 @@ RawReadsWebinCli extends AbstractWebinCli
                     if( getPaired( labels.get( index ) ) )
                     {
                         valid = false;
-                        String msg = "Paired fastq file should be single file in submission: " + files.get( index ); 
+                        String msg = "When submitting paired reads using two Fastq files the first and second reads must be submitted in different files. "
+                                   + "This was not the case for the submitted Fastq files: " 
+                                   + files.get( index ); 
                         reportToFileList( files, msg );
-                        throw WebinCliException.createValidationError( "Paired fastq file should be single file in submission: " + files.get( index ) );
+                        throw WebinCliException.createValidationError( msg );
                     }
                 }
                 
@@ -426,7 +432,7 @@ RawReadsWebinCli extends AbstractWebinCli
                 valid = false;
                 String msg = "Unable to validate unusual amount of files: " + files;
                 reportToFileList( files, msg );
-                throw WebinCliException.createValidationError( "Unable to validate unusual amount of files: " + files ); 
+                throw WebinCliException.createValidationError( msg ); 
             }
         }
         return valid;
