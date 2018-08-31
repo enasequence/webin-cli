@@ -520,7 +520,7 @@ RawReadsWebinCli extends AbstractWebinCli
 
 
     private ValidationResult
-    checkSuspected( InputStream is, String stream_name, ReadNameSet rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException
+    checkSuspected( InputStream is, String stream_name, ReadNameSet<SimpleEntry<String, Long>> rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException
     {
         ValidationResult vr = new ValidationResult();
         
@@ -546,10 +546,8 @@ RawReadsWebinCli extends AbstractWebinCli
                 int slash_idx = spot.bname.lastIndexOf( '/' );
                 String name = slash_idx == -1 ? spot.bname 
                                               : spot.bname.substring( 0, slash_idx );
-                String label = slash_idx == -1 ? stream_name
-                                               : spot.bname.substring( slash_idx + 1 );
                 
-                Set<SimpleEntry<String, Long>> set = rns.getDuplicateLocations( name, new SimpleEntry<>( label, read_no.getAndIncrement() ) );
+                Set<SimpleEntry<String, Long>> set = rns.getDuplicateLocations( name );
                 if( !set.isEmpty() )
                 {
                     if( !set.isEmpty() )

@@ -2,7 +2,7 @@ package uk.ac.ebi.ena.rawreads;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,7 +34,7 @@ ReadNameSet<T>
         
         if( bloom.contains( read_name ) )
         {
-            Set<T> set = suspected.getOrDefault( read_name, new HashSet<>() );
+            Set<T> set = suspected.getOrDefault( read_name, new LinkedHashSet<>() );
             set.add( mark );
             suspected.put( read_name, set );
         } else
@@ -57,18 +57,35 @@ ReadNameSet<T>
     
     
     public Set<T>
-    getDuplicateLocations( String read_name, T mark )
+    getDuplicateLocations( String read_name )
     {
         Set<T> set = suspected.getOrDefault( read_name, Collections.emptySet() );
         if( set.isEmpty() )
             return Collections.emptySet();
-        
-        Set<T> result = new HashSet<>( set );
-        result.remove( mark );
-        return result.isEmpty() ? Collections.emptySet() : result;
+        return set.isEmpty() ? Collections.emptySet() : set;
     }
 
-
+    
+    public Map<String, Set<T>>
+    getAllduplications( String[] read_names, int limit )
+    {
+        Map<String, Set<T>> result = new HashMap<>( limit );
+        for( String read_name : read_names )
+        {
+            if( hasPossibleDuplicates() )
+            {
+                Set<T> dlist = getDuplicateLocations( read_name );
+                if( !dlist.isEmpty() )
+                    result.put( read_name, dlist );
+            }
+            
+            if( result.size() >= limit )
+                break;
+        }
+        return result;
+    }
+    
+    
     public boolean 
     contains( String read_name )
     {

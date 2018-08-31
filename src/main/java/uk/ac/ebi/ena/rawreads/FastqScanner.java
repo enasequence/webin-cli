@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -272,10 +271,9 @@ FastqScanner
                     int slash_idx = spot.bname.lastIndexOf( '/' );
 //                    String name = slash_idx == -1 ? spot.bname 
 //                                                  : spot.bname.substring( 0, slash_idx );
-                    String label = slash_idx == -1 ? stream_name
-                                                   : spot.bname.substring( slash_idx + 1 );
+
                     long read_n = read_no.getAndIncrement();
-                    Set<String> set = rns.getDuplicateLocations( spot.bname, String.format( S_READ_D,  stream_name, read_n ) );
+                    Set<String> set = rns.getDuplicateLocations( spot.bname );
                     if( !set.isEmpty() )
                     {
                         //for( String e : set )

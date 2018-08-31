@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -21,11 +22,13 @@ public class
 ReadNameSetTest 
 {
     String[] sar = new String[ 100_000 ]; 
+    int sar_degeneration = -1;
     
     @Before public void
     before()
     {
         initStringArray( sar, 4, 10 );
+        sar_degeneration = getArrayDegeneration( sar );
     }
 
 
@@ -39,51 +42,94 @@ ReadNameSetTest
                                                      .mapToObj( e -> String.valueOf( Character.toString( (char)e ) ) )
                                                      .collect( Collectors.joining() );
         }
+        
+        System.out.println( "String degeneration: " + getArrayDegeneration( string_array ) );
+        return string_array;
+    }
 
+    
+    private int 
+    getArrayDegeneration( String[] string_array )
+    {
         Set<String> set = new HashSet<String>( string_array.length );
         for( int index = 0; index < string_array.length; index ++ )
         {
             set.add( string_array[ index ] );
         }
+    
+        return string_array.length - set.size();
+    }
+    
+    
+    public void
+    __testSingle( String[] sar )
+    {
+        int sard = getArrayDegeneration( sar );
         
-        System.out.println( "String degeneration: " + ( string_array.length - set.size() ) );
-        return string_array;
+        Assert.assertTrue( sard > 0 );
+        
+        ReadNameSet<String> rns = new ReadNameSet<>( (int)( sar.length ) );
+        for( int i = 0; i < sar.length; ++i )
+        {
+            rns.add( sar[ i ], getMarker( "file", i ) );
+        }
+        
+        Assert.assertTrue( rns.hasPossibleDuplicates() );
+        
+        if( rns.hasPossibleDuplicates() )
+        {
+            Map<String, Set<String>> dups = rns.getAllduplications( sar, sar.length );
+            
+            int total_count = 0;
+            for( int i = 0; i < sar.length; ++i )
+            {
+                if( dups.containsKey( sar[ i ] ) )
+                {
+                    Set<String> ds = dups.get( sar[ i ]  );
+                    total_count += ds.size();
+                    System.out.printf( "Read %s at %d duplicated at: %s\n", sar[ i ], i, ds );
+                    dups.remove( sar[ i ] );
+                }   
+            }
+            
+            Assert.assertTrue( total_count == sard );
+        }   
+    }
+    
+    
+    @Test public void
+    testSingle1()
+    {
+        String[] sar = new String[] { "QAZ", "QAZ", "QAZ",
+                                      "123", "123", 
+                                      "321" };
+        __testSingle( sar );
     }
 
     
     @Test public void
-    testSingle()
+    testSingle2()
     {
-        ReadNameSet<Integer> rns = new ReadNameSet<>( (int)( sar.length ) );
-        for( int i = 0; i < sar.length; ++i )
-        {
-            rns.add( sar[ i ], i );
-        }
-        
-        if( rns.hasPossibleDuplicates() )
-        {
-            for( int i = 0; i < sar.length; ++i )
-            {
-                Set<Integer> set = new HashSet<>( rns.getDuplicateLocations( sar[ i ], i ) );
-                if( set.isEmpty() )
-                    continue;
-                set.add( new Integer( i ) );
-                Set<Integer> s = new HashSet<>( set.size() );
-                s.addAll( set );
-                s.remove( new Integer( i ) );
-                if( !s.isEmpty() )
-                    System.out.printf( "For read no %d [%s] dublicates are %s\n", i, sar[ i ], s.toString() );
-                    
-            }
-        }   
+        String[] sar = new String[ 1024 ];
+        initStringArray( sar, 2, 4 );
+        __testSingle( sar );
     }
     
-   
-    @Test public void
+    
+    @Test public void 
     testPaired1()
     {
-        String[] sar = initStringArray( new String[ 100_000 ], 32, 64 );
-        String[] tar = initStringArray( new String[ 100_000 ], 32, 64 );
+        String[] sar = initStringArray( new String[ 1_000 ], 32, 64 );
+        String[] tar = initStringArray( new String[ 1_000 ], 32, 64 );
+
+        __testPaired( sar, tar );
+    }
+    
+    
+    /* attempting to check two randomly generated records with low percentage of degeneration */
+    public void
+    __testPaired( String[] sar, String[] tar )
+    {
         System.out.println( "Sar size: " + Stream.of( sar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         System.out.println( "Tar size: " + Stream.of( tar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         
@@ -109,25 +155,35 @@ ReadNameSetTest
     }
     
     
+    public String 
+    getMarker( String file, int i )
+    {
+        return String.format( "%s, line: %d", file, i );
+    }
+    
+    
+    /* attempting to add same array twice */
     @Test public void
     testPaired2()
     {
         String[] sar = initStringArray( new String[ 1 ], 32, 64 );
         System.out.println( "Sar size: " + Stream.of( sar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         
-        ReadNameSet<Integer> rns = new ReadNameSet<>( (int)( sar.length ) );
+        ReadNameSet<String> rns = new ReadNameSet<>( (int)( sar.length ) );
         for( int i = 0; i < sar.length; ++i )
-            rns.add( sar[ i ], 1 );
+            rns.add( sar[ i ], getMarker( "File 1", i ) );
 
         for( int i = 0; i < sar.length; ++i )
-            rns.add( sar[ i ], 2 );
+            rns.add( sar[ i ], getMarker( "File 1", i ) );
 
+        Assert.assertTrue( rns.hasPossibleDuplicates() );
+        
         int not_contains = 0;
-        
+                
         for( int i = 0; i < sar.length; ++ i )
-            not_contains += rns.getDuplicateLocations( sar[ i ], 1 ).isEmpty() ? 1 : 0;
+            not_contains += rns.getDuplicateLocations( sar[ i ] ).isEmpty() ? 1 : 0;
         
-        Assert.assertEquals( 0, not_contains );
+        Assert.assertEquals( sar.length, not_contains );
     }
 
     

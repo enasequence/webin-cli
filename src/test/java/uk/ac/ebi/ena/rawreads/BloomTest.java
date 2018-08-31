@@ -46,10 +46,11 @@ BloomTest
         Assert.assertTrue( bi.mod( new BigInteger( "10" ) ).equals( bi.remainder( new BigInteger( "10" ) ) ) );
         
         double falsePositiveProbability = 0.01;
-        int num = 10_000_000;
+        int num = 100_000_000;
         
         System.out.println( "bits per element: " + Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2))) / Math.log(2) );
-        System.out.println( "Expected bitset size: " + (int) num * Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2))) / Math.log(2) );
+        System.out.println( "Expected bitset size: " + (long) num * Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2))) / Math.log(2) );
+        System.out.println( String.format( "Expected memory allocation: %.2f Mb", (double)num * Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2))) / Math.log(2) / 8 / 1024 / 1024 ) );
         System.out.println( "Number of hash functions : " + (int)Math.ceil( -( Math.log( falsePositiveProbability ) / Math.log( 2 ) ) ) );
     }
    
