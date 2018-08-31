@@ -64,6 +64,9 @@ import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
+import uk.ac.ebi.ena.manifest.fields.EmptyValidator;
+import uk.ac.ebi.ena.manifest.fields.SampleValidator;
+import uk.ac.ebi.ena.manifest.fields.StudyValidator;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.sample.Sample;
@@ -78,7 +81,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
-    RawReadsWebinCli extends AbstractWebinCli
+RawReadsWebinCli extends AbstractWebinCli
 {   
     private static final int BLOOM_EXPECTED_READS = 800_000_000;
 
@@ -102,15 +105,19 @@ public class
     {
         super.init( parameters );
 
-        setValidationDir(createOutputSubdir("."));
+        setValidationDir( createOutputSubdir( "." ) );
         File manifestFile = getParameters().getManifestFile();
         File reportFile = getReportFile( "", manifestFile.getName() );
 
         try
         {
+            rrm = new RawReadsManifest( getVerifySample() ? new SampleValidator( parameters.getUsername(), parameters.getPassword(), getTestMode() ) : new EmptyValidator(),
+                                        getVerifyStudy() ? new StudyValidator( parameters.getUsername(), parameters.getPassword(), getTestMode() ) : new EmptyValidator() );
+            reportFile.delete();
             rrm.readManifest( getParameters().getInputDir().toPath(), manifestFile );
 
-            if (!StringUtils.isBlank(rrm.getName())) {
+            if( !StringUtils.isBlank( rrm.getName() ) )
+            {
                 setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
                 setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
                 setSubmitDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), SUBMIT_DIR ) );
@@ -118,19 +125,18 @@ public class
         } catch( Throwable t )
         {
             throw new ValidationEngineException( "Unable to init validator", t );
-        }
-        finally {
-            if (!rrm.getValidationResult().isValid()) {
-                reportFile.delete();
-                FileUtils.writeReport( reportFile, rrm.getValidationResult() );
-            }
+        } finally
+        {
+            FileUtils.writeReport( reportFile, rrm.getValidationResult() );
         }
 
-        if (!rrm.getValidationResult().isValid()) {
+        if( !rrm.getValidationResult().isValid() )
+        {
             throw WebinCliException.createUserError( INVALID_MANIFEST, reportFile.getPath() );
         }
     }
 
+    
     public boolean 
     getVerifyStudy()
     {
@@ -267,13 +273,7 @@ public class
         
         if( !FileUtils.emptyDirectory( submit_dir ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + submit_dir );
-        
-        if( getVerifySample() )
-            Sample.getSample( rrm.getSampleId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
-        
-        if( getVerifyStudy() )
-            Study.getStudy( rrm.getStudyId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
-        
+
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
         
@@ -471,18 +471,22 @@ public class
                 
                 if( resulted_size >= ( max_size / 2 ) )
                 {
-                    String msg = "Fastq files from different runs are submitted: " + files;
+                    String msg = "When submitting paired reads using two Fastq files the reads must follow Illumina paired read naming conventions. " 
+                               + "This was not the case for the submitted Fastq files: "
+                               + files;
                     reportToFileList( files, msg );
-                    throw WebinCliException.createValidationError( "Fastq files from different runs are submitted: " + files );
+                    throw WebinCliException.createValidationError( msg );
                 }
                 
                 if( labels.get( 0 ).containsAll( labels.get( 1 ) ) 
                  && labels.get( 1 ).containsAll( labels.get( 0 ) ) )
                 {
                     valid = false;
-                    String msg = "Same fastq files are submitted: " + files;
+                    String msg = "When submitting paired reads using two Fastq files two different files must be provided. "
+                               + "The same file was specified twice: " 
+                               + files;
                     reportToFileList( files, msg );
-                    throw WebinCliException.createValidationError( "Same fastq files are submitted: " + files );
+                    throw WebinCliException.createValidationError( msg );
                 }
                 
                 for( int index = 0; index < files.size(); ++ index )
@@ -490,9 +494,11 @@ public class
                     if( getPaired( labels.get( index ) ) )
                     {
                         valid = false;
-                        String msg = "Paired fastq file should be single file in submission: " + files.get( index ); 
+                        String msg = "When submitting paired reads using two Fastq files the first and second reads must be submitted in different files. "
+                                   + "This was not the case for the submitted Fastq files: " 
+                                   + files.get( index ); 
                         reportToFileList( files, msg );
-                        throw WebinCliException.createValidationError( "Paired fastq file should be single file in submission: " + files.get( index ) );
+                        throw WebinCliException.createValidationError( msg );
                     }
                 }
                 
@@ -506,7 +512,7 @@ public class
                 valid = false;
                 String msg = "Unable to validate unusual amount of files: " + files;
                 reportToFileList( files, msg );
-                throw WebinCliException.createValidationError( "Unable to validate unusual amount of files: " + files ); 
+                throw WebinCliException.createValidationError( msg ); 
             }
         }
         return valid;

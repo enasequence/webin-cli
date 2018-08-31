@@ -11,6 +11,19 @@
 
 package uk.ac.ebi.ena.study;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -20,17 +33,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class Study {
 	private  List<String> locusTagsList = new ArrayList<>();
@@ -42,12 +47,12 @@ public class Study {
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving study information. ";
 
     public static Study 
-    getStudy( String studyId, String userName, String password, boolean TEST ) 
+    getStudy( String studyId, String userName, String password, boolean TEST )
     {
         try {
             Study study = new Study();
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/project/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/project/") + studyId.trim());
+            HttpGet httpGet = new HttpGet( ( TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/project/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/project/" ) +  URLEncoder.encode( studyId.trim(), "UTF-8" ) );
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
             httpGet.setHeader("Authorization", "Basic " + encoding);
             CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -71,7 +76,8 @@ public class Study {
                 default:
                     throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
             }
-        } catch (IOException e) {
+        } catch( IOException e ) 
+        {
             throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
         }
     }

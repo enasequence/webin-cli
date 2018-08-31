@@ -18,59 +18,88 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-public class ManifestReaderResult {
+public class 
+ManifestReaderResult 
+{
 
     private ValidationResult validationResult = new ValidationResult();
     private Collection<ManifestFieldValue> fields = new ArrayList<>();
 
-    public ValidationResult getValidationResult() {
+    public ValidationResult 
+    getValidationResult()
+    {
         return validationResult;
     }
 
-    public Collection<ManifestFieldValue> getFields() {
+    
+    public Collection<ManifestFieldValue> 
+    getFields()
+    {
         return fields;
     }
 
-    public void setFields(Collection<ManifestFieldValue> fields) {
+    
+    public void 
+    setFields( Collection<ManifestFieldValue> fields )
+    {
         this.fields = fields;
     }
+    
 
-    public boolean isValid() {
+    public boolean 
+    isValid()
+    {
         return validationResult.isValid();
     }
 
-    public ManifestFieldValue getField(String fieldName) {
-        try {
+    
+    public ManifestFieldValue 
+    getField( String fieldName ) 
+    {
+        try
+        {
             return fields.stream()
-                    .filter(field -> field.getName().equalsIgnoreCase(fieldName))
-                    .findFirst()
-                    .get();
-        } catch (NoSuchElementException ex) {
+                         .filter( field -> field.getName().equalsIgnoreCase( fieldName ) )
+                         .findFirst()
+                         .get();
+        } catch( NoSuchElementException ex )
+        {
             return null;
         }
     }
 
-    public String getValue(String fieldName) {
-        try {
+
+    public String 
+    getValue( String fieldName ) 
+    {
+        try
+        {
             return fields.stream()
-                    .filter(field -> field.getName().equalsIgnoreCase(fieldName))
-                    .findFirst()
-                    .get().getValue();
-        } catch (NoSuchElementException ex) {
+                         .filter( field -> field.getName().equalsIgnoreCase( fieldName ) )
+                         .findFirst()
+                         .get()
+                         .getValue();
+        } catch( NoSuchElementException ex )
+        {
             return null;
         }
     }
 
-    public Collection<String> getValues(String fieldName) {
+    
+    public Collection<String> 
+    getValues( String fieldName )
+    {
         return fields.stream()
-                .filter(field -> field.getName().equalsIgnoreCase(fieldName))
-                .map( field -> field.getValue() )
-                .collect( Collectors.toList() );
+                     .filter( field -> field.getName().equalsIgnoreCase( fieldName ) )
+                     .map( field -> field.getValue() )
+                     .collect( Collectors.toList() );
     }
 
-    public int getCount(String fieldName) {
+    public int 
+    getCount( String fieldName )
+    {
         return (int) fields.stream()
-                .filter(field -> field.getName().equalsIgnoreCase(fieldName))
-                .count();
+                           .filter( field -> field.getName().equalsIgnoreCase( fieldName ) )
+                           .count();
     }
 }

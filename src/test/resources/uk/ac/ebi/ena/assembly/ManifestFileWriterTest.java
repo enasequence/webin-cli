@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 
@@ -17,8 +16,8 @@ import uk.ac.ebi.ena.manifest.ManifestFileWriter;
 
 public class ManifestFileWriterTest 
 {
- 	@Test
-	public void testValidateValidManifest() throws IOException, NoSuchAlgorithmException
+ 	@Test public void 
+ 	testValidateValidManifest() throws NoSuchAlgorithmException, IOException
 	{
 		File inputFile = null;
 		File outputFile = File.createTempFile( "testValidateValidManifest", "FILE" );
