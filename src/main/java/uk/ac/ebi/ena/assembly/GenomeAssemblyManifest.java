@@ -72,7 +72,7 @@ public class GenomeAssemblyManifest extends ManifestReader
                             "Metagenome-Assembled Genome (MAG)",
                             "Environmental Single-Cell Amplified Genome (SAG)"
                     )));
-                    add(new ManifestFieldDefinition(Fields.TPA, ManifestFieldType.META, 0, 1, BOOLEAN_FIELD_VALUES));
+                    add(new ManifestFieldDefinition(Fields.TPA, ManifestFieldType.META, 0, 1, ManifestFieldCv.BOOLEAN_FIELD_VALUES));
 
                     add(new ManifestFieldDefinition(Fields.CHROMOSOME_LIST, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));
                     add(new ManifestFieldDefinition(Fields.UNLOCALISED_LIST, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));

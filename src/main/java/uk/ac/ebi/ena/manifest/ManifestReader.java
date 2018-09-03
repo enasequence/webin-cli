@@ -57,15 +57,6 @@ public abstract class ManifestReader {
         ValidationMessageManager.addBundle( MESSAGE_BUNDLE );
     }
 
-    protected static final List<String> BOOLEAN_FIELD_VALUES = Arrays.asList(
-            "yes",
-            "no",
-            "true",
-            "false",
-            "Y",
-            "N"
-    );
-
 
     static class ManifestReaderState
     {
