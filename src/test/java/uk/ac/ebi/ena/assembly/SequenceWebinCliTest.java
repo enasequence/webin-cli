@@ -607,7 +607,7 @@ SequenceWebinCliTest
 
     private void testManifestParsingFileField(AbstractWebinCli webinCli, String fieldName, String fileName) throws Exception
     {
-        Path inputDir = WebinCliTestUtils.createOutputFolder().toPath();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path filePath = WebinCliTestUtils.createDefaultTempFile( fileName, inputDir, true );
 
         Path manifestFilePath = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
@@ -618,7 +618,7 @@ SequenceWebinCliTest
 
         parameters.setManifestFile( manifestFilePath.toFile() );
         parameters.setInputDir( inputDir.toFile() );
-        parameters.setOutputDir( WebinCliTestUtils.createOutputFolder() );
+        parameters.setOutputDir( WebinCliTestUtils.createTempDir() );
 
         try {
             webinCli.init(parameters);

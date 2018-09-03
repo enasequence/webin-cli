@@ -63,8 +63,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 		GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
 		cli.setTestMode(true);
 		cli.setInputDir( inputDir );
-		cli.setValidationDir( WebinCliTestUtils.createOutputFolder() );
-		cli.setSubmitDir( WebinCliTestUtils.createOutputFolder() );
+		cli.setValidationDir( WebinCliTestUtils.createTempDir() );
+		cli.setSubmitDir( WebinCliTestUtils.createTempDir() );
 		cli.setFetchSample(false);
 		cli.setFetchStudy(false);
 		cli.setSample(sample);
@@ -354,8 +354,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
         validator.setTestMode( true );
         validator.setStudy( new Study() );
-        validator.setValidationDir( WebinCliTestUtils.createOutputFolder() );
-        validator.setSubmitDir( WebinCliTestUtils.createOutputFolder() );
+        validator.setValidationDir( WebinCliTestUtils.createTempDir() );
+        validator.setSubmitDir( WebinCliTestUtils.createTempDir() );
         Assert.assertTrue( !validator.validateFastaFiles( validator.getValidationProperties(), 
 						  Arrays.asList( WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz" ))));
     }
@@ -366,8 +366,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
         GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
 		validator.setTestMode( true );
         validator.setStudy( new Study() );
-        validator.setValidationDir( WebinCliTestUtils.createOutputFolder() );
-        validator.setSubmitDir( WebinCliTestUtils.createOutputFolder() );
+        validator.setValidationDir( WebinCliTestUtils.createTempDir() );
+        validator.setSubmitDir( WebinCliTestUtils.createTempDir() );
         Assert.assertTrue( !validator.validateChromosomeList( validator.getValidationProperties(),
 				WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz" )));
     }

@@ -7,18 +7,21 @@ import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
 public class WebinCliTestUtils {
 
     public static File
-    createOutputFolder()
+    createTempDir()
     {
         try {
             File folder = File.createTempFile("test", "test");
@@ -32,18 +35,8 @@ public class WebinCliTestUtils {
     }
 
     public static WebinCliParameters
-    createWebinCliParameters( String manifestFilePath, String inputDirPath ) {
-        return createWebinCliParameters(new File(manifestFilePath), new File(inputDirPath));
-    }
-
-    public static WebinCliParameters
     createWebinCliParameters( Path manifestFile, Path inputDir ) {
         return createWebinCliParameters(manifestFile.toFile(), inputDir.toFile());
-    }
-
-    public static WebinCliParameters
-    createWebinCliParameters( Path manifestFile ) {
-        return createWebinCliParameters(manifestFile.toFile(), manifestFile.getParent().toFile());
     }
 
     public static WebinCliParameters
@@ -56,8 +49,10 @@ public class WebinCliTestUtils {
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setManifestFile(manifestFile);
         parameters.setInputDir(inputDir);
-        parameters.setOutputDir(WebinCliTestUtils.createOutputFolder());
-
+        parameters.setOutputDir(WebinCliTestUtils.createTempDir());
+        parameters.setUsername(System.getenv( "webin-cli-username" ));
+        parameters.setPassword(System.getenv( "webin-cli-password" ));
+        parameters.setTestMode(true);
         return parameters;
     }
 
@@ -117,6 +112,32 @@ public class WebinCliTestUtils {
         }
     }
 
+    public static Path
+    createTempFileFromResource( String resource, Path folder, boolean compress, String...suffix ) throws IOException
+    {
+        try {
+            URL url = WebinCliTestUtils.class.getClassLoader().getResource( resource );
+            File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
+            Path path = Files.createTempFile( folder, "COPY", file.getName() + ( suffix.length > 0 ? Stream.of( suffix ).collect( Collectors.joining( "" ) ) : "" ) );
+            OutputStream os;
+            Files.copy( file.toPath(), ( os = compress ? new GZIPOutputStream( Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) )
+                    : Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) );
+            os.flush();
+            os.close();
+            Assert.assertTrue( Files.exists( path ) );
+            Assert.assertTrue( Files.isRegularFile( path ) );
+            return path;
+        }
+        catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public static String
+    createName() {
+        return String.format( "TEST-NAME %X", System.currentTimeMillis() );
+    }
+
     public static String
     readFile(Path file) {
         try {
@@ -139,7 +160,7 @@ public class WebinCliTestUtils {
     public static SubmissionBundle
     prepareSubmissionBundle(AbstractWebinCli cli) {
         try {
-            File submitDir = createOutputFolder();
+            File submitDir = createTempDir();
             cli.setSubmitDir( submitDir );
             cli.prepareSubmissionBundle();
             SubmissionBundle submissionBundle = cli.getSubmissionBundle();
