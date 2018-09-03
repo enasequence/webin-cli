@@ -190,7 +190,6 @@ WebinCliTest
     }
 
 
-    //TODO update when inputDir supported
     @Test public void
     testTranscriptomeSubmissionWithInfo() throws Exception
     {
@@ -205,7 +204,6 @@ WebinCliTest
     }
 
 
-    //TODO update when inputDir supported
     @Test public void
     testTranscriptomeSubmissionWithoutInfo() throws Exception
     {
