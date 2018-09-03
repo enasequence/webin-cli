@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class TranscriptomeManifest extends ManifestReader
+public class TranscriptomeAssemblyManifest extends ManifestReader
 {
     public interface
     Fields {
@@ -31,7 +31,7 @@ public class TranscriptomeManifest extends ManifestReader
     private File fastaFile;
     private File flatFile;
 
-    public TranscriptomeManifest() {
+    public TranscriptomeAssemblyManifest() {
         super(
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {{

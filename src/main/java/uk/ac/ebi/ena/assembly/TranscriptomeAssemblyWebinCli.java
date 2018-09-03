@@ -53,7 +53,7 @@ import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public class 
-TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeManifest>
+TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifest>
 {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
 	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
@@ -70,8 +70,8 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeManifest>
 	}
 
 	@Override
-	protected TranscriptomeManifest createManifestReader() {
-		return new TranscriptomeManifest();
+	protected TranscriptomeAssemblyManifest createManifestReader() {
+		return new TranscriptomeAssemblyManifest();
 	}
 
 	@Override

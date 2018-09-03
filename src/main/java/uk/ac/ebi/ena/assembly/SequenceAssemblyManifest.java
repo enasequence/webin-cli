@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class SequenceManifest extends ManifestReader
+public class SequenceAssemblyManifest extends ManifestReader
 {
     public interface
     Fields {
@@ -24,7 +24,7 @@ public class SequenceManifest extends ManifestReader
     private File tsvFile;
     private File flatFile;
 
-    public SequenceManifest() {
+    public SequenceAssemblyManifest() {
         super(
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {{

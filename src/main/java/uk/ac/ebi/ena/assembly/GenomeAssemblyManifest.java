@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class GenomeManifest extends ManifestReader
+public class GenomeAssemblyManifest extends ManifestReader
 {
     public interface
     Fields {
@@ -48,7 +48,7 @@ public class GenomeManifest extends ManifestReader
     private List<File> flatFiles;
     private List<File> agpFiles;
 
-    public GenomeManifest() {
+    public GenomeAssemblyManifest() {
         super(
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {{

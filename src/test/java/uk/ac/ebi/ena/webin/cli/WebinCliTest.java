@@ -18,9 +18,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.WebinCliTestUtils;
-import uk.ac.ebi.ena.assembly.GenomeManifest;
-import uk.ac.ebi.ena.assembly.SequenceManifest;
-import uk.ac.ebi.ena.assembly.TranscriptomeManifest;
+import uk.ac.ebi.ena.assembly.GenomeAssemblyManifest;
+import uk.ac.ebi.ena.assembly.SequenceAssemblyManifest;
+import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyManifest;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest;
 import uk.ac.ebi.ena.submit.ContextE;
@@ -57,31 +57,31 @@ WebinCliTest
     private String
     getGenomeManifestInfoFields()
     {
-        return    GenomeManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
-                + GenomeManifest.Fields.COVERAGE     + " 45\n"
-                + GenomeManifest.Fields.PROGRAM      + " assembly\n"
-                + GenomeManifest.Fields.PLATFORM     + " fghgf\n"
-                + GenomeManifest.Fields.MINGAPLENGTH + " 34\n"
-                + GenomeManifest.Fields.MOLECULETYPE + " genomic DNA\n"
-                + GenomeManifest.Fields.SAMPLE       + " SAMN04526268\n"
-                + GenomeManifest.Fields.STUDY        + " PRJEB20083\n";
+        return    GenomeAssemblyManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+                + GenomeAssemblyManifest.Fields.COVERAGE     + " 45\n"
+                + GenomeAssemblyManifest.Fields.PROGRAM      + " assembly\n"
+                + GenomeAssemblyManifest.Fields.PLATFORM     + " fghgf\n"
+                + GenomeAssemblyManifest.Fields.MINGAPLENGTH + " 34\n"
+                + GenomeAssemblyManifest.Fields.MOLECULETYPE + " genomic DNA\n"
+                + GenomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
+                + GenomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n";
     }
 
     private String
     getTranscriptomeManifestFields()
     {
-        return    TranscriptomeManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
-                + TranscriptomeManifest.Fields.PROGRAM      + " assembly\n"
-                + TranscriptomeManifest.Fields.PLATFORM     + " fghgf\n"
-                + TranscriptomeManifest.Fields.SAMPLE       + " SAMN04526268\n"
-                + TranscriptomeManifest.Fields.STUDY        + " PRJEB20083\n";
+        return    TranscriptomeAssemblyManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+                + TranscriptomeAssemblyManifest.Fields.PROGRAM      + " assembly\n"
+                + TranscriptomeAssemblyManifest.Fields.PLATFORM     + " fghgf\n"
+                + TranscriptomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
+                + TranscriptomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n";
     }
 
     private String
     getSequenceManifestFields()
     {
-        return    SequenceManifest.Fields.NAME  + " " + WebinCliTestUtils.createName() + "\n"
-                + SequenceManifest.Fields.STUDY + " PRJEB20083\n";
+        return    SequenceAssemblyManifest.Fields.NAME  + " " + WebinCliTestUtils.createName() + "\n"
+                + SequenceAssemblyManifest.Fields.STUDY + " PRJEB20083\n";
     }
 
 
@@ -142,8 +142,8 @@ WebinCliTest
 
         testWebinCli(ContextE.genome, input_dir,
                 ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                GenomeManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
-                GenomeManifest.Fields.AGP + " " + agpfile.getFileName());
+                GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                GenomeAssemblyManifest.Fields.AGP + " " + agpfile.getFileName());
     }
     
     
@@ -156,8 +156,8 @@ WebinCliTest
         Path agpfile  = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
 
         testWebinCli(ContextE.genome, input_dir,
-                GenomeManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
-                GenomeManifest.Fields.AGP + " " + agpfile.getFileName()       + "\n" +
+                GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                GenomeAssemblyManifest.Fields.AGP + " " + agpfile.getFileName()       + "\n" +
                 getGenomeManifestInfoFields());
     }
     
@@ -173,7 +173,7 @@ WebinCliTest
 
         testWebinCli(ContextE.sequence, input_dir,
                 ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                SequenceManifest.Fields.TAB + " " + tabfile.getFileName());
+                SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName());
     }
     
     
@@ -185,7 +185,7 @@ WebinCliTest
         Path tabfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
 
         testWebinCli(ContextE.sequence, input_dir,
-                SequenceManifest.Fields.TAB + " " + tabfile.getFileName() + "\n" +
+                SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName() + "\n" +
                 getSequenceManifestFields());
     }
 
@@ -200,7 +200,7 @@ WebinCliTest
 
         testWebinCli(ContextE.transcriptome, input_dir,
                 ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                TranscriptomeManifest.Fields.FASTA + " " + fastafile.getFileName());
+                TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName());
     }
 
 
@@ -212,7 +212,7 @@ WebinCliTest
         Path fastafile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
 
         testWebinCli(ContextE.transcriptome, input_dir,
-                TranscriptomeManifest.Fields.FASTA + " " + fastafile.getFileName() + "\n" +
+                TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName() + "\n" +
                 getTranscriptomeManifestFields());
     }
 }

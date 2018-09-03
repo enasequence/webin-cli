@@ -44,7 +44,7 @@ import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 
-public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceManifest> {
+public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyManifest> {
     private static final String TEMPLATE_ID_PATTERN = "(ERT[0-9]+)";
     private final static String TEMPLATE_ACCESSION_LINE = "#template_accession";
     private boolean FAILED_VALIDATION;
@@ -57,8 +57,8 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceManifest>
     }
 
     @Override
-    protected SequenceManifest createManifestReader() {
-        return new SequenceManifest();
+    protected SequenceAssemblyManifest createManifestReader() {
+        return new SequenceAssemblyManifest();
     }
 
     @Override

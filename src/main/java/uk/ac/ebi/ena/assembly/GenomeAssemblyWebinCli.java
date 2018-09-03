@@ -61,7 +61,7 @@ import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public class 
-GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeManifest>
+GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 {
 	private List<String> chromosomeEntryNames = new ArrayList<>();
 	private List<ChromosomeEntry> chromosomeEntries = null;
@@ -81,8 +81,8 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeManifest>
     }
 
     @Override
-    protected GenomeManifest createManifestReader() {
-        return new GenomeManifest();
+    protected GenomeAssemblyManifest createManifestReader() {
+        return new GenomeAssemblyManifest();
     }
 
     @Override
