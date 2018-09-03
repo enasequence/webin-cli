@@ -32,7 +32,6 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.embl.api.validation.ValidationScope;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
-import uk.ac.ebi.ena.manifest.FileFormat;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.template.expansion.CSVLine;
 import uk.ac.ebi.ena.template.expansion.CSVReader;
