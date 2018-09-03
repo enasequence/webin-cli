@@ -68,7 +68,7 @@ public class SequenceValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-mandatory-field-missing.tsv.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-mandatory-field-missing-expected-results.txt")));
             assertEquals(resultsSb.toString().replaceAll("\\s+", ""), expectedResults.replaceAll("\\s+", ""));
@@ -85,7 +85,7 @@ public class SequenceValidationTest {
             for (String file: allTemplatesA) {
                 testTsvFile = SEQUENCE_BASE_DIR + File.separator + file;
                 SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-                sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+                sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
                 resultsSb.append(sequenceAssemblyWebinCli.validateTestTsv(testTsvFile));
             }
             assertEquals("", resultsSb.toString());
@@ -99,7 +99,7 @@ public class SequenceValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-invalid-alphanumeric-entrynumber-.tsv.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-invalidAlphanumericEntrynumber-expected-results.txt")));
             assertEquals(resultsSb.toString().trim(), expectedResults.trim());
@@ -113,7 +113,7 @@ public class SequenceValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-ERT000039-missingheaders.tsv.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-ERT000039-missingheaders-expected-results.txt")));
             assertEquals(resultsSb.toString().replaceAll("\\s+", ""), expectedResults.replaceAll("\\s+", ""));
@@ -127,7 +127,7 @@ public class SequenceValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-invalid-marker.tsv.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-invalidMarker-expected-results.txt")));
             assertEquals(resultsSb.toString().trim(), expectedResults.trim());
@@ -141,7 +141,7 @@ public class SequenceValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-invalid-sediment.tsv.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-invalidSediment-expected-results.txt")));
             assertEquals(resultsSb.toString().trim(), expectedResults.trim());
@@ -155,7 +155,7 @@ public class SequenceValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-invalid-entrynumber-start-.tsv.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-invalidEntrynumberStart-expected-results.txt")));
             assertEquals(resultsSb.toString().trim(), expectedResults.trim());
@@ -169,7 +169,7 @@ public class SequenceValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-non-ascii-characters.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setReportsDir(SEQUENCE_BASE_DIR);
+            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-nonAsciiCharacters-expected-results.txt")));
             assertEquals(resultsSb.toString().replaceAll("\\s+",""), expectedResults.replaceAll("\\s+", ""));

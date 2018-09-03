@@ -43,46 +43,55 @@ import uk.ac.ebi.ena.template.expansion.TemplateProcessor;
 import uk.ac.ebi.ena.template.expansion.TemplateUserError;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 
-public class SequenceAssemblyWebinCli extends SequenceWebinCli {
+public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceManifest> {
     private static final String TEMPLATE_ID_PATTERN = "(ERT[0-9]+)";
     private final static String TEMPLATE_ACCESSION_LINE = "#template_accession";
     private boolean FAILED_VALIDATION;
     private final static int MAX_SEQUENCE_COUNT = 100000;
     private StringBuilder resultsSb;
 
-
     public SequenceAssemblyWebinCli() {
+        super(new SequenceManifest());
     }
 
-    
-    public void
-    init( WebinCliParameters parameters ) throws ValidationEngineException
-    {
-        super.init( parameters );
-        //TODO temporary. replace.
-        if( null != getSample() )
-            throw WebinCliException.createUserError( String.format( "context " + ContextE.sequence + " not allowed to have SAMPLE field.", infoFile.getPath() ) );
+    @Override
+    public ContextE getContext() {
+        return ContextE.sequence;
     }
-    
-    
+
+    @Override
+    public void readManifest(Path inputDir, File manifestFile) {
+        getManifestReader().readManifest(inputDir, manifestFile);
+
+        // Set study, sample and file fields
+
+        if (isFetchStudy() && getManifestReader().getStudyId() != null)
+            setStudy( fetchStudy( getManifestReader().getStudyId(), getTestMode() ) );
+
+        if (getManifestReader().getTsvFile() != null) {
+            this.tsvFiles.add(getManifestReader().getTsvFile());
+        }
+        if (getManifestReader().getFlatFile() != null) {
+            this.flatFiles.add(getManifestReader().getFlatFile());
+        }
+
+        // Set assembly info
+
+        AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
+        assemblyInfo.setName(getManifestReader().getName());
+        if (getStudy() != null)
+            assemblyInfo.setStudyId(getStudy().getProjectId());
+        this.setAssemblyInfo(assemblyInfo);
+    }
+
     public StringBuilder validateTestTsv(String submittedFile) throws ValidationEngineException {
         resultsSb = new StringBuilder();
         setTestMode( true );
         validateTsvFile( new File( submittedFile ) );
         return resultsSb;
     }
-    @Override
-    protected void defineFileTypes(File manifest_file) throws ValidationEngineException, IOException {
-    	super.defineFileTypes(manifest_file);
-    	
-    	if(!flatFileExists&&!tsvFileExists)
-            throw WebinCliException.createUserError( "tsv or flatfile is missing from submission" );
- 		
-    }
-
 
     @Override protected boolean 
     validateInternal() throws ValidationEngineException 
@@ -242,13 +251,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli {
     }
 
 	
-    @Override ContextE
-    getContext()
-    {
-        return ContextE.sequence;
-    }
-    
-    
+
     Element 
     makeAnalysisType( AssemblyInfoEntry entry )
     {

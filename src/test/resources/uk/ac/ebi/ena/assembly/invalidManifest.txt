@@ -1,2 +1,0 @@
-FASTA	valid_fasta.txt
-AGP

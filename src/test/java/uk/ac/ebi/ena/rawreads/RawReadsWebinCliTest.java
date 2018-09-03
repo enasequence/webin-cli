@@ -30,6 +30,7 @@ import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -66,17 +67,16 @@ RawReadsWebinCliTest
     parseManifest() throws IOException, ValidationEngineException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
-        Path fastq_file = Files.write( File.createTempFile( "FASTQ", "fastq.gz" ).toPath(), "@1.1\nACGT\n@\n!@#$\n".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
+        Path fastq_file = WebinCliTestUtils.createTempFile("fastq.gz", true, "@1.1\nACGT\n@\n!@#$\n");
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( fastq_file.getParent().toFile() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "FASTQ " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -90,7 +90,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nBAM file2.bam" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -110,7 +109,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file1.cram\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -130,7 +128,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -150,7 +147,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -170,7 +166,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ yoba.fastq.gz.bz2 PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -190,7 +185,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ " + createOutputFolder() + " PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -210,7 +204,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -230,7 +223,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -250,7 +242,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM PHRED_33 file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
@@ -270,7 +261,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
@@ -290,7 +280,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
@@ -310,7 +299,6 @@ RawReadsWebinCliTest
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
@@ -331,14 +319,13 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/OUTO500m_MetOH_narG_OTU18.bam" );
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }
@@ -366,7 +353,6 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/m54097_170904_165950.subreads.bam" );
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart()
@@ -374,8 +360,8 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         
         rr.init( parameters );
         
@@ -395,14 +381,13 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz" );
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+        parameters.setManifestFile( Files.write( WebinCliTestUtils.createDefaultTempFile(false),
                                                  ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
@@ -419,7 +404,6 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz" );
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() 
@@ -427,8 +411,8 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }
@@ -442,7 +426,6 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.txt.gz" );
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() 
@@ -450,8 +433,8 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }
@@ -465,15 +448,14 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.txt.gz" );
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() 
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
@@ -493,7 +475,6 @@ RawReadsWebinCliTest
         Path file2 = Paths.get( new File( url2.getFile() ).getCanonicalPath() );
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() 
@@ -501,8 +482,8 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
         String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
@@ -527,7 +508,6 @@ RawReadsWebinCliTest
         Path file2 = Paths.get( new File( url2.getFile() ).getCanonicalPath() );
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() 
@@ -535,8 +515,8 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
         String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
@@ -558,14 +538,13 @@ RawReadsWebinCliTest
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
         
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "FASTQ " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
         Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
@@ -583,14 +562,13 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/15194_1#135.cram" );
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
         Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
@@ -608,14 +586,13 @@ RawReadsWebinCliTest
         URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram" );
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setCenterName( "C E N T E R N A M E" );
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setVerifySample( false );
-        rr.setVerifyStudy( false );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }

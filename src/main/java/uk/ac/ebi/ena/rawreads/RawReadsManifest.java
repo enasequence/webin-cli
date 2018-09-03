@@ -90,9 +90,9 @@ RawReadsManifest extends ManifestReader {
                 add(new ManifestFieldDefinition(Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1));
                 add(new ManifestFieldDefinition(Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList(QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS) ));
                 add(new ManifestFieldDefinition(Fields.__HORIZON, ManifestFieldType.META, 0, 1));
-                add(new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2, Arrays.asList(".gz", ".bz2")));
-                add(new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1, Arrays.asList(".bam")));
-                add(new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1, Arrays.asList(".cram")));
+                add(new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));
+                add(new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.BAM_FILE_SUFFIX));
+                add(new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.CRAM_FILE_SUFFIX));
         }},
             // File groups.
             new HashSet<List<ManifestFileCount>>() {{
@@ -197,7 +197,7 @@ RawReadsManifest extends ManifestReader {
             getResult().getField(Fields.PLATFORM).isValidFieldValueOrFileSuffix())
             platform = getResult().getValue(Fields.PLATFORM);
 
-        insert_size = getAndValidateNonNegativeInteger(getResult().getField(Fields.INSERT_SIZE));
+        insert_size = getAndValidatePositiveInteger(getResult().getField(Fields.INSERT_SIZE));
 
         if (getResult().getCount(Fields.LIBRARY_SOURCE) > 0 &&
             getResult().getField(Fields.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
@@ -232,7 +232,7 @@ RawReadsManifest extends ManifestReader {
         }
 
         if (getResult().getCount(Fields.__HORIZON) > 0)
-            pairing_horizon = getAndValidateNonNegativeInteger(getResult().getField(Fields.__HORIZON));
+            pairing_horizon = getAndValidatePositiveInteger(getResult().getField(Fields.__HORIZON));
 
         processInstrumentAndPlatform();
         processFiles();

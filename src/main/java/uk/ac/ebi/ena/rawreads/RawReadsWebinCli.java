@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -74,101 +73,30 @@ import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
-    RawReadsWebinCli extends AbstractWebinCli
+RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
 {   
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
     private static final String BAM_STAR = "*";
-    RawReadsManifest rrm = new RawReadsManifest();
     private boolean valid;
-    private File    submit_dir;
-    private File    validate_dir;
     //TODO value should be estimated via validation
     private boolean is_paired;
-    private boolean verify_sample = true;
-    private boolean verify_study  = true;
 
-    private final static String INVALID_MANIFEST = "Manifest file validation failed. Please check the report file for errors: ";
-    
-    
-    @Override public void 
-    init( WebinCliParameters parameters ) throws ValidationEngineException
-    {
-        super.init( parameters );
-
-        setValidationDir(createOutputSubdir("."));
-        File manifestFile = getParameters().getManifestFile();
-        File reportFile = getReportFile( "", manifestFile.getName() );
-
-        try
-        {
-            rrm.readManifest( getParameters().getInputDir().toPath(), manifestFile );
-
-            if (!StringUtils.isBlank(rrm.getName())) {
-                setName( rrm.getName().trim().replaceAll( "\\s+", "_" ) );
-                setValidationDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), VALIDATE_DIR ) );
-                setSubmitDir( createOutputSubdir( String.valueOf( ContextE.reads ), getName(), SUBMIT_DIR ) );
-            }
-        } catch( Throwable t )
-        {
-            throw new ValidationEngineException( "Unable to init validator", t );
-        }
-        finally {
-            if (!rrm.getValidationResult().isValid()) {
-                reportFile.delete();
-                FileUtils.writeReport( reportFile, rrm.getValidationResult() );
-            }
-        }
-
-        if (!rrm.getValidationResult().isValid()) {
-            throw WebinCliException.createUserError( INVALID_MANIFEST, reportFile.getPath() );
-        }
+    public RawReadsWebinCli() {
+        super(new RawReadsManifest());
     }
 
-    public boolean 
-    getVerifyStudy()
-    {
-        return verify_study;
+    @Override
+    public ContextE getContext() {
+        return ContextE.reads;
     }
 
-
-    public boolean 
-    getVerifySample()
-    {
-        return verify_sample;
+    @Override
+    public void readManifest(Path inputDir, File manifestFile) {
+        getManifestReader().readManifest( inputDir, manifestFile );
     }
-
-
-    public void 
-    setVerifySample( boolean verify_sample )
-    {
-        this.verify_sample = verify_sample;
-    }
-    
-    
-    public void 
-    setVerifyStudy( boolean verify_study )
-    {
-        this.verify_study = verify_study;
-    }
-
-
-	private void
-    setSubmitDir( File submit_dir )
-    {
-	    this.submit_dir = submit_dir;
-    }
-
-
-    private void
-    setValidationDir( File validate_dir )
-    {
-        this.validate_dir = validate_dir; 
-    }
-
 
     DataFeederException 
     read( InputStream is, String stream_name, final QualityNormalizer normalizer, AtomicLong reads_cnt, Set<String> names, Set<String>labels ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
@@ -197,10 +125,10 @@ public class
                 String label = slash_idx == -1 ? stream_name
                                                : spot.bname.substring( slash_idx + 1 );
                 
-                if( reads_cnt.incrementAndGet() <= rrm.getPairingHorizon() )
+                if( reads_cnt.incrementAndGet() <= getManifestReader().getPairingHorizon() )
                     names.add( name );
                 
-                if( labels.size() < rrm.getPairingHorizon() )
+                if( labels.size() < getManifestReader().getPairingHorizon() )
                     labels.add( label );
             }  
         } );
@@ -214,22 +142,22 @@ public class
     @Override public boolean
     validate() throws ValidationEngineException
     {
-        if( !FileUtils.emptyDirectory( validate_dir ) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + validate_dir );
+        if( !FileUtils.emptyDirectory(getValidationDir()) )
+            throw WebinCliException.createSystemError( "Unable to empty directory " + getValidationDir());
         
-        if( !FileUtils.emptyDirectory( submit_dir ) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + submit_dir );
+        if( !FileUtils.emptyDirectory(getSubmitDir()) )
+            throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir());
         
-        if( getVerifySample() )
-            Sample.getSample( rrm.getSampleId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
+        if( isFetchSample() )
+            Sample.getSample( getManifestReader().getSampleId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
         
-        if( getVerifyStudy() )
-            Study.getStudy( rrm.getStudyId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
+        if( isFetchStudy() )
+            Study.getStudy( getManifestReader().getStudyId(), getParameters().getUsername(), getParameters().getPassword(), getTestMode() );
         
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
         
-        List<RawReadsFile> files = rrm.getFiles();
+        List<RawReadsFile> files = getManifestReader().getFiles();
         
         for( RawReadsFile rf : files )
         {
@@ -343,8 +271,8 @@ public class
                     }
                 }
                 AtomicLong reads_cnt = new AtomicLong();
-                Set<String> nameset  = new HashSet<>( rrm.getPairingHorizon() );
-                Set<String> labelset = new HashSet<>( rrm.getPairingHorizon() );
+                Set<String> nameset  = new HashSet<>( getManifestReader().getPairingHorizon() );
+                Set<String> labelset = new HashSet<>( getManifestReader().getPairingHorizon() );
                 
                 names.add( nameset );
                 labels.add( labelset );
@@ -559,7 +487,7 @@ public class
     {
         try
         {
-            List<RawReadsFile> files = rrm.getFiles();
+            List<RawReadsFile> files = getManifestReader().getFiles();
             
             List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
             Path uploadDir = Paths.get( String.valueOf( ContextE.reads ), getName() );
@@ -581,7 +509,7 @@ public class
             //do something
             String experiment_ref = String.format( "exp-%s", getName() );
             
-            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), rrm, is_paired );
+            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), is_paired );
             String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
             
             Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
@@ -602,14 +530,6 @@ public class
         }
     }
 
-
-    private File
-    getSubmitDir()
-    {
-        return submit_dir;
-    }
-
-
 /*
     <RUN_SET>
     <RUN alias="" center_name="" run_center="blah">
@@ -629,19 +549,19 @@ public class
 */
 
     String
-    createExperimentXml( String experiment_ref, String centerName, RawReadsManifest rrm, boolean is_paired ) 
+    createExperimentXml( String experiment_ref, String centerName, boolean is_paired )
     {
-        String instrument_model = rrm.getInstrument();
+        String instrument_model = getManifestReader().getInstrument();
         String design_description = "unspecified";
-        String library_strategy  = rrm.getLibraryStrategy();
-        String library_source    = rrm.getLibrarySource();
-        String library_selection = rrm.getLibrarySelection();
-        String library_name      = rrm.getLibraryName();
+        String library_strategy  = getManifestReader().getLibraryStrategy();
+        String library_source    = getManifestReader().getLibrarySource();
+        String library_selection = getManifestReader().getLibrarySelection();
+        String library_name      = getManifestReader().getLibraryName();
         
-        String sample_id = rrm.getSampleId();
-        String study_id  = rrm.getStudyId();
-        String platform  = rrm.getPlatform();
-        Integer insert_size = rrm.getInsertSize();
+        String sample_id = getManifestReader().getSampleId();
+        String study_id  = getManifestReader().getStudyId();
+        String platform  = getManifestReader().getPlatform();
+        Integer insert_size = getManifestReader().getInsertSize();
                 
         try 
         {
@@ -772,19 +692,5 @@ public class
         {
             throw WebinCliException.createSystemError( e.getMessage() );
         }
-    }
-
-
-    @Override public File
-    getSubmissionBundleFileName()
-    {
-        return new File( submit_dir, "validate.receipt" );
-    }
-
-
-    @Override public File
-    getValidationDir()
-    {
-        return validate_dir;
     }
 }

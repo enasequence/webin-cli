@@ -30,41 +30,32 @@ public class ManifestReaderTest {
 
     Path inputDir = Paths.get( "." );
 
-    static class ManifestReaderOneMetaFieldMin0Max1 extends ManifestReader {
+    static class ManifestReaderOneMetaFieldMin0Max1 extends TestManifestReader {
         public ManifestReaderOneMetaFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 0, 1, Arrays.asList("VALUE1")));
             }});
         }
-        @Override
-        protected void processManifest() {
-        }
     }
 
-    static class ManifestReaderTwoMetaFieldMin1Max1 extends ManifestReader {
+    static class ManifestReaderTwoMetaFieldMin1Max1 extends TestManifestReader {
         public ManifestReaderTwoMetaFieldMin1Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 1, 1, Arrays.asList("VALUE1")));
                 add(new ManifestFieldDefinition("META_FIELD_2", ManifestFieldType.META, 1, 1));
             }});
         }
-        @Override
-        protected void processManifest() {
-        }
     }
 
-    static class ManifestReaderOneFileFieldMin0Max1 extends ManifestReader {
+    static class ManifestReaderOneFileFieldMin0Max1 extends TestManifestReader {
         public ManifestReaderOneFileFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1, Arrays.asList(".txt")));
             }});
         }
-        @Override
-        protected void processManifest() {
-        }
     }
 
-    static class ManifestReaderFiles extends ManifestReader {
+    static class ManifestReaderFiles extends TestManifestReader {
         public ManifestReaderFiles() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1));
@@ -84,9 +75,6 @@ public class ManifestReaderTest {
                     add(new ManifestFileCount("FILE_FIELD_4", 2, 2));
                 }});
             }});
-        }
-        @Override
-        protected void processManifest() {
         }
     }
 
