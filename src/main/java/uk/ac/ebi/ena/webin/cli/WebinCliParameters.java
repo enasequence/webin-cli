@@ -23,6 +23,7 @@ WebinCliParameters
     private File    inputDir = new File( "." );
     private File    syslogFile = new File( "webin-cli.log" );
     private String  centerName;
+    private boolean testMode;
     
     
     public File
@@ -108,6 +109,15 @@ WebinCliParameters
         return centerName;
     }
 
+    public boolean
+    isTestMode() {
+        return testMode;
+    }
+
+    public void
+    setTestMode(boolean testMode) {
+        this.testMode = testMode;
+    }
 
     public File
     getSystemLogFile()

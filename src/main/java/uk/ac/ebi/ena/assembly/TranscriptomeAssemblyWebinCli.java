@@ -65,13 +65,14 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeManifest>
 	private ValidationPlan validationPlan;
 	private boolean FAILED_VALIDATION;
 
-	public TranscriptomeAssemblyWebinCli() {
-		super(new TranscriptomeManifest());
-	}
-
 	@Override
 	public ContextE getContext() {
 		return ContextE.transcriptome;
+	}
+
+	@Override
+	protected TranscriptomeManifest createManifestReader() {
+		return new TranscriptomeManifest();
 	}
 
 	@Override

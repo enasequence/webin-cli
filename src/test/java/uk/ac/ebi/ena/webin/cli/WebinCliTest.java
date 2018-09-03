@@ -139,8 +139,8 @@ WebinCliTest
     }
     
     
-    public String 
-    getAssemblyInfo( String name )
+    public String
+    getGenomeManifestFields(String name )
     {
         return   "ASSEMBLYNAME " + name + "\n"
                + "COVERAGE 45\n"
@@ -151,20 +151,23 @@ WebinCliTest
                + "SAMPLE SAMN04526268\n"
                + "STUDY PRJEB20083\n";
     }
-    
-    
-    public String 
-    getAssemblyInfoForSequence( String name )
+
+    public String
+    getTranscriptomeManifestFields(String name )
     {
         return   "ASSEMBLYNAME " + name + "\n"
-               + "COVERAGE 45\n"
-               + "PROGRAM assembly\n"
-               + "PLATFORM fghgf\n"
-               + "MINGAPLENGTH 34\n"
-               + "MOLECULETYPE genomic DNA\n"
+                + "PROGRAM assembly\n"
+                + "PLATFORM fghgf\n"
+                + "SAMPLE SAMN04526268\n"
+                + "STUDY PRJEB20083\n";
+    }
+
+    public String
+    getSequenceManifestFields(String name )
+    {
+        return   "NAME " + name + "\n"
                + "STUDY PRJEB20083\n";
     }
-    
     
     @Test public void
     testGenomeSubmission() throws Exception
@@ -174,7 +177,7 @@ WebinCliTest
         Path flatfile = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
         Path agpfile  = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
         Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE" ), 
-                                     getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                     getGenomeManifestFields( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ),
                                      StandardOpenOption.TRUNCATE_EXISTING );
 
         
@@ -219,7 +222,7 @@ WebinCliTest
         parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
                                              ( "FLATFILE " + input_dir.relativize( flatfile ) + "\n"
                                              + "AGP " + input_dir.relativize(  agpfile ) + "\n" 
-                                             + getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                             + getGenomeManifestFields( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ),
                                              StandardOpenOption.TRUNCATE_EXISTING ).toString();
         
         parameters.test = true;
@@ -241,7 +244,7 @@ WebinCliTest
         
         Path tabfile = copyRandomized( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
         Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE" ), 
-                                     getAssemblyInfoForSequence( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                     getSequenceManifestFields( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ),
                                      StandardOpenOption.TRUNCATE_EXISTING );
 
         
@@ -282,7 +285,7 @@ WebinCliTest
         parameters.outputDir  = createOutputFolder().getPath();
         parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
                                              ( "TAB " + input_dir.relativize( tabfile ) + "\n"
-                                             + getAssemblyInfoForSequence( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                             + getSequenceManifestFields( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ),
                                              StandardOpenOption.TRUNCATE_EXISTING ).toString();
         parameters.test = true;
         parameters.validate = true;
@@ -302,10 +305,10 @@ WebinCliTest
         Path input_dir = createOutputFolder().toPath();
 
         Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
-        Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE.info" ), 
-                                     getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
+        Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE.info" ),
+                                     getTranscriptomeManifestFields( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ),
                                      StandardOpenOption.TRUNCATE_EXISTING );
-        
+
         WebinCli.Params parameters = new WebinCli.Params();
         parameters.userName = usernm;
         parameters.password = passwd;
@@ -315,7 +318,7 @@ WebinCliTest
         parameters.outputDir  = createOutputFolder().getPath();
         parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
                                              ( "INFO "  + input_dir.relativize( infofile ) + "\n"
-                                             + "FASTA " + input_dir.relativize( fastafile ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                             + "FASTA " + input_dir.relativize( fastafile ) ).getBytes( StandardCharsets.UTF_8 ),
                                              StandardOpenOption.TRUNCATE_EXISTING ).toString();
         parameters.test = true;
         parameters.validate = true;
@@ -327,7 +330,7 @@ WebinCliTest
         webinCli.execute();
     }
 
-    
+
     //TODO update when inputDir supported
     @Test public void
     testTranscriptomeSubmissionEmbeddedInfo() throws Exception
@@ -342,21 +345,21 @@ WebinCliTest
         parameters.centerName = "C E N T E R N A M E";
         parameters.inputDir   = input_dir.toString();
         parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
+        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(),
                                              ( "FASTA " + input_dir.relativize( fastafile ) + "\n"
-                                             + getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
+                                             + getTranscriptomeManifestFields( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ),
                                              StandardOpenOption.TRUNCATE_EXISTING ).toString();
         parameters.test = true;
         parameters.validate = true;
         parameters.submit   = true;
-        
+
         WebinCli webinCli = new WebinCli();
         webinCli.init( parameters );
         webinCli.setTestMode( true );
         webinCli.execute();
     }
 
-    
+
     private File
     createOutputFolder() throws IOException
     {

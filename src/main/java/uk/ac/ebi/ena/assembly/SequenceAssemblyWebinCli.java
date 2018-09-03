@@ -52,13 +52,14 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceManifest>
     private final static int MAX_SEQUENCE_COUNT = 100000;
     private StringBuilder resultsSb;
 
-    public SequenceAssemblyWebinCli() {
-        super(new SequenceManifest());
-    }
-
     @Override
     public ContextE getContext() {
         return ContextE.sequence;
+    }
+
+    @Override
+    protected SequenceManifest createManifestReader() {
+        return new SequenceManifest();
     }
 
     @Override

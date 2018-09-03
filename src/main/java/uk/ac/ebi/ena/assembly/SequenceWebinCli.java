@@ -70,10 +70,6 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
     protected AssemblyInfoEntry assembly_info;
 
-    public SequenceWebinCli(T manifestReader) {
-        super(manifestReader);
-    }
-
     protected abstract boolean validateInternal() throws ValidationEngineException;
     
     protected File

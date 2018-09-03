@@ -87,13 +87,16 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     //TODO value should be estimated via validation
     private boolean is_paired;
 
-    public RawReadsWebinCli() {
-        super(new RawReadsManifest());
-    }
-
     @Override
     public ContextE getContext() {
         return ContextE.reads;
+    }
+
+    @Override
+    protected RawReadsManifest createManifestReader() {
+        return new RawReadsManifest(
+                isFetchSample() ? new SampleValidator(getParameters()) : new EmptyValidator(),
+                isFetchStudy() ? new StudyValidator(getParameters()) : new EmptyValidator());
     }
 
     @Override

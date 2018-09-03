@@ -64,25 +64,26 @@ import uk.ac.ebi.ena.utils.FileUtils;
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeManifest>
 {
-	private List<String> chromosomeEntryNames = new ArrayList<String>();
+	private List<String> chromosomeEntryNames = new ArrayList<>();
 	private List<ChromosomeEntry> chromosomeEntries = null;
-	private HashMap<String,Long> fastaEntryNames = new HashMap<String,Long>();
-	private HashMap<String,Long> flatfileEntryNames = new HashMap<String,Long>();
-	private HashSet<String> agpEntrynames = new HashSet<String>();
-    private HashMap<String,AgpRow> contigRangeMap= new HashMap<String,AgpRow>();
-	private HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<String, List<Qualifier>>();
+	private HashMap<String,Long> fastaEntryNames = new HashMap<>();
+	private HashMap<String,Long> flatfileEntryNames = new HashMap<>();
+	private HashSet<String> agpEntrynames = new HashSet<>();
+    private HashMap<String,AgpRow> contigRangeMap= new HashMap<>();
+	private HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<>();
 	private String sequencelessChromosomesCheck= "ChromosomeListSequenelessCheck";
 	private String molType = "genomic DNA";
     private boolean valid;
     private int i;
 
-    public GenomeAssemblyWebinCli() {
-	    super(new GenomeManifest());
-    }
-
     @Override
     public ContextE getContext() {
         return ContextE.genome;
+    }
+
+    @Override
+    protected GenomeManifest createManifestReader() {
+        return new GenomeManifest();
     }
 
     @Override

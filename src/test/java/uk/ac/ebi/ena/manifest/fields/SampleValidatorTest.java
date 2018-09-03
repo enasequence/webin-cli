@@ -9,19 +9,20 @@ import org.junit.Test;
 import uk.ac.ebi.ena.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
 SampleValidatorTest 
 {
-    String passwd;
-    String usernm;
-    
+    WebinCliParameters parameters = new WebinCliParameters();
+
     @Before
     public void
     before() throws UnsupportedEncodingException
     {
-        usernm = System.getenv( "webin-cli-username" );
-        passwd = System.getenv( "webin-cli-password" );
+        parameters.setUsername(System.getenv( "webin-cli-username" ));
+        parameters.setPassword(System.getenv( "webin-cli-password" ));
+        parameters.setTestMode(true);
     }
     
     
@@ -29,7 +30,7 @@ SampleValidatorTest
     testCorrect()
     {
         ManifestFieldDefinition def = new ManifestFieldDefinition( "", ManifestFieldType.FILE, -1, -1 );
-        Assert.assertNull( "Should be null", new SampleValidator( usernm, passwd, true ).validate( new ManifestFieldValue( def, "ERS000002", null ) ) );
+        Assert.assertNull( "Should be null", new SampleValidator( parameters ).validate( new ManifestFieldValue( def, "ERS000002", null ) ) );
     }
 
 
@@ -37,7 +38,7 @@ SampleValidatorTest
     testIncorrect()
     {
         ManifestFieldDefinition def = new ManifestFieldDefinition( "", ManifestFieldType.FILE, -1, -1 );
-        Assert.assertNotNull( "Should not be null", new SampleValidator( usernm, passwd, true ).validate( new ManifestFieldValue( def, "SRP000392", null ) ) );
+        Assert.assertNotNull( "Should not be null", new SampleValidator( parameters ).validate( new ManifestFieldValue( def, "SRP000392", null ) ) );
     }
 
 }

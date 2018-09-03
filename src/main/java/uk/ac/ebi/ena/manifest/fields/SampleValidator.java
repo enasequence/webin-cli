@@ -5,21 +5,19 @@ import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class 
 SampleValidator implements ManifestFieldValidator 
 {
-    private String userName;
-    private String passwd;
-    private boolean test_mode;
-    
+    private final WebinCliParameters parameters;
+
     public 
-    SampleValidator( String userName, String passwd, boolean test_mode )
+    SampleValidator(WebinCliParameters parameters)
     {
-        this.userName = userName;
-        this.passwd   = passwd;
+        this.parameters = parameters;
     }
-    
+
     
     @Override public ValidationMessage<Origin> 
     validate( ManifestFieldValue field_value )
@@ -29,12 +27,11 @@ SampleValidator implements ManifestFieldValidator
         // TODO consider moving to ReadManifest*
         try
         {
-            Sample.getSample( value, userName, passwd, test_mode );
+            Sample.getSample( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
             return null;
         } catch( WebinCliException e )
         {
             return ValidationMessage.error( "MANIFEST_SAMPLE_SERVER_ERROR", value, e.getMessage() );
         }
     }
-
 }

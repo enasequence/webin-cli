@@ -43,7 +43,7 @@ AbstractWebinCli<T extends ManifestReader>
     private WebinCliParameters parameters = new WebinCliParameters();
     private boolean test_mode;
 
-    private final T manifestReader;
+    private T manifestReader;
 
     private File validationDir;
     private File submitDir;
@@ -51,14 +51,14 @@ AbstractWebinCli<T extends ManifestReader>
     private boolean fetchSample = true;
     private boolean fetchStudy = true;
 
-    public AbstractWebinCli(T manifestReader) {
-        this.manifestReader = manifestReader;
-    }
+    protected abstract T createManifestReader();
 
     public final void
     init( WebinCliParameters parameters )
     {
         this.parameters = parameters;
+        this.manifestReader = createManifestReader();
+
         this.validationDir = createOutputSubdir(".");
 
         File manifestFile = getParameters().getManifestFile();
