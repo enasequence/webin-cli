@@ -83,6 +83,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
     private static final String BAM_STAR = "*";
+
+    private Study study;
+    private Sample sample;
+
     private boolean valid;
     //TODO value should be estimated via validation
     private boolean is_paired;
@@ -102,6 +106,12 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     @Override
     public void readManifest(Path inputDir, File manifestFile) {
         getManifestReader().readManifest( inputDir, manifestFile );
+
+        if (isFetchStudy() && getManifestReader().getStudyId() != null)
+            study = fetchStudy( getManifestReader().getStudyId(), getTestMode() );
+
+        if (isFetchSample() && getManifestReader().getSampleId() != null)
+            sample = fetchSample( getManifestReader().getSampleId(), getTestMode() );
     }
 
     DataFeederException 
@@ -563,9 +573,15 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         String library_source    = getManifestReader().getLibrarySource();
         String library_selection = getManifestReader().getLibrarySelection();
         String library_name      = getManifestReader().getLibraryName();
-        
+
         String sample_id = getManifestReader().getSampleId();
-        String study_id  = getManifestReader().getStudyId();
+        if (sample != null)
+            sample_id = sample.getBiosampleId();
+
+        String study_id = getManifestReader().getStudyId();
+        if (study != null)
+            study_id = study.getProjectId();
+
         String platform  = getManifestReader().getPlatform();
         Integer insert_size = getManifestReader().getInsertSize();
                 
