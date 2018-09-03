@@ -116,17 +116,18 @@ ReadNameSetTest
     }
     
     
+    /* attempting to check two randomly generated records with low percentage of degeneration */    
     @Test public void 
     testPaired1()
     {
         String[] sar = initStringArray( new String[ 1_000 ], 32, 64 );
         String[] tar = initStringArray( new String[ 1_000 ], 32, 64 );
-
+        Assert.assertEquals( 0, getArrayDegeneration( sar ) );
+        Assert.assertEquals( 0, getArrayDegeneration( tar ) );
         __testPaired( sar, tar );
     }
     
     
-    /* attempting to check two randomly generated records with low percentage of degeneration */
     public void
     __testPaired( String[] sar, String[] tar )
     {
@@ -168,6 +169,7 @@ ReadNameSetTest
     {
         String[] sar = initStringArray( new String[ 1 ], 32, 64 );
         System.out.println( "Sar size: " + Stream.of( sar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
+        Assert.assertEquals( 0, getArrayDegeneration( sar ) );
         
         ReadNameSet<String> rns = new ReadNameSet<>( (int)( sar.length ) );
         for( int i = 0; i < sar.length; ++i )
@@ -177,13 +179,9 @@ ReadNameSetTest
             rns.add( sar[ i ], getMarker( "File 1", i ) );
 
         Assert.assertTrue( rns.hasPossibleDuplicates() );
-        
-        int not_contains = 0;
-                
+           
         for( int i = 0; i < sar.length; ++ i )
-            not_contains += rns.getDuplicateLocations( sar[ i ] ).isEmpty() ? 1 : 0;
-        
-        Assert.assertEquals( sar.length, not_contains );
+            Assert.assertTrue( "No duplication on pos: " + i, !rns.getDuplicateLocations( sar[ i ] ).isEmpty() );
     }
 
     

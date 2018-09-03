@@ -1,14 +1,18 @@
 package uk.ac.ebi.ena.rawreads;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
@@ -25,6 +29,9 @@ import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
+import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater;
+import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater.READ_TYPE;
+import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaSpot;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class 
@@ -209,7 +216,7 @@ FastqScanner
     
     
     public ValidationResult
-    checkFiles( RawReadsFile...rfs ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    checkFiles( RawReadsFile... rfs ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
         Set<String> labelset = new HashSet<>();
         ReadNameSet<String> rns = new ReadNameSet<>( expected_size );
@@ -223,14 +230,19 @@ FastqScanner
         if( rns.hasPossibleDuplicates() )
         {
             index = 1;
+            Map<String, Set<String>> result = new HashMap<>();
             for( RawReadsFile rf : rfs )
             {
                 String stream_name = formatStreamName( index++, rf.getFilename() );
-                ValidationResult v = checkSuspected( rf, stream_name, rns );
-                if( !v.isValid() )
-                    vr.append( v );
+                result.putAll( checkSuspected( rf, stream_name, rns ) );
             }
-            
+                
+                
+            vr.append( result.entrySet().stream().map( ( e ) -> new ValidationMessage<Origin>( Severity.ERROR, 
+                       ValidationMessage.NO_KEY, 
+                       String.format( "Read %s has duplicate(s): %s", 
+                                      e.getKey(), 
+                                      e.getValue().toString() ) ) ).collect( Collectors.toList() ) );
             if( vr.isValid() )
                 vr.append( new ValidationMessage<>( Severity.INFO, ValidationMessage.NO_KEY, "No duplicates confirmed." ) );
         }
@@ -240,7 +252,7 @@ FastqScanner
 
     
     private ValidationResult
-    checkSuspected( RawReadsFile rf,
+    checkifSuspected( RawReadsFile rf,
                     String stream_name,
                     ReadNameSet<String> rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException, IOException
     {
@@ -272,6 +284,7 @@ FastqScanner
 //                    String name = slash_idx == -1 ? spot.bname 
 //                                                  : spot.bname.substring( 0, slash_idx );
 
+
                     long read_n = read_no.getAndIncrement();
                     Set<String> set = rns.getDuplicateLocations( spot.bname );
                     if( !set.isEmpty() )
@@ -301,4 +314,26 @@ FastqScanner
             return vr;
         }
     }
+    
+
+    private Map<String, Set<String>>
+    checkSuspected( RawReadsFile rf,
+                    String stream_name,
+                    ReadNameSet<String> rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException, IOException
+    {
+        IlluminaIterativeEater wrapper = new IlluminaIterativeEater();
+        wrapper.setFiles( new File[] { new File( rf.getFilename() ) } );  
+        wrapper.setNormalizers( new QualityNormalizer[] { QualityNormalizer.SANGER } );
+        wrapper.setReadType( READ_TYPE.SINGLE );
+
+        Map<String, Set<String>> map = rns.getAllduplications( new DelegateIterator<IlluminaSpot, String>( wrapper.iterator() ) {
+            @Override public String convert( IlluminaSpot obj )
+            {
+                return obj.read_name[ IlluminaSpot.FORWARD ];
+            }
+        }, 100 );
+
+        return map;
+    }
+
 }

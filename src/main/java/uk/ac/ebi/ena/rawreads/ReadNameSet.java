@@ -2,6 +2,7 @@ package uk.ac.ebi.ena.rawreads;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +73,27 @@ ReadNameSet<T>
         Map<String, Set<T>> result = new HashMap<>( limit );
         for( String read_name : read_names )
         {
+            if( hasPossibleDuplicates() )
+            {
+                Set<T> dlist = getDuplicateLocations( read_name );
+                if( !dlist.isEmpty() )
+                    result.put( read_name, dlist );
+            }
+            
+            if( result.size() >= limit )
+                break;
+        }
+        return result;
+    }
+    
+    
+    public Map<String, Set<T>>
+    getAllduplications( Iterator<String> read_name_iterator, int limit )
+    {
+        Map<String, Set<T>> result = new HashMap<>( limit );
+        while( read_name_iterator.hasNext() )
+        {
+            String read_name = read_name_iterator.next();
             if( hasPossibleDuplicates() )
             {
                 Set<T> dlist = getDuplicateLocations( read_name );
