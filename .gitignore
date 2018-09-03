@@ -12,3 +12,4 @@ reports/
 gradlew
 gradlew.bat
 
+/bin/

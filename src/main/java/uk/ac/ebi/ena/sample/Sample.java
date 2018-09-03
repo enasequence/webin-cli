@@ -11,25 +11,28 @@
 
 package uk.ac.ebi.ena.sample;
 
-import org.apache.http.HttpStatus;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.json.simple.parser.ParseException;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class Sample {
 	private long taxId;
@@ -45,7 +48,7 @@ public class Sample {
         try {
             Sample sample = new Sample();
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/") + sampleId.trim());
+            HttpGet httpGet = new HttpGet( ( TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/" ) +  URLEncoder.encode( sampleId.trim(), "UTF-8" ) );
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
             httpGet.setHeader("Authorization", "Basic " + encoding);
             CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -69,7 +72,8 @@ public class Sample {
                 default:
                     throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
             }
-        } catch (IOException e) {
+        } catch( IOException e )
+        {
             throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
         }
     }

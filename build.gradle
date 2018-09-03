@@ -1,13 +1,20 @@
+plugins {
+    id "io.github.ddimtirov.codacy" version "0.1.0"
+}
+
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: "jacoco"
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.version_base = '1.2.5'
 version = version_base
 
-repositories {
+ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : "${System.properties['user.home']}/.ssh/id_dsa")
+
+        repositories {
     mavenLocal()
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
@@ -99,4 +106,11 @@ publishing {
             url "http://ena-dev:8081/artifactory/libs-release-local"
         }
     }
+}
+
+
+
+codacy {
+    // Codacy project token https://support.codacy.com/hc/en-us/articles/207279819-Coverage
+    // projectToken = webinCliCodacyProjectToken
 }

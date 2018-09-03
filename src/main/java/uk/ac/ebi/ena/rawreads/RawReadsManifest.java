@@ -21,8 +21,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
+
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.fields.CVFieldValidator;
+import uk.ac.ebi.ena.manifest.fields.CVKeyFieldCorrector;
+import uk.ac.ebi.ena.manifest.fields.EmptyValidator;
+import uk.ac.ebi.ena.manifest.fields.ManifestFieldValidator;
+import uk.ac.ebi.ena.manifest.fields.SampleValidator;
+import uk.ac.ebi.ena.manifest.fields.StudyValidator;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
@@ -73,27 +80,58 @@ RawReadsManifest extends ManifestReader {
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
 
-    public RawReadsManifest() {
+
+    public
+    RawReadsManifest()
+    {
+        this( new EmptyValidator(), new EmptyValidator() );
+    }
+
+
+    public
+    RawReadsManifest( ManifestFieldValidator sample_validator, ManifestFieldValidator study_validator )
+    {
         super(
             // Fields.
-            new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition(Fields.NAME, ManifestFieldType.META, 1, 1));
-                add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1));
-                add(new ManifestFieldDefinition(Fields.SAMPLE, ManifestFieldType.META, 1, 1));
-                add(new ManifestFieldDefinition(Fields.INSTRUMENT, ManifestFieldType.META, 0, 1, ControlledValueList.Instrument.keyList()));
-                add(new ManifestFieldDefinition(Fields.PLATFORM, ManifestFieldType.META, 0, 1, ControlledValueList.Platform.keyList()));
-                add(new ManifestFieldDefinition(Fields.INSERT_SIZE, ManifestFieldType.META, 0, 1));
-                add(new ManifestFieldDefinition(Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1, ControlledValueList.Source.keyList()));
-                add(new ManifestFieldDefinition(Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1, ControlledValueList.Selection.keyList()));
-                add(new ManifestFieldDefinition(Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1, ControlledValueList.Strategy.keyList()));
-                add(new ManifestFieldDefinition(Fields.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1));
-                add(new ManifestFieldDefinition(Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1));
-                add(new ManifestFieldDefinition(Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList(QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS) ));
-                add(new ManifestFieldDefinition(Fields.__HORIZON, ManifestFieldType.META, 0, 1));
-                add(new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));
-                add(new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.BAM_FILE_SUFFIX));
-                add(new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.CRAM_FILE_SUFFIX));
-        }},
+            new ArrayList<ManifestFieldDefinition>()
+            {
+                {
+                        add( new ManifestFieldDefinition( Fields.NAME, ManifestFieldType.META, 1, 1 ) );
+                        add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, study_validator ) );
+                        add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1, sample_validator ) );
+
+                        add( new ManifestFieldDefinition( Fields.INSTRUMENT, ManifestFieldType.META, 0, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Instrument ),
+                                                          new CVFieldValidator( ControlledValueList.Instrument ) ) );
+
+                        add( new ManifestFieldDefinition( Fields.PLATFORM, ManifestFieldType.META, 0, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Platform ),
+                                                          new CVFieldValidator( ControlledValueList.Platform ) ) );
+
+                        add( new ManifestFieldDefinition( Fields.INSERT_SIZE, ManifestFieldType.META, 0, 1 ) );
+
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Source),
+                                                          new CVFieldValidator( ControlledValueList.Source ) ) );
+
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Selection ),
+                                                          new CVFieldValidator( ControlledValueList.Selection ) ) );
+
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Strategy ),
+                                                          new CVFieldValidator( ControlledValueList.Strategy ) ) );
+
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1 ) );
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1 ) );
+                        add( new ManifestFieldDefinition( Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList( QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS ) ) );
+                        add( new ManifestFieldDefinition( Fields.__HORIZON, ManifestFieldType.META, 0, 1 ) );
+                        add( new ManifestFieldDefinition( Fields.FASTQ, ManifestFieldType.FILE, 0, 2, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) );
+                        add( new ManifestFieldDefinition( Fields.BAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.BAM_FILE_SUFFIX ) );
+                        add( new ManifestFieldDefinition( Fields.CRAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.CRAM_FILE_SUFFIX ) );
+                    }
+            },
+
             // File groups.
             new HashSet<List<ManifestFileCount>>() {{
                 add(new ArrayList<ManifestFileCount>() {{
@@ -112,63 +150,86 @@ RawReadsManifest extends ManifestReader {
 
     static
     {
-        ValidationMessageManager.addBundle(MESSAGE_BUNDLE);
+        ValidationMessageManager.addBundle( MESSAGE_BUNDLE );
     }
 
+
     public String
-    getName() {
+    getName()
+    {
         return name;
     }
 
+
     public String
-    getStudyId() {
+    getStudyId()
+    {
         return study_id;
     }
 
+
     public String
-    getSampleId() {
+    getSampleId()
+    {
         return sample_id;
     }
 
+
     public String
-    getInstrument() {
+    getInstrument()
+    {
         return instrument;
     }
 
+
     public String
-    getPlatform() {
+    getPlatform()
+    {
         return platform;
     }
 
+
     public Integer
-    getInsertSize() {
+    getInsertSize()
+    {
         return insert_size;
     }
 
+
     public String
-    getLibrarySource() {
+    getLibrarySource()
+    {
         return library_source;
     }
 
+
     public String
-    getLibrarySelection() {
+    getLibrarySelection()
+    {
         return library_selection;
     }
 
+
     public String
-    getLibraryStrategy() {
+    getLibraryStrategy()
+    {
         return library_strategy;
     }
 
+
     public String
-    getLibraryConstructionProtocol() {
+    getLibraryConstructionProtocol()
+    {
         return library_construction_protocol;
     }
 
+
     public String
-    getLibraryName() {
+    getLibraryName()
+    {
         return library_name;
     }
+
 
     public Integer
     getPairingHorizon()
@@ -176,18 +237,20 @@ RawReadsManifest extends ManifestReader {
         return pairing_horizon;
     }
 
+
     public List<RawReadsFile>
-    getFiles() {
+    getFiles()
+    {
         return files;
     }
 
-    @Override
-    public void
-    processManifest() {
 
-        name = getResult().getValue(Fields.NAME);
-        study_id = getResult().getValue(Fields.STUDY);
-        sample_id = getResult().getValue(Fields.SAMPLE);
+    @Override public void
+    processManifest()
+    {
+        name = getResult().getValue( Fields.NAME );
+        study_id = getResult().getValue( Fields.STUDY );
+        sample_id = getResult().getValue( Fields.SAMPLE );
 
         if (getResult().getCount(Fields.INSTRUMENT) > 0 &&
             getResult().getField(Fields.INSTRUMENT).isValidFieldValueOrFileSuffix())
@@ -214,20 +277,22 @@ RawReadsManifest extends ManifestReader {
         library_construction_protocol = getResult().getValue(Fields.LIBRARY_CONSTRUCTION_PROTOCOL);
         library_name = getResult().getValue(Fields.LIBRARY_NAME);
 
-        if (getResult().getValue(Fields.QUALITY_SCORE) != null) {
-            switch (getResult().getValue(Fields.QUALITY_SCORE)) {
-                case QUALITY_SCORE_PHRED_33:
-                    asciiOffset = AsciiOffset.FROM33;
-                    qualityScoringSystem = QualityScoringSystem.phred;
-                    break;
-                case QUALITY_SCORE_PHRED_64:
-                    asciiOffset = AsciiOffset.FROM64;
-                    qualityScoringSystem = QualityScoringSystem.phred;
-                    break;
-                case QUALITY_SCORE_LOGODDS:
-                    asciiOffset = null;
-                    qualityScoringSystem = QualityScoringSystem.log_odds;
-                    break;
+        if( getResult().getValue( Fields.QUALITY_SCORE ) != null )
+        {
+            switch( getResult().getValue( Fields.QUALITY_SCORE ) )
+            {
+            case QUALITY_SCORE_PHRED_33:
+                asciiOffset = AsciiOffset.FROM33;
+                qualityScoringSystem = QualityScoringSystem.phred;
+                break;
+            case QUALITY_SCORE_PHRED_64:
+                asciiOffset = AsciiOffset.FROM64;
+                qualityScoringSystem = QualityScoringSystem.phred;
+                break;
+            case QUALITY_SCORE_LOGODDS:
+                asciiOffset = null;
+                qualityScoringSystem = QualityScoringSystem.log_odds;
+                break;
             }
         }
 
@@ -238,13 +303,16 @@ RawReadsManifest extends ManifestReader {
         processFiles();
     }
 
-    private void processInstrumentAndPlatform() {
 
-        if( null == platform && (null == instrument || instrument.equals(UNSPECIFIED_INSTRUMENT)))
+    private void
+    processInstrumentAndPlatform()
+    {
+
+        if( null == platform && ( null == instrument || instrument.equals( UNSPECIFIED_INSTRUMENT ) ) )
         {
-            error("MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT",
-                    ControlledValueList.Platform.keyList().stream().collect(Collectors.joining(", ")),
-                    ControlledValueList.Instrument.keyList().stream().collect(Collectors.joining(", ")));
+            error( "MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT",
+                    ControlledValueList.Platform.keyList().stream().collect( Collectors.joining( ", " ) ),
+                    ControlledValueList.Instrument.keyList().stream().collect( Collectors.joining( ", " ) ) );
         }
 
         if( instrument != null )
@@ -252,60 +320,67 @@ RawReadsManifest extends ManifestReader {
             // Set platform.
 
             String platforms = ControlledValueList.Instrument.getValue( instrument );
-            if (StringUtils.isBlank(platforms)) {
-                throw WebinCliException.createSystemError("Missing platform for instrument: " + instrument);
+            if( StringUtils.isBlank( platforms ) )
+            {
+                throw WebinCliException.createSystemError( "Missing platform for instrument: " + instrument );
             }
 
-            String[] platformList = platforms.split("[;,]");
+            String[] platformList = platforms.split( "[;,]" );
 
             if( 1 == platformList.length )
             {
                 platform = ControlledValueList.Platform.getKey( platformList[ 0 ] );
-            }
-            else if( !Stream.of( platformList ).anyMatch(e -> e.equals( platform ) ) )
+            } else if( !Stream.of( platformList ).anyMatch( e -> e.equals( platform ) ) )
             {
-                error("MANIFEST_INVALID_PLATFORM_FOR_INSTRUMENT",
-                        StringUtils.isBlank(platform) ? "is not defined" : platform + " is not supported",
+                error( "MANIFEST_INVALID_PLATFORM_FOR_INSTRUMENT",
+                        StringUtils.isBlank( platform ) ? "is not defined" : platform + " is not supported",
                         instrument,
-                        ControlledValueList.Instrument.getValue( instrument ));
+                        ControlledValueList.Instrument.getValue( instrument ) );
             }
-        }
-        else {
+        } else
+        {
             instrument = UNSPECIFIED_INSTRUMENT;
         }
     }
 
-    private void processFiles() {
+
+    private void
+    processFiles()
+    {
         files = getResult().getFields().stream()
                 .filter( field -> field.getDefinition().getType() == ManifestFieldType.FILE )
-                .map( field -> createReadFile(getInputDir(), field) )
+                .map( field -> createReadFile( getInputDir(), field ) )
                 .collect( Collectors.toList() );
 
         // Set FASTQ quality scoring system and ascii offset.
 
-        for (RawReadsFile f: files) {
-            if (f.getFiletype().equals(Filetype.fastq)) {
-                if (qualityScoringSystem != null)
-                    f.setQualityScoringSystem(qualityScoringSystem);
-                if (asciiOffset != null)
-                    f.setAsciiOffset(asciiOffset);
+        for( RawReadsFile f : files )
+        {
+            if( f.getFiletype().equals( Filetype.fastq ) )
+            {
+                if( qualityScoringSystem != null )
+                    f.setQualityScoringSystem( qualityScoringSystem );
+                if( asciiOffset != null )
+                    f.setAsciiOffset( asciiOffset );
             }
         }
     }
 
+
     static RawReadsFile
-    createReadFile(Path inputDir, ManifestFieldValue field) {
-        assert (field.getDefinition().getType() == ManifestFieldType.FILE);
+    createReadFile( Path inputDir, ManifestFieldValue field )
+    {
+        assert( field.getDefinition().getType() == ManifestFieldType.FILE );
 
         RawReadsFile f = new RawReadsFile();
-        f.setInputDir(inputDir);
-        f.setFiletype(Filetype.valueOf(field.getName().toLowerCase()));
+        f.setInputDir( inputDir );
+        f.setFiletype( Filetype.valueOf( field.getName().toLowerCase() ) );
 
         String fileName = field.getValue();
         if( !Paths.get( fileName ).isAbsolute() )
             f.setFilename( inputDir.resolve( Paths.get( fileName ) ).toString() );
         else
-            f.setFilename(fileName);
+            f.setFilename( fileName );
 
         return f;
     }
