@@ -32,7 +32,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -47,9 +49,12 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 public class 
 FileUtils 
 {
+	public static HashSet<Severity> writeReportSeverity = new HashSet<>(Arrays.asList(
+			Severity.INFO,
+			Severity.ERROR));
 
 	public static BufferedReader 
-	getBufferedReader( File file ) throws FileNotFoundException, IOException 
+	getBufferedReader( File file ) throws IOException
 	{
 		if( file.getName().matches( "^.+\\.gz$" ) || file.getName().matches( "^.+\\.gzip$" ) ) 
 		{
@@ -196,10 +201,9 @@ FileUtils
 	{
 		try 
 		{
-			Files.write( reportFile.toPath(), 
-					     formatMessage( severity, message ).getBytes( StandardCharsets.UTF_8 ),
-					     StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.SYNC );
-			
+			if (writeReportSeverity.contains(severity))
+				writeReportMessages(reportFile, formatMessage( severity, message ).getBytes( StandardCharsets.UTF_8 ));
+
 		} catch( IOException e ) 
 		{
 			//ignore;
@@ -210,54 +214,21 @@ FileUtils
 	public static void 
 	writeReport( File reportFile, ValidationResult validationResult ) 
 	{
-		try
-		{
-			StringWriter writer = new StringWriter();
-			validationResult.writeMessages( writer );
-            Files.write( reportFile.toPath(), 
-            		     writer.toString().getBytes( StandardCharsets.UTF_8 ),
-            		     StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-		} catch( IOException e ) 
-		{
-			//ignore;
-		}
+		writeReport(reportFile, validationResult.getMessages());
 	}
 
 	
 	public static void 
 	writeReport( File reportFile, ValidationResult validationResult, String targetOrigin ) 
 	{
-		try
-		{
-			StringWriter writer = new StringWriter();
-			validationResult.writeMessages( writer, targetOrigin );
-            Files.write( reportFile.toPath(), 
-            		     writer.toString().getBytes( StandardCharsets.UTF_8 ), 
-            		     StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-		} catch( IOException e ) 
-		{
-			//ignore;
-		}
+		writeReport(reportFile, validationResult.getMessages(), targetOrigin);
 	}
 
 	
 	public static void 
 	writeReport( File reportFile, Collection<ValidationMessage<Origin>> validationMessagesList ) 
 	{
-		try 
-		{
-			StringWriter writer = new StringWriter();
-			for( ValidationMessage<?> validationMessage: validationMessagesList )
-				validationMessage.writeMessage( writer );
-            
-			Files.write( reportFile.toPath(), 
-					     writer.toString().getBytes( StandardCharsets.UTF_8 ), 
-					     StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-			
-		} catch( IOException e )
-		{
-			//ignore;
-		}
+		writeReport( reportFile,validationMessagesList, null );
 	}
 
 
@@ -267,16 +238,22 @@ FileUtils
 		try 
 		{
 			StringWriter writer = new StringWriter();
-			for( ValidationMessage<?> validationMessage: validationMessagesList )
-			    validationMessage.writeMessage( writer );
-            
-			Files.write( reportFile.toPath(), 
-					     writer.toString().getBytes( StandardCharsets.UTF_8 ), 
-					     StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-			
+			for( ValidationMessage<?> validationMessage: validationMessagesList ) {
+				if (writeReportSeverity.contains(validationMessage.getSeverity()))
+					validationMessage.writeMessage(writer, targetOrigin);
+			}
+
+			writeReportMessages(reportFile, writer.toString().getBytes( StandardCharsets.UTF_8 ));
+
 		} catch( IOException e )
 		{
 			//ignore;
 		}
+	}
+
+	private static void writeReportMessages(File reportFile, byte[] bytes) throws IOException {
+		Files.write( reportFile.toPath(),
+                     bytes,
+                     StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 	}
 }
