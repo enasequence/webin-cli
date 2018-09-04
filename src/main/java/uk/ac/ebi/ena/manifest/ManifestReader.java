@@ -659,12 +659,18 @@ public abstract class ManifestReader {
                                            str.append( fileSeparator );
                                            if( expectedFileCount.getMinCount() == expectedFileCount.getMaxCount() )
                                            {
-                                               str.append( expectedFileCount.getMinCount() );
+                                               str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
                                            } else
                                            {
-                                               str.append( expectedFileCount.getMinCount() );
-                                               str.append( ".." );
-                                               str.append( expectedFileCount.getMaxCount() );
+                                               if ( expectedFileCount.getMaxCount() != null ) {
+                                                   str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
+                                                   str.append( ".." );
+                                                   str.append( expectedFileCount.getMaxCount());
+                                               }
+                                               else {
+                                                   str.append( ">= " );
+                                                   str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
+                                               }
                                            }
                                            str.append( " \"" );
                                            str.append( fileType );
