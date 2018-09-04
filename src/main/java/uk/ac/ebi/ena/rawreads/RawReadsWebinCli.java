@@ -291,10 +291,11 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                                 
                 if( null != t )
                 {
-                    ValidationMessage<Origin> vm = new ValidationMessage<>( Severity.ERROR, ValidationMessage.NO_KEY, t.getMessage() );
+                    ValidationMessage<Origin> vm = validationError( t.getMessage(),
+                            new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ));
+
                     vm.setThrowable( t );
-                    vm.append( new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ) );
-                    
+
                     valid = false;
                     vr.append( vm );
                 }
@@ -451,8 +452,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     
                     if( record.getReadBases().length != record.getBaseQualities().length )
                     {
-                        ValidationMessage<Origin> vm = new ValidationMessage<>( Severity.ERROR, ValidationMessage.NO_KEY, "Mismatch between length of read bases and qualities" );
-                        vm.append( new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
+                        ValidationMessage<Origin> vm = validationError( "Mismatch between length of read bases and qualities",
+                            new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
                         
                         FileUtils.writeReport( reportFile, Arrays.asList( vm ) );
                         valid &= false;
@@ -714,5 +715,15 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         {
             throw WebinCliException.createSystemError( e.getMessage() );
         }
+    }
+
+
+    private static ValidationMessage
+    validationError(String error, Origin origin)
+    {
+        ValidationMessage validationMessage = ValidationMessage.error(ValidationMessage.NO_KEY);
+        validationMessage.setMessage(error);
+        validationMessage.append(origin);
+        return validationMessage;
     }
 }
