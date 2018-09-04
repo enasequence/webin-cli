@@ -324,7 +324,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     {
         try
         {
-            Path uploadDir = Paths.get( String.valueOf( getContext() ), getName() );
+            Path uploadDir = Paths.get( String.valueOf( getContext() ), getSafeOutputSubdir(getName()) );
+
             List<File> uploadFileList = getUploadFiles();
             List<Element> eList = getXMLFiles( uploadDir );
 

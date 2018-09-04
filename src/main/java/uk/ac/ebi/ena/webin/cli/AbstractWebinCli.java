@@ -17,8 +17,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
@@ -238,23 +240,44 @@ AbstractWebinCli<T extends ManifestReader>
 
 
 
-
+    public static
+    String[] getSafeOutputSubdir( String ... dirs ) {
+        return Stream
+                .of(dirs)
+                .map(str -> str.replaceAll("[^a-zA-Z0-9-_\\.]", "_"))
+                .map(str -> str.replaceAll("__", "_"))
+                .map(str -> str.replaceAll("^_ +", ""))
+                .map(str -> str.replaceAll("_+$", ""))
+                .toArray(String[]::new);
+    }
     
     private File
-    createOutputSubdir( String...more ) throws WebinCliException
+    createOutputSubdir( String ... dirs ) throws WebinCliException
     {
         if (getParameters().getOutputDir() == null) {
             throw WebinCliException.createSystemError( "Missing output directory" );
         }
-        Path p = Paths.get( getParameters().getOutputDir().getPath(), more );
-        File reportDirectory = p.toFile();
-        
-        if( !reportDirectory.exists() && !reportDirectory.mkdirs() ) 
+
+        String[] safeDirs = getSafeOutputSubdir(dirs);
+
+        Path p;
+
+        try {
+            p = Paths.get(getParameters().getOutputDir().getPath(), safeDirs);
+        }
+        catch (InvalidPathException ex) {
+
+            throw WebinCliException.createSystemError("Unable to create directory: " + ex.getInput());
+        }
+
+        File dir = p.toFile();
+
+        if( !dir.exists() && !dir.mkdirs() )
         {
-            throw WebinCliException.createSystemError( "Unable to create directory: " + reportDirectory.getPath() );
+            throw WebinCliException.createSystemError( "Unable to create directory: " + dir.getPath() );
         }
         
-        return reportDirectory;
+        return dir;
     }
 
     
