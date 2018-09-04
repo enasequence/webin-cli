@@ -263,6 +263,7 @@ SequenceWebinCliTest
                             "        <COVERAGE>1</COVERAGE>\n" +
                             "        <PROGRAM>test_program</PROGRAM>\n" +
                             "        <PLATFORM>test_platform</PLATFORM>\n" +
+                            "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n" +
                             "      </SEQUENCE_ASSEMBLY>\n" +
                             "    </ANALYSIS_TYPE>\n" +
                             "    <FILES>\n" +

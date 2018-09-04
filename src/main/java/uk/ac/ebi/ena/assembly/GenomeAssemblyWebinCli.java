@@ -116,7 +116,12 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
         assemblyInfo.setSampleId(getSample().getBiosampleId());
         assemblyInfo.setPlatform(getManifestReader().getPlatform());
         assemblyInfo.setProgram(getManifestReader().getProgram());
-        assemblyInfo.setMoleculeType(getManifestReader().getMoleculeType());
+
+        String molType = getManifestReader().getMoleculeType();
+        if (molType != null)
+            this.molType = molType;
+        assemblyInfo.setMoleculeType(this.molType);
+
         assemblyInfo.setAssemblyType(getManifestReader().getAssemblyType());
         assemblyInfo.setCoverage(getManifestReader().getCoverage());
         assemblyInfo.setMinGapLength(getManifestReader().getMinGapLength());
