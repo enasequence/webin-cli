@@ -280,7 +280,7 @@ RawReadsManifestTest
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
         rm.readManifest( Paths.get( "." ), man.toFile() );
-        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", Severity.ERROR));
+        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_INVALID_POSITIVE_INTEGER", Severity.ERROR));
     }
 
     private File

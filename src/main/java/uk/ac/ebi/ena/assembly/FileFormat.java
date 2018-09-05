@@ -9,7 +9,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package uk.ac.ebi.ena.manifest;
+package uk.ac.ebi.ena.assembly;
 
 public enum FileFormat {
 	FASTA,
@@ -19,12 +19,4 @@ public enum FileFormat {
 	INFO,
 	CHROMOSOME_LIST,
 	TAB;
-	
-	public static FileFormat getFormat(String fileFormat) {
-		try {
-			return	FileFormat.valueOf(fileFormat);
-		} catch(Exception e)	{
-			return null;
-		}
-	}
 }

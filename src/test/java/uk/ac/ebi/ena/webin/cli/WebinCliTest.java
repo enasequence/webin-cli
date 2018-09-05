@@ -11,26 +11,18 @@
 
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.GZIPOutputStream;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
+import uk.ac.ebi.ena.WebinCliTestUtils;
+import uk.ac.ebi.ena.assembly.GenomeAssemblyManifest;
+import uk.ac.ebi.ena.assembly.SequenceAssemblyManifest;
+import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyManifest;
+import uk.ac.ebi.ena.manifest.ManifestReader;
+import uk.ac.ebi.ena.rawreads.RawReadsManifest;
 import uk.ac.ebi.ena.submit.ContextE;
 
 public class 
@@ -46,323 +38,181 @@ WebinCliTest
         usernm = System.getenv( "webin-cli-username" );
         passwd = System.getenv( "webin-cli-password" );
     }
-    
-    
+
     private String
-    getRawReadsInfoPart( String name )
+    getRawReadsInfoFields()
     {
-        return    Fields.STUDY             + " SRP052303\n"
-                + Fields.SAMPLE            + " ERS2554688\n"
-                + Fields.PLATFORM          + " ILLUMINA\n"
-                + Fields.INSTRUMENT        + " unspecifieD\n"
-                + Fields.INSERT_SIZE       + " 1\n"
-                + Fields.LIBRARY_NAME      + " YOBA LIB\n"
-                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + Fields.LIBRARY_SOURCE    + " OTHER\n"
-                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + Fields.NAME              + " " + name + "\n ";
+        return    RawReadsManifest.Fields.STUDY             + " SRP052303\n"
+                + RawReadsManifest.Fields.SAMPLE            + " ERS2554688\n"
+                + RawReadsManifest.Fields.PLATFORM          + " ILLUMINA\n"
+                + RawReadsManifest.Fields.INSTRUMENT        + " unspecifieD\n"
+                + RawReadsManifest.Fields.INSERT_SIZE       + " 1\n"
+                + RawReadsManifest.Fields.LIBRARY_NAME      + " YOBA LIB\n"
+                + RawReadsManifest.Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + RawReadsManifest.Fields.LIBRARY_SOURCE    + " OTHER\n"
+                + RawReadsManifest.Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + RawReadsManifest.Fields.NAME              + " " + WebinCliTestUtils.createName() + "\n ";
     }
-    
-    
-    @Test public void
-    testRawReadsSubmission() throws Exception
-    {
-        Path input_dir = createOutputFolder().toPath();
-        Path cram_file = copyRandomized( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
-        Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE" ), 
-                                     getRawReadsInfoPart( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                     StandardOpenOption.TRUNCATE_EXISTING );
 
+    private String
+    getGenomeManifestInfoFields()
+    {
+        return    GenomeAssemblyManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+                + GenomeAssemblyManifest.Fields.COVERAGE     + " 45\n"
+                + GenomeAssemblyManifest.Fields.PROGRAM      + " assembly\n"
+                + GenomeAssemblyManifest.Fields.PLATFORM     + " fghgf\n"
+                + GenomeAssemblyManifest.Fields.MINGAPLENGTH + " 34\n"
+                + GenomeAssemblyManifest.Fields.MOLECULETYPE + " genomic DNA\n"
+                + GenomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
+                + GenomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n";
+    }
+
+    private String
+    getTranscriptomeManifestFields()
+    {
+        return    TranscriptomeAssemblyManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+                + TranscriptomeAssemblyManifest.Fields.PROGRAM      + " assembly\n"
+                + TranscriptomeAssemblyManifest.Fields.PLATFORM     + " fghgf\n"
+                + TranscriptomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
+                + TranscriptomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n";
+    }
+
+    private String
+    getSequenceManifestFields()
+    {
+        return    SequenceAssemblyManifest.Fields.NAME  + " " + WebinCliTestUtils.createName() + "\n"
+                + SequenceAssemblyManifest.Fields.STUDY + " PRJEB20083\n";
+    }
+
+
+    private void
+    testWebinCli(ContextE context, Path inputDir, String manifestContents) throws Exception {
         WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.reads.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "INFO " + input_dir.relativize( infofile ) + "\n"
-                                             + "CRAM " + input_dir.relativize( cram_file ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
+        parameters.context = context.toString();
+        parameters.inputDir = inputDir.toString();
+        parameters.outputDir  = WebinCliTestUtils.createTempDir().getPath();
+        parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+                manifestContents).toAbsolutePath().toString();
+        parameters.userName = System.getenv( "webin-cli-username" );
+        parameters.password = System.getenv( "webin-cli-password" );
+        // parameters.centerName = "C E N T E R N A M E";
         parameters.test = true;
         parameters.validate = true;
         parameters.submit   = true;
-        
+
         WebinCli webinCli = new WebinCli();
         webinCli.init( parameters );
         webinCli.setTestMode( true );
         webinCli.execute();
     }
     
-    
     @Test public void
-    testRawReadsSubmissionEmbeddedInfo() throws Exception
+    testRawReadsSubmissionWithInfo() throws Exception
     {
-        Path input_dir = createOutputFolder().toPath();
-        Path cram_file = copyRandomized( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
-        
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.reads.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( getRawReadsInfoPart( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) + "CRAM " + input_dir.relativize( cram_file ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
-        parameters.test = true;
-        parameters.validate = true;
-        parameters.submit   = true;
-        
-        WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.setTestMode( true );
-        webinCli.execute();
-    }
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
+        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getRawReadsInfoFields());
 
-    
-    public Path
-    copyRandomized( String resource_name, Path folder, boolean compress, String...suffix ) throws IOException
-    {
-        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( resource_name );
-        File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
-        Path path = Files.createTempFile( folder, "COPY", file.getName() + ( suffix.length > 0 ? Stream.of( suffix ).collect( Collectors.joining( "" ) ) : "" ) );
-        OutputStream os;
-        Files.copy( file.toPath(), ( os = compress ? new GZIPOutputStream( Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) 
-                                            : Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) );
-        os.flush();
-        os.close();
-        Assert.assertTrue( Files.exists( path ) );
-        Assert.assertTrue( Files.isRegularFile( path ) );
-        return path;
-    }
-    
-    
-    public String 
-    getAssemblyInfo( String name )
-    {
-        return   "ASSEMBLYNAME " + name + "\n"
-               + "COVERAGE 45\n"
-               + "PROGRAM assembly\n"
-               + "PLATFORM fghgf\n"
-               + "MINGAPLENGTH 34\n"
-               + "MOLECULETYPE genomic DNA\n"
-               + "SAMPLE SAMN04526268\n"
-               + "STUDY PRJEB20083\n";
-    }
-    
-    
-    public String 
-    getAssemblyInfoForSequence( String name )
-    {
-        return   "ASSEMBLYNAME " + name + "\n"
-               + "COVERAGE 45\n"
-               + "PROGRAM assembly\n"
-               + "PLATFORM fghgf\n"
-               + "MINGAPLENGTH 34\n"
-               + "MOLECULETYPE genomic DNA\n"
-               + "STUDY PRJEB20083\n";
+        testWebinCli(ContextE.reads, input_dir,
+                ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
+                RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName());
     }
     
     
     @Test public void
-    testGenomeSubmission() throws Exception
+    testRawReadsSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = createOutputFolder().toPath();
-        
-        Path flatfile = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
-        Path agpfile  = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
-        Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE" ), 
-                                     getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                     StandardOpenOption.TRUNCATE_EXISTING );
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
+        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
 
+        testWebinCli(ContextE.reads, input_dir,
+                RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName() + "\n" +
+                getRawReadsInfoFields());
+    }
+
+
+    @Test public void
+    testGenomeSubmissionWithInfo() throws Exception
+    {
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.genome.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "INFO " + input_dir.relativize( infofile ) + "\n"
-                                             + "FLATFILE " + input_dir.relativize( flatfile ) + "\n"
-                                             + "AGP " + input_dir.relativize(  agpfile ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
-        parameters.test = true;
-        parameters.validate = true;
-        parameters.submit   = true;
-        
-        WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.setTestMode( true );
-        webinCli.execute();
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getGenomeManifestInfoFields());
+
+        testWebinCli(ContextE.genome, input_dir,
+                ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
+                GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                GenomeAssemblyManifest.Fields.AGP + " " + agpfile.getFileName());
     }
     
     
     @Test public void
-    testGenomeSubmissionEmbeddedInfo() throws Exception
+    testGenomeSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = createOutputFolder().toPath();
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         
-        Path flatfile = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
-        Path agpfile  = copyRandomized( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
 
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.genome.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "FLATFILE " + input_dir.relativize( flatfile ) + "\n"
-                                             + "AGP " + input_dir.relativize(  agpfile ) + "\n" 
-                                             + getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
-        
-        parameters.test = true;
-        parameters.validate = true;
-        parameters.submit   = true;
-        
-        WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.setTestMode( true );
-        webinCli.execute();
+        testWebinCli(ContextE.genome, input_dir,
+                GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                GenomeAssemblyManifest.Fields.AGP + " " + agpfile.getFileName()       + "\n" +
+                getGenomeManifestInfoFields());
     }
     
     
     
     @Test public void
-    testSequenceSubmission() throws Exception
+    testSequenceSubmissionWithInfo() throws Exception
     {
-        Path input_dir = createOutputFolder().toPath();
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         
-        Path tabfile = copyRandomized( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
-        Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE" ), 
-                                     getAssemblyInfoForSequence( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                     StandardOpenOption.TRUNCATE_EXISTING );
+        Path tabfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getSequenceManifestFields());
 
-        
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.sequence.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "INFO " + input_dir.relativize( infofile ) + "\n"
-                                             + "TAB " + input_dir.relativize( tabfile ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
-        parameters.test = true;
-        parameters.validate = true;
-        parameters.submit   = true;
-        
-        WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.setTestMode( true );
-        webinCli.execute();
+        testWebinCli(ContextE.sequence, input_dir,
+                ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
+                SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName());
     }
     
     
     @Test public void
-    testSequenceSubmissionEmbeddedInfo() throws Exception
+    testSequenceSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = createOutputFolder().toPath();
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         
-        Path tabfile = copyRandomized( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.sequence.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "TAB " + input_dir.relativize( tabfile ) + "\n"
-                                             + getAssemblyInfoForSequence( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
-        parameters.test = true;
-        parameters.validate = true;
-        parameters.submit   = true;
-        
-        WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.setTestMode( true );
-        webinCli.execute();
+        Path tabfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
+
+        testWebinCli(ContextE.sequence, input_dir,
+                SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName() + "\n" +
+                getSequenceManifestFields());
     }
 
 
-    //TODO update when inputDir supported
     @Test public void
-    testTranscriptomeSubmission() throws Exception
+    testTranscriptomeSubmissionWithInfo() throws Exception
     {
-        Path input_dir = createOutputFolder().toPath();
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
-        Path infofile = Files.write( Files.createTempFile( input_dir, "INFO", "FILE.info" ), 
-                                     getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                     StandardOpenOption.TRUNCATE_EXISTING );
-        
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.transcriptome.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "INFO "  + input_dir.relativize( infofile ) + "\n"
-                                             + "FASTA " + input_dir.relativize( fastafile ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
-        parameters.test = true;
-        parameters.validate = true;
-        parameters.submit   = true;
-        
-        WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.setTestMode( true );
-        webinCli.execute();
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getTranscriptomeManifestFields());
+
+        testWebinCli(ContextE.transcriptome, input_dir,
+                ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
+                TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName());
     }
 
-    
-    //TODO update when inputDir supported
+
     @Test public void
-    testTranscriptomeSubmissionEmbeddedInfo() throws Exception
+    testTranscriptomeSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = createOutputFolder().toPath();
+        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.userName = usernm;
-        parameters.password = passwd;
-        parameters.context  = ContextE.transcriptome.toString();
-        parameters.centerName = "C E N T E R N A M E";
-        parameters.inputDir   = input_dir.toString();
-        parameters.outputDir  = createOutputFolder().getPath();
-        parameters.manifest   = Files.write( File.createTempFile( "MANIFEST", "FILE" ).toPath(), 
-                                             ( "FASTA " + input_dir.relativize( fastafile ) + "\n"
-                                             + getAssemblyInfo( String.format( "SOME-FANCY-NAME %X", System.currentTimeMillis() ) ) ).getBytes( StandardCharsets.UTF_8 ), 
-                                             StandardOpenOption.TRUNCATE_EXISTING ).toString();
-        parameters.test = true;
-        parameters.validate = true;
-        parameters.submit   = true;
-        
-        WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.setTestMode( true );
-        webinCli.execute();
-    }
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
 
-    
-    private File
-    createOutputFolder() throws IOException
-    {
-        File output = File.createTempFile( "test", "test" );
-        Assert.assertTrue( output.delete() );
-        Assert.assertTrue( output.mkdirs() );
-        return output;
+        testWebinCli(ContextE.transcriptome, input_dir,
+                TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName() + "\n" +
+                getTranscriptomeManifestFields());
     }
 }

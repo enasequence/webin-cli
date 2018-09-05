@@ -11,40 +11,24 @@
 
 package uk.ac.ebi.ena.manifest;
 
-public class 
-ManifestFileCount 
-{
+public class ManifestFileCount {
     private final String fileType;
-    private final int minCount;
-    private final int maxCount;
+    private final Integer minCount;
+    private final Integer maxCount;
 
-    
-    public
-    ManifestFileCount( String fileType, int minCount, int maxCount )
-    {
+    public ManifestFileCount(String fileType, Integer minCount, Integer maxCount) {
         this.fileType = fileType;
         this.minCount = minCount;
         this.maxCount = maxCount;
     }
 
-    
-    public 
-    String getFileType()
-    {
+    public String getFileType() {
         return fileType;
     }
-
-    
-    public int
-    getMinCount()
-    {
+    public Integer getMinCount() {
         return minCount;
     }
-
-    
-    public int
-    getMaxCount()
-    {
+    public Integer getMaxCount() {
         return maxCount;
     }
 }

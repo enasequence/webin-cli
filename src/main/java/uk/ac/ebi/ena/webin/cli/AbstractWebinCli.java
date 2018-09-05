@@ -17,42 +17,159 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
 
 public abstract class 
-AbstractWebinCli
+AbstractWebinCli<T extends ManifestReader>
 {
     protected static final String VALIDATE_DIR = "validate";
     protected static final String SUBMIT_DIR   = "submit";
     protected static String REPORT_FILE_SUFFIX = ".report";
-    
+
     private String name; 
     private WebinCliParameters parameters = new WebinCliParameters();
     private boolean test_mode;
 
-    
-    public void 
-    init( WebinCliParameters parameters ) throws ValidationEngineException
+    private T manifestReader;
+
+    private File validationDir;
+    private File submitDir;
+
+    private boolean fetchSample = true;
+    private boolean fetchStudy = true;
+
+    protected abstract T createManifestReader();
+
+    public final void
+    init( WebinCliParameters parameters )
     {
-        setParameters( parameters );
+        this.parameters = parameters;
+        this.manifestReader = createManifestReader();
+
+        this.validationDir = createOutputSubdir(".");
+
+        File manifestFile = getParameters().getManifestFile();
+        File reportFile = getReportFile( "", manifestFile.getName() );
+
+        reportFile.delete();
+
+        try
+        {
+            readManifest( getParameters().getInputDir().toPath(), manifestFile );
+
+            if (!StringUtils.isBlank(manifestReader.getName())) {
+                setName();
+                this.validationDir = createOutputSubdir( String.valueOf( getContext() ), getName(), VALIDATE_DIR );
+                this.submitDir = createOutputSubdir( String.valueOf( getContext() ), getName(), SUBMIT_DIR );
+            }
+            else {
+                throw WebinCliException.createSystemError( "Missing submission name" );
+            }
+        }
+        catch( WebinCliException e )
+        {
+            throw e;
+        }
+        catch( Throwable t )
+        {
+            throw WebinCliException.createSystemError( "Failed to initialise validator" );
+        }
+        finally {
+            setName();
+            if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
+                FileUtils.writeReport( reportFile, manifestReader.getValidationResult() );
+            }
+        }
+
+        if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
+            throw WebinCliException.createUserError( "Invalid manifest file: " + reportFile.getPath() );
+        }
     }
-    
-    
+
+    private void setName() {
+        if (manifestReader.getName() != null) {
+            this.name = manifestReader.getName().trim().replaceAll("\\s+", "_");
+        }
+    }
+
+    public abstract ContextE getContext();
+
+    /**
+     * Reads the manifest file and returns the submission name.
+     */
+    public abstract void readManifest(Path inputDir, File manifestFile);
+
+    public T getManifestReader() {
+        return manifestReader;
+    }
+
+    public File getValidationDir() {
+        return validationDir;
+    }
+
+    public void setValidationDir(File validationDir) {
+        this.validationDir = validationDir;
+    }
+
+    public File getSubmitDir() {
+        return submitDir;
+    }
+
+    public void setSubmitDir(File submitDir) {
+        this.submitDir = submitDir;
+    }
+
     public abstract boolean validate() throws ValidationEngineException;
     public abstract void prepareSubmissionBundle() throws IOException;
-    public abstract File getSubmissionBundleFileName();
-    public abstract File getValidationDir();
-    
+
+    private File
+    getSubmissionBundleFileName()
+    {
+        return new File( getSubmitDir(), "validate.receipt" );
+    }
+
+    public boolean
+    isFetchStudy()
+    {
+        return fetchStudy;
+    }
+
+
+    public boolean
+    isFetchSample()
+    {
+        return fetchSample;
+    }
+
+
+    public void
+    setFetchSample(boolean fetchSample)
+    {
+        this.fetchSample = fetchSample;
+    }
+
+
+    public void
+    setFetchStudy(boolean fetchStudy)
+    {
+        this.fetchStudy = fetchStudy;
+    }
+
     protected File
     getReportFile( String prefix, String filename )
     {
@@ -120,27 +237,47 @@ AbstractWebinCli
     {
         return this.parameters;
     }
-    
-   
-    protected void
-    setParameters( WebinCliParameters parameters )
-    {
-        this.parameters = parameters;
+
+
+
+    public static
+    String[] getSafeOutputSubdir( String ... dirs ) {
+        return Stream
+                .of(dirs)
+                .map(str -> str.replaceAll("[^a-zA-Z0-9-_\\.]", "_"))
+                .map(str -> str.replaceAll("__", "_"))
+                .map(str -> str.replaceAll("^_ +", ""))
+                .map(str -> str.replaceAll("_+$", ""))
+                .toArray(String[]::new);
     }
     
-    
-    protected File 
-    createOutputSubdir( String...more ) throws WebinCliException
+    private File
+    createOutputSubdir( String ... dirs ) throws WebinCliException
     {
-        Path p = Paths.get( getParameters().getOutputDir().getPath(), more );
-        File reportDirectory = p.toFile();
-        
-        if( !reportDirectory.exists() && !reportDirectory.mkdirs() ) 
+        if (getParameters().getOutputDir() == null) {
+            throw WebinCliException.createSystemError( "Missing output directory" );
+        }
+
+        String[] safeDirs = getSafeOutputSubdir(dirs);
+
+        Path p;
+
+        try {
+            p = Paths.get(getParameters().getOutputDir().getPath(), safeDirs);
+        }
+        catch (InvalidPathException ex) {
+
+            throw WebinCliException.createSystemError("Unable to create directory: " + ex.getInput());
+        }
+
+        File dir = p.toFile();
+
+        if( !dir.exists() && !dir.mkdirs() )
         {
-            throw WebinCliException.createSystemError( "Unable to create directory: " + reportDirectory.getPath() );
+            throw WebinCliException.createSystemError( "Unable to create directory: " + dir.getPath() );
         }
         
-        return reportDirectory;
+        return dir;
     }
 
     

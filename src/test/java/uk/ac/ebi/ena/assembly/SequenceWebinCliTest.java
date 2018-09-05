@@ -11,33 +11,23 @@
 
 package uk.ac.ebi.ena.assembly;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.GZIPOutputStream;
 
-import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest;
-import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
-import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.WebinCliTestUtils;
+import uk.ac.ebi.ena.sample.Sample;
+import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
@@ -49,259 +39,593 @@ SequenceWebinCliTest
     {
         Locale.setDefault( Locale.UK );
     }
-    
-    
-    private File
-    createOutputFolder() throws IOException
+
+    @Test public void
+    testAnalysisXML_GenomeAssemblyInfo_WithoutFiles()
     {
-        File output = File.createTempFile( "test", "test" );
-        Assert.assertTrue( output.delete() );
-        Assert.assertTrue( output.mkdirs() );
-        return output;
-    }
-    
-    
-    
-    @Test public void 
-    analysisXML() throws IOException, ValidationEngineException
-    {
-        SequenceWebinCli s = new SequenceWebinCli() 
-        {
-            @Override public boolean validateInternal() throws ValidationEngineException { return true; }
-            @Override public boolean getTestMode() { return true; }
-            @Override ContextE getContext() { return ContextE.genome; }
-			@Override public File getSubmissionBundleFileName() { return null; }
-            @Override Element makeAnalysisType( AssemblyInfoEntry entry )
-            {
-                return new GenomeAssemblyWebinCli().makeAnalysisType( entry );
-            }
-        };
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+        String name = "test_genome";
+        cli.setName( name );
 
-        s.setName( "123" );
-        AssemblyInfoEntry aie = new AssemblyInfoEntry();
-        aie.setSampleId( "sample_id" );
-        aie.setStudyId( "study_id" );
-        
-        String xml = s.createAnalysisXml( Collections.emptyList(), aie, null ); 
-        Assert.assertTrue( xml.contains( "SEQUENCE_ASSEMBLY" ) );
-        Assert.assertTrue( xml.contains( "sample_id" ) );
-        Assert.assertTrue( xml.contains( "study_id" ) );
-        Assert.assertTrue( xml.contains( "Genome assembly: 123" ) );
-        Assert.assertTrue( !xml.contains( "FILE " ) );
-    }
-    
-    
-    @Test public void 
-    testAssemblywithAGP() throws Exception 
-    {
-        SequenceWebinCli s = new GenomeAssemblyWebinCli( true );
+        AssemblyInfoEntry info = new AssemblyInfoEntry();
+        cli.setAssemblyInfo( info );
+        info.setName( name );
+        info.setSampleId( "test_sample" );
+        info.setStudyId( "test_study" );
+        info.setCoverage( "1" );
+        info.setProgram( "test_program" );
+        info.setPlatform( "test_platform" );
 
-        Path fasta_file = Files.write( File.createTempFile( "FASTA", "FASTA" ).toPath(), ">123\nACGT".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
-        s.getParameters().setInputDir( fasta_file.getParent().toFile() );
-        
-        s.setName( "123" );
-        AssemblyInfoEntry aie = new AssemblyInfoEntry();
-        aie.setSampleId( "sample_id" );
-        aie.setStudyId( "study_id" );
-        File submit_dir = createOutputFolder();
-        s.setSubmitDir( submit_dir );
-        s.setAssemblyInfo( aie );
-        s.defineFileTypes( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                        ( "INFO 123.gz\nFASTA " + fasta_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
-                                        StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
-        s.prepareSubmissionBundle();
-        
-        SubmissionBundle sb = s.getSubmissionBundle();
-        Assert.assertTrue( Files.isSameFile( sb.getSubmitDirectory().toPath(), submit_dir.toPath() ) );
-        Assert.assertTrue( sb.getXMLFileList().get( 0 ).getFile().exists() );
-        
-        String xmlfile = new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 );
-        Assert.assertTrue( xmlfile.contains( fasta_file.getFileName() + "\"" ) );
-        Assert.assertTrue( xmlfile.contains( "6f82bc96add84ece757afad265d7e341" ) );
-        Assert.assertTrue( xmlfile.contains( "FASTA" ) );
-        Assert.assertTrue( xmlfile.contains( "MD5" ) );
-        Assert.assertTrue( !xmlfile.contains( "123.gz" ) );
-        Assert.assertTrue( !xmlfile.contains( "INFO" ) );
-        
-        //System.out.println( xmlfile );
-    }
-    
-    
-    @Test public void 
-    testTranscriptomeXML() throws Exception 
-    {
-        final String __trname = "transcriptome-assembly-name";
-        final String __trprogram = "p-r-o-g-r-a-m";
-        final String __trplatform = "p-l-a-t-f-o-r-m";
-        
-        SequenceWebinCli s = new TranscriptomeAssemblyWebinCli();
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
-        Path fasta_file = Files.write( File.createTempFile( "FASTA", "FASTA" ).toPath(), ">123\nACGT".getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING );
-        s.getParameters().setInputDir( fasta_file.getParent().toFile() );
-        s.setTestMode( true );
-        s.setName( "123" );
-        AssemblyInfoEntry aie = new AssemblyInfoEntry();
-        aie.setSampleId( "sample_id" );
-        aie.setStudyId( "study_id" );
-        aie.setPlatform( __trplatform );
-        aie.setName( __trname );
-        aie.setProgram( __trprogram );
-        File submit_dir = createOutputFolder();
-        s.setSubmitDir( submit_dir );
-        s.setAssemblyInfo( aie );
-        s.defineFileTypes( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                        ( "INFO 123.gz\nFASTA " + fasta_file.toString() ).getBytes( StandardCharsets.UTF_8 ), 
-                                        StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
-        s.prepareSubmissionBundle();
-        
-        SubmissionBundle sb = s.getSubmissionBundle();
-        Assert.assertTrue( Files.isSameFile( sb.getSubmitDirectory().toPath(), submit_dir.toPath() ) );
-        Assert.assertTrue( sb.getXMLFileList().get( 0 ).getFile().exists() );
-        
-        String xmlfile = new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 );
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        Assert.assertTrue( xmlfile, xmlfile.contains( "<NAME>" ) );
-        Assert.assertTrue( xmlfile, xmlfile.contains( "<NAME>" + __trname ) );
-        
-        Assert.assertTrue( xmlfile, xmlfile.contains( "<PROGRAM>" ) );
-        Assert.assertTrue( xmlfile, xmlfile.contains( "<PROGRAM>" + __trprogram ) );
-        
-        Assert.assertTrue( xmlfile, xmlfile.contains( "<PLATFORM>" ) );
-        Assert.assertTrue( xmlfile, xmlfile.contains( "<PLATFORM>" + __trplatform ) );
-
-        Assert.assertTrue( xmlfile, xmlfile.contains( fasta_file.getFileName() + "\"" ) );
-        Assert.assertTrue( xmlfile, xmlfile.contains( "6f82bc96add84ece757afad265d7e341" ) );
-        Assert.assertTrue( xmlfile, xmlfile.contains( "FASTA" ) );
-        Assert.assertTrue( xmlfile, xmlfile.contains( "MD5" ) );
-        Assert.assertTrue( xmlfile, !xmlfile.contains( "123.gz" ) );
-        Assert.assertTrue( xmlfile, !xmlfile.contains( "INFO" ) );
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "  <ANALYSIS>\n" +
+                        "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                        "    <STUDY_REF accession=\"test_study\" />\n" +
+                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                        "    <ANALYSIS_TYPE>\n" +
+                        "      <SEQUENCE_ASSEMBLY>\n" +
+                        "        <NAME>test_genome</NAME>\n" +
+                        "        <PARTIAL>false</PARTIAL>\n" +
+                        "        <COVERAGE>1</COVERAGE>\n" +
+                        "        <PROGRAM>test_program</PROGRAM>\n" +
+                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+                        "      </SEQUENCE_ASSEMBLY>\n" +
+                        "    </ANALYSIS_TYPE>\n" +
+                        "    <FILES />\n" +
+                        "  </ANALYSIS>\n" +
+                        "</ANALYSIS_SET>\n");
     }
 
-    
-    public Path
-    copyRandomized( String resource_name, Path folder, boolean compress, String...suffix ) throws IOException
+    @Test public void
+    testAnalysisXML_GenomeAssemblyInfo_TpaWithoutFiles()
     {
-        URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( resource_name );
-        File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
-        Path path = Files.createTempFile( folder, "COPY", file.getName() + ( suffix.length > 0 ? Stream.of( suffix ).collect( Collectors.joining( "" ) ) : "" ) );
-        OutputStream os;
-        Files.copy( file.toPath(), ( os = compress ? new GZIPOutputStream( Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) 
-                                            : Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) );
-        os.flush();
-        os.close();
-        Assert.assertTrue( Files.exists( path ) );
-        Assert.assertTrue( Files.isRegularFile( path ) );
-        return path;
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+        String name = "test_genome";
+        cli.setName( name );
+
+        AssemblyInfoEntry info = new AssemblyInfoEntry();
+        cli.setAssemblyInfo( info );
+        info.setName( name );
+        info.setSampleId( "test_sample" );
+        info.setStudyId( "test_study" );
+        info.setCoverage( "1" );
+        info.setProgram( "test_program" );
+        info.setPlatform( "test_platform" );
+        info.setTpa(true);
+
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                "  <ANALYSIS>\n" +
+                "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                "    <STUDY_REF accession=\"test_study\" />\n" +
+                "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                "    <ANALYSIS_TYPE>\n" +
+                "      <SEQUENCE_ASSEMBLY>\n" +
+                "        <NAME>test_genome</NAME>\n" +
+                "        <PARTIAL>false</PARTIAL>\n" +
+                "        <COVERAGE>1</COVERAGE>\n" +
+                "        <PROGRAM>test_program</PROGRAM>\n" +
+                "        <PLATFORM>test_platform</PLATFORM>\n" +
+                "        <TPA>true</TPA>\n" +
+                "      </SEQUENCE_ASSEMBLY>\n" +
+                "    </ANALYSIS_TYPE>\n" +
+                "    <FILES />\n" +
+                "  </ANALYSIS>\n" +
+                "</ANALYSIS_SET>\n");
     }
-    
-    
-    @Test( expected = WebinCliException.class ) public void
-    manifestEmbeddedInfo() throws ValidationEngineException, IOException
+
+    @Test public void
+    testAnalysisXML_GenomeAssemblyInfo_AssemblyTypeWithoutFiles()
     {
-        SequenceWebinCli s = new SequenceWebinCli() {
-            @Override protected boolean validateInternal() throws ValidationEngineException { return false; }
-            @Override Element makeAnalysisType(AssemblyInfoEntry entry) { return null; }
-            @Override ContextE getContext() { return null; }
-            @Override public void init( WebinCliParameters parameters ) { setParameters( parameters ); setValidationDir( parameters.getOutputDir() ); } 
-            
-        };
-        
-        Path input_dir = createOutputFolder().toPath();
-        Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
-        
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                ( Fields.STUDY             + " SRP123456789\n"
-                + Fields.SAMPLE            + " ERS198522\n"
-                + Fields.PLATFORM          + " ILLUMINA\n"
-                + Fields.INSTRUMENT        + " unspecifieD\n"
-                + Fields.INSERT_SIZE       + " -1\n"
-                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + Fields.LIBRARY_SOURCE    + " OTHER\n"
-                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + Fields.NAME              + " SOME-FANCY-NAME\n "
-                + "FASTA " + input_dir.relativize( fastafile ).toString() ).getBytes(),
-                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+        String name = "test_genome";
+        cli.setName( name );
 
-        WebinCliParameters parameters = new WebinCliParameters();
-                
-        parameters.setManifestFile( man.toFile() );
-        parameters.setInputDir( input_dir.toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        AssemblyInfoEntry info = new AssemblyInfoEntry();
+        cli.setAssemblyInfo( info );
+        info.setName( name );
+        info.setSampleId( "test_sample" );
+        info.setStudyId( "test_study" );
+        info.setCoverage( "1" );
+        info.setProgram( "test_program" );
+        info.setPlatform( "test_platform" );
+        info.setAssemblyType( "test_assembly_type");
 
-        s.init( parameters );
-        s.getParameters().setManifestFile( man.toFile() );
-        s.getParameters().setInputDir( input_dir.toFile() );
-        s.getParameters().setOutputDir( createOutputFolder() );
-        s.defineFileTypes( man.toFile() );
-        
-        Assert.assertTrue( s.infoFile.getName().contains( man.getFileName().toString() ) );
-        Assert.assertEquals( 1, s.fastaFiles.size() );
-        
-        s.defineInfo( s.infoFile );
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "  <ANALYSIS>\n" +
+                        "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                        "    <STUDY_REF accession=\"test_study\" />\n" +
+                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                        "    <ANALYSIS_TYPE>\n" +
+                        "      <SEQUENCE_ASSEMBLY>\n" +
+                        "        <NAME>test_genome</NAME>\n" +
+                        "        <TYPE>test_assembly_type</TYPE>\n" +
+                        "        <PARTIAL>false</PARTIAL>\n" +
+                        "        <COVERAGE>1</COVERAGE>\n" +
+                        "        <PROGRAM>test_program</PROGRAM>\n" +
+                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+                        "      </SEQUENCE_ASSEMBLY>\n" +
+                        "    </ANALYSIS_TYPE>\n" +
+                        "    <FILES />\n" +
+                        "  </ANALYSIS>\n" +
+                        "</ANALYSIS_SET>\n");
     }
 
 
     @Test public void
-    manifestSeparatedInfo() throws ValidationEngineException, IOException
+    testAnalysisXML_GenomeAssemblyInfo_WithFastaFile()
     {
-        SequenceWebinCli s = new SequenceWebinCli() {
-            @Override protected boolean validateInternal() throws ValidationEngineException { return false; }
-            @Override Element makeAnalysisType(AssemblyInfoEntry entry) { return null; }
-            @Override ContextE getContext() { return ContextE.genome; }
-            @Override public void init( WebinCliParameters parameters ) { 
-                setParameters( parameters ); 
-                setValidationDir( parameters.getOutputDir() ); 
-            } 
-            
-        };
-        
-        Path input_dir = createOutputFolder().toPath();
-        Path fastafile = copyRandomized( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.fasta.gz", input_dir, false );
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+        String name = "test_genome";
+        cli.setName( name );
 
-        Path info = Files.write( Files.createTempFile( input_dir, "TEMP", ".info" ), 
-                ( Fields.STUDY             + " SRP123456789\n"
-                + Fields.SAMPLE            + " ERS198522\n"
-                + Fields.PLATFORM          + " ILLUMINA\n"
-                + Fields.INSTRUMENT        + " unspecifieD\n"
-                + Fields.INSERT_SIZE       + " -1\n"
-                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + Fields.LIBRARY_SOURCE    + " OTHER\n"
-                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + Fields.NAME              + " SOME-FANCY-NAME\n " ).getBytes(),
-                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-        
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                ( "INFO "  + input_dir.relativize( info ) + "\n"
-                + "FASTA " + input_dir.relativize( fastafile ).toString() ).getBytes(),
-                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
+        cli.getParameters().setInputDir( fastaFile.getParent().toFile() );
+        cli.fastaFiles = Arrays.asList(new File(fastaFile.toString()));
 
-        WebinCliParameters parameters = new WebinCliParameters();
-                
-        parameters.setManifestFile( man.toFile() );
-        parameters.setInputDir( input_dir.toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        AssemblyInfoEntry info = new AssemblyInfoEntry();
+        cli.setAssemblyInfo( info );
+        info.setName( name );
+        info.setSampleId( "test_sample" );
+        info.setStudyId( "test_study" );
+        info.setProgram( "test_program" );
+        info.setPlatform( "test_platform" );
+        info.setCoverage("1");
 
-        s.init( parameters );
-        s.defineFileTypes( man.toFile() );
-        
-        Assert.assertTrue( Files.isSameFile( info, s.infoFile.toPath() ) );
-        Assert.assertEquals( 1, s.fastaFiles.size() );
-        
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "  <ANALYSIS>\n" +
+                        "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                        "    <STUDY_REF accession=\"test_study\" />\n" +
+                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                        "    <ANALYSIS_TYPE>\n" +
+                        "      <SEQUENCE_ASSEMBLY>\n" +
+                        "        <NAME>test_genome</NAME>\n" +
+                        "        <PARTIAL>false</PARTIAL>\n" +
+                        "        <COVERAGE>1</COVERAGE>\n" +
+                        "        <PROGRAM>test_program</PROGRAM>\n" +
+                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+                        "      </SEQUENCE_ASSEMBLY>\n" +
+                        "    </ANALYSIS_TYPE>\n" +
+                        "    <FILES>\n" +
+                        "      <FILE filename=\"genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
+                        "    </FILES>\n" +
+                        "  </ANALYSIS>\n" +
+                        "</ANALYSIS_SET>\n");
+    }
+
+    @Test public void
+    testAnalysisXML_GenomeManifestParsing_WithFastaFile()
+    {
+        String name = "test_genome";
+        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
+        Path inputDir = fastaFile.getParent();
+        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+                "NAME\t" + name + "\n" +
+                "SAMPLE\ttest_sample\n" +
+                "STUDY\ttest_study\n" +
+                "PROGRAM\ttest_program\n" +
+                "PLATFORM\ttest_platform\n" +
+                "COVERAGE\t1\n" +
+                "FASTA\t" + fastaFile.getFileName() + "\n"
+        );
+
+        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
+
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+
+        cli.setFetchSample(false);
+        Sample sample = new Sample();
+        sample.setBiosampleId("test_sample");
+        cli.setSample(sample);
+
+        cli.setFetchStudy(false);
+        Study study = new Study();
+        study.setProjectId("test_study");
+        cli.setStudy(study);
+
         try
         {
-            s.defineInfo( s.infoFile );
-            Assert.assertTrue( false );
-            
-        } catch( WebinCliException e )
-        {
-            List<Path> files = Files.find( s.getParameters().getOutputDir().toPath(), 
-                                           1, 
-                                           ( path, attr ) -> { return String.valueOf( path.getFileName() ).contains( info.getFileName().toString() ); } )
-                                    .collect( Collectors.toList() );
-            Assert.assertEquals( 1, files.size() );
+            cli.init(parameters);
+        }
+        finally {
+            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+            WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                    "<ANALYSIS_SET>\n" +
+                            "  <ANALYSIS>\n" +
+                            "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                            "    <STUDY_REF accession=\"test_study\" />\n" +
+                            "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                            "    <ANALYSIS_TYPE>\n" +
+                            "      <SEQUENCE_ASSEMBLY>\n" +
+                            "        <NAME>test_genome</NAME>\n" +
+                            "        <PARTIAL>false</PARTIAL>\n" +
+                            "        <COVERAGE>1</COVERAGE>\n" +
+                            "        <PROGRAM>test_program</PROGRAM>\n" +
+                            "        <PLATFORM>test_platform</PLATFORM>\n" +
+                            "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n" +
+                            "      </SEQUENCE_ASSEMBLY>\n" +
+                            "    </ANALYSIS_TYPE>\n" +
+                            "    <FILES>\n" +
+                            "      <FILE filename=\"genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
+                            "    </FILES>\n" +
+                            "  </ANALYSIS>\n" +
+                            "</ANALYSIS_SET>\n");
         }
     }
 
+
+
+
+    @Test public void
+    testAnalysisXML_TranscriptomeAssemblyInfo_WithFastaFile()
+    {
+        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
+        String name = "test_transcriptome";
+        cli.setName( name );
+
+        Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
+        cli.getParameters().setInputDir( fastaFile.getParent().toFile() );
+        cli.fastaFiles = Arrays.asList(new File(fastaFile.toString()));
+
+        AssemblyInfoEntry info = new AssemblyInfoEntry();
+        cli.setAssemblyInfo( info );
+        info.setName( name );
+        info.setSampleId( "test_sample" );
+        info.setStudyId( "test_study" );
+        info.setProgram( "test_program" );
+        info.setPlatform( "test_platform" );
+
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "  <ANALYSIS>\n" +
+                        "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
+                        "    <STUDY_REF accession=\"test_study\" />\n" +
+                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                        "    <ANALYSIS_TYPE>\n" +
+                        "      <TRANSCRIPTOME_ASSEMBLY>\n" +
+                        "        <NAME>test_transcriptome</NAME>\n" +
+                        "        <PROGRAM>test_program</PROGRAM>\n" +
+                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+                        "      </TRANSCRIPTOME_ASSEMBLY>\n" +
+                        "    </ANALYSIS_TYPE>\n" +
+                        "    <FILES>\n" +
+                        "      <FILE filename=\"transcriptome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"6f82bc96add84ece757afad265d7e341\" />\n" +
+                        "    </FILES>\n" +
+                        "  </ANALYSIS>\n" +
+                        "</ANALYSIS_SET>\n");
+    }
+
+    @Test public void
+    testAnalysisXML_TranscriptomeManifestParsing_WithFlatFile()
+    {
+        String name = "test_transcriptome";
+        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        Path inputDir = flatFile.getParent();
+        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+                "NAME\t" + name + "\n" +
+                "SAMPLE\ttest_sample\n" +
+                "STUDY\ttest_study\n" +
+                "PROGRAM\ttest_program\n" +
+                "PLATFORM\ttest_platform\n" +
+                "FLATFILE\t" + flatFile.getFileName() + "\n"
+        );
+
+        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
+
+        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
+
+        cli.setFetchSample(false);
+        Sample sample = new Sample();
+        sample.setBiosampleId("test_sample");
+        cli.setSample(sample);
+
+        cli.setFetchStudy(false);
+        Study study = new Study();
+        study.setProjectId("test_study");
+        cli.setStudy(study);
+
+        try
+        {
+            cli.init(parameters);
+        }
+        finally {
+            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+            WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                    "<ANALYSIS_SET>\n" +
+                            "<ANALYSIS>\n" +
+                            "<TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
+                            "<STUDY_REF accession=\"test_study\"/>\n" +
+                            "<SAMPLE_REF accession=\"test_sample\"/>\n" +
+                            "<ANALYSIS_TYPE>\n" +
+                            "<TRANSCRIPTOME_ASSEMBLY>\n" +
+                            "<NAME>test_transcriptome</NAME>\n" +
+                            "<PROGRAM>test_program</PROGRAM>\n" +
+                            "<PLATFORM>test_platform</PLATFORM>\n" +
+                            "</TRANSCRIPTOME_ASSEMBLY>\n" +
+                            "</ANALYSIS_TYPE>\n" +
+                            "<FILES>\n" +
+                            "      <FILE filename=\"transcriptome/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+                            "</FILES>\n" +
+                            "</ANALYSIS>\n" +
+                            "</ANALYSIS_SET>");
+        }
+    }
+
+
+
+
+    @Test public void
+    testAnalysisXML_SequenceAssemblyInfo_WithFlatFile()
+    {
+        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
+        String name = "test_sequence";
+        cli.setName( name );
+
+        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        cli.getParameters().setInputDir( flatFile.getParent().toFile() );
+        cli.flatFiles = Arrays.asList(new File(flatFile.toString()));
+
+        AssemblyInfoEntry info = new AssemblyInfoEntry();
+        cli.setAssemblyInfo( info );
+        info.setName( name );
+        info.setStudyId( "test_study" );
+
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "<ANALYSIS>\n" +
+                        "<TITLE>Sequence assembly: test_sequence</TITLE>\n" +
+                        "<STUDY_REF accession=\"test_study\"/>\n" +
+                        "<ANALYSIS_TYPE>\n" +
+                        "<SEQUENCE_FLATFILE/>\n" +
+                        "</ANALYSIS_TYPE>\n" +
+                        "<FILES>\n" +
+                        "      <FILE filename=\"sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+                        "</FILES>\n" +
+                        "</ANALYSIS>\n" +
+                        "</ANALYSIS_SET>");
+    }
+
+    @Test public void
+    testAnalysisXML_SequenceManifestParsing_WithFlatFile()
+    {
+        String name = "test_sequence";
+        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        Path inputDir = flatFile.getParent();
+        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+                "NAME\t" + name + "\n" +
+                "STUDY\ttest_study\n" +
+                "FLATFILE\t" + flatFile.getFileName() + "\n"
+        );
+
+        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
+
+        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
+
+        cli.setFetchStudy(false);
+        Study study = new Study();
+        study.setProjectId("test_study");
+        cli.setStudy(study);
+
+        try
+        {
+            cli.init(parameters);
+        }
+        finally {
+            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+            WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                    "<ANALYSIS_SET>\n" +
+                            "<ANALYSIS>\n" +
+                            "<TITLE>Sequence assembly: test_sequence</TITLE>\n" +
+                            "<STUDY_REF accession=\"test_study\"/>\n" +
+                            "<ANALYSIS_TYPE>\n" +
+                            "<SEQUENCE_FLATFILE/>\n" +
+                            "</ANALYSIS_TYPE>\n" +
+                            "<FILES>\n" +
+                            "      <FILE filename=\"sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+                            "</FILES>\n" +
+                            "</ANALYSIS>\n" +
+                            "</ANALYSIS_SET>");
+        }
+    }
+
+
+
+
+
+
+    // Testing manifest parsing of file fields
+    //
+
+
+    @Test( expected = WebinCliException.class )
+    public void testGenomeFastaFileField() throws Exception
+    {
+        GenomeAssemblyWebinCli webinCli = new GenomeAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "FASTA", "test.fasta.gz" );
+        }
+        finally {
+            Assert.assertEquals(1, webinCli.fastaFiles.size());
+            Assert.assertEquals(0, webinCli.agpFiles.size());
+            Assert.assertEquals(0, webinCli.flatFiles.size());
+            Assert.assertNull(webinCli.chromosomeListFile);
+            Assert.assertNull(webinCli.unlocalisedListFile);
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testGenome_ManifestParsing_FlatFileField() throws Exception
+    {
+        GenomeAssemblyWebinCli webinCli = new GenomeAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "FLATFILE", "test.dat.gz" );
+        }
+        finally {
+            Assert.assertEquals(0, webinCli.fastaFiles.size());
+            Assert.assertEquals(0, webinCli.agpFiles.size());
+            Assert.assertEquals(1, webinCli.flatFiles.size());
+            Assert.assertNull(webinCli.chromosomeListFile);
+            Assert.assertNull(webinCli.unlocalisedListFile);
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testGenome_ManifestParsing_AgpFileField() throws Exception
+    {
+        GenomeAssemblyWebinCli webinCli = new GenomeAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "AGP", "test.agp.gz" );
+        }
+        finally {
+            Assert.assertEquals(0, webinCli.fastaFiles.size());
+            Assert.assertEquals(1, webinCli.agpFiles.size());
+            Assert.assertEquals(0, webinCli.flatFiles.size());
+            Assert.assertNull(webinCli.chromosomeListFile);
+            Assert.assertNull(webinCli.unlocalisedListFile);
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testGenome_ManifestParsing_ChromosomeListFileField() throws Exception
+    {
+        GenomeAssemblyWebinCli webinCli = new GenomeAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "CHROMOSOME_LIST", "test.txt.gz" );
+        }
+        finally {
+            Assert.assertEquals(0, webinCli.fastaFiles.size());
+            Assert.assertEquals(0, webinCli.agpFiles.size());
+            Assert.assertEquals(0, webinCli.flatFiles.size());
+            Assert.assertNotNull(webinCli.chromosomeListFile);
+            Assert.assertNull(webinCli.unlocalisedListFile);
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testGenome_ManifestParsing_UnlocalisedListFileField() throws Exception
+    {
+        GenomeAssemblyWebinCli webinCli = new GenomeAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "UNLOCALISED_LIST", "test.txt.gz" );
+        }
+        finally {
+            Assert.assertEquals(0, webinCli.fastaFiles.size());
+            Assert.assertEquals(0, webinCli.agpFiles.size());
+            Assert.assertEquals(0, webinCli.flatFiles.size());
+            Assert.assertNull(webinCli.chromosomeListFile);
+            Assert.assertNotNull(webinCli.unlocalisedListFile);
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testTranscriptome_ManifestParsing_FastaFileField() throws Exception
+    {
+        TranscriptomeAssemblyWebinCli webinCli = new TranscriptomeAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "FASTA", "test.fasta.gz" );
+        }
+        finally {
+            Assert.assertEquals(1, webinCli.fastaFiles.size());
+            Assert.assertEquals(0, webinCli.flatFiles.size());
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testSequence_ManifestParsing_FlatFileField() throws Exception
+    {
+        SequenceAssemblyWebinCli webinCli = new SequenceAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "FLATFILE", "test.dat.gz" );
+        }
+        finally {
+            Assert.assertEquals(0, webinCli.tsvFiles.size());
+            Assert.assertEquals(1, webinCli.flatFiles.size());
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testSequence_ManifestParsing_TabFileField() throws Exception
+    {
+        SequenceAssemblyWebinCli webinCli = new SequenceAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "TAB", "test.dat.gz" );
+        }
+        finally {
+            Assert.assertEquals(1, webinCli.tsvFiles.size());
+            Assert.assertEquals(0, webinCli.flatFiles.size());
+        }
+    }
+
+    @Test( expected = WebinCliException.class )
+    public void testTranscriptome_ManifestParsing_FlatFileField() throws Exception
+    {
+        TranscriptomeAssemblyWebinCli webinCli = new TranscriptomeAssemblyWebinCli();
+        try {
+            testManifestParsingFileField(webinCli, "FLATFILE", "test.dat.gz" );
+        }
+        finally {
+            Assert.assertEquals(0, webinCli.fastaFiles.size());
+            Assert.assertEquals(1, webinCli.flatFiles.size());
+        }
+    }
+
+
+
+    private void testManifestParsingFileField(AbstractWebinCli webinCli, String fieldName, String fileName) throws Exception
+    {
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path filePath = WebinCliTestUtils.createDefaultTempFile( fileName, inputDir, true );
+
+        Path manifestFilePath = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
+                (fieldName + " " + inputDir.relativize( filePath ).toString() ).getBytes(),
+                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
+        WebinCliParameters parameters = new WebinCliParameters();
+
+        parameters.setManifestFile( manifestFilePath.toFile() );
+        parameters.setInputDir( inputDir.toFile() );
+        parameters.setOutputDir( WebinCliTestUtils.createTempDir() );
+
+        try {
+            webinCli.init(parameters);
+        }
+        finally {
+            Assert.assertFalse(webinCli.getManifestReader().getValidationResult().isValid());
+        }
+    }
 }

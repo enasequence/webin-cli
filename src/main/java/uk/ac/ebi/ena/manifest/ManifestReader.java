@@ -42,7 +42,7 @@ public abstract class ManifestReader {
         String INFO = "INFO";
     }
 
-    private List<ManifestFieldDefinition> infoFields = new ArrayList<ManifestFieldDefinition>() 
+    private List<ManifestFieldDefinition> infoFields = new ArrayList<ManifestFieldDefinition>()
     {
         {
             add( new ManifestFieldDefinition( INFO, ManifestFieldType.FILE, 0, 1 ) );
@@ -51,15 +51,14 @@ public abstract class ManifestReader {
 
     private static final String MESSAGE_BUNDLE = "uk.ac.ebi.ena.manifest.ManifestReaderMessages";
 
-    
+
     static
     {
         ValidationMessageManager.addBundle( MESSAGE_BUNDLE );
     }
 
-    
-    static class
-    ManifestReaderState
+
+    static class ManifestReaderState
     {
         public
         ManifestReaderState( Path inputDir, String fileName )
@@ -68,15 +67,15 @@ public abstract class ManifestReader {
             this.fileName = fileName;
         }
 
-        enum 
-        State 
+        enum
+        State
         {
             INIT,
             PARSE,
             VALIDATE;
         }
-        
-        
+
+
         State state = State.INIT;
         final Path inputDir;
         String fileName;
@@ -95,39 +94,39 @@ public abstract class ManifestReader {
         this.files = null;
     }
 
-    
-    public 
+
+    public
     ManifestReader( List<ManifestFieldDefinition> fields,
-                    Set<List<ManifestFileCount>> files ) 
+                    Set<List<ManifestFileCount>> files )
     {
         this.fields = fields;
         this.files = files;
     }
 
-    
-    public final Path 
-    getInputDir() 
+
+    public final Path
+    getInputDir()
     {
         return state.inputDir;
     }
 
-    
-    public final ManifestReaderResult 
-    getResult() 
-    {
+    public abstract String getName();
+
+    public final ManifestReaderResult
+    getResult() {
         return result;
     }
 
-    
-    public final ValidationResult 
-    getValidationResult() 
+
+    public final ValidationResult
+    getValidationResult()
     {
         return result.getValidationResult();
     }
 
-    
+
     public final boolean
-    readManifest( Path inputDir, File file ) 
+    readManifest( Path inputDir, File file )
     {
         state = new ManifestReaderState( inputDir, file.getPath() );
         result = new ManifestReaderResult();
@@ -200,7 +199,7 @@ public abstract class ManifestReader {
     }
 
 
-    private void 
+    private void
     parseManifest( Path inputDir, List<String> lines )
     {
         state.state = PARSE;
@@ -208,13 +207,13 @@ public abstract class ManifestReader {
         for( String line : lines )
         {
             ManifestFieldValue field = parseManifestLine( inputDir, line );
-            if( null != field ) 
+            if( null != field )
                 result.getFields().add( field );
         }
     }
 
-    
-    private ManifestFieldValue 
+
+    private ManifestFieldValue
     parseManifestLine( Path inputDir, String line )
     {
 
@@ -270,7 +269,7 @@ public abstract class ManifestReader {
         return null;
     }
 
-    
+
     private final void
     validateManifest()
     {
@@ -287,7 +286,7 @@ public abstract class ManifestReader {
                             .filter( field -> field.getName().equals( minCountField.getName() ) )
                             .count() < 1 )
                   {
-                      if( minCountField.getFieldValueOrFileSuffix() != null 
+                      if( minCountField.getFieldValueOrFileSuffix() != null
                       && !minCountField.getFieldValueOrFileSuffix().isEmpty() )
                       {
                           error( "MANIFEST_MISSING_MANDATORY_FIELD_WITH_VALUES",
@@ -322,7 +321,7 @@ public abstract class ManifestReader {
 
         result.getFields()
               .stream()
-              .filter( field -> field.getDefinition().getType() == ManifestFieldType.META 
+              .filter( field -> field.getDefinition().getType() == ManifestFieldType.META
                        && field.getDefinition().isFieldValueOrFileSuffix() )
               .forEach( cvField -> {
                     try
@@ -357,7 +356,7 @@ public abstract class ManifestReader {
                   }
               } );
 
-        
+
         for( ManifestFieldValue field_value : result.getFields() )
         {
             ManifestFieldDefinition field = field_value.getDefinition();
@@ -369,27 +368,27 @@ public abstract class ManifestReader {
                 if( null != m )
                     vresult.append( m );
             }
-            
+
             if( vresult.isValid() )
             {
                 ValidationMessage<Origin> m = field.getFieldCorrector().correct( field_value );
                 if( null != m )
                     vresult.append( m );
             }
-            
-            result.getValidationResult().append( vresult ); 
+
+            result.getValidationResult().append( vresult );
         }
         // Validate file count.
 
         validateFileCount();
     }
-    
+
 
     protected abstract void
     processManifest();
 
 
-    private boolean 
+    private boolean
     validateFileExists( Path inputDir, ManifestFieldValue field )
     {
         String fieldName = field.getName();
@@ -397,32 +396,32 @@ public abstract class ManifestReader {
 
         try
         {
-            if( Files.isReadable( Paths.get( fieldValue ) ) 
+            if( Files.isReadable( Paths.get( fieldValue ) )
                 && !Files.isDirectory( Paths.get( fieldValue ) ) )
             {
                 // File is readable relative to default working dir.
-            } else if( Files.isReadable( inputDir.resolve( Paths.get( fieldValue ) ) ) 
+            } else if( Files.isReadable( inputDir.resolve( Paths.get( fieldValue ) ) )
                        && !Files.isDirectory( inputDir.resolve( Paths.get( fieldValue ) ) ) )
             {
                 // File is readable relative to defined input dir.
-                field.setValue( inputDir.resolve( Paths.get( fieldValue ) ).toString() );
-            } else
-            {
-                // fieldError(fieldName, String.format("Invalid file path: %s", fieldValue));
-                error( "MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue );
+                field.setValue(inputDir.resolve(Paths.get(fieldValue)).toString());
+            }
+            else {
+                error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
                 return false;
             }
-        } catch( Throwable ex )
-        {
-            // fieldError(fieldName, String.format("Invalid file path: %s", fieldValue));
-            error( "MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue );
+
+            validateFileCompression(field.getValue());
+        }
+        catch (Throwable ex) {
+            error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
             return false;
         }
         return true;
     }
-    
 
-    private boolean 
+
+    private boolean
     validateFileSuffix( ManifestFieldValue field )
     {
         assert ( ManifestFieldType.FILE == field.getDefinition().getType() );
@@ -448,9 +447,9 @@ public abstract class ManifestReader {
 
         return false;
     }
-    
 
-    private boolean 
+
+    private boolean
     validateFileCount()
     {
         if( files == null || files.isEmpty() )
@@ -467,23 +466,18 @@ public abstract class ManifestReader {
             return false;
         }
 
-next:   for( List<ManifestFileCount> expectedFileCountList : files )
-        {
-            for( ManifestFileCount expectedFileCount : expectedFileCountList )
-            {
-                if( fileCountMap.get( expectedFileCount.getFileType() ) == null )
-                {
-                    if( expectedFileCount.getMinCount() > 0 )
-                    {
+        next:
+        for (List<ManifestFileCount> expectedFileCountList : files) {
+            for (ManifestFileCount expectedFileCount : expectedFileCountList) {
+                if (fileCountMap.get(expectedFileCount.getFileType()) == null) {
+                    if (expectedFileCount.getMinCount() != null && expectedFileCount.getMinCount() > 0) {
                         continue next; // Invalid because min is > 0.
                     }
-                } else
-                {
-                    long manifestFileCount = fileCountMap.get( expectedFileCount.getFileType() );
-                    if( ( expectedFileCount.getMaxCount() < manifestFileCount ) 
-                       || ( expectedFileCount.getMinCount() > manifestFileCount ) )
-                    {
-                        continue next; // Invalid because larger than min or smaller than max.
+                } else {
+                    long manifestFileCount = fileCountMap.get(expectedFileCount.getFileType());
+                    if ((expectedFileCount.getMaxCount() != null && expectedFileCount.getMaxCount() < manifestFileCount) ||
+                        (expectedFileCount.getMinCount() != null && expectedFileCount.getMinCount() > manifestFileCount)) {
+                        continue next; // Invalid because larger than max or smaller than min.
                     }
                 }
             }
@@ -506,40 +500,110 @@ next:   for( List<ManifestFileCount> expectedFileCountList : files )
         return false;
     }
 
-    
-    protected final Integer
-    getAndValidateNonNegativeInteger( ManifestFieldValue field )
-    {
-        if( field == null )
-            return null;
+    private void validateFileCompression(String filePath) {
+        if (filePath.endsWith(ManifestFileSuffix.GZIP_FILE_SUFFIX)) {
+            try (GZIPInputStream gz = new GZIPInputStream(new FileInputStream(filePath))) {
+                gz.close();
+            } catch (Exception e) {
+                error("MANIFEST_INVALID_FILE_COMPRESSION", filePath, "gzip");
+            }
+        }
+        else if (filePath.endsWith(ManifestFileSuffix.BZIP2_FILE_SUFFIX)) {
+            try( BZip2CompressorInputStream bz2 = new BZip2CompressorInputStream(new FileInputStream(filePath))) {
+                bz2.close();
+            }
+            catch (Exception e) {
+                error("MANIFEST_INVALID_FILE_COMPRESSION", filePath, "bzip2");
+            }
+        }
+    }
 
-        String fieldValue = field.getValue();
-        if( fieldValue == null )
+    protected final Integer
+    getAndValidatePositiveInteger(ManifestFieldValue field) {
+        if (field == null) {
             return null;
+        }
+        String fieldValue = field.getValue();
+        if (fieldValue == null) {
+            return null;
+        }
 
         try
         {
             int value = Integer.valueOf( fieldValue );
-            if( value < 0 )
-                error( "MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", field.getOrigin(), field.getName() );
-
+            if( value <= 0 ) {
+                error("MANIFEST_INVALID_POSITIVE_INTEGER", field.getOrigin(), field.getName(), fieldValue);
+                return null;
+            }
             return value;
-        } catch( NumberFormatException nfe )
+        }
+        catch( NumberFormatException nfe )
         {
-            error( "MANIFEST_INVALID_NEGATIVE_FIELD_VALUE", field.getOrigin(), field.getName() );
+            error("MANIFEST_INVALID_POSITIVE_INTEGER", field.getOrigin(), field.getName(), fieldValue);
         }
 
         return null;
     }
 
-    
+    protected final Float
+    getAndValidatePositiveFloat(ManifestFieldValue field) {
+        if (field == null) {
+            return null;
+        }
+        String fieldValue = field.getValue();
+        if (fieldValue == null) {
+            return null;
+        }
+
+        try
+        {
+            float value = Float.valueOf( fieldValue );
+            if( value <= 0 ) {
+                error("MANIFEST_INVALID_POSITIVE_FLOAT", field.getOrigin(), field.getName(), fieldValue);
+                return null;
+            }
+            return value;
+        }
+        catch( NumberFormatException nfe )
+        {
+            error("MANIFEST_INVALID_POSITIVE_FLOAT", field.getOrigin(), field.getName(), fieldValue);
+        }
+
+        return null;
+    }
+
+    protected final Boolean
+    getAndValidateBoolean(ManifestFieldValue field) {
+        if (field == null) {
+            return null;
+        }
+        String fieldValue = field.getValue();
+        if (fieldValue == null) {
+            return null;
+        }
+
+        switch (field.getValue().toUpperCase()) {
+            case "YES":
+            case "TRUE":
+            case "Y":
+                return true;
+            case "NO":
+            case "FALSE":
+            case "N":
+                return false;
+        }
+
+        return null;
+    };
+
+
     private static List<String>
     readAllLines( InputStream is )
     {
         return new BufferedReader( new InputStreamReader( is, StandardCharsets.UTF_8 ) ).lines().collect( Collectors.toList() );
     }
 
-    
+
     public static List<String>
     readAllLines( File file ) throws FileNotFoundException
     {
@@ -595,12 +659,18 @@ next:   for( List<ManifestFileCount> expectedFileCountList : files )
                                            str.append( fileSeparator );
                                            if( expectedFileCount.getMinCount() == expectedFileCount.getMaxCount() )
                                            {
-                                               str.append( expectedFileCount.getMinCount() );
+                                               str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
                                            } else
                                            {
-                                               str.append( expectedFileCount.getMinCount() );
-                                               str.append( ".." );
-                                               str.append( expectedFileCount.getMaxCount() );
+                                               if ( expectedFileCount.getMaxCount() != null ) {
+                                                   str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
+                                                   str.append( ".." );
+                                                   str.append( expectedFileCount.getMaxCount());
+                                               }
+                                               else {
+                                                   str.append( ">= " );
+                                                   str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
+                                               }
                                            }
                                            str.append( " \"" );
                                            str.append( fileType );
@@ -613,24 +683,47 @@ next:   for( List<ManifestFileCount> expectedFileCountList : files )
                                    .collect( Collectors.joining( ", " ) );
     }
 
-    
-    private void 
+    protected static List<File>
+    getFiles(Path inputDir, ManifestReaderResult result, String fieldName) {
+        return result.getFields().stream()
+                .filter(field -> field.getDefinition().getType() == ManifestFieldType.FILE &&
+                        field.getName().equals(fieldName))
+                .map(field -> getFile(inputDir, field))
+                .collect(Collectors.toList());
+    }
+
+    protected static File
+    getFile(Path inputDir, ManifestFieldValue field) {
+        if (field == null) {
+            return null;
+        }
+        assert (field.getDefinition().getType() == ManifestFieldType.FILE);
+
+        String fileName = field.getValue();
+        if( !Paths.get( fileName ).isAbsolute() )
+            return new File( inputDir.resolve( Paths.get( fileName ) ).toString() );
+        else
+            return new File(fileName);
+    }
+
+
+    private void
     appendOrigin( ValidationMessage<Origin> validationMessage )
     {
         switch( state.state )
         {
-        case PARSE:
-            validationMessage.append( createParseOrigin() );
-            break;
-        case VALIDATE:
-            validationMessage.append( createValidateOrigin() );
-            break;
+            case PARSE:
+                validationMessage.append( createParseOrigin() );
+                break;
+            case VALIDATE:
+                validationMessage.append( createValidateOrigin() );
+                break;
 
-        case INIT:
-            break;
-        
-        default:
-            break;
+            case INIT:
+                break;
+
+            default:
+                break;
         }
     }
 
@@ -655,7 +748,7 @@ next:   for( List<ManifestFileCount> expectedFileCountList : files )
     }
     */
 
-    protected final void 
+    protected final void
     error( String key, String... params )
     {
         ValidationMessage<Origin> validationMessage = ValidationMessage.error( key, (Object[]) params );
@@ -663,7 +756,7 @@ next:   for( List<ManifestFileCount> expectedFileCountList : files )
         result.getValidationResult().append( validationMessage );
     }
 
-    
+
     protected final void
     error( String key, Origin origin, String... params )
     {
@@ -673,15 +766,15 @@ next:   for( List<ManifestFileCount> expectedFileCountList : files )
     }
 
 
-    protected final Origin 
+    protected final Origin
     createParseOrigin()
     {
         String origin = String.format( "File name: " + state.fileName + ", line number: " + state.lineNo );
         return () -> origin;
     }
-    
 
-    protected final Origin 
+
+    protected final Origin
     createValidateOrigin()
     {
         String origin = String.format( "File name: " + state.fileName );

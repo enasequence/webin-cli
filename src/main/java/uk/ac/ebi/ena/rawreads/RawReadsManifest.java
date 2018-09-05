@@ -23,11 +23,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
-import uk.ac.ebi.ena.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.manifest.ManifestFieldType;
-import uk.ac.ebi.ena.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.manifest.ManifestReader;
+import uk.ac.ebi.ena.manifest.*;
 import uk.ac.ebi.ena.manifest.fields.CVFieldValidator;
 import uk.ac.ebi.ena.manifest.fields.CVKeyFieldCorrector;
 import uk.ac.ebi.ena.manifest.fields.EmptyValidator;
@@ -83,85 +79,71 @@ RawReadsManifest extends ManifestReader {
     private QualityScoringSystem qualityScoringSystem;
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
-    
-    
-    public 
+
+
+    public
     RawReadsManifest()
     {
         this( new EmptyValidator(), new EmptyValidator() );
     }
-    
 
-    public 
+
+    public
     RawReadsManifest( ManifestFieldValidator sample_validator, ManifestFieldValidator study_validator )
     {
         super(
             // Fields.
-            new ArrayList<ManifestFieldDefinition>() 
+            new ArrayList<ManifestFieldDefinition>()
             {
                 {
                         add( new ManifestFieldDefinition( Fields.NAME, ManifestFieldType.META, 1, 1 ) );
                         add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, study_validator ) );
                         add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1, sample_validator ) );
-                        
+
                         add( new ManifestFieldDefinition( Fields.INSTRUMENT, ManifestFieldType.META, 0, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Instrument ), 
+                                                          new CVKeyFieldCorrector( ControlledValueList.Instrument ),
                                                           new CVFieldValidator( ControlledValueList.Instrument ) ) );
-                        
-                        add( new ManifestFieldDefinition( Fields.PLATFORM, ManifestFieldType.META, 0, 1, 
-                                                          new CVKeyFieldCorrector( ControlledValueList.Platform ), 
+
+                        add( new ManifestFieldDefinition( Fields.PLATFORM, ManifestFieldType.META, 0, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Platform ),
                                                           new CVFieldValidator( ControlledValueList.Platform ) ) );
-                        
+
                         add( new ManifestFieldDefinition( Fields.INSERT_SIZE, ManifestFieldType.META, 0, 1 ) );
-                        
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1, 
-                                                          new CVKeyFieldCorrector( ControlledValueList.Source), 
+
+                        add( new ManifestFieldDefinition( Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1,
+                                                          new CVKeyFieldCorrector( ControlledValueList.Source),
                                                           new CVFieldValidator( ControlledValueList.Source ) ) );
-                        
+
                         add( new ManifestFieldDefinition( Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Selection ), 
+                                                          new CVKeyFieldCorrector( ControlledValueList.Selection ),
                                                           new CVFieldValidator( ControlledValueList.Selection ) ) );
 
                         add( new ManifestFieldDefinition( Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Strategy ), 
+                                                          new CVKeyFieldCorrector( ControlledValueList.Strategy ),
                                                           new CVFieldValidator( ControlledValueList.Strategy ) ) );
-                        
+
                         add( new ManifestFieldDefinition( Fields.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1 ) );
                         add( new ManifestFieldDefinition( Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1 ) );
                         add( new ManifestFieldDefinition( Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList( QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS ) ) );
                         add( new ManifestFieldDefinition( Fields.__HORIZON, ManifestFieldType.META, 0, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.FASTQ, ManifestFieldType.FILE, 0, 2, Arrays.asList( ".gz", ".bz2" ) ) );
-                        add( new ManifestFieldDefinition( Fields.BAM, ManifestFieldType.FILE, 0, 1, Arrays.asList( ".bam" ) ) );
-                        add( new ManifestFieldDefinition( Fields.CRAM, ManifestFieldType.FILE, 0, 1, Arrays.asList( ".cram" ) ) );
+                        add( new ManifestFieldDefinition( Fields.FASTQ, ManifestFieldType.FILE, 0, 2, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) );
+                        add( new ManifestFieldDefinition( Fields.BAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.BAM_FILE_SUFFIX ) );
+                        add( new ManifestFieldDefinition( Fields.CRAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.CRAM_FILE_SUFFIX ) );
                     }
             },
-            
+
             // File groups.
-            new HashSet<List<ManifestFileCount>>() 
-            {
-                {
-                    add( new ArrayList<ManifestFileCount>() 
-                    {
-                        {
-                            add( new ManifestFileCount( Fields.FASTQ, 1, 2 ) );
-                        }
-                    } );
-                    
-                    add( new ArrayList<ManifestFileCount>() 
-                    {
-                        {
-                            add( new ManifestFileCount( Fields.CRAM, 1, 1 ) );
-                        }
-                    } );
-                    
-                    add( new ArrayList<ManifestFileCount>() 
-                    {
-                        {
-                            add( new ManifestFileCount( Fields.BAM, 1, 1 ) );
-                        }
-                    } );
-                }
-            } );
+            new HashSet<List<ManifestFileCount>>() {{
+                add(new ArrayList<ManifestFileCount>() {{
+                    add(new ManifestFileCount(Fields.FASTQ, 1, 2));
+                }});
+                add(new ArrayList<ManifestFileCount>() {{
+                    add(new ManifestFileCount(Fields.CRAM, 1, 1));
+                }});
+                add(new ArrayList<ManifestFileCount>() {{
+                    add(new ManifestFileCount(Fields.BAM, 1, 1));
+                }});
+        }});
     }
 
     private static final String MESSAGE_BUNDLE = "uk.ac.ebi.ena.rawreads.RawReadsManifestMessages";
@@ -171,90 +153,90 @@ RawReadsManifest extends ManifestReader {
         ValidationMessageManager.addBundle( MESSAGE_BUNDLE );
     }
 
-    
-    public String 
+
+    public String
     getName()
     {
         return name;
     }
 
-    
+
     public String
-    getStudyId() 
+    getStudyId()
     {
         return study_id;
     }
 
-    
+
     public String
-    getSampleId() 
+    getSampleId()
     {
         return sample_id;
     }
 
-    
+
     public String
-    getInstrument() 
+    getInstrument()
     {
         return instrument;
     }
 
-    
+
     public String
-    getPlatform() 
+    getPlatform()
     {
         return platform;
     }
 
-    
+
     public Integer
-    getInsertSize() 
+    getInsertSize()
     {
         return insert_size;
     }
 
-    
+
     public String
     getLibrarySource()
     {
         return library_source;
     }
 
-    
+
     public String
-    getLibrarySelection() 
+    getLibrarySelection()
     {
         return library_selection;
     }
 
-    
+
     public String
-    getLibraryStrategy() 
+    getLibraryStrategy()
     {
         return library_strategy;
     }
 
-    
+
     public String
-    getLibraryConstructionProtocol() 
+    getLibraryConstructionProtocol()
     {
         return library_construction_protocol;
     }
 
-    
+
     public String
-    getLibraryName() 
+    getLibraryName()
     {
         return library_name;
     }
 
-    
+
     public Integer
     getPairingHorizon()
     {
         return pairing_horizon;
     }
-    
+
 
     public List<RawReadsFile>
     getFiles()
@@ -262,33 +244,38 @@ RawReadsManifest extends ManifestReader {
         return files;
     }
 
-    
+
     @Override public void
-    processManifest() 
+    processManifest()
     {
         name = getResult().getValue( Fields.NAME );
         study_id = getResult().getValue( Fields.STUDY );
         sample_id = getResult().getValue( Fields.SAMPLE );
 
-        if( getResult().getCount( Fields.INSTRUMENT ) > 0 && getResult().getField( Fields.INSTRUMENT ).isValidFieldValueOrFileSuffix() )
-            instrument = getResult().getValue( Fields.INSTRUMENT );
+        if (getResult().getCount(Fields.INSTRUMENT) > 0 &&
+            getResult().getField(Fields.INSTRUMENT).isValidFieldValueOrFileSuffix())
+            instrument = getResult().getValue(Fields.INSTRUMENT);
 
-        if( getResult().getCount( Fields.PLATFORM ) > 0 && getResult().getField( Fields.PLATFORM ).isValidFieldValueOrFileSuffix() )
-            platform = getResult().getValue( Fields.PLATFORM );
+        if (getResult().getCount(Fields.PLATFORM) > 0 &&
+            getResult().getField(Fields.PLATFORM).isValidFieldValueOrFileSuffix())
+            platform = getResult().getValue(Fields.PLATFORM);
 
-        insert_size = getAndValidateNonNegativeInteger( getResult().getField( Fields.INSERT_SIZE ) );
+        insert_size = getAndValidatePositiveInteger(getResult().getField(Fields.INSERT_SIZE));
 
-        if( getResult().getCount( Fields.LIBRARY_SOURCE ) > 0 && getResult().getField( Fields.LIBRARY_SOURCE ).isValidFieldValueOrFileSuffix() )
-            library_source = getResult().getValue( Fields.LIBRARY_SOURCE );
+        if (getResult().getCount(Fields.LIBRARY_SOURCE) > 0 &&
+            getResult().getField(Fields.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
+            library_source = getResult().getValue(Fields.LIBRARY_SOURCE);
 
-        if( getResult().getCount( Fields.LIBRARY_SELECTION ) > 0 && getResult().getField( Fields.LIBRARY_SELECTION ).isValidFieldValueOrFileSuffix() )
-            library_selection = getResult().getValue( Fields.LIBRARY_SELECTION );
+        if (getResult().getCount(Fields.LIBRARY_SELECTION) > 0 &&
+            getResult().getField(Fields.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
+            library_selection = getResult().getValue(Fields.LIBRARY_SELECTION);
 
-        if( getResult().getCount( Fields.LIBRARY_STRATEGY ) > 0 && getResult().getField( Fields.LIBRARY_STRATEGY ).isValidFieldValueOrFileSuffix() )
-            library_strategy = getResult().getValue( Fields.LIBRARY_STRATEGY );
+        if (getResult().getCount(Fields.LIBRARY_STRATEGY) > 0 &&
+            getResult().getField(Fields.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
+            library_strategy = getResult().getValue(Fields.LIBRARY_STRATEGY);
 
-        library_construction_protocol = getResult().getValue( Fields.LIBRARY_CONSTRUCTION_PROTOCOL );
-        library_name = getResult().getValue( Fields.LIBRARY_NAME );
+        library_construction_protocol = getResult().getValue(Fields.LIBRARY_CONSTRUCTION_PROTOCOL);
+        library_name = getResult().getValue(Fields.LIBRARY_NAME);
 
         if( getResult().getValue( Fields.QUALITY_SCORE ) != null )
         {
@@ -309,16 +296,16 @@ RawReadsManifest extends ManifestReader {
             }
         }
 
-        if( getResult().getCount( Fields.__HORIZON ) > 0 )
-            pairing_horizon = getAndValidateNonNegativeInteger( getResult().getField( Fields.__HORIZON ) );
+        if (getResult().getCount(Fields.__HORIZON) > 0)
+            pairing_horizon = getAndValidatePositiveInteger(getResult().getField(Fields.__HORIZON));
 
         processInstrumentAndPlatform();
         processFiles();
     }
 
-    
-    private void 
-    processInstrumentAndPlatform() 
+
+    private void
+    processInstrumentAndPlatform()
     {
 
         if( null == platform && ( null == instrument || instrument.equals( UNSPECIFIED_INSTRUMENT ) ) )
@@ -357,7 +344,7 @@ RawReadsManifest extends ManifestReader {
     }
 
 
-    private void 
+    private void
     processFiles()
     {
         files = getResult().getFields().stream()
@@ -379,8 +366,8 @@ RawReadsManifest extends ManifestReader {
         }
     }
 
-    
-    static RawReadsFile 
+
+    static RawReadsFile
     createReadFile( Path inputDir, ManifestFieldValue field )
     {
         assert( field.getDefinition().getType() == ManifestFieldType.FILE );

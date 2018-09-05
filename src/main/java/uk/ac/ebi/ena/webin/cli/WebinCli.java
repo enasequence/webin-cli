@@ -236,6 +236,7 @@ public class WebinCli {
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
+        parameters.setTestMode( params.test );
         validator.setTestMode( params.test );
 		validator.init( parameters );
     }
