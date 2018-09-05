@@ -141,7 +141,7 @@ public class WebinCli {
 	getFormattedProgramVersion()
 	{
         String version = WebinCli.class.getPackage().getImplementationVersion();
-        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );    
+        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
 	}
 	
 	
@@ -389,7 +389,7 @@ public class WebinCli {
 		returnCodeMap.put(SYSTEM_ERROR, "INTERNAL ERROR");
 		returnCodeMap.put(USER_ERROR, "USER ERROR");
 		returnCodeMap.put(VALIDATION_ERROR, "VALIDATION ERROR");
-		writeMessageIntoConsole( "Exit codes: " + returnCodeMap.toString() + "\n" );
+		writeMessageIntoConsole( "Exit codes: " + returnCodeMap.toString());
 	}
 
 	public static class contextValidator implements IParameterValidator {
@@ -479,7 +479,7 @@ public class WebinCli {
 	private static void 
 	writeMessageIntoConsole( String message ) 
 	{
-		System.out.print( message );
+		System.out.println( message );
 	}
 
     
