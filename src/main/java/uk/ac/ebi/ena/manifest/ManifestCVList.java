@@ -9,45 +9,39 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package uk.ac.ebi.ena.rawreads;
+package uk.ac.ebi.ena.manifest;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.AbstractMap.SimpleEntry;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-
-public enum ControlledValueList
+public class ManifestCVList
 {
-    Instrument( "uk/ac/ebi/ena/rawreads/instrument.properties", 38 ),
-    Platform( "uk/ac/ebi/ena/rawreads/platform.properties", 5 ),
-    Selection( "uk/ac/ebi/ena/rawreads/selection.properties", 31 ),
-    Source( "uk/ac/ebi/ena/rawreads/source.properties", 9 ),
-    Strategy( "uk/ac/ebi/ena/rawreads/strategy.properties", 36 );
+    private Properties p = new Properties();
 
-    String     resource_path;
-    int        record_cnt;
-    Properties p = new Properties();
-
-
-    ControlledValueList( String resource_path, int record_cnt )
+    public ManifestCVList( File resource )
     {
-        this.resource_path = resource_path;
-        this.record_cnt = record_cnt;
         try
         {
-            this.p.load( ControlledValueList.class.getClassLoader().getResourceAsStream( resource_path ) );
-            if( record_cnt != p.size() )
-                throw new RuntimeException( "Expected list size mismatch" );
+            this.p.load( ManifestCVList.class.getClassLoader().getResourceAsStream( resource.getPath() ) );
         } catch( IOException e )
         {
             throw new RuntimeException( e );
         }
     }
 
+    public ManifestCVList( String ... values )
+    {
+        for (String value: values) {
+            p.setProperty(value, value);
+        }
+    }
 
-    static String
+
+    private static String
     normalizeString( Object s )
     {
         return String.valueOf( s ).toLowerCase().replaceAll( "[ _-]+", "" );
@@ -61,34 +55,34 @@ public enum ControlledValueList
     }
 
 
-    public String 
+    public String
     getKey( String key )
     {
         return p.entrySet().stream()
-                .map( e -> new SimpleEntry<String, String>( normalizeString( e.getKey() ), String.valueOf( e.getKey() ) ) )
+                .map( e -> new AbstractMap.SimpleEntry<>( normalizeString( e.getKey() ), String.valueOf( e.getKey() ) ) )
                 .filter( e -> e.getKey().equals( normalizeString( key ) ) ).findFirst()
-                .orElse( new SimpleEntry<>( null, null ) ).getValue();
+                .orElse( new AbstractMap.SimpleEntry<>( null, null ) ).getValue();
     }
 
 
-    public String 
+    public String
     getValue( String key )
     {
         return p.entrySet().stream()
-                .map( e -> new SimpleEntry<String, String>( normalizeString( e.getKey() ), String.valueOf( e.getValue() ) ) )
+                .map( e -> new AbstractMap.SimpleEntry<>( normalizeString( e.getKey() ), String.valueOf( e.getValue() ) ) )
                 .filter( e -> e.getKey().equals( normalizeString( key ) ) ).findFirst()
-                .orElse( new SimpleEntry<>( null, null ) ).getValue();
+                .orElse( new AbstractMap.SimpleEntry<>( null, null ) ).getValue();
     }
 
 
-    public List<String> 
+    public List<String>
     keyList()
     {
         return p.keySet().stream().map( String::valueOf ).collect( Collectors.toList() );
     }
 
 
-    public String 
+    public String
     toString()
     {
         return String.valueOf( p.entrySet() );

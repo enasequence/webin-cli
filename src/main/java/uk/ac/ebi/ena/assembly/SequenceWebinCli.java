@@ -168,7 +168,6 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         this.assembly_info = assembly_info;
     }
 
-    
     protected Element
     createTextElement( String name, String text )
     {

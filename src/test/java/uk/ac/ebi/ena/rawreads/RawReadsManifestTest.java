@@ -64,7 +64,7 @@ RawReadsManifestTest
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }
-    
+
     @Test public void
     testValidManifest() throws IOException
     {

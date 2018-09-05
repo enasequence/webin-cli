@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -62,9 +63,8 @@ import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
-import uk.ac.ebi.ena.manifest.fields.EmptyValidator;
-import uk.ac.ebi.ena.manifest.fields.SampleValidator;
-import uk.ac.ebi.ena.manifest.fields.StudyValidator;
+import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
+import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.sample.Sample;
@@ -84,8 +84,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     private static final String EXPERIMENT_XML = "experiment.xml";
     private static final String BAM_STAR = "*";
 
-    private Study study;
-    private Sample sample;
+    private String studyId;
+    private String sampleId;
 
     private boolean valid;
     //TODO value should be estimated via validation
@@ -98,20 +98,25 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
 
     @Override
     protected RawReadsManifest createManifestReader() {
+
+        // Create manifest parser which will also set the sample and study fields.
+
         return new RawReadsManifest(
-                isFetchSample() ? new SampleValidator(getParameters()) : new EmptyValidator(),
-                isFetchStudy() ? new StudyValidator(getParameters()) : new EmptyValidator());
+                isFetchSample() ? new SampleProcessor(getParameters(), (Sample sample) -> this.sampleId = sample.getBiosampleId()) : null,
+                isFetchStudy() ? new StudyProcessor(getParameters(), (Study study) -> this.studyId = study.getProjectId()) : null);
     }
 
     @Override
     public void readManifest(Path inputDir, File manifestFile) {
         getManifestReader().readManifest( inputDir, manifestFile );
 
-        if (isFetchStudy() && getManifestReader().getStudyId() != null)
-            study = fetchStudy( getManifestReader().getStudyId(), getTestMode() );
+        if (StringUtils.isBlank(studyId)) {
+            studyId = getManifestReader().getStudyId();
+        }
 
-        if (isFetchSample() && getManifestReader().getSampleId() != null)
-            sample = fetchSample( getManifestReader().getSampleId(), getTestMode() );
+        if (StringUtils.isBlank(sampleId)) {
+            sampleId = getManifestReader().getSampleId();
+        }
     }
 
     DataFeederException 
@@ -575,14 +580,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         String library_selection = getManifestReader().getLibrarySelection();
         String library_name      = getManifestReader().getLibraryName();
 
-        String sample_id = getManifestReader().getSampleId();
-        if (sample != null)
-            sample_id = sample.getBiosampleId();
-
-        String study_id = getManifestReader().getStudyId();
-        if (study != null)
-            study_id = study.getProjectId();
-
         String platform  = getManifestReader().getPlatform();
         Integer insert_size = getManifestReader().getInsertSize();
                 
@@ -603,7 +600,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             
             Element studyRefE = new Element( "STUDY_REF" );
             experimentE.addContent( studyRefE );
-            studyRefE.setAttribute( "accession", study_id );
+            studyRefE.setAttribute( "accession", studyId );
   
             Element designE = new Element( "DESIGN" );
             experimentE.addContent( designE );
@@ -613,7 +610,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             designE.addContent( designDescriptionE );
             
             Element sampleDescriptorE = new Element( "SAMPLE_DESCRIPTOR" );
-            sampleDescriptorE.setAttribute( "accession", sample_id );
+            sampleDescriptorE.setAttribute( "accession", sampleId );
 
             designE.addContent( sampleDescriptorE );
 

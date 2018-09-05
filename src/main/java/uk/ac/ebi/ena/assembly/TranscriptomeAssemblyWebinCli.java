@@ -48,6 +48,8 @@ import uk.ac.ebi.embl.fasta.reader.FastaFileReader;
 import uk.ac.ebi.embl.fasta.reader.FastaLineReader;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
+import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
+import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
@@ -71,19 +73,18 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 
 	@Override
 	protected TranscriptomeAssemblyManifest createManifestReader() {
-		return new TranscriptomeAssemblyManifest();
+		// Create manifest parser which will also set the sample and study fields.
+
+		return new TranscriptomeAssemblyManifest(
+				isFetchSample() ? new SampleProcessor(getParameters(), this::setSample ) : null,
+				isFetchStudy() ? new StudyProcessor(getParameters(), this::setStudy ) : null);
 	}
 
 	@Override
 	public void readManifest(Path inputDir, File manifestFile) {
 		getManifestReader().readManifest(inputDir, manifestFile);
 
-		// Set study, sample and file fields
-
-		if (isFetchStudy() && getManifestReader().getStudyId() != null)
-			setStudy( fetchStudy( getManifestReader().getStudyId(), getTestMode() ) );
-		if (isFetchSample() && getManifestReader().getSampleId() != null)
-			setSample( fetchSample( getManifestReader().getSampleId(), getTestMode() ) );
+		// Set file fields
 
 		if (getManifestReader().getFastaFile() != null) {
 			this.fastaFiles.add(getManifestReader().getFastaFile());

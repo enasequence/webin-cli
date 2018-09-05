@@ -24,12 +24,10 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.manifest.fields.ManifestFieldValidator;
 
 import static uk.ac.ebi.ena.manifest.ManifestReader.Fields.INFO;
 import static uk.ac.ebi.ena.manifest.ManifestReader.ManifestReaderState.State.PARSE;
@@ -252,10 +250,6 @@ public abstract class ManifestReader {
                     // Validate file exists.
 
                     validateFileExists( inputDir, field );
-
-                    // Validate file suffix.
-
-                    validateFileSuffix( field );
                 }
 
                 return field;
@@ -286,16 +280,7 @@ public abstract class ManifestReader {
                             .filter( field -> field.getName().equals( minCountField.getName() ) )
                             .count() < 1 )
                   {
-                      if( minCountField.getFieldValueOrFileSuffix() != null
-                      && !minCountField.getFieldValueOrFileSuffix().isEmpty() )
-                      {
-                          error( "MANIFEST_MISSING_MANDATORY_FIELD_WITH_VALUES",
-                                  minCountField.getName(),
-                                  minCountField.getFieldValueOrFileSuffix().stream().collect( Collectors.joining( ", " ) ) );
-                      } else
-                      {
-                          error( "MANIFEST_MISSING_MANDATORY_FIELD", minCountField.getName() );
-                      }
+                      error( "MANIFEST_MISSING_MANDATORY_FIELD", minCountField.getName() );
                   }
               } );
 
@@ -317,67 +302,24 @@ public abstract class ManifestReader {
                     }
                 } );
 
-        // Fix cv field casing.
 
-        result.getFields()
-              .stream()
-              .filter( field -> field.getDefinition().getType() == ManifestFieldType.META
-                       && field.getDefinition().isFieldValueOrFileSuffix() )
-              .forEach( cvField -> {
-                    try
-                    {
-                        String str = cvField.getDefinition().getFieldValueOrFileSuffix().stream()
-                                .filter( value -> value.equalsIgnoreCase( cvField.getValue() ) )
-                                .findFirst()
-                                .get();
-                        cvField.setValue( str );
-                    } catch( NoSuchElementException ex )
-                    {
-                    }
-                } );
+       // Validate and fix fields.
 
-        // Validate cv fields.
-
-        result.getFields()
-              .stream()
-              .filter( field -> field.getDefinition().getType() == ManifestFieldType.META
-                             && field.getDefinition().isFieldValueOrFileSuffix() )
-              .forEach( cvField -> {
-                  if( cvField.getDefinition().getFieldValueOrFileSuffix().stream()
-                             .filter( value -> value.equals( cvField.getValue() ) )
-                             .count() == 0 )
-                  {
-                      error( "MANIFEST_INVALID_FIELD_VALUE",
-                              cvField.getOrigin(),
-                              cvField.getName(),
-                              cvField.getValue(),
-                              cvField.getDefinition().getFieldValueOrFileSuffix().stream().collect( Collectors.joining( ", " ) ) );
-                      cvField.setValidFieldValueOrFileSuffix( false );
-                  }
-              } );
-
-
-        for( ManifestFieldValue field_value : result.getFields() )
+        for( ManifestFieldValue fieldValue : result.getFields() )
         {
-            ManifestFieldDefinition field = field_value.getDefinition();
-            ValidationResult vresult = new ValidationResult( field_value.getOrigin() );
+            ManifestFieldDefinition field = fieldValue.getDefinition();
+            ValidationResult validationResult = new ValidationResult( fieldValue.getOrigin() );
 
-            for( ManifestFieldValidator v : field.getFieldValidators() )
+            for( ManifestFieldProcessor v : field.getFieldProcessors() )
             {
-                ValidationMessage<Origin> m = v.validate( field_value );
+                ValidationMessage<Origin> m = v.process( fieldValue );
                 if( null != m )
-                    vresult.append( m );
+                    validationResult.append( m );
             }
 
-            if( vresult.isValid() )
-            {
-                ValidationMessage<Origin> m = field.getFieldCorrector().correct( field_value );
-                if( null != m )
-                    vresult.append( m );
-            }
-
-            result.getValidationResult().append( vresult );
+            result.getValidationResult().append( validationResult );
         }
+
         // Validate file count.
 
         validateFileCount();
@@ -419,35 +361,6 @@ public abstract class ManifestReader {
         }
         return true;
     }
-
-
-    private boolean
-    validateFileSuffix( ManifestFieldValue field )
-    {
-        assert ( ManifestFieldType.FILE == field.getDefinition().getType() );
-
-        List<String> suffixes = field.getDefinition().getFieldValueOrFileSuffix();
-
-        if( null == suffixes || suffixes.isEmpty() )
-            return true;
-
-        for( String suffix : suffixes )
-        {
-            if( field.getValue().endsWith( suffix ) )
-                return true;
-        }
-
-        error( "MANIFEST_INVALID_FILE_SUFFIX",
-                field.getOrigin(),
-                field.getName(),
-                field.getValue(),
-                suffixes.stream().collect( Collectors.joining( ", " ) ) );
-
-        field.setValidFieldValueOrFileSuffix( false );
-
-        return false;
-    }
-
 
     private boolean
     validateFileCount()
@@ -621,29 +534,6 @@ public abstract class ManifestReader {
             }
         }
     }
-
-    /*
-    private static String
-    getActualFileTypeList(Map<String, Integer> manifestFileCountMap){
-        StringBuilder str = new StringBuilder();
-        String separator = "";
-        for (String fileType : manifestFileCountMap.keySet()) {
-            int fileCnt = manifestFileCountMap.get(fileType);
-            str.append(separator);
-            str.append(manifestFileCountMap.get(fileType));
-            str.append(" \"");
-            str.append(fileType);
-            if (fileCnt > 1) {
-                str.append("\" files");
-            }
-            else {
-                str.append("\" file");
-            }
-            separator = ", ";
-        }
-        return str.toString();
-    }
-    */
 
     private static String
     getExpectedFileTypeList( Set<List<ManifestFileCount>> expectedFileCountSet )

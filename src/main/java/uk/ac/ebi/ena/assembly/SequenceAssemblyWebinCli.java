@@ -32,6 +32,7 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.embl.api.validation.ValidationScope;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
+import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.template.expansion.CSVLine;
 import uk.ac.ebi.ena.template.expansion.CSVReader;
@@ -58,17 +59,17 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
 
     @Override
     protected SequenceAssemblyManifest createManifestReader() {
-        return new SequenceAssemblyManifest();
+        // Create manifest parser which will also set the study field.
+
+        return new SequenceAssemblyManifest(
+                isFetchStudy() ? new StudyProcessor(getParameters(), this::setStudy ) : null);
     }
 
     @Override
     public void readManifest(Path inputDir, File manifestFile) {
         getManifestReader().readManifest(inputDir, manifestFile);
 
-        // Set study, sample and file fields
-
-        if (isFetchStudy() && getManifestReader().getStudyId() != null)
-            setStudy( fetchStudy( getManifestReader().getStudyId(), getTestMode() ) );
+        // Set file fields
 
         if (getManifestReader().getTsvFile() != null) {
             this.tsvFiles.add(getManifestReader().getTsvFile());

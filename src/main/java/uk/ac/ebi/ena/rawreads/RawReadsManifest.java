@@ -11,10 +11,10 @@
 
 package uk.ac.ebi.ena.rawreads;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,12 +24,10 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.ena.manifest.*;
-import uk.ac.ebi.ena.manifest.fields.CVFieldValidator;
-import uk.ac.ebi.ena.manifest.fields.CVKeyFieldCorrector;
-import uk.ac.ebi.ena.manifest.fields.EmptyValidator;
-import uk.ac.ebi.ena.manifest.fields.ManifestFieldValidator;
-import uk.ac.ebi.ena.manifest.fields.SampleValidator;
-import uk.ac.ebi.ena.manifest.fields.StudyValidator;
+import uk.ac.ebi.ena.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
+import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
@@ -61,8 +59,18 @@ RawReadsManifest extends ManifestReader {
     private final static String QUALITY_SCORE_PHRED_33 = "PHRED_33";
     private final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
     private final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
-
     private final static String UNSPECIFIED_INSTRUMENT = "unspecified";
+
+    public final static ManifestCVList CV_INSTRUMENT = new ManifestCVList( new File("uk/ac/ebi/ena/rawreads/instrument.properties") );
+    public final static ManifestCVList CV_PLATFORM = new ManifestCVList( new File("uk/ac/ebi/ena/rawreads/platform.properties") );
+    public final static ManifestCVList CV_SELECTION = new ManifestCVList( new File("uk/ac/ebi/ena/rawreads/selection.properties") );
+    public final static ManifestCVList CV_SOURCE = new ManifestCVList( new File("uk/ac/ebi/ena/rawreads/source.properties") );
+    public final static ManifestCVList CV_STRATEGY = new ManifestCVList( new File("uk/ac/ebi/ena/rawreads/strategy.properties") );
+    public final static ManifestCVList CV_QUALITY_SCORE = new ManifestCVList(
+        QUALITY_SCORE_PHRED_33,
+        QUALITY_SCORE_PHRED_64,
+        QUALITY_SCORE_LOGODDS
+    );
 
     private String name = null;
     private String study_id = null;
@@ -80,16 +88,13 @@ RawReadsManifest extends ManifestReader {
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
 
-
     public
-    RawReadsManifest()
-    {
-        this( new EmptyValidator(), new EmptyValidator() );
+    RawReadsManifest() {
+        this(null, null);
     }
 
-
     public
-    RawReadsManifest( ManifestFieldValidator sample_validator, ManifestFieldValidator study_validator )
+    RawReadsManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor)
     {
         super(
             // Fields.
@@ -97,38 +102,39 @@ RawReadsManifest extends ManifestReader {
             {
                 {
                         add( new ManifestFieldDefinition( Fields.NAME, ManifestFieldType.META, 1, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, study_validator ) );
-                        add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1, sample_validator ) );
+                        add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor ) );
+                        add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1, sampleProcessor ) );
 
                         add( new ManifestFieldDefinition( Fields.INSTRUMENT, ManifestFieldType.META, 0, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Instrument ),
-                                                          new CVFieldValidator( ControlledValueList.Instrument ) ) );
+                                                          new CVFieldProcessor( CV_INSTRUMENT) ) );
 
                         add( new ManifestFieldDefinition( Fields.PLATFORM, ManifestFieldType.META, 0, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Platform ),
-                                                          new CVFieldValidator( ControlledValueList.Platform ) ) );
+                                                          new CVFieldProcessor( CV_PLATFORM) ) );
 
                         add( new ManifestFieldDefinition( Fields.INSERT_SIZE, ManifestFieldType.META, 0, 1 ) );
 
                         add( new ManifestFieldDefinition( Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Source),
-                                                          new CVFieldValidator( ControlledValueList.Source ) ) );
+                                                          new CVFieldProcessor( CV_SOURCE) ) );
 
                         add( new ManifestFieldDefinition( Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Selection ),
-                                                          new CVFieldValidator( ControlledValueList.Selection ) ) );
+                                                          new CVFieldProcessor( CV_SELECTION) ) );
 
                         add( new ManifestFieldDefinition( Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1,
-                                                          new CVKeyFieldCorrector( ControlledValueList.Strategy ),
-                                                          new CVFieldValidator( ControlledValueList.Strategy ) ) );
+                                                          new CVFieldProcessor( CV_STRATEGY) ) );
 
                         add( new ManifestFieldDefinition( Fields.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1 ) );
                         add( new ManifestFieldDefinition( Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1, Arrays.asList( QUALITY_SCORE_PHRED_33, QUALITY_SCORE_PHRED_64, QUALITY_SCORE_LOGODDS ) ) );
+                        add( new ManifestFieldDefinition( Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1,
+                                                          new CVFieldProcessor( CV_QUALITY_SCORE) ) );
+
                         add( new ManifestFieldDefinition( Fields.__HORIZON, ManifestFieldType.META, 0, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.FASTQ, ManifestFieldType.FILE, 0, 2, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) );
-                        add( new ManifestFieldDefinition( Fields.BAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.BAM_FILE_SUFFIX ) );
-                        add( new ManifestFieldDefinition( Fields.CRAM, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.CRAM_FILE_SUFFIX ) );
+
+                        add( new ManifestFieldDefinition( Fields.FASTQ, ManifestFieldType.FILE, 0, 2,
+                                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
+                        add( new ManifestFieldDefinition( Fields.BAM, ManifestFieldType.FILE, 0, 1,
+                                new FileSuffixProcessor( ManifestFileSuffix.BAM_FILE_SUFFIX ) ) );
+                        add( new ManifestFieldDefinition( Fields.CRAM, ManifestFieldType.FILE, 0, 1,
+                                new FileSuffixProcessor( ManifestFileSuffix.CRAM_FILE_SUFFIX ) ) );
                     }
             },
 
@@ -311,15 +317,15 @@ RawReadsManifest extends ManifestReader {
         if( null == platform && ( null == instrument || instrument.equals( UNSPECIFIED_INSTRUMENT ) ) )
         {
             error( "MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT",
-                    ControlledValueList.Platform.keyList().stream().collect( Collectors.joining( ", " ) ),
-                    ControlledValueList.Instrument.keyList().stream().collect( Collectors.joining( ", " ) ) );
+                    CV_PLATFORM.keyList().stream().collect( Collectors.joining( ", " ) ),
+                    CV_INSTRUMENT.keyList().stream().collect( Collectors.joining( ", " ) ) );
         }
 
         if( instrument != null )
         {
             // Set platform.
 
-            String platforms = ControlledValueList.Instrument.getValue( instrument );
+            String platforms = CV_INSTRUMENT.getValue( instrument );
             if( StringUtils.isBlank( platforms ) )
             {
                 throw WebinCliException.createSystemError( "Missing platform for instrument: " + instrument );
@@ -329,13 +335,13 @@ RawReadsManifest extends ManifestReader {
 
             if( 1 == platformList.length )
             {
-                platform = ControlledValueList.Platform.getKey( platformList[ 0 ] );
+                platform = CV_PLATFORM.getKey( platformList[ 0 ] );
             } else if( !Stream.of( platformList ).anyMatch( e -> e.equals( platform ) ) )
             {
                 error( "MANIFEST_INVALID_PLATFORM_FOR_INSTRUMENT",
                         StringUtils.isBlank( platform ) ? "is not defined" : platform + " is not supported",
                         instrument,
-                        ControlledValueList.Instrument.getValue( instrument ) );
+                        CV_INSTRUMENT.getValue( instrument ) );
             }
         } else
         {

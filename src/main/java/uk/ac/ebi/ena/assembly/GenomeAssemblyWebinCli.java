@@ -56,6 +56,8 @@ import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.ChromosomeListFileReader;
 import uk.ac.ebi.embl.flatfile.reader.genomeassembly.UnlocalisedListFileReader;
+import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
+import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.utils.FileUtils;
@@ -70,8 +72,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	private HashSet<String> agpEntrynames = new HashSet<>();
     private HashMap<String,AgpRow> contigRangeMap= new HashMap<>();
 	private HashMap<String, List<Qualifier>> chromosomeQualifierMap = new HashMap<>();
+
 	private String sequencelessChromosomesCheck= "ChromosomeListSequenelessCheck";
-	private String molType = "genomic DNA";
+	private static final String DEFAULT_MOLECULE_TYPE = "genomic DNA";
     private boolean valid;
     private int i;
 
@@ -82,19 +85,19 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 
     @Override
     protected GenomeAssemblyManifest createManifestReader() {
-        return new GenomeAssemblyManifest();
+
+        // Call manifest parser which also set the sample and study fields.
+
+        return new GenomeAssemblyManifest(
+                isFetchSample() ? new SampleProcessor(getParameters(), this::setSample ) : null,
+                isFetchStudy() ? new StudyProcessor(getParameters(), this::setStudy ) : null);
     }
 
     @Override
     public void readManifest(Path inputDir, File manifestFile) {
         getManifestReader().readManifest(inputDir, manifestFile);
 
-        // Set study, sample and file fields
-
-        if (isFetchStudy() && getManifestReader().getStudyId() != null)
-            setStudy( fetchStudy( getManifestReader().getStudyId(), getTestMode() ) );
-        if (isFetchSample() && getManifestReader().getSampleId() != null)
-          setSample( fetchSample( getManifestReader().getSampleId(), getTestMode() ) );
+        // Set file fields
 
         if (getManifestReader().getAgpFiles() != null)
             this.agpFiles.addAll(getManifestReader().getAgpFiles());
@@ -117,10 +120,11 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
         assemblyInfo.setPlatform(getManifestReader().getPlatform());
         assemblyInfo.setProgram(getManifestReader().getProgram());
 
-        String molType = getManifestReader().getMoleculeType();
-        if (molType != null)
-            this.molType = molType;
-        assemblyInfo.setMoleculeType(this.molType);
+        String moleculeType = getManifestReader().getMoleculeType();
+        if (moleculeType != null)
+            assemblyInfo.setMoleculeType(moleculeType);
+        else
+            assemblyInfo.setMoleculeType(DEFAULT_MOLECULE_TYPE);
 
         assemblyInfo.setAssemblyType(getManifestReader().getAssemblyType());
         assemblyInfo.setCoverage(getManifestReader().getCoverage());
@@ -282,7 +286,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                 {
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
                     source.setScientificName( getSample().getOrganism() );
-                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
+                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, getAssemblyInfo().getMoleculeType() );
                     Entry entry = (Entry) reader.getEntry();
                    	List<String> contigKeys=contigRangeMap.entrySet().stream().filter(e -> e.getKey().contains(entry.getSubmitterAccession().toUpperCase())).map(e -> e.getKey()).collect(Collectors.toList());
                     	for(String contigKey:contigKeys)
@@ -312,7 +316,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                     featureLocation.addLocation( new LocationFactory().createLocalRange(1l, entry.getSequence().getLength() ) );
                     source.setLocations( featureLocation);
                     entry.addFeature( source);
-                    entry.getSequence().setMoleculeType( molType );
+                    entry.getSequence().setMoleculeType( getAssemblyInfo().getMoleculeType() );
 
 					ValidationPlanResult vpr = getValidationPlan( entry, property ).execute( entry );
 					valid &= vpr.isValid();
@@ -390,7 +394,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                     flatfileEntryNames.put(entry.getSubmitterAccession().toUpperCase(),entry.getSequence().getLength());
                     entry.removeFeature( entry.getPrimarySourceFeature() );
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
-                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
+                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, getAssemblyInfo().getMoleculeType() );
                     source.setScientificName( getSample().getOrganism() );
                     
                     if( getSample().getBiosampleId() != null )
@@ -424,7 +428,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                     featureLocation.addLocation( new LocationFactory().createLocalRange( 1l, entry.getSequence().getLength() ) );
                     source.setLocations( featureLocation );
                     entry.addFeature( source );
-                    entry.getSequence().setMoleculeType( molType );
+                    entry.getSequence().setMoleculeType( getAssemblyInfo().getMoleculeType() );
                 	List<String> contigKeys=contigRangeMap.entrySet().stream().filter(e -> e.getKey().contains(entry.getSubmitterAccession().toUpperCase())).map(e -> e.getKey()).collect(Collectors.toList());
                 	for(String contigKey:contigKeys)
                 	{
@@ -471,7 +475,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                 {
                     SourceFeature source = ( new FeatureFactory() ).createSourceFeature();
                     source.setScientificName( getSample().getOrganism() );
-                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, molType );
+                    source.addQualifier( Qualifier.MOL_TYPE_QUALIFIER_NAME, getAssemblyInfo().getMoleculeType() );
                     Entry entry = (Entry) reader.getEntry();
                     constructAGPSequence(entry);
                     if( getSample().getBiosampleId() != null )
@@ -495,7 +499,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                     featureLocation.addLocation( new LocationFactory().createLocalRange( 1l, entry.getSequence().getLength() ) );
                     source.setLocations( featureLocation );
                     entry.addFeature( source );
-                    entry.getSequence().setMoleculeType( molType );
+                    entry.getSequence().setMoleculeType( getAssemblyInfo().getMoleculeType() );
                     ValidationPlanResult vpr = getValidationPlan( entry, property ).execute( entry );
                     valid &= vpr.isValid();
                     FileUtils.writeReport( f, vpr.getMessages(), file.getName() );

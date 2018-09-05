@@ -1,7 +1,8 @@
 package uk.ac.ebi.ena.assembly;
 
-import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,14 +25,17 @@ public class SequenceAssemblyManifest extends ManifestReader
     private File tsvFile;
     private File flatFile;
 
-    public SequenceAssemblyManifest() {
+    public
+    SequenceAssemblyManifest(StudyProcessor studyProcessor ) {
         super(
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {{
                     add(new ManifestFieldDefinition(Fields.NAME, ManifestFieldType.META, 1, 1));
-                    add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1));
-                    add(new ManifestFieldDefinition(Fields.TAB, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.TAB_FILE_SUFFIX));
-                    add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));
+                    add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor));
+                    add(new ManifestFieldDefinition(Fields.TAB, ManifestFieldType.FILE, 0, 1,
+                            new FileSuffixProcessor( ManifestFileSuffix.TAB_FILE_SUFFIX)));
+                    add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
+                            new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
                 }},
 
                 // File groups.
