@@ -3,10 +3,12 @@ package uk.ac.ebi.ena.rawreads;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import com.skjegstad.utils.BloomFilter;
 
@@ -18,7 +20,10 @@ ReadNameSet<T>
     Map<String, Set<T>> suspected;
     final double edup = 0.001;
     final AtomicLong adds_no = new AtomicLong();
+    final AtomicLong susp_no = new AtomicLong();
     
+    
+    //TODO: Map cannot accomodate more than MAXINT
     ReadNameSet( int expected_reads )
     {
         System.out.println( "expected reads: " + expected_reads );
@@ -38,6 +43,7 @@ ReadNameSet<T>
             Set<T> set = suspected.getOrDefault( read_name, new LinkedHashSet<>() );
             set.add( mark );
             suspected.put( read_name, set );
+            susp_no.incrementAndGet();
         } else
             bloom.add( read_name );
     }
@@ -57,8 +63,15 @@ ReadNameSet<T>
     }
     
     
+    public Long
+    getPossibleDuplicateCount()
+    {
+        return susp_no.get();
+    }
+
+    
     public Set<T>
-    getDuplicateLocations( String read_name )
+    findDuplicateLocations( String read_name )
     {
         Set<T> set = suspected.getOrDefault( read_name, Collections.emptySet() );
         if( set.isEmpty() )
@@ -68,14 +81,14 @@ ReadNameSet<T>
 
     
     public Map<String, Set<T>>
-    getAllduplications( String[] read_names, int limit )
+    findAllduplications( String[] read_names, int limit )
     {
         Map<String, Set<T>> result = new HashMap<>( limit );
         for( String read_name : read_names )
         {
             if( hasPossibleDuplicates() )
             {
-                Set<T> dlist = getDuplicateLocations( read_name );
+                Set<T> dlist = findDuplicateLocations( read_name );
                 if( !dlist.isEmpty() )
                     result.put( read_name, dlist );
             }
@@ -86,25 +99,33 @@ ReadNameSet<T>
         return result;
     }
     
-    
+
     public Map<String, Set<T>>
-    getAllduplications( Iterator<String> read_name_iterator, int limit )
+    findAllduplications( Iterator<String> read_name_iterator, int limit )
     {
-        Map<String, Set<T>> result = new HashMap<>( limit );
+        Map<String, Set<T>> result = new LinkedHashMap<>( limit );
+        Map<String, Long> first_seen = new LinkedHashMap<>( limit );
+        long index = 1;
         while( read_name_iterator.hasNext() )
         {
             String read_name = read_name_iterator.next();
             if( hasPossibleDuplicates() )
             {
-                Set<T> dlist = getDuplicateLocations( read_name );
+                Set<T> dlist = findDuplicateLocations( read_name );
                 if( !dlist.isEmpty() )
+                {
+                    first_seen.putIfAbsent( read_name, index );
                     result.put( read_name, dlist );
+                }
             }
-            
+            index ++;
             if( result.size() >= limit )
                 break;
         }
-        return result;
+        return result.entrySet().stream().collect( Collectors.toMap( e -> String.format( "%s, Read no: %d", e.getKey(), first_seen.get( e.getKey() ) ), 
+                                                                     e -> e.getValue(),
+                                                                     ( e1, e2 ) -> e1,
+                                                                     LinkedHashMap::new ) );
     }
     
     

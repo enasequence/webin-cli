@@ -194,7 +194,7 @@ FastqScannerTest
 
         ValidationResult vr = fs.checkFiles( rf1, rf2 );
         
-        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 1, vr.getMessages( Severity.ERROR ).size() );
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 2, vr.getMessages( Severity.ERROR ).size() );
     }
     
     /* */
@@ -219,6 +219,68 @@ FastqScannerTest
     }
 
     
+    /* three read labels */
+    @Test public void 
+    testCase6() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    {
+        File output_dir = createOutputFolder();
+        Path f1 = saveRandomized( "@NAME\nACGT\n+\n1234", output_dir.toPath(), true, "fastq-1", "gz" );
+        Path f2 = saveRandomized( "@NAME/2\nACGT\n+\n1234\n"
+                                + "@NAME/3\nACGT\n+\n2341", output_dir.toPath(), true, "fastq-2", "gz" );
+        
+        FastqScanner fs = new FastqScanner();
+        RawReadsFile rf1 = new RawReadsFile();
+        rf1.setFilename( f1.toFile().getCanonicalPath() );
+        
+        RawReadsFile rf2 = new RawReadsFile();
+        rf2.setFilename( f2.toFile().getCanonicalPath() );
+
+        ValidationResult vr = fs.checkFiles( rf1, rf2 );
+        
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 1, vr.getMessages( Severity.ERROR ).size() );
+    }
+
+
+    /* Wrong pair set in two files */
+    @Test public void 
+    testCase7() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    {
+        File output_dir = createOutputFolder();
+        Path f1 = saveRandomized( "@NAME1/1\nACGT\n+\n1234", output_dir.toPath(), true, "fastq-1", "gz" );
+        Path f2 = saveRandomized( "@NAME2/2\nACGT\n+\n1234\n"
+                                + "@NAME/2\nACGT\n+\n2341", output_dir.toPath(), true, "fastq-2", "gz" );
+        
+        FastqScanner fs = new FastqScanner();
+        RawReadsFile rf1 = new RawReadsFile();
+        rf1.setFilename( f1.toFile().getCanonicalPath() );
+        
+        RawReadsFile rf2 = new RawReadsFile();
+        rf2.setFilename( f2.toFile().getCanonicalPath() );
+
+        ValidationResult vr = fs.checkFiles( rf1, rf2 );
+        
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 1, vr.getMessages( Severity.ERROR ).size() );
+    }
+    
+    
+    /* Wrong pair set in one file */
+    @Test public void 
+    testCase8() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    {
+        File output_dir = createOutputFolder();
+        Path f1 = saveRandomized( "@NAME2/1\nACGT\n+\n1234\n"
+                                + "@NAME/2\nACGT\n+\n2341", output_dir.toPath(), true, "fastq-2", "gz" );
+        
+        FastqScanner fs = new FastqScanner();
+        RawReadsFile rf1 = new RawReadsFile();
+        rf1.setFilename( f1.toFile().getCanonicalPath() );
+        
+        ValidationResult vr = fs.checkFiles( rf1 );
+        
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 1, vr.getMessages( Severity.ERROR ).size() );
+    }
+    
+    
     @Test public void 
     testPairWithDuplication() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
@@ -233,7 +295,7 @@ FastqScannerTest
         rf2.setFilename( new File( url2.getFile() ).getCanonicalPath() );
 
         ValidationResult vr = fs.checkFiles( rf1, rf2 );
-        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 0, vr.getMessages( Severity.ERROR ).size() );
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 2, vr.getMessages( Severity.ERROR ).size() );
     }
     
 
@@ -251,7 +313,7 @@ FastqScannerTest
 
         ValidationResult vr = fs.checkFiles( rf2, rf2 );
         
-        Assert.assertEquals( toString( vr ), 0, vr.getMessages( Severity.ERROR ).size() );
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 4, vr.getMessages( Severity.ERROR ).size() );
     }
     
     
@@ -311,7 +373,7 @@ FastqScannerTest
             
     }
 
-
+    //TODO remove probabilistic nature
     @Test public void 
     testGeneratedSingleDuplications() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
@@ -322,7 +384,7 @@ FastqScannerTest
         
         ValidationResult vr = fs.checkFiles( rf );
         
-        Assert.assertEquals( toString( vr ), 2, vr.getMessages( Severity.ERROR ).size() );
+        Assert.assertEquals( toString( vr ), false, vr.getMessages( Severity.ERROR ).isEmpty() );
     }
 
 }

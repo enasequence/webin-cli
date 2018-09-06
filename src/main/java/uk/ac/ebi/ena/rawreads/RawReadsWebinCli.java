@@ -190,7 +190,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 String label = slash_idx == -1 ? stream_name
                                                : spot.bname.substring( slash_idx + 1 );
                 
-                if( labels.size() < rrm.getPairingHorizon() )
+                if( labels.size() < getManifestReader().getPairingHorizon() )
                     labels.add( label );
                 
                 rns.add( name, new SimpleEntry<String, Long>( label, read_no.getAndIncrement() ) );
@@ -334,6 +334,101 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     private boolean
     readFastqFile( List<RawReadsFile> files, AtomicBoolean paired )
     {
+        try
+        {
+            if( files.size() > 2 )
+            {
+                valid = false;
+                String msg = "Unable to validate unusual amount of files: " + files;
+                reportToFileList( files, msg );
+                throw WebinCliException.createValidationError( msg );
+            }
+            
+            
+            FastqScanner fs = new FastqScanner();            
+            ValidationResult vr = fs.checkFiles( files.toArray( new RawReadsFile[ files.size() ] ) );
+            paired.set( fs.getPaired() );
+            files.forEach( rf -> FileUtils.writeReport( getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() ), vr ) );
+            return vr.isValid();
+            
+//            if( valid )
+//            {
+//                if( 2 == files.size() )
+//                {
+//                    Set<String> n0 = names.get( 0 );
+//                    Set<String> n1 = names.get( 1 );
+//                    int max_size = Math.max( n0.size(), n1.size() );
+//                    int resulted_size = max_size;
+//                    if( n0.size() > n1.size() )
+//                    {
+//                        n0.removeAll( n1 );
+//                        resulted_size = n0.size();
+//                    } else
+//                    {
+//                        n1.removeAll( n0 );
+//                        resulted_size = n1.size();
+//                    }
+//                    
+//                    if( resulted_size >= ( max_size / 2 ) )
+//                    {
+//                        String msg = "When submitting paired reads using two Fastq files the reads must follow Illumina paired read naming conventions. "
+//                                   + "This was not the case for the submitted Fastq files: "
+//                                   + files;
+//                        reportToFileList( files, msg );
+//                        throw WebinCliException.createValidationError( msg );
+//                    }
+//                    
+//                    if( labels.get( 0 ).containsAll( labels.get( 1 ) ) 
+//                     && labels.get( 1 ).containsAll( labels.get( 0 ) ) )
+//                    {
+//                        valid = false;
+//                        String msg = "When submitting paired reads using two Fastq files two different files must be provided. "
+//                                   + "The same file was specified twice: "
+//                                   + files;
+//                        reportToFileList( files, msg );
+//                        throw WebinCliException.createValidationError( msg );
+//                    }
+//                    
+//                    for( int index = 0; index < files.size(); ++ index )
+//                    {
+//                        if( getPaired( labels.get( index ) ) )
+//                        {
+//                            valid = false;
+//                            String msg = "When submitting paired reads using two Fastq files the first and second reads must be submitted in different files. "
+//                                       + "This was not the case for the submitted Fastq files: "
+//                                       + files.get( index );
+//                            reportToFileList( files, msg );
+//                            throw WebinCliException.createValidationError( msg );
+//                        }
+//                    }
+//                    
+//                    paired.set( true );
+//                    
+//                } else if( 1 == files.size() )
+//                {
+//                    paired.set( getPaired( labels.get( 0 ) ) );
+//                } else
+//                {
+//                    valid = false;
+//                    String msg = "Unable to validate unusual amount of files: " + files;
+//                    reportToFileList( files, msg );
+//                    throw WebinCliException.createValidationError( msg );
+//                }
+//            }
+//
+//            
+//            return valid;
+            
+        } catch( SecurityException | NoSuchMethodException | DataFeederException | IOException | InterruptedException e )
+        {
+            throw WebinCliException.createSystemError( "Unable to validate file(s): " + files + ", " + e.getMessage() );
+        }
+    }
+    
+    
+    private boolean
+    __readFastqFile( List<RawReadsFile> files, AtomicBoolean paired )
+    {
         boolean valid = true;
         ValidationResult vr = new ValidationResult();
         QualityNormalizer qn = QualityNormalizer.NONE;
@@ -390,6 +485,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         }
         
         //check paired
+        
         if( valid )
         {
             if( 2 == files.size() )
@@ -486,7 +582,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 String name = slash_idx == -1 ? spot.bname 
                                               : spot.bname.substring( 0, slash_idx );
                 
-                Set<SimpleEntry<String, Long>> set = rns.getDuplicateLocations( name );
+                Set<SimpleEntry<String, Long>> set = rns.findDuplicateLocations( name );
                 if( !set.isEmpty() )
                 {
                     if( !set.isEmpty() )

@@ -396,7 +396,7 @@ RawReadsWebinCliTest
     }
     
     
-    @Test(expected = WebinCliException.class) public void
+    @Test public void
     sameFilePairedFastq() throws IOException, ValidationEngineException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
@@ -414,11 +414,11 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        Assert.assertTrue( !rr.validate() );
     }
     
     
-    @Test(expected = WebinCliException.class) public void
+    @Test public void
     samePairedFastq() throws IOException, ValidationEngineException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
@@ -436,7 +436,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        Assert.assertTrue( !rr.validate() );
     }
     
     
@@ -496,8 +496,8 @@ RawReadsWebinCliTest
         Assert.assertTrue( elines.contains( "<PAIRED" ) );
     }
     
-    
-    @Test( expected = WebinCliException.class ) public void
+    //TODO remove?
+    @Test public void
     fastqFalsePair() throws IOException, ValidationEngineException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
@@ -518,15 +518,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
-        String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
-                                    StandardCharsets.UTF_8 );
-        Assert.assertTrue( rlines.contains( file1.getFileName().toString() ) );
-        Assert.assertTrue( rlines.contains( file2.getFileName().toString() ) );
-        
-        String elines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
-                                   StandardCharsets.UTF_8 );
-        Assert.assertTrue( elines.contains( "<PAIRED" ) );
+        Assert.assertTrue( "False pair", !rr.validate() );
     }
 
     

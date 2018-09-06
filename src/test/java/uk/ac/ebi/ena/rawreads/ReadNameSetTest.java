@@ -78,7 +78,7 @@ ReadNameSetTest
         
         if( rns.hasPossibleDuplicates() )
         {
-            Map<String, Set<String>> dups = rns.getAllduplications( sar, sar.length );
+            Map<String, Set<String>> dups = rns.findAllduplications( sar, sar.length );
             
             int total_count = 0;
             for( int i = 0; i < sar.length; ++i )
@@ -124,13 +124,7 @@ ReadNameSetTest
         String[] tar = initStringArray( new String[ 1_000 ], 32, 64 );
         Assert.assertEquals( 0, getArrayDegeneration( sar ) );
         Assert.assertEquals( 0, getArrayDegeneration( tar ) );
-        __testPaired( sar, tar );
-    }
-    
-    
-    public void
-    __testPaired( String[] sar, String[] tar )
-    {
+        
         System.out.println( "Sar size: " + Stream.of( sar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         System.out.println( "Tar size: " + Stream.of( tar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         
@@ -150,9 +144,7 @@ ReadNameSetTest
         set2.addAll( Arrays.asList( tar ) );
         set1.removeAll( set2 );
        
-        Assert.assertTrue( String.format( "%f", not_contains / (double)set1.size() ), ( not_contains / (double)set1.size() ) < 0.9999 );
-        
-        
+        Assert.assertTrue( String.format( "Not found in bloom %d, set size %d", not_contains, set1.size() ), not_contains >= set1.size() - ( (double)rns.getAddsNumber() * 0.01 /* TODO */) );
     }
     
     
@@ -181,7 +173,7 @@ ReadNameSetTest
         Assert.assertTrue( rns.hasPossibleDuplicates() );
            
         for( int i = 0; i < sar.length; ++ i )
-            Assert.assertTrue( "No duplication on pos: " + i, !rns.getDuplicateLocations( sar[ i ] ).isEmpty() );
+            Assert.assertTrue( "No duplication on pos: " + i, !rns.findDuplicateLocations( sar[ i ] ).isEmpty() );
     }
 
     

@@ -15,6 +15,7 @@ version = version_base
 ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : "${System.properties['user.home']}/.ssh/id_dsa")
 
         repositories {
+    flatDir { dirs 'lib' }
     mavenLocal()
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
@@ -73,6 +74,7 @@ dependencies {
     compile("org.jdom:jdom:2.0.2")
     compile( group: 'uk.ac.ebi', name: 'ena-fastq-validator', version: '1.1.0' ) 
     compile( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
+    compile name: 'java-bloomfilter'
     testCompile 'junit:junit:4.11'
 }
 
