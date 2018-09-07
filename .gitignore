@@ -9,8 +9,5 @@ webin-cli.log
 reads/
 reports/
 .idea/
-gradlew
-gradlew.bat
-
 /bin/
 /.gradle/
