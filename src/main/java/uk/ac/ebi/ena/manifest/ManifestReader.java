@@ -24,10 +24,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.embl.api.validation.Origin;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
-import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.embl.api.validation.*;
 
 import static uk.ac.ebi.ena.manifest.ManifestReader.Fields.INFO;
 import static uk.ac.ebi.ena.manifest.ManifestReader.ManifestReaderState.State.PARSE;
@@ -596,54 +593,22 @@ public abstract class ManifestReader {
             return new File(fileName);
     }
 
-
-    private void
-    appendOrigin( ValidationMessage<Origin> validationMessage )
-    {
-        switch( state.state )
-        {
-            case PARSE:
-                validationMessage.append( createParseOrigin() );
-                break;
-            case VALIDATE:
-                validationMessage.append( createValidateOrigin() );
-                break;
-
-            case INIT:
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    /*
-
-    protected final void
-    errorNoKey(String error)
-    {
-        ValidationMessage validationMessage = ValidationMessage.error(ValidationMessage.NO_KEY);
-        validationMessage.setMessage(error);
-        appendOrigin(validationMessage);
-        result.getValidationResult().append(validationMessage);
-    }
-
-    protected final void
-    errorNoKey(String error, Origin origin)
-    {
-        ValidationMessage validationMessage = ValidationMessage.error(ValidationMessage.NO_KEY);
-        validationMessage.setMessage(error);
-        validationMessage.append(origin);
-        result.getValidationResult().append(validationMessage);
-    }
-    */
-
     protected final void
     error( String key, String... params )
     {
-        ValidationMessage<Origin> validationMessage = ValidationMessage.error( key, (Object[]) params );
-        appendOrigin( validationMessage );
-        result.getValidationResult().append( validationMessage );
+        Origin origin = null;
+
+        switch( state.state )
+        {
+            case PARSE:
+                origin = createParseOrigin();
+                break;
+            case VALIDATE:
+                origin = createValidateOrigin();
+                break;
+        }
+
+        error( key, origin, params);
     }
 
 
@@ -659,15 +624,13 @@ public abstract class ManifestReader {
     protected final Origin
     createParseOrigin()
     {
-        String origin = String.format( "File name: " + state.fileName + ", line number: " + state.lineNo );
-        return () -> origin;
+        return new DefaultOrigin( String.format( "File name: " + state.fileName + ", line number: " + state.lineNo ));
     }
 
 
     protected final Origin
     createValidateOrigin()
     {
-        String origin = String.format( "File name: " + state.fileName );
-        return () -> origin;
+        return new DefaultOrigin( String.format( "File name: " + state.fileName ) );
     }
 }

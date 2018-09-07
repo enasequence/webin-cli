@@ -21,7 +21,7 @@ WebinCliParameters
     private String  password;
     private File    outputDir;
     private File    inputDir = new File( "." );
-    private File    syslogFile = new File( "webin-cli.log" );
+
     private String  centerName;
     private boolean testMode;
     
@@ -117,18 +117,5 @@ WebinCliParameters
     public void
     setTestMode(boolean testMode) {
         this.testMode = testMode;
-    }
-
-    public File
-    getSystemLogFile()
-    {
-        return syslogFile;
-    }
-
-
-    public void
-    setSystemLogFile( File syslogFile )
-    {
-        this.syslogFile = syslogFile;
     }
 }

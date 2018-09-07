@@ -74,6 +74,8 @@ import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -253,7 +255,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         
         for( RawReadsFile rf : files )
         {
-            File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
+            File reportFile = getReportFile(rf.getFilename() );
             try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
             {
                 if( null != rf.getQualityScoringSystem() )
@@ -296,7 +298,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                                 
                 if( null != t )
                 {
-                    ValidationMessage<Origin> vm = validationError( t.getMessage(),
+                    ValidationMessage<Origin> vm = WebinCliReporter.createValidationMessage(Severity.ERROR, t.getMessage(),
                             new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ));
 
                     vm.setThrowable( t );
@@ -305,9 +307,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     vr.append( vm );
                 }
     
-                FileUtils.writeReport( reportFile, vr );
-                FileUtils.writeReport( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt.get() );
-                FileUtils.writeReport( reportFile, Severity.INFO, "Collected " + labelset.size() +" read pair label(s): " + ( labelset.size() < 10 ? labelset : "" ) );
+                WebinCliReporter.writeToFile( reportFile, vr );
+                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt.get() );
+                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "Collected " + labelset.size() +" read pair label(s): " + ( labelset.size() < 10 ? labelset : "" ) );
             } catch( Exception e )
             {
                 throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
@@ -388,8 +390,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     {
         for( RawReadsFile rf : files )
         {
-            File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
-            FileUtils.writeReport( reportFile, Severity.ERROR, msg );
+            File reportFile = getReportFile(rf.getFilename() );
+            WebinCliReporter.writeToFile( reportFile, Severity.ERROR, msg );
         }
     }
 
@@ -419,7 +421,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         boolean valid = true;
         for( RawReadsFile rf : files )
         {
-            File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
+            File reportFile = getReportFile(rf.getFilename() );
             long read_no = 0;
             long reads_cnt = 0;
             
@@ -435,7 +437,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 factory.samRecordFactory( DefaultSAMRecordFactory.getInstance() );
                 SamInputResource ir = SamInputResource.of( file );
                 File indexMaybe = SamFiles.findIndex( file );
-                FileUtils.writeReport( reportFile, Severity.INFO, "proposed index: " + indexMaybe );
+                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "proposed index: " + indexMaybe );
                 
                 if( null != indexMaybe )
                     ir.index( indexMaybe );
@@ -457,10 +459,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     
                     if( record.getReadBases().length != record.getBaseQualities().length )
                     {
-                        ValidationMessage<Origin> vm = validationError( "Mismatch between length of read bases and qualities",
+                        ValidationMessage<Origin> validationMessage = WebinCliReporter.createValidationMessage(Severity.ERROR, "Mismatch between length of read bases and qualities",
                             new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
                         
-                        FileUtils.writeReport( reportFile, Arrays.asList( vm ) );
+                        WebinCliReporter.writeToFile( reportFile, validationMessage );
                         valid &= false;
                     }
                     
@@ -470,18 +472,18 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         
                 reader.close();
                 
-                FileUtils.writeReport( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt );
-                FileUtils.writeReport( reportFile, Severity.INFO, "LibraryLayout: " + ( paired.get() ? "PAIRED" : "SINGLE" ) );
+                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt );
+                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "LibraryLayout: " + ( paired.get() ? "PAIRED" : "SINGLE" ) );
                 
                 if( 0 == reads_cnt )
                 {
-                    FileUtils.writeReport( reportFile, Severity.ERROR, "File contains no valid reads" );
+                    WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "File contains no valid reads" );
                     valid &= false;
                 }
                 
             } catch( SAMFormatException e )
             {
-                FileUtils.writeReport( reportFile, Severity.ERROR, e.getMessage() );
+                WebinCliReporter.writeToFile( reportFile, Severity.ERROR, e.getMessage() );
                 valid &= false;
                 
             } catch( IOException e )
@@ -512,7 +514,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             List<RawReadsFile> files = getManifestReader().getFiles();
             
             List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
-            Path uploadDir = Paths.get( String.valueOf( getContext() ), getSafeOutputSubdir(getName()) );
+            Path uploadDir = Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDir(getName()) );
             files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
             files.forEach( e -> {
                 try
@@ -715,12 +717,4 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     }
 
 
-    private static ValidationMessage
-    validationError(String error, Origin origin)
-    {
-        ValidationMessage validationMessage = ValidationMessage.error(ValidationMessage.NO_KEY);
-        validationMessage.setMessage(error);
-        validationMessage.append(origin);
-        return validationMessage;
-    }
 }

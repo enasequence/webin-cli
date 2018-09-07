@@ -60,7 +60,7 @@ import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
@@ -203,20 +203,20 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
         
         ValidationResult parseResult = new ValidationResult();
 
-        File f = getReportFile( FileFormat.CHROMOSOME_LIST, chromosomeListFile.getName() );
+        File f = getReportFile(chromosomeListFile.getName() );
         
         chromosomeEntries = getChromosomeEntries( chromosomeListFile, parseResult );
-        FileUtils.writeReport( f, parseResult, chromosomeListFile.getName() );
+        WebinCliReporter.writeToFile( f, parseResult, chromosomeListFile.getName() );
         
         if( null == chromosomeEntries || chromosomeEntries.isEmpty() )
         {
-            FileUtils.writeReport( f, Severity.ERROR, "File " + chromosomeListFile.getPath() + " has no valid chromosome entries" );
+            WebinCliReporter.writeToFile( f, Severity.ERROR, "File " + chromosomeListFile.getPath() + " has no valid chromosome entries" );
             return false;
         }
 
         if( !parseResult.isValid() )
         {
-            FileUtils.writeReport( f, parseResult, chromosomeListFile.getName() );
+            WebinCliReporter.writeToFile( f, parseResult, chromosomeListFile.getName() );
             return false;
         }
         
@@ -229,7 +229,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
             {
                 ValidationPlanResult vpr = validateEntry( chromosomeEntry, property );
                 valid &= vpr.isValid();
-                FileUtils.writeReport( f, vpr.getMessages(), chromosomeListFile.getName() );
+                WebinCliReporter.writeToFile( f, vpr, chromosomeListFile.getName() );
             }
         }
         return valid;
@@ -244,9 +244,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
         
         ValidationResult parseResult = new ValidationResult();
         List<UnlocalisedEntry> unlocalisedEntries = getUnlocalisedEntries( unlocalisedListFile, parseResult );
-        File f = getReportFile( FileFormat.UNLOCALISED_LIST, unlocalisedListFile.getName() );
+        File f = getReportFile(unlocalisedListFile.getName() );
         boolean valid = parseResult.isValid();
-        FileUtils.writeReport( f, parseResult, unlocalisedListFile.getName() );
+        WebinCliReporter.writeToFile( f, parseResult, unlocalisedListFile.getName() );
         
         if( parseResult.isValid() )
         {
@@ -257,7 +257,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                 {
                     ValidationPlanResult vpr = validateEntry( unlocalisedEntry, property );
                     valid &= vpr.isValid();
-                    FileUtils.writeReport( f, vpr.getMessages(), unlocalisedListFile.getName() );
+                    WebinCliReporter.writeToFile( f, vpr, unlocalisedListFile.getName() );
                 }
             }
         }           
@@ -275,11 +275,11 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
         for( File file : fastaFiles ) 
         {
             property.fileType.set( FileType.FASTA );
-            File f = getReportFile( FileFormat.FASTA, file.getName() ); 
+            File f = getReportFile(file.getName() );
             FlatFileReader<?> reader = getFileReader( FileFormat.FASTA, file );
             ValidationResult parseResult = reader.read();
             valid &= parseResult.isValid();
-            FileUtils.writeReport( f, parseResult, file.getName() );
+            WebinCliReporter.writeToFile( f, parseResult, file.getName() );
             if( parseResult.isValid() )
             {
                 while( reader.isEntry() )
@@ -320,7 +320,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 
 					ValidationPlanResult vpr = getValidationPlan( entry, property ).execute( entry );
 					valid &= vpr.isValid();
-		            FileUtils.writeReport( f, vpr.getMessages(), file.getName() );
+		            WebinCliReporter.writeToFile( f, vpr, file.getName() );
 		            
 					fastaEntryNames.put( entry.getSubmitterAccession().toUpperCase(), entry.getSequence().getLength() );
                     valid_entries = true;
@@ -330,7 +330,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                 if( !valid_entries )
                 {
                     valid &= false;
-                    FileUtils.writeReport( f, Severity.ERROR, "File " + file.getName() + " does not contain valid FASTA entries" );
+                    WebinCliReporter.writeToFile( f, Severity.ERROR, "File " + file.getName() + " does not contain valid FASTA entries" );
                 }   
             }
         }
@@ -350,7 +350,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
             ValidationResult vr = reader.read();
             int i=1;
             
-            FileUtils.writeReport( getReportFile(  FileFormat.AGP, file.getName() ), vr );
+            WebinCliReporter.writeToFile( getReportFile(file.getName() ), vr );
             
             while( ( valid &= vr.isValid() ) && reader.isEntry() )
             {
@@ -378,12 +378,12 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
         for( File file : flatFiles ) 
         {
             property.fileType.set( FileType.EMBL );
-            File f = getReportFile( FileFormat.FLATFILE, file.getName() );
+            File f = getReportFile(file.getName() );
             
             FlatFileReader<?> reader = getFileReader( FileFormat.FLATFILE, file );
             ValidationResult parseResult = reader.read();
             valid &= parseResult.isValid();
-            FileUtils.writeReport( f, parseResult, file.getName() );
+            WebinCliReporter.writeToFile( f, parseResult, file.getName() );
             
             if( parseResult.isValid() )
             {
@@ -437,13 +437,13 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                 	}
                     ValidationPlanResult validationPlanResult = getValidationPlan( entry, property ).execute( entry );
                     valid &= validationPlanResult.isValid();
-                    FileUtils.writeReport( f, validationPlanResult.getMessages(), file.getName() );
+                    WebinCliReporter.writeToFile( f, validationPlanResult, file.getName() );
 
                     parseResult = reader.read();
                     if( !parseResult.isValid() )
                     {
                         valid = false;
-                        FileUtils.writeReport( f, parseResult, file.getName() );
+                        WebinCliReporter.writeToFile( f, parseResult, file.getName() );
                     }
                 }
             }
@@ -460,7 +460,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
         for( File file : agpFiles ) 
         {
             property.fileType.set( FileType.AGP );
-            File f = getReportFile( FileFormat.AGP, file.getName() );
+            File f = getReportFile(file.getName() );
             
             FlatFileReader<?> reader = getFileReader( FileFormat.AGP, file );
             
@@ -468,7 +468,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
             valid &= parseResult.isValid();
             if( !valid ) //TODO: discuss file format errors, AgpFileReader.isEntry
             {
-                FileUtils.writeReport( f, parseResult, file.getName() );
+                WebinCliReporter.writeToFile( f, parseResult, file.getName() );
             } else
             {
                 while( reader.isEntry() ) 
@@ -502,7 +502,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
                     entry.getSequence().setMoleculeType( getAssemblyInfo().getMoleculeType() );
                     ValidationPlanResult vpr = getValidationPlan( entry, property ).execute( entry );
                     valid &= vpr.isValid();
-                    FileUtils.writeReport( f, vpr.getMessages(), file.getName() );
+                    WebinCliReporter.writeToFile( f, vpr, file.getName() );
                     parseResult = reader.read();
                 }
             }
@@ -531,10 +531,10 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
     	
     	if( !sequencelessChromosomes.isEmpty() )
     	{    			
-    	    File f = getReportFile( FileFormat.CHROMOSOME_LIST, chromosomeListFile.getName() );
+    	    File f = getReportFile(chromosomeListFile.getName() );
     	    ValidationResult result = new ValidationResult();
             result.append( new ValidationResult().append( new ValidationMessage<>( Severity.ERROR, sequencelessChromosomesCheck, sequencelessChromosomes.stream().collect( Collectors.joining( "," ) ) ) ) );
-            FileUtils.writeReport( f, result.getMessages(), chromosomeListFile.getName() );
+            WebinCliReporter.writeToFile( f, result, chromosomeListFile.getName() );
             return false;
     	}
     	return true;

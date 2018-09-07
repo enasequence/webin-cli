@@ -382,7 +382,8 @@ SequenceWebinCliTest
 
 
 
-    @Test public void
+    @Test
+    public void
     testAnalysisXML_SequenceAssemblyInfo_WithFlatFile()
     {
         SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();

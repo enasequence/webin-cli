@@ -24,6 +24,7 @@ public interface ParameterDescriptor {
     String version    = "-version";
     String inputDir   = "-inputDir";
     String tryAscp    = "-ascp";
+    String help       = "-help";
 
     String OPTION_LINE = "\n\t";
     String MANDATORY_LINE = "[Required] ";
@@ -63,4 +64,6 @@ public interface ParameterDescriptor {
    String tryAscpDescription =
            OPTION_LINE + "Use Aspera (if Aspera Cli is available) instead of FTP when uploading files." +
            OPTION_LINE + "The path to the installed \"ascp\" program must be in the PATH variable.";
+    String helpDescription =
+            OPTION_LINE + "Use the -help option to see all command line options.";
 }

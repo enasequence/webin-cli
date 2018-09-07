@@ -41,7 +41,7 @@ import uk.ac.ebi.ena.template.expansion.TemplateInfo;
 import uk.ac.ebi.ena.template.expansion.TemplateLoader;
 import uk.ac.ebi.ena.template.expansion.TemplateProcessor;
 import uk.ac.ebi.ena.template.expansion.TemplateUserError;
-import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 
@@ -117,7 +117,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
 
 
     private void validateTsvFile( File file )  throws ValidationEngineException {
-        File reportFile = getReportFile( FileFormat.TAB, file.getPath() );
+        File reportFile = getReportFile(file.getPath() );
         String templateId = getTemplateIdFromTsvFile( file );
         Path templatePath = getTemplateAndWriteToValidateDir( templateId );
         try (FileInputStream submittedDataFis = new FileInputStream(file)) {
@@ -140,7 +140,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
                             for( ValidationMessage<?> validationMessage: validationMessagesList)
                                 resultsSb.append("ERROR: Sequence " + csvLine.getLineNumber().toString() + ": " + validationMessage.getMessage() + "\n");
                         } else
-                            FileUtils.writeReport(reportFile, validationMessagesList, "ERROR: Sequence: " + csvLine.getLineNumber().toString() + " ");
+                            WebinCliReporter.writeToFile(reportFile, validationPlanResult, "Sequence: " + csvLine.getLineNumber().toString() + " ");
                     }
                 }
             }
@@ -149,7 +149,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
             if ( getTestMode() )
                 resultsSb.append(e.getMessage());
             else
-                FileUtils.writeReport(reportFile, Severity.ERROR, e.getMessage());
+                WebinCliReporter.writeToFile(reportFile, Severity.ERROR, e.getMessage());
         } catch (Exception e) {
             throw new ValidationEngineException(e.getMessage());
         }
@@ -159,12 +159,12 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     private void 
     validateFlatFile( File submittedFile ) throws ValidationEngineException 
     {
-        File reportFile = getReportFile( FileFormat.FLATFILE, submittedFile.getPath() );
+        File reportFile = getReportFile(submittedFile.getPath() );
         try {
             if( !submittedFile.exists() ) 
             {
                 FAILED_VALIDATION = true;
-                FileUtils.writeReport( reportFile, Severity.ERROR, submittedFile.toPath() + " does not exist." );
+                WebinCliReporter.writeToFile( reportFile, Severity.ERROR, submittedFile.toPath() + " does not exist." );
                 return;
             }
             
@@ -174,13 +174,13 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
             ValidationResult validationResult = flatFileReader.read();
             if (!flatFileReader.isEntry()) {
                 FAILED_VALIDATION = true;
-                FileUtils.writeReport(reportFile, validationResult);
+                WebinCliReporter.writeToFile(reportFile, validationResult);
                 return;
             }
             while (flatFileReader.isEntry()) {
                 if (validationResult != null && validationResult.getMessages(Severity.ERROR) != null && !validationResult.getMessages(Severity.ERROR).isEmpty()) {
                     FAILED_VALIDATION = true;
-                    FileUtils.writeReport(reportFile, validationResult);
+                    WebinCliReporter.writeToFile(reportFile, validationResult);
                 }
                 Entry entry = (Entry)flatFileReader.getEntry();
                 entry.getSequence().setVersion(1);
@@ -191,7 +191,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
                 ValidationPlanResult validationPlanResult = templateEntryProcessor.validateSequenceUploadEntry(entry);
                 if (!validationPlanResult.isValid()) {
                     FAILED_VALIDATION = true;
-                    FileUtils.writeReport(reportFile, validationPlanResult.getMessages(Severity.ERROR), "ERROR: Entry " + ((EmblEntryReader)flatFileReader).getLineReader().getCurrentLineNumber() + " ");
+                    WebinCliReporter.writeToFile(reportFile, validationPlanResult, "Entry " + ((EmblEntryReader)flatFileReader).getLineReader().getCurrentLineNumber() + " ");
                 }
                 validationResult = flatFileReader.read();
             }

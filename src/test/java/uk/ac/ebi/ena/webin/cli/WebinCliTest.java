@@ -98,11 +98,11 @@ WebinCliTest
         // parameters.centerName = "C E N T E R N A M E";
         parameters.test = true;
         parameters.validate = true;
-        parameters.submit   = true;
+        parameters.submit = true;
+        parameters.test = true;
 
         WebinCli webinCli = new WebinCli();
         webinCli.init( parameters );
-        webinCli.setTestMode( true );
         webinCli.execute();
     }
     
