@@ -178,7 +178,8 @@ FastqScannerTest
         Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 1, vr.getMessages( Severity.ERROR ).size() );
     }
     
-    
+    /* 4. Paired run with two files with duplication from first file in second file */
+    /* logically this is not true. The suffixes can be inherited from the file streams */
     @Test public void 
     testCase4() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
