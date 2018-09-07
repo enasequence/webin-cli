@@ -504,7 +504,7 @@ public abstract class ManifestReader {
         }
 
         return null;
-    };
+    }
 
 
     private static List<String>

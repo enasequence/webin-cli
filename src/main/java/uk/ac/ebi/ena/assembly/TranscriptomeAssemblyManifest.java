@@ -2,6 +2,7 @@ package uk.ac.ebi.ena.assembly;
 
 import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
@@ -23,6 +24,7 @@ public class TranscriptomeAssemblyManifest extends ManifestReader
         String PLATFORM = "PLATFORM";
         String FASTA = "FASTA";
         String FLATFILE = "FLATFILE";
+        String TPA = "TPA";
    }
 
     private String name;
@@ -30,6 +32,7 @@ public class TranscriptomeAssemblyManifest extends ManifestReader
     private String sampleId;
     private String program;
     private String platform;
+    private Boolean tpa;
 
     private File fastaFile;
     private File flatFile;
@@ -49,6 +52,8 @@ public class TranscriptomeAssemblyManifest extends ManifestReader
                             new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX)));
                     add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
                             new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                    add(new ManifestFieldDefinition(Fields.TPA, ManifestFieldType.META, 0, 1,
+                            CVFieldProcessor.CV_BOOLEAN));
                 }},
 
                 // File groups.
@@ -82,6 +87,13 @@ public class TranscriptomeAssemblyManifest extends ManifestReader
         return platform;
     }
 
+    public Boolean getTpa() {
+        if (tpa == null) {
+            return false;
+        }
+        return tpa;
+    }
+
     public File getFastaFile() {
         return fastaFile;
     }
@@ -107,6 +119,10 @@ public class TranscriptomeAssemblyManifest extends ManifestReader
 
         program = getResult().getValue(Fields.PROGRAM);
         platform = getResult().getValue(Fields.PLATFORM);
+
+        if (getResult().getCount(Fields.TPA) > 0 ) {
+            tpa = getAndValidateBoolean(getResult().getField(Fields.TPA));
+        }
 
         fastaFile = getFile(getInputDir(), getResult().getField(Fields.FASTA));
         flatFile = getFile(getInputDir(), getResult().getField(Fields.FLATFILE));
