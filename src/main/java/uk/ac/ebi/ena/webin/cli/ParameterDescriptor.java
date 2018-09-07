@@ -24,6 +24,7 @@ public interface ParameterDescriptor {
     String version    = "-version";
     String inputDir   = "-inputDir";
     String tryAscp    = "-ascp";
+    String help       = "-help";
 
     String OPTION_LINE = "\n\t";
     String MANDATORY_LINE = "[Required] ";
@@ -52,17 +53,17 @@ public interface ParameterDescriptor {
 
     String manifestFlagDescription =
             OPTION_LINE + MANDATORY_LINE +"Path to the manifest file. The manifest file is" +
-            OPTION_LINE + "a text file with two columns separated by a tab:" +
-            VALUE_LINE + "field name" +
-            VALUE_LINE + "file value" +
+            OPTION_LINE + "a text file with two columns separated by a tab: field name and field value." +
             OPTION_LINE + "Full details of the supported fields are available from: " +
             OPTION_LINE + "http://ena-docs.readthedocs.io/en/latest/cli.html";
 
    String testFlagDescription = "\tUse the test submission system.";
    String centerNameFlagDescription = OPTION_LINE + "Mandatory center name for broker accounts.";
-   String versionFlagDescription = OPTION_LINE + "Prints the version number of the program and exists.";
+   String versionFlagDescription = OPTION_LINE + "Prints the version number of the program and exits.";
    String inputDirFlagDescription = OPTION_LINE + "Input directory for files declared in the manifest file.";
    String tryAscpDescription =
            OPTION_LINE + "Use Aspera (if Aspera Cli is available) instead of FTP when uploading files." +
            OPTION_LINE + "The path to the installed \"ascp\" program must be in the PATH variable.";
+    String helpDescription =
+            OPTION_LINE + "Use the -help option to see all command line options.";
 }

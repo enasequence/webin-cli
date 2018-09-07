@@ -14,10 +14,7 @@ package uk.ac.ebi.ena.manifest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import uk.ac.ebi.ena.manifest.fields.ManifestFieldCorrector;
-import uk.ac.ebi.ena.manifest.fields.ManifestFieldValidator;
-import uk.ac.ebi.ena.manifest.fields.EmptyCorrector;
+import java.util.stream.Collectors;
 
 public class 
 ManifestFieldDefinition 
@@ -26,24 +23,14 @@ ManifestFieldDefinition
     private final ManifestFieldType type;
     private final int minCount;
     private final int maxCount;
-    private final List<String> fieldValueOrFileSuffix;
-    private final List<ManifestFieldValidator> validators;
-    private final ManifestFieldCorrector corrector;
+    private final List<ManifestFieldProcessor> processors;
 
     
-    public List<ManifestFieldValidator>
-    getFieldValidators()
+    public List<ManifestFieldProcessor>
+    getFieldProcessors()
     {
-        return validators;
+        return processors;
     }
-    
-    
-    public ManifestFieldCorrector
-    getFieldCorrector()
-    {
-        return corrector;
-    }
-
     
     public 
     ManifestFieldDefinition( String name, ManifestFieldType type, int minCount, int maxCount )
@@ -52,46 +39,22 @@ ManifestFieldDefinition
         this.type = type;
         this.minCount = minCount;
         this.maxCount = maxCount;
-        this.fieldValueOrFileSuffix = Collections.emptyList();
-        this.validators = Collections.emptyList();
-        this.corrector  = new EmptyCorrector();
+        this.processors = Collections.emptyList();
     }
 
-    
     public 
-    ManifestFieldDefinition( String name, ManifestFieldType type, int minCount, int maxCount, List<String> fieldValueOrFileSuffix )
+    ManifestFieldDefinition( String name, ManifestFieldType type, int minCount, int maxCount, ManifestFieldProcessor... processors)
     {
         this.name = name;
         this.type = type;
         this.minCount = minCount;
         this.maxCount = maxCount;
-        this.fieldValueOrFileSuffix = fieldValueOrFileSuffix;
-        this.validators = Collections.emptyList();
-        this.corrector  = new EmptyCorrector();
+        this.processors = Arrays
+                .asList(processors)
+                .stream().filter( processor -> processor != null)
+                .collect(Collectors.toList());
     }
 
-
-    public 
-    ManifestFieldDefinition( String name, ManifestFieldType type, int minCount, int maxCount, ManifestFieldCorrector corrector, ManifestFieldValidator... validators )
-    {
-        this.name = name;
-        this.type = type;
-        this.minCount = minCount;
-        this.maxCount = maxCount;
-        this.fieldValueOrFileSuffix = Collections.emptyList();
-        this.validators = Arrays.asList( validators );
-        this.corrector  = corrector;
-    }
-    
-    
-    public 
-    ManifestFieldDefinition( String name, ManifestFieldType type, int minCount, int maxCount, ManifestFieldValidator... validators )
-    {
-        this( name, type, minCount, maxCount, new EmptyCorrector(), validators );
-    }
-    
-    
-    
     public String 
     getName()
     {
@@ -119,24 +82,14 @@ ManifestFieldDefinition
         return maxCount;
     }
 
-    
-    public boolean 
-    isFieldValueOrFileSuffix()
-    {
-        return fieldValueOrFileSuffix != null && !fieldValueOrFileSuffix.isEmpty();
-    }
-
-    
-    public List<String> 
-    getFieldValueOrFileSuffix()
-    {
-        return fieldValueOrFileSuffix;
-    }
-    
-    
-    public String
-    toString()
-    {
-        return String.format( "%s<%s>[%d, %d]{%s}", name, type, minCount, maxCount, fieldValueOrFileSuffix );
+    @Override
+    public String toString() {
+        return "ManifestFieldDefinition{" +
+                "name='" + name + '\'' +
+                ", type=" + type +
+                ", minCount=" + minCount +
+                ", maxCount=" + maxCount +
+                ", processors=" + processors +
+                '}';
     }
 }

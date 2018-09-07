@@ -44,6 +44,7 @@ import org.jdom2.output.XMLOutputter;
 
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -147,10 +148,16 @@ Submit
             Element rootNode = doc.getRootElement();
             if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
                 String accession = rootNode.getChild( payloadType ).getAttributeValue( "accession" );
-                if (accession != null && !accession.isEmpty())
-                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " The following " + payloadType.toLowerCase() +" accession was assigned to the submission: " + accession);
-                else
-                    WebinCli.writeMessage(Severity.INFO, WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the " + payloadType.toLowerCase() + " XML submission. Please contact the helpdesk.");
+                if (accession != null && !accession.isEmpty()) {
+                    String msg = WebinCli.SUBMIT_SUCCESS + " The following " + payloadType.toLowerCase() + " accession was assigned to the submission: " + accession;
+                    WebinCliReporter.writeToConsole(Severity.INFO, msg);
+                    WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.INFO, msg);
+                }
+                else {
+                    String msg = WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the " + payloadType.toLowerCase() + " XML submission. Please contact the helpdesk.";
+                    WebinCliReporter.writeToConsole(Severity.INFO, msg);
+                    WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.INFO, msg);
+                }
             } else {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
                 for (Element child : childrenList) {

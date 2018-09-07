@@ -75,6 +75,12 @@ public class WebinCliTestUtils {
     }
 
     public static Path
+    createTempFile(String fileName)
+    {
+        return createTempFile(fileName, false, null);
+    }
+
+    public static Path
     createTempFile(boolean compress, String contents) {
         return createTempFile(null, null, compress, contents);
     }
@@ -96,13 +102,15 @@ public class WebinCliTestUtils {
                 path = Files.createTempFile("TEST", fileName);
             else
                 path = Files.createTempFile("TEST", "TEST");
-            InputStream is = new ByteArrayInputStream(contents.getBytes());
-            OutputStream os;
-            IOUtils.copy(is, (os = compress ?
-                    new GZIPOutputStream(Files.newOutputStream(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC))
-                    : Files.newOutputStream(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC)));
-            os.flush();
-            os.close();
+            if (contents != null) {
+                InputStream is = new ByteArrayInputStream(contents.getBytes());
+                OutputStream os;
+                IOUtils.copy(is, (os = compress ?
+                        new GZIPOutputStream(Files.newOutputStream(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC))
+                        : Files.newOutputStream(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC)));
+                os.flush();
+                os.close();
+            }
             Assert.assertTrue(Files.exists(path));
             Assert.assertTrue(Files.isRegularFile(path));
             return path;

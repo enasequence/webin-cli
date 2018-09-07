@@ -14,6 +14,8 @@ package uk.ac.ebi.ena.manifest;
 import org.junit.Assert;
 import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.Severity;
+import uk.ac.ebi.ena.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,10 +32,12 @@ public class ManifestReaderTest {
 
     Path inputDir = Paths.get( "." );
 
+    private final static ManifestCVList CV_FIELD_1 = new ManifestCVList( "VALUE1" );
+
     static class ManifestReaderOneMetaFieldMin0Max1 extends TestManifestReader {
         public ManifestReaderOneMetaFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 0, 1, Arrays.asList("VALUE1")));
+                add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 0, 1, new CVFieldProcessor(CV_FIELD_1 )));
             }});
         }
     }
@@ -41,7 +45,7 @@ public class ManifestReaderTest {
     static class ManifestReaderTwoMetaFieldMin1Max1 extends TestManifestReader {
         public ManifestReaderTwoMetaFieldMin1Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 1, 1, Arrays.asList("VALUE1")));
+                add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 1, 1, new CVFieldProcessor(CV_FIELD_1 )));
                 add(new ManifestFieldDefinition("META_FIELD_2", ManifestFieldType.META, 1, 1));
             }});
         }
@@ -50,7 +54,8 @@ public class ManifestReaderTest {
     static class ManifestReaderOneFileFieldMin0Max1 extends TestManifestReader {
         public ManifestReaderOneFileFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1, Arrays.asList(".txt")));
+                add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1,
+                        new FileSuffixProcessor( Arrays.asList(".txt"))));
             }});
         }
     }
@@ -111,8 +116,7 @@ public class ManifestReaderTest {
         ManifestReader reader = new ManifestReaderTwoMetaFieldMin1Max1();
         File manifest = createManifest("META_FIELD_1\nMETA_FIELD_2 \n");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().count("MANIFEST_MISSING_MANDATORY_FIELD_WITH_VALUES", Severity.ERROR), 1);
-        Assert.assertEquals(reader.getValidationResult().count("MANIFEST_MISSING_MANDATORY_FIELD", Severity.ERROR), 1);
+        Assert.assertEquals(reader.getValidationResult().count("MANIFEST_MISSING_MANDATORY_FIELD", Severity.ERROR), 2);
     }
 
     @Test public void TooManyFields() {

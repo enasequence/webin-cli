@@ -72,6 +72,7 @@ public class Study {
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
                     throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
                 case HttpStatus.SC_UNAUTHORIZED:
+                case HttpStatus.SC_FORBIDDEN:
                     throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
                 default:
                     throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);

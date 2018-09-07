@@ -48,6 +48,7 @@ import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public abstract class 
@@ -70,14 +71,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     protected AssemblyInfoEntry assembly_info;
 
     protected abstract boolean validateInternal() throws ValidationEngineException;
-    
-    protected File
-    getReportFile( FileFormat filetype, String filename )
-    {
-        return super.getReportFile( String.valueOf( filetype ), filename );
-    }
 
-    
     public void
     setStudy( Study study )
     { 
@@ -168,7 +162,6 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         this.assembly_info = assembly_info;
     }
 
-    
     protected Element
     createTextElement( String name, String text )
     {
@@ -324,7 +317,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     {
         try
         {
-            Path uploadDir = Paths.get( String.valueOf( getContext() ), getSafeOutputSubdir(getName()) );
+            Path uploadDir = Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDir(getName()) );
 
             List<File> uploadFileList = getUploadFiles();
             List<Element> eList = getXMLFiles( uploadDir );

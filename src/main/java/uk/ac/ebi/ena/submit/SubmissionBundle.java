@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.List;
 
 import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 
 public class 
@@ -157,23 +157,23 @@ SubmissionBundle implements Serializable
     validate( ValidationResult result )
     {
         result = null != result ? result : new ValidationResult();
- 
+
         String current = getVersion();
         if( null != current && !current.equals( this.version ) )
-            result.append( new ValidationMessage<>( Severity.ERROR, "Incorrect version" ) );
+            result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Program version has changed" ) );
 
         for( SubmissionXMLFile file : getXMLFileList() )
         {
             try
             {
                 if( !file.getMd5().equalsIgnoreCase( FileUtils.calculateDigest( "MD5", file.getFile() ) ) )
-                    result.append( new ValidationMessage<>( Severity.ERROR, "Unable to vaildate checksum for file " + file.getFile() ) );
+                    result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Generated xml file has changed: " + file.getFile() ) );
             } catch( FileNotFoundException e )
             {
-                result.append( new ValidationMessage<>( Severity.ERROR, "Unable to vaildate checksum for file " + file.getFile() + " " + "File not found" ) );
+                result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Generated xml file not found: " + file.getFile() ) );
             } catch( NoSuchAlgorithmException | IOException e )
             {
-                result.append( new ValidationMessage<>( Severity.ERROR, "Unable to vaildate checksum for file " + file.getFile() + " " + e.getMessage() ) );
+                result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Error reading generated xml file: " + file.getFile() + " " + e.getMessage() ) );
             }            
         }
 

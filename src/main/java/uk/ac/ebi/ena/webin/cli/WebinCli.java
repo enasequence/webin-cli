@@ -12,17 +12,16 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
@@ -40,7 +39,6 @@ import uk.ac.ebi.ena.submit.Submit;
 import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
-import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.version.Version;
 
 public class WebinCli {
@@ -48,9 +46,6 @@ public class WebinCli {
 	public final static int SYSTEM_ERROR = 1;
 	public final static int USER_ERROR = 2;
 	public final static int VALIDATION_ERROR = 3;
-
-	private static final String RESUBMIT_AFTER_USER_ERROR = "Please correct the errors and use the -submit option again.";
-	private static final String RESUBMIT_AFTER_SYSTEM_ERROR = "Please use the -submit option again later.";
 
 	private static final String VALIDATE_SUCCESS = "The submission has been validated successfully. ";
 
@@ -60,13 +55,13 @@ public class WebinCli {
 
 	private static final String UPLOAD_SUCCESS = "The files have been uploaded to webin.ebi.ac.uk. ";
 
-	private static final String UPLOAD_USER_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
-	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
+	private static final String UPLOAD_USER_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a user error. ";
+	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a system error. ";
 
 	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully. ";
 
-	private static final String SUBMIT_USER_ERROR = "The submission has failed because of a user error. " + RESUBMIT_AFTER_USER_ERROR;
-	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. " + RESUBMIT_AFTER_SYSTEM_ERROR;
+	private static final String SUBMIT_USER_ERROR = "The submission has failed because of a user error. ";
+	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. ";
 
 	public static final String AUTHENTICATION_ERROR = "Invalid submission account user name or password.";
 
@@ -76,16 +71,9 @@ public class WebinCli {
 	
 	private Params params;
 	private ContextE contextE;
-    private String SUBMIT_DIR = "submit";
-    private boolean test_mode;
     private AbstractWebinCli validator;
 
-	private static String outputDir;
-	private static String webinCliReportFile;
-	private static String infoReportFile;
-
-
-	public static class 
+	public static class
 	Params	
 	{
 		@Parameter()
@@ -141,7 +129,7 @@ public class WebinCli {
 	getFormattedProgramVersion()
 	{
         String version = WebinCli.class.getPackage().getImplementationVersion();
-        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );    
+        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
 	}
 	
 	
@@ -157,12 +145,14 @@ public class WebinCli {
             {
                 Set<String> found = Arrays.stream( args ).collect( Collectors.toSet() );
 
-                if( found.contains( "-help" ) )
-                    printUsageHelpAndExit();
+                if( found.contains( "-help" ) ) {
+					printUsage();
+					System.exit( SUCCESS );
+				}
                 
                 if( found.contains( "-version" ) )
                 {
-                    writeMessageIntoConsole( getFormattedProgramVersion() );
+                    WebinCliReporter.writeToConsole( getFormattedProgramVersion() );
                     System.exit( SUCCESS );
                 }
 
@@ -172,11 +162,13 @@ public class WebinCli {
             
             if( !params.validate && !params.submit ) 
             {
-                printUsageErrorAndExit();
+				WebinCliReporter.writeToConsole( Severity.ERROR, "Either -validate or -submit option must be provided.");
+            	printHelp();
+                System.exit( USER_ERROR );
             }
 
             checkVersion( params.test );
-    
+
             WebinCli webinCli = new WebinCli();
             webinCli.init( params );
             webinCli.execute();
@@ -185,7 +177,8 @@ public class WebinCli {
             
         } catch( WebinCliException e ) 
         {
-            writeMessage( Severity.ERROR, e.getMessage() );
+			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
+            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
             
             switch( e.getErrorType() )
             {
@@ -201,33 +194,31 @@ public class WebinCli {
         } 
         catch( ValidationEngineException e ) 
         {
-            writeMessage( Severity.ERROR, e.getMessage() );
+			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
+			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
             System.exit( SYSTEM_ERROR );
         }
         catch( Throwable e ) 
         {
             StringWriter sw = new StringWriter();
             e.printStackTrace( new PrintWriter( sw ) );
-            writeMessage( Severity.ERROR, e.getMessage() );
+			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
+			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
             System.exit( SYSTEM_ERROR );
         }
     }
 
   
     void 
-    init( Params params ) throws Exception, IOException, FileNotFoundException 
+    init( Params params ) throws Exception
     {
         this.params = params;
         this.contextE = ContextE.valueOf( String.valueOf( params.context ).toLowerCase() );
-        this.test_mode = params.test;
 
         params.manifest = getFullPath( params.manifest );
         File manifestFile = new File( params.manifest );
 
-        outputDir = params.outputDir == null ? manifestFile.getParent() : params.outputDir;
-        outputDir = getFullPath( outputDir );
-
-        this.validator = contextE.getValidatorClass().newInstance();
+        String outputDir = getFullPath( params.outputDir == null ? manifestFile.getParent() : params.outputDir );
 
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setManifestFile( manifestFile );
@@ -237,8 +228,12 @@ public class WebinCli {
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
         parameters.setTestMode( params.test );
-        validator.setTestMode( params.test );
-		validator.init( parameters );
+
+		WebinCliReporter.setDefaultReportDir(createOutputDir(parameters, "."));
+
+		this.validator = contextE.getValidatorClass().newInstance();
+		this.validator.setTestMode( params.test );
+		this.validator.init( parameters );
     }
     
 
@@ -250,30 +245,19 @@ public class WebinCli {
 		} catch (IllegalArgumentException e) {
 			throw WebinCliException.createUserError(INVALID_CONTEXT, params.context);
 		}
-		
-		if (params.validate)
+
+		SubmissionBundle sb = validator.getSubmissionBundle();
+
+		if (params.validate || sb == null) {
 			doValidation();
-		
-		if( params.submit )
-		{
-		    SubmissionBundle sb = null;
-		    try
-		    {
-		        sb = validator.getSubmissionBundle();
-		    }catch( WebinCliException e )
-		    {
-		        writeMessageIntoInfoReport( Severity.WARNING, e.getMessage() );
-		        throw WebinCliException.createUserError( "Unable to read previous attempt of validation. Please re-run validation again." );
-		    }
-		    
-	        if( null != sb )
-	            doSubmit( sb );
-	        else
-	        	throw WebinCliException.createSystemError( "Unable to find attempt of validation. Please re-run validation again." );
+			sb = validator.getSubmissionBundle();
+		}
+
+		if (params.submit) {
+			doSubmit( sb );
 		}
 	}
 
-	
 	private void 
 	doValidation() 
 	{
@@ -284,8 +268,8 @@ public class WebinCli {
                 throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, String.valueOf( validator.getValidationDir() ) );
             }
             validator.prepareSubmissionBundle();
-            writeMessage( Severity.INFO, VALIDATE_SUCCESS );
-		} catch( IOException /*| NoSuchAlgorithmException */| ValidationEngineException e ) 
+            WebinCliReporter.writeToConsole( Severity.INFO, VALIDATE_SUCCESS );
+		} catch( IOException | ValidationEngineException e )
 		{
 			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
@@ -301,8 +285,8 @@ public class WebinCli {
         {
             ftpService.connect( params.userName, params.password );
             ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
-            writeMessage( Severity.INFO, UPLOAD_SUCCESS );
-            
+			WebinCliReporter.writeToConsole( Severity.INFO, UPLOAD_SUCCESS );
+
         } catch( WebinCliException e ) 
         {
             e.throwAddMessage( UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR );
@@ -323,24 +307,6 @@ public class WebinCli {
             e.throwAddMessage( SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR );
         }
     }
-	
-	
-	private File createSubmitDirectory(String assemblyName) {
-        File submitDirectory =new File(new File(outputDir) + File.separator + contextE + File.separator + assemblyName + File.separator + SUBMIT_DIR);
-        if (submitDirectory.exists())
-            FileUtils.emptyDirectory(submitDirectory);
-        else
-            submitDirectory.mkdirs();
-        return submitDirectory;
-    }
-
-	private String getSubmitDirectory(String name) {
-		File submitDirectory =new File(new File(outputDir) + File.separator + contextE + File.separator + name + File.separator + SUBMIT_DIR);
-        if (submitDirectory.exists())
-            return submitDirectory.getAbsolutePath();
-        else
-            return null;
-	}
 
     private static Params parseParameters(String... args) {
 		Params params = new Params();
@@ -349,24 +315,20 @@ public class WebinCli {
 			jCommander.parse(args);
 
 			if (params.unrecognisedOptions.size() > 1) {
-				writeMessage(Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", ")));
-				printUsageErrorAndExit();
+				WebinCliReporter.writeToConsole(Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", ")));
+				printHelp();
+				System.exit(USER_ERROR);
 			}
 
 		} catch (Exception e) {
-			writeMessage(Severity.ERROR, e.getMessage());
-			printUsageErrorAndExit();
+			WebinCliReporter.writeToConsole(Severity.ERROR, e.getMessage());
+			System.exit(USER_ERROR);
 		}
 		return params;
 	}
 
-	private static void printUsageErrorAndExit() {
-		printUsageHelpAndExit();
-		System.exit(USER_ERROR);
-	}
-
-	private static void printUsageHelpAndExit() {
-	    writeMessageIntoConsole( new StringBuilder().append( "Program options: " )
+	private static void printUsage() {
+	    WebinCliReporter.writeToConsole( new StringBuilder().append( "Program options: " )
 	                                                .append( "\n" + ParameterDescriptor.context + ParameterDescriptor.contextFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription )
@@ -378,9 +340,13 @@ public class WebinCli {
 	                                                .append( "\n" + ParameterDescriptor.centerName + ParameterDescriptor.centerNameFlagDescription )
 	                                                .append( "\n" + ParameterDescriptor.tryAscp + ParameterDescriptor.tryAscpDescription )
 	                                                .append( "\n" + ParameterDescriptor.version + ParameterDescriptor.versionFlagDescription )
+													.append( "\n" + ParameterDescriptor.help + ParameterDescriptor.helpDescription )
 	                                                .append( "\n" ).toString() );
 		writeReturnCodes();
-		System.exit( SUCCESS );
+	}
+
+	private static void printHelp() {
+		WebinCliReporter.writeToConsole( Severity.INFO, "Please use -help to see all command line options." );
 	}
 
 	private static void writeReturnCodes()	{
@@ -389,7 +355,7 @@ public class WebinCli {
 		returnCodeMap.put(SYSTEM_ERROR, "INTERNAL ERROR");
 		returnCodeMap.put(USER_ERROR, "USER ERROR");
 		returnCodeMap.put(VALIDATION_ERROR, "VALIDATION ERROR");
-		writeMessageIntoConsole( "Exit codes: " + returnCodeMap.toString() + "\n" );
+		WebinCliReporter.writeToConsole( "Exit codes: " + returnCodeMap.toString());
 	}
 
 	public static class contextValidator implements IParameterValidator {
@@ -408,7 +374,7 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists())
-				throw new ParameterException("The output directory '" + value + "' does not exist. Please provide a valid -outputDir option.");
+				throw new ParameterException("The output directory '" + value + "' does not exist.");
 		}
 	}
 
@@ -417,7 +383,7 @@ public class WebinCli {
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
 			if(!file.exists())
-				throw new ParameterException("The manifest file '" + value + "' does not exist. Please provide a valid -manifest option.");
+				throw new ParameterException("The manifest file '" + value + "' does not exist.");
 		}
 	}
 
@@ -433,80 +399,54 @@ public class WebinCli {
 			throw WebinCliException.createUserError(INVALID_VERSION.replaceAll("__VERSION__", version));
 	}
 
-	/**
-	 * Writes messages to the webin cli report file and to the console. If there is no
-	 * webin-cli.report file then writes only to the console.
-	 */
-	public static void 
-	writeMessage( Severity severity, String message ) 
-	{
-		if( message == null || message.isEmpty() )
-			return;
-		
-		String msg = FileUtils.formatMessage( severity, message );	
-		
-		writeMessageIntoConsole( msg );
-		
-		if( webinCliReportFile != null )
-		{
-			try
-			{
-				Files.write( Paths.get(webinCliReportFile), msg.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE  );
-			} catch( IOException e ) 
-			{
+	// Directory creation.
 
-			}
+	static File
+	getReportFile(File dir, String filename, String suffix)
+	{
+		if( dir == null || !dir.isDirectory() )
+			throw WebinCliException.createSystemError( "Invalid report directory: " + filename );
+
+		return new File( dir, Paths.get( filename ).getFileName().toString() + suffix );
+	}
+
+	public static File
+	createOutputDir(WebinCliParameters parameters, String... dirs) throws WebinCliException
+	{
+		if (parameters.getOutputDir() == null) {
+			throw WebinCliException.createSystemError( "Missing output directory" );
 		}
+
+		String[] safeDirs = getSafeOutputDir(dirs);
+
+		Path p;
+
+		try {
+			p = Paths.get(parameters.getOutputDir().getPath(), safeDirs);
+		}
+		catch (InvalidPathException ex) {
+
+			throw WebinCliException.createSystemError("Unable to create directory: " + ex.getInput());
+		}
+
+		File dir = p.toFile();
+
+		if( !dir.exists() && !dir.mkdirs() )
+		{
+			throw WebinCliException.createSystemError( "Unable to create directory: " + dir.getPath() );
+		}
+
+		return dir;
 	}
 
-	private static void 
-	writeMessageIntoInfoReport(Severity severity, String message) {
-        if (message == null || message.isEmpty())
-            return;
-        if (infoReportFile != null) {
-            try {
-                String msg = FileUtils.formatMessage( severity, message );
-                Files.write(Paths.get(infoReportFile), msg.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.APPEND, StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-            } catch (IOException e) {}
-        }
-    }
-
-	
-	
-	/**
-	 * Writes messages to the console.
-	 */
-	private static void 
-	writeMessageIntoConsole( String message ) 
-	{
-		System.out.print( message );
+	public static String[]
+	getSafeOutputDir(String ... dirs ) {
+		return Stream
+				.of(dirs)
+				.map(str -> str.replaceAll("[^a-zA-Z0-9-_\\.]", "_"))
+				.map(str -> str.replaceAll("__", "_"))
+				.map(str -> str.replaceAll("^_ +", ""))
+				.map(str -> str.replaceAll("_+$", ""))
+				.toArray(String[]::new);
 	}
-
-    
-	public boolean
-    getTestMode()
-    {
-        return test_mode;
-    }
-
-    
-    public void
-    setTestMode( boolean test_mode )
-    {
-        this.test_mode = test_mode;
-    }
-
-    
-    public ContextE
-    getContext()
-    {
-        return contextE;
-    }
-
-    public void
-    setContext( ContextE contextE )
-    {
-        this.contextE = contextE;
-    }
-
 }

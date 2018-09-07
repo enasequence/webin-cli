@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import org.jdom2.Element;
@@ -34,10 +33,8 @@ import uk.ac.ebi.embl.api.entry.location.Location;
 import uk.ac.ebi.embl.api.entry.location.LocationFactory;
 import uk.ac.ebi.embl.api.entry.location.Order;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
-import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.embl.api.validation.ValidationScope;
@@ -48,9 +45,11 @@ import uk.ac.ebi.embl.fasta.reader.FastaFileReader;
 import uk.ac.ebi.embl.fasta.reader.FastaLineReader;
 import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
 import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
+import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
+import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifest>
@@ -71,19 +70,18 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 
 	@Override
 	protected TranscriptomeAssemblyManifest createManifestReader() {
-		return new TranscriptomeAssemblyManifest();
+		// Create manifest parser which will also set the sample and study fields.
+
+		return new TranscriptomeAssemblyManifest(
+				isFetchSample() ? new SampleProcessor(getParameters(), this::setSample ) : null,
+				isFetchStudy() ? new StudyProcessor(getParameters(), this::setStudy ) : null);
 	}
 
 	@Override
 	public void readManifest(Path inputDir, File manifestFile) {
 		getManifestReader().readManifest(inputDir, manifestFile);
 
-		// Set study, sample and file fields
-
-		if (isFetchStudy() && getManifestReader().getStudyId() != null)
-			setStudy( fetchStudy( getManifestReader().getStudyId(), getTestMode() ) );
-		if (isFetchSample() && getManifestReader().getSampleId() != null)
-			setSample( fetchSample( getManifestReader().getSampleId(), getTestMode() ) );
+		// Set file fields
 
 		if (getManifestReader().getFastaFile() != null) {
 			this.fastaFiles.add(getManifestReader().getFastaFile());
@@ -135,11 +133,11 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 		if( !flatFiles.isEmpty() )
 		{
 		    submittedFile = flatFiles.get( 0 ).getPath();
-		    reportFile = getReportFile( FileFormat.FLATFILE, submittedFile );
+		    reportFile = getReportFile( submittedFile );
 			validateFlatFile();
 		} else if( !fastaFiles.isEmpty() )
 		{   submittedFile = fastaFiles.get( 0 ).getPath();
-		    reportFile = getReportFile( FileFormat.FASTA, submittedFile );
+		    reportFile = getReportFile( submittedFile );
 			validateFastaFile();
 		} else
 			throw new ValidationEngineException("Manifest file: FASTA or FLATFILE must be present.");
@@ -157,10 +155,9 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 			ValidationResult validationResult = flatFileReader.read();
 			if (validationResult != null && validationResult.getMessages(Severity.ERROR) != null && !validationResult.getMessages(Severity.ERROR).isEmpty()) {
 				FAILED_VALIDATION = true;
-                FileUtils.writeReport(reportFile, validationResult);
+                WebinCliReporter.writeToFile(reportFile, validationResult);
 			}
 			ValidationPlanResult validationPlanResult;
-			List<ValidationMessage<Origin>> validationMessagesList;
 			while (flatFileReader.isEntry()) {
 				Entry entry = (Entry)flatFileReader.getEntry();
 				entry.getPrimarySourceFeature().setScientificName( getSample().getOrganism());
@@ -169,10 +166,9 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 				if( getStudy().getProjectId() != null )
 					 entry.addProjectAccession( new Text( getStudy().getProjectId() ) );
 				validationPlanResult = validationPlan.execute(entry);
-				validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
-				if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
+				if (!validationPlanResult.isValid()) {
 					FAILED_VALIDATION = true;
-                    FileUtils.writeReport(reportFile, validationMessagesList);
+                    WebinCliReporter.writeToFile(reportFile, validationPlanResult);
 				}
 				flatFileReader.read();
 			}
@@ -182,6 +178,7 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 	}
 
 	private void validateFastaFile() throws ValidationEngineException {
+
 		try {
 			Path path = Paths.get(submittedFile);
 			if (!Files.exists(path))
@@ -190,10 +187,9 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 			ValidationResult validationResult = fastaFileReader.read();
 			if (validationResult != null && validationResult.getMessages(Severity.ERROR) != null && !validationResult.getMessages(Severity.ERROR).isEmpty()) {
 				FAILED_VALIDATION = true;
-                FileUtils.writeReport(reportFile, validationResult);
+                WebinCliReporter.writeToFile(reportFile, validationResult);
 			}
 			ValidationPlanResult validationPlanResult;
-			List<ValidationMessage<Origin>> validationMessagesList;
 			while (fastaFileReader.isEntry()) {
 				Entry entry = fastaFileReader.getEntry();
 				SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();
@@ -211,10 +207,9 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 				sourceFeature.setLocations(featureLocation);
 				entry.addFeature(sourceFeature);
 				validationPlanResult = validationPlan.execute(entry);
-				validationMessagesList = validationPlanResult.getMessages(Severity.ERROR);
-				if (validationMessagesList != null && !validationMessagesList.isEmpty()) {
+				if (!validationPlanResult.isValid()) {
 					FAILED_VALIDATION = true;
-                    FileUtils.writeReport(reportFile, validationMessagesList);
+                    WebinCliReporter.writeToFile(reportFile, validationPlanResult);
 				}
 				fastaFileReader.read();
 			}

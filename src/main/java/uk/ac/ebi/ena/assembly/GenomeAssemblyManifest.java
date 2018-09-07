@@ -2,10 +2,10 @@ package uk.ac.ebi.ena.assembly;
 
 import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.processor.*;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -48,37 +48,52 @@ public class GenomeAssemblyManifest extends ManifestReader
     private List<File> flatFiles;
     private List<File> agpFiles;
 
-    public GenomeAssemblyManifest() {
+    private final static String[] CV_MOLECULETYPE = {
+        "genomic DNA",
+        "genomic RNA",
+        "viral cRNA"
+    };
+
+    private final static String[] CV_ASSEMBLY_TYPE = {
+            "clone or isolate",
+            "primary metagenome",
+            "binned metagenome",
+            "Metagenome-Assembled Genome (MAG)",
+            "Environmental Single-Cell Amplified Genome (SAG)"
+    };
+
+    public
+    GenomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor ) {
         super(
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {{
                     add(new ManifestFieldDefinition(Fields.NAME, ManifestFieldType.META, 0, 1));
                     add(new ManifestFieldDefinition(Fields.ASSEMBLYNAME, ManifestFieldType.META, 0, 1));
-                    add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1));
-                    add(new ManifestFieldDefinition(Fields.SAMPLE, ManifestFieldType.META, 1, 1));
+                    add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor));
+                    add(new ManifestFieldDefinition(Fields.SAMPLE, ManifestFieldType.META, 1, 1, sampleProcessor));
                     add(new ManifestFieldDefinition(Fields.COVERAGE, ManifestFieldType.META, 1, 1));
                     add(new ManifestFieldDefinition(Fields.PROGRAM, ManifestFieldType.META, 1, 1));
                     add(new ManifestFieldDefinition(Fields.PLATFORM, ManifestFieldType.META, 1, 1));
                     add(new ManifestFieldDefinition(Fields.MINGAPLENGTH, ManifestFieldType.META, 0, 1));
-                    add(new ManifestFieldDefinition(Fields.MOLECULETYPE, ManifestFieldType.META, 0, 1, Arrays.asList(
-                            "genomic DNA",
-                            "genomic RNA",
-                            "viral cRNA"
-                    )));
-                    add(new ManifestFieldDefinition(Fields.ASSEMBLY_TYPE, ManifestFieldType.META, 0, 1, Arrays.asList(
-                            "clone or isolate",
-                            "primary metagenome",
-                            "binned metagenome",
-                            "Metagenome-Assembled Genome (MAG)",
-                            "Environmental Single-Cell Amplified Genome (SAG)"
-                    )));
-                    add(new ManifestFieldDefinition(Fields.TPA, ManifestFieldType.META, 0, 1, ManifestFieldCv.BOOLEAN_FIELD_VALUES));
+                    add(new ManifestFieldDefinition(Fields.MOLECULETYPE, ManifestFieldType.META, 0, 1,
+                                                    new CVFieldProcessor(CV_MOLECULETYPE)));
 
-                    add(new ManifestFieldDefinition(Fields.CHROMOSOME_LIST, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));
-                    add(new ManifestFieldDefinition(Fields.UNLOCALISED_LIST, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));
-                    add(new ManifestFieldDefinition(Fields.FASTA, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.FASTA_FILE_SUFFIX));
-                    add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX));
-                    add(new ManifestFieldDefinition(Fields.AGP, ManifestFieldType.FILE, 0, 1, ManifestFileSuffix.AGP_FILE_SUFFIX));
+                    add(new ManifestFieldDefinition(Fields.ASSEMBLY_TYPE, ManifestFieldType.META, 0, 1,
+                                                    new CVFieldProcessor(CV_ASSEMBLY_TYPE)));
+
+                    add(new ManifestFieldDefinition(Fields.TPA, ManifestFieldType.META, 0, 1,
+                                                    CVFieldProcessor.CV_BOOLEAN));
+
+                    add(new ManifestFieldDefinition(Fields.CHROMOSOME_LIST, ManifestFieldType.FILE, 0, 1,
+                            new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                    add(new ManifestFieldDefinition(Fields.UNLOCALISED_LIST, ManifestFieldType.FILE, 0, 1,
+                            new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                    add(new ManifestFieldDefinition(Fields.FASTA, ManifestFieldType.FILE, 0, 1,
+                            new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX)));
+                    add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
+                            new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                    add(new ManifestFieldDefinition(Fields.AGP, ManifestFieldType.FILE, 0, 1,
+                            new FileSuffixProcessor( ManifestFileSuffix.AGP_FILE_SUFFIX)));
                 }},
 
                 // File groups.
