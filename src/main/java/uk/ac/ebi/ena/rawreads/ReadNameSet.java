@@ -26,7 +26,7 @@ ReadNameSet<T>
     //TODO: Map cannot accomodate more than MAXINT
     ReadNameSet( int expected_reads )
     {
-        System.out.println( "expected reads: " + expected_reads );
+//        System.out.println( "expected reads: " + expected_reads );
         //this.bloom = new Bloom( edup, expected_reads );
         this.bloom = new BloomFilter<>( edup, expected_reads );
         this.suspected = Collections.synchronizedMap( new HashMap<>( (int) ( expected_reads * edup ) ) );
