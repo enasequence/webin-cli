@@ -314,7 +314,7 @@ public class WebinCli {
 		try {
 			jCommander.parse(args);
 
-			if (params.unrecognisedOptions.size() > 1) {
+			if (!params.unrecognisedOptions.isEmpty()) {
 				WebinCliReporter.writeToConsole(Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", ")));
 				printHelp();
 				System.exit(USER_ERROR);
