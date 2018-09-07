@@ -184,20 +184,23 @@ FastqScanner
             } );
 
             System.out.println( "Processing file " + rf.getFilename() );
-            System.out.println();
+            //System.out.println();
             System.out.flush();
             df.start();
             df.join();
             DataFeederException result = df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause();
             printProcessedReadNumber( count );
+            System.out.println();
             return result;
         }
     }
 
 
-    private void printProcessedReadNumber( AtomicLong count )
+    private void 
+    printProcessedReadNumber( AtomicLong count )
     {
-        System.out.printf( "\33[1A\33[2KProcessed %16d read(s)\n", count.get() );
+        //System.out.printf( "\33[1A\33[2KProcessed %16d read(s)\n", count.get() );
+        System.out.printf( "\rProcessed %16d read(s)", count.get() );
         System.out.flush();
     }
 

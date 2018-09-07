@@ -18,10 +18,11 @@ ReadNameSet<T>
     //Bloom bloom;
     private BloomFilter<String> bloom;
     private Map<String, Set<T>> suspected;
-    final boolean collect_suspected;
-    final double edup = 0.001;
-    final AtomicLong adds_no = new AtomicLong();
-    final AtomicLong susp_no = new AtomicLong();
+    private final boolean collect_suspected;
+    private final double edup = 0.001;
+    private final AtomicLong adds_no = new AtomicLong();
+    private final AtomicLong susp_no = new AtomicLong();
+    private final static int COLLECT_MAX = 100_000; 
     
     
     //TODO: Map cannot accomodate more than MAXINT
@@ -51,7 +52,7 @@ ReadNameSet<T>
         
         if( bloom.contains( read_name ) )
         {
-            if( collect_suspected )
+            if( collect_suspected && susp_no.get() < COLLECT_MAX )
             {
                 Set<T> set = suspected.getOrDefault( read_name, new LinkedHashSet<>() );
                 set.add( mark );
