@@ -22,10 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,16 +72,14 @@ import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
 {   
-    private static final int BLOOM_EXPECTED_READS = 800_000_000;
-
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
     private static final String BAM_STAR = "*";
@@ -165,51 +160,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     }
     
 
-    private DataFeederException 
-    read( InputStream is, 
-          String stream_name, 
-          final QualityNormalizer normalizer, 
-          Set<String>labels, 
-          ReadNameSet<SimpleEntry<String, Long>> rns ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
-    {
-        AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
-        {
-            DataSpotParams params = DataSpot.defaultParams();
-            
-            @Override protected DataSpot 
-            newFeedable()
-            {
-                return new DataSpot( normalizer, "", params );
-            }
-        };
-        
-        df.setName( stream_name );
-        
-        df.setEater( new NullDataEater<DataSpot>() 
-        {
-            AtomicLong read_no = new AtomicLong( 1 );
-            @Override public void
-            eat( DataSpot spot ) throws DataEaterException
-            {
-                int slash_idx = spot.bname.lastIndexOf( '/' );
-                String name = slash_idx == -1 ? spot.bname 
-                                              : spot.bname.substring( 0, slash_idx );
-                String label = slash_idx == -1 ? stream_name
-                                               : spot.bname.substring( slash_idx + 1 );
-                
-                if( labels.size() < getManifestReader().getPairingHorizon() )
-                    labels.add( label );
-                
-                rns.add( name, new SimpleEntry<String, Long>( label, read_no.getAndIncrement() ) );
-            }  
-        } );
-        
-        df.start();
-        df.join();
-        return df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause(); 
-    }
-    
-    
     @Override public boolean
     validate() throws ValidationEngineException
     {
@@ -290,53 +240,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             throw WebinCliException.createSystemError( ioe.getMessage() );
         }
     }
-    
-    
-    private boolean
-    checkSingleFile( RawReadsFile rf, AtomicBoolean paired )
-    {
-        boolean valid = true;
-        ValidationResult vr = new ValidationResult();
-        ReadNameSet<SimpleEntry<String, Long>> rns = new ReadNameSet<>( BLOOM_EXPECTED_READS );
-        File reportFile = getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() );
-        try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
-        {
-            AtomicLong reads_cnt = new AtomicLong();
-            Set<String> labelset = new HashSet<>();
-            DataFeederException t = read( is, rf.getFilename(), getQualityNormalizer( rf ), labelset, rns );
-                            
-            if( null != t )
-            {
-                ValidationMessage<Origin> vm = new ValidationMessage<>( Severity.ERROR, ValidationMessage.NO_KEY, t.getMessage() );
-                vm.setThrowable( t );
-                vm.append( new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ) );
-                
-                valid = false;
-                vr.append( vm );
-            }
-            
-            //extra check for suspected reads
-            if( rns.hasPossibleDuplicates() )
-            {
-                try( InputStream stream = openFileInputStream( Paths.get( rf.getFilename() ) ); )
-                {
-                    checkSuspected( stream, rf.getFilename(), rns );
-                }
-            }
 
-            FileUtils.writeReport( reportFile, vr );
-            FileUtils.writeReport( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt.get() );
-            FileUtils.writeReport( reportFile, Severity.INFO, "Collected " + labelset.size() +" read pair label(s): " + ( labelset.size() < 10 ? labelset : "" ) );
-            
-            return valid;
-            
-        } catch( Exception e )
-        {
-            throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
-        }
-
-    }
-    
     
     private boolean
     readFastqFile( List<RawReadsFile> files, AtomicBoolean paired )
@@ -355,76 +259,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             FastqScanner fs = new FastqScanner();            
             ValidationResult vr = fs.checkFiles( files.toArray( new RawReadsFile[ files.size() ] ) );
             paired.set( fs.getPaired() );
-            files.forEach( rf -> FileUtils.writeReport( getReportFile( String.valueOf( rf.getFiletype() ), rf.getFilename() ), vr ) );
+            files.forEach( rf -> WebinCliReporter.writeToFile( getReportFile( rf.getFilename() ), vr ) );
             return vr.isValid();
-            
-//            if( valid )
-//            {
-//                if( 2 == files.size() )
-//                {
-//                    Set<String> n0 = names.get( 0 );
-//                    Set<String> n1 = names.get( 1 );
-//                    int max_size = Math.max( n0.size(), n1.size() );
-//                    int resulted_size = max_size;
-//                    if( n0.size() > n1.size() )
-//                    {
-//                        n0.removeAll( n1 );
-//                        resulted_size = n0.size();
-//                    } else
-//                    {
-//                        n1.removeAll( n0 );
-//                        resulted_size = n1.size();
-//                    }
-//                    
-//                    if( resulted_size >= ( max_size / 2 ) )
-//                    {
-//                        String msg = "When submitting paired reads using two Fastq files the reads must follow Illumina paired read naming conventions. "
-//                                   + "This was not the case for the submitted Fastq files: "
-//                                   + files;
-//                        reportToFileList( files, msg );
-//                        throw WebinCliException.createValidationError( msg );
-//                    }
-//                    
-//                    if( labels.get( 0 ).containsAll( labels.get( 1 ) ) 
-//                     && labels.get( 1 ).containsAll( labels.get( 0 ) ) )
-//                    {
-//                        valid = false;
-//                        String msg = "When submitting paired reads using two Fastq files two different files must be provided. "
-//                                   + "The same file was specified twice: "
-//                                   + files;
-//                        reportToFileList( files, msg );
-//                        throw WebinCliException.createValidationError( msg );
-//                    }
-//                    
-//                    for( int index = 0; index < files.size(); ++ index )
-//                    {
-//                        if( getPaired( labels.get( index ) ) )
-//                        {
-//                            valid = false;
-//                            String msg = "When submitting paired reads using two Fastq files the first and second reads must be submitted in different files. "
-//                                       + "This was not the case for the submitted Fastq files: "
-//                                       + files.get( index );
-//                            reportToFileList( files, msg );
-//                            throw WebinCliException.createValidationError( msg );
-//                        }
-//                    }
-//                    
-//                    paired.set( true );
-//                    
-//                } else if( 1 == files.size() )
-//                {
-//                    paired.set( getPaired( labels.get( 0 ) ) );
-//                } else
-//                {
-//                    valid = false;
-//                    String msg = "Unable to validate unusual amount of files: " + files;
-//                    reportToFileList( files, msg );
-//                    throw WebinCliException.createValidationError( msg );
-//                }
-//            }
-//
-//            
-//            return valid;
             
         } catch( SecurityException | NoSuchMethodException | DataFeederException | IOException | InterruptedException e )
         {
@@ -433,227 +269,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     }
     
     
-    private boolean
-    __readFastqFile( List<RawReadsFile> files, AtomicBoolean paired )
-    {
-        boolean valid = true;
-        ValidationResult vr = new ValidationResult();
-        QualityNormalizer qn = QualityNormalizer.NONE;
-        List<Set<String>> names = new ArrayList<>( files.size() );
-        List<Set<String>> labels = new ArrayList<>( files.size() );
-        ReadNameSet<SimpleEntry<String, Long>> rns = new ReadNameSet<>( 800_000_000 );
-        
-        for( RawReadsFile rf : files )
-        {
-            File reportFile = getReportFile(rf.getFilename() );
-            try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
-            {
-                qn = getQualityNormalizer( rf );
-                AtomicLong reads_cnt = new AtomicLong();
-                Set<String> nameset  = new HashSet<>( getManifestReader().getPairingHorizon() );
-                Set<String> labelset = new HashSet<>( getManifestReader().getPairingHorizon() );
-                
-                names.add( nameset );
-                labels.add( labelset );
-                
-                //DataFeederException t = read( is, rf.getFilename(), qn, reads_cnt, nameset, labelset );
-                //TODO: make adjustable
-                
-                DataFeederException t = read( is, rf.getFilename(), qn, labelset, rns );
-                                
-                if( null != t )
-                {
-                    ValidationMessage<Origin> vm = WebinCliReporter.createValidationMessage(Severity.ERROR, t.getMessage(),
-                            new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), t.getLineNo() ) ));
-
-                    vm.setThrowable( t );
-
-                    valid = false;
-                    vr.append( vm );
-                }
-                
-                //extra check for suspected reads
-                if( rns.hasPossibleDuplicates() )
-                {
-                    try( InputStream stream = openFileInputStream( Paths.get( rf.getFilename() ) ); )
-                    {
-                        qn = getQualityNormalizer( rf );
-                        checkSuspected( stream, rf.getFilename(), rns );
-                    }
-                }
-    
-                WebinCliReporter.writeToFile( reportFile, vr );
-                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt.get() );
-                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "Collected " + labelset.size() +" read pair label(s): " + ( labelset.size() < 10 ? labelset : "" ) );
-            } catch( Exception e )
-            {
-                throw WebinCliException.createSystemError( "Unable to validate file: " + rf + ", " + e.getMessage() );
-            }
-        }
-        
-        //check paired
-        
-        if( valid )
-        {
-            if( 2 == files.size() )
-            {
-                Set<String> n0 = names.get( 0 );
-                Set<String> n1 = names.get( 1 );
-                int max_size = Math.max( n0.size(), n1.size() );
-                int resulted_size = max_size;
-                if( n0.size() > n1.size() )
-                {
-                    n0.removeAll( n1 );
-                    resulted_size = n0.size();
-                } else
-                {
-                    n1.removeAll( n0 );
-                    resulted_size = n1.size();
-                }
-                
-                if( resulted_size >= ( max_size / 2 ) )
-                {
-                    String msg = "When submitting paired reads using two Fastq files the reads must follow Illumina paired read naming conventions. "
-                               + "This was not the case for the submitted Fastq files: "
-                               + files;
-                    reportToFileList( files, msg );
-                    throw WebinCliException.createValidationError( msg );
-                }
-                
-                if( labels.get( 0 ).containsAll( labels.get( 1 ) ) 
-                 && labels.get( 1 ).containsAll( labels.get( 0 ) ) )
-                {
-                    valid = false;
-                    String msg = "When submitting paired reads using two Fastq files two different files must be provided. "
-                               + "The same file was specified twice: "
-                               + files;
-                    reportToFileList( files, msg );
-                    throw WebinCliException.createValidationError( msg );
-                }
-                
-                for( int index = 0; index < files.size(); ++ index )
-                {
-                    if( getPaired( labels.get( index ) ) )
-                    {
-                        valid = false;
-                        String msg = "When submitting paired reads using two Fastq files the first and second reads must be submitted in different files. "
-                                   + "This was not the case for the submitted Fastq files: "
-                                   + files.get( index );
-                        reportToFileList( files, msg );
-                        throw WebinCliException.createValidationError( msg );
-                    }
-                }
-                
-                paired.set( true );
-                
-            } else if( 1 == files.size() )
-            {
-                paired.set( getPaired( labels.get( 0 ) ) );
-            } else
-            {
-                valid = false;
-                String msg = "Unable to validate unusual amount of files: " + files;
-                reportToFileList( files, msg );
-                throw WebinCliException.createValidationError( msg );
-            }
-        }
-        return valid;
-    }
-
-
-    private ValidationResult
-    checkSuspected( InputStream is, String stream_name, ReadNameSet<SimpleEntry<String, Long>> rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException
-    {
-        ValidationResult vr = new ValidationResult();
-        
-        AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
-        {
-            DataSpotParams params = DataSpot.defaultParams();
-            
-            @Override protected DataSpot 
-            newFeedable()
-            {
-                return new DataSpot( QualityNormalizer.NONE, "", params );
-            }
-        };
-        
-        df.setName( stream_name );
-        
-        df.setEater( new NullDataEater<DataSpot>() 
-        {
-            AtomicLong read_no = new AtomicLong( 1 );
-            @Override public void
-            eat( DataSpot spot ) throws DataEaterException
-            {
-                int slash_idx = spot.bname.lastIndexOf( '/' );
-                String name = slash_idx == -1 ? spot.bname 
-                                              : spot.bname.substring( 0, slash_idx );
-                
-                Set<SimpleEntry<String, Long>> set = rns.findDuplicateLocations( name );
-                if( !set.isEmpty() )
-                {
-                    if( !set.isEmpty() )
-                    {
-                        vr.append( new ValidationMessage<>( Severity.ERROR, 
-                                                            ValidationMessage.NO_KEY, 
-                                                            String.format( "Read %d: %s has dublicate(s) %s", 
-                                                                           read_no.get(), 
-                                                                           spot.bname, 
-                                                                           set.toString() ) ) );
-                    }
-                }
-            }  
-        } );
-        
-        df.start();
-        df.join();
-        if( !df.isOk() )
-            throw WebinCliException.createSystemError( "Unable to re-read file" );
-        
-        return vr; 
-
-        
-    }
-    
-    
-    
-    private QualityNormalizer
-    getQualityNormalizer( RawReadsFile rf )
-    {
-        QualityNormalizer qn = QualityNormalizer.NONE;
-        
-        if( null != rf.getQualityScoringSystem() )
-        {
-            switch( rf.getQualityScoringSystem() )
-            {
-            default:
-                throw WebinCliException.createSystemError( "Scoring system: " + String.valueOf( rf.getQualityScoringSystem() ) );
-   
-            case phred:
-                switch( rf.getAsciiOffset() )
-                {
-                default:
-                    throw WebinCliException.createSystemError( "ASCII offset: " + String.valueOf( rf.getAsciiOffset() ) );
-                    
-                case FROM33:
-                    qn = QualityNormalizer.X;
-                    break;
-                    
-                case FROM64:
-                    qn = QualityNormalizer.X_2;
-                    break;
-                }
-                break;
-                
-            case log_odds:
-                qn = QualityNormalizer.SOLEXA;
-                break;
-            }
-        }
-        return qn;
-    }
-
-
     private void 
     reportToFileList( List<RawReadsFile> files, String msg )
     {
@@ -664,25 +279,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         }
     }
 
-
-    
-    
-    private boolean
-    getPaired( Set<String> labelset )
-    {
-        if( 1 == labelset.size() )
-        {
-            return false;
-        } else if( 2 == labelset.size() )
-        {
-            return true;
-        } else
-        {
-            throw WebinCliException.createValidationError( "Unable to determine pairing from set: " + labelset.stream().limit( 10 ).collect( Collectors.joining( ",", "", 10 < labelset.size() ? "..." : "" ) ) );    
-        }
-
-    }
-    
 
     private boolean
     readBamFile( List<RawReadsFile> files, AtomicBoolean paired ) throws ValidationEngineException
@@ -728,9 +324,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     
                     if( record.getReadBases().length != record.getBaseQualities().length )
                     {
-                        ValidationMessage<Origin> validationMessage = WebinCliReporter.createValidationMessage(Severity.ERROR, "Mismatch between length of read bases and qualities",
-                            new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
-                        
+                        ValidationMessage<Origin> validationMessage = WebinCliReporter.createValidationMessage( Severity.ERROR, "Mismatch between length of read bases and qualities",
+                                                                                                                new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
                         WebinCliReporter.writeToFile( reportFile, validationMessage );
                         valid &= false;
                     }

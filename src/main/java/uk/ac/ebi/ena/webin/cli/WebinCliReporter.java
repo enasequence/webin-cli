@@ -33,14 +33,14 @@ public class WebinCliReporter {
     // Create message
     //
 
-    public static ValidationMessage
+    public static ValidationMessage<Origin>
     createValidationMessage(Severity severity, String error) {
         return createValidationMessage(severity, error, null);
     }
 
-    public static ValidationMessage
+    public static ValidationMessage<Origin>
     createValidationMessage(Severity severity, String error, Origin origin) {
-        ValidationMessage validationMessage = new ValidationMessage<>(severity, ValidationMessage.NO_KEY);
+        ValidationMessage<Origin> validationMessage = new ValidationMessage<>(severity, ValidationMessage.NO_KEY);
         validationMessage.setMessage(error);
         validationMessage.append(origin);
         return validationMessage;
@@ -52,13 +52,13 @@ public class WebinCliReporter {
     public static void
     writeToConsole(ValidationResult validationResult) {
         writeMessages(System.out, (s) -> {
-            for( ValidationMessage validationMessage: validationResult.getMessages() ) {
+            for( ValidationMessage<Origin> validationMessage: validationResult.getMessages() ) {
                 writeMessage(s, validationMessage, null /* targetOrigin */);
             }});
     }
 
     public static void
-    writeToConsole(ValidationMessage validationMessage) {
+    writeToConsole(ValidationMessage<Origin> validationMessage) {
         writeMessages(System.out, (s) -> writeMessage(s, validationMessage));
     }
 
@@ -83,7 +83,7 @@ public class WebinCliReporter {
     public static void
     writeToFile(File reportFile, ValidationPlanResult validationPlanResult, String targetOrigin) {
         writeMessages(reportFile, (s) -> {
-            for( ValidationMessage validationMessage: validationPlanResult.getMessages() ) {
+            for( ValidationMessage<Origin> validationMessage: validationPlanResult.getMessages() ) {
                 writeMessage(s, validationMessage, targetOrigin);
             }});
     }
@@ -91,7 +91,7 @@ public class WebinCliReporter {
     public static void
     writeToFile(File reportFile, ValidationPlanResult validationPlanResult) {
         writeMessages(reportFile, (s) -> {
-            for( ValidationMessage validationMessage: validationPlanResult.getMessages() ) {
+            for( ValidationMessage<Origin> validationMessage: validationPlanResult.getMessages() ) {
                 writeMessage(s, validationMessage, null /* targetOrigin */);
             }});
     }
@@ -100,7 +100,7 @@ public class WebinCliReporter {
     writeToFile(File reportFile, ValidationResult validationResult, String targetOrigin )
     {
         writeMessages(reportFile, (s) -> {
-            for( ValidationMessage validationMessage: validationResult.getMessages() ) {
+            for( ValidationMessage<Origin> validationMessage: validationResult.getMessages() ) {
                 writeMessage(s, validationMessage, targetOrigin);
             }});
     }
@@ -109,13 +109,13 @@ public class WebinCliReporter {
     writeToFile(File reportFile, ValidationResult validationResult )
     {
         writeMessages(reportFile, (s) -> {
-            for( ValidationMessage validationMessage: validationResult.getMessages() ) {
+            for( ValidationMessage<Origin> validationMessage: validationResult.getMessages() ) {
                 writeMessage(s, validationMessage, null /* targetOrigin */);
             }});
     }
 
     public static void
-    writeToFile(File reportFile, ValidationMessage validationMessage )
+    writeToFile(File reportFile, ValidationMessage<Origin> validationMessage )
     {
         writeMessages(reportFile, (s) -> writeMessage(s, validationMessage));
     }
@@ -177,12 +177,12 @@ public class WebinCliReporter {
     //
 
     private static void
-    writeMessage(OutputStream strm, ValidationMessage validationMessage ) throws IOException {
+    writeMessage(OutputStream strm, ValidationMessage<Origin> validationMessage ) throws IOException {
         writeMessage(strm, validationMessage, null);
     }
 
     private static void
-    writeMessage(OutputStream strm, ValidationMessage validationMessage, String targetOrigin ) throws IOException {
+    writeMessage(OutputStream strm, ValidationMessage<Origin> validationMessage, String targetOrigin ) throws IOException {
         if (writeSeverity.contains(validationMessage.getSeverity())) {
             strm.write(formatMessage(validationMessage, targetOrigin).getBytes(StandardCharsets.UTF_8));
         }
@@ -192,7 +192,7 @@ public class WebinCliReporter {
     //
 
     private static String
-    formatMessage(ValidationMessage validationMessage, String targetOrigin)
+    formatMessage(ValidationMessage<Origin> validationMessage, String targetOrigin)
     {
         try
         {

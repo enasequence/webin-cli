@@ -111,7 +111,7 @@ ReadNameSetTest
     testSingle2()
     {
         String[] sar = new String[ 1024 ];
-        initStringArray( sar, 2, 4 );
+        initStringArray( sar, 2, 3 );
         __testSingle( sar );
     }
     

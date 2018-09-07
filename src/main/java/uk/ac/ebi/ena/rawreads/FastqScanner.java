@@ -8,14 +8,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -133,6 +131,8 @@ FastqScanner
     }
     
     
+    
+    
     private DataFeederException 
     read( RawReadsFile rf,
           String       stream_name,
@@ -177,13 +177,28 @@ FastqScanner
                     count.incrementAndGet();
                     pairing.add( name, null );
                     duplications.add( spot.bname, String.format( S_READ_D, stream_name, read_no.getAndIncrement() ) );
+                    
+                    if( 0 == count.get() % 1000 )
+                        printProcessedReadNumber( count );
                 }  
             } );
-            
+
+            System.out.println( "Processing file " + rf.getFilename() );
+            System.out.println();
+            System.out.flush();
             df.start();
             df.join();
-            return df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause();
+            DataFeederException result = df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause();
+            printProcessedReadNumber( count );
+            return result;
         }
+    }
+
+
+    private void printProcessedReadNumber( AtomicLong count )
+    {
+        System.out.printf( "\33[1A\33[2KProcessed %16d read(s)\n", count.get() );
+        System.out.flush();
     }
 
     
@@ -251,7 +266,7 @@ FastqScanner
         }   
         
         ReadNameSet<String> duplications = new ReadNameSet<>( expected_size );
-        ReadNameSet<Void> pairing = new ReadNameSet<>( expected_size );
+        ReadNameSet<Void> pairing = new ReadNameSet<>( expected_size, false );
         
         int index = 1;
         for( RawReadsFile rf : rfs )

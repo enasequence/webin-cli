@@ -16,20 +16,31 @@ public class
 ReadNameSet<T> 
 {
     //Bloom bloom;
-    BloomFilter<String> bloom;
-    Map<String, Set<T>> suspected;
+    private BloomFilter<String> bloom;
+    private Map<String, Set<T>> suspected;
+    final boolean collect_suspected;
     final double edup = 0.001;
     final AtomicLong adds_no = new AtomicLong();
     final AtomicLong susp_no = new AtomicLong();
     
     
     //TODO: Map cannot accomodate more than MAXINT
+    
+    public 
     ReadNameSet( int expected_reads )
+    {
+        this( expected_reads, true );
+    }
+    
+    
+    public 
+    ReadNameSet( int expected_reads, boolean collect_suspected )
     {
 //        System.out.println( "expected reads: " + expected_reads );
         //this.bloom = new Bloom( edup, expected_reads );
         this.bloom = new BloomFilter<>( edup, expected_reads );
         this.suspected = Collections.synchronizedMap( new HashMap<>( (int) ( expected_reads * edup ) ) );
+        this.collect_suspected = collect_suspected;
     }
 
 
@@ -40,9 +51,12 @@ ReadNameSet<T>
         
         if( bloom.contains( read_name ) )
         {
-            Set<T> set = suspected.getOrDefault( read_name, new LinkedHashSet<>() );
-            set.add( mark );
-            suspected.put( read_name, set );
+            if( collect_suspected )
+            {
+                Set<T> set = suspected.getOrDefault( read_name, new LinkedHashSet<>() );
+                set.add( mark );
+                suspected.put( read_name, set );
+            }
             susp_no.incrementAndGet();
         } else
             bloom.add( read_name );

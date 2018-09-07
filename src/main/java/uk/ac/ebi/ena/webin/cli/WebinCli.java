@@ -191,19 +191,19 @@ public class WebinCli {
                 case VALIDATION_ERROR:
                     System.exit( VALIDATION_ERROR );
             }
-        } 
-        catch( ValidationEngineException e ) 
+            
+        } catch( ValidationEngineException e ) 
         {
 			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
 			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
             System.exit( SYSTEM_ERROR );
-        }
-        catch( Throwable e ) 
+            
+        } catch( Throwable e ) 
         {
             StringWriter sw = new StringWriter();
             e.printStackTrace( new PrintWriter( sw ) );
-			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
-			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
+			WebinCliReporter.writeToConsole( Severity.ERROR, sw.toString() );
+			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, sw.toString() );
             System.exit( SYSTEM_ERROR );
         }
     }
