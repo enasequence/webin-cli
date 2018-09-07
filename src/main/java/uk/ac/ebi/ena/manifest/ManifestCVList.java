@@ -26,7 +26,7 @@ public class ManifestCVList
     {
         try
         {
-            this.p.load( ManifestCVList.class.getClassLoader().getResourceAsStream( resource.getPath() ) );
+            this.p.load( ManifestCVList.class.getClassLoader().getResourceAsStream( resource.getPath().replaceAll( "\\\\+", "/" ) ) );
         } catch( IOException e )
         {
             throw new RuntimeException( e );
