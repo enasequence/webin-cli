@@ -295,6 +295,7 @@ SequenceWebinCliTest
         info.setStudyId( "test_study" );
         info.setProgram( "test_program" );
         info.setPlatform( "test_platform" );
+        info.setTpa(false);
 
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
@@ -332,6 +333,7 @@ SequenceWebinCliTest
                 "STUDY\ttest_study\n" +
                 "PROGRAM\ttest_program\n" +
                 "PLATFORM\ttest_platform\n" +
+                "TPA\ttrue\n" +
                 "FLATFILE\t" + flatFile.getFileName() + "\n"
         );
 
@@ -369,6 +371,7 @@ SequenceWebinCliTest
                             "<NAME>test_transcriptome</NAME>\n" +
                             "<PROGRAM>test_program</PROGRAM>\n" +
                             "<PLATFORM>test_platform</PLATFORM>\n" +
+                            "<TPA>true</TPA>\n" +
                             "</TRANSCRIPTOME_ASSEMBLY>\n" +
                             "</ANALYSIS_TYPE>\n" +
                             "<FILES>\n" +

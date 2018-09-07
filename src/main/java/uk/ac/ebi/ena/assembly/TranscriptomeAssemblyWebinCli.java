@@ -100,6 +100,7 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
 			assemblyInfo.setSampleId(getSample().getBiosampleId());
 		assemblyInfo.setPlatform(getManifestReader().getPlatform());
 		assemblyInfo.setProgram(getManifestReader().getProgram());
+		assemblyInfo.setTpa(getManifestReader().getTpa());
 		this.setAssemblyInfo(assemblyInfo);
 
 		// Init validation plan
@@ -235,6 +236,8 @@ TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyMani
         typeE.addContent( createTextElement( "NAME", entry.getName() ) );
         typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
         typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
+		if ( entry.isTpa())
+			typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
 
         return typeE;
     }
