@@ -326,6 +326,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     {
                         ValidationMessage<Origin> validationMessage = WebinCliReporter.createValidationMessage( Severity.ERROR, "Mismatch between length of read bases and qualities",
                                                                                                                 new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
+                        
                         WebinCliReporter.writeToFile( reportFile, validationMessage );
                         valid &= false;
                     }

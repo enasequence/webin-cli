@@ -35,6 +35,7 @@ import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater.READ_TYPE;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaSpot;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 FastqScanner 
@@ -42,10 +43,12 @@ FastqScanner
     private static final String S_READ_D = "%s, Read %d";
     private static final int BLOOM_EXPECTED_READS = 800_000_000;
     protected static final int MAX_LABEL_SET_SIZE = 10;
+    private static final int PAIRING_THRESHOLD = 30;
     
     private final int expected_size;
     private Set<String> labelset = new HashSet<>();
     private AtomicBoolean paired = new AtomicBoolean();
+    private boolean verbose = true;
     
     
     public
@@ -183,14 +186,13 @@ FastqScanner
                 }  
             } );
 
-            System.out.println( "Processing file " + rf.getFilename() );
-            //System.out.println();
-            System.out.flush();
+            printlnToConsole( "Processing file " + rf.getFilename() );
+            flushConsole();
             df.start();
             df.join();
             DataFeederException result = df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause();
             printProcessedReadNumber( count );
-            System.out.println();
+            printlnToConsole();
             return result;
         }
     }
@@ -199,9 +201,8 @@ FastqScanner
     private void 
     printProcessedReadNumber( AtomicLong count )
     {
-        //System.out.printf( "\33[1A\33[2KProcessed %16d read(s)\n", count.get() );
-        System.out.printf( "\rProcessed %16d read(s)", count.get() );
-        System.out.flush();
+        printfToConsole( "\rProcessed %16d read(s)", count.get() );
+        flushConsole();
     }
 
     
@@ -264,7 +265,7 @@ FastqScanner
         if( null == rfs || rfs.length != 1 && rfs.length != 2 )
         {
             //terminal error
-            vr.append( fMsg( Severity.ERROR, "Unusual amount of files" ) );
+            vr.append( fMsg( Severity.ERROR, "Unusual amount of files. Can accept only 1 or 2, but got " + ( null == rfs ? "null" : rfs.length ) ) );
             return vr;
         }   
         
@@ -282,26 +283,29 @@ FastqScanner
         if( 2 == labelset.size() )
         {
             paired.set( true );
-            
-            vr.append( fMsg( Severity.INFO, String.format( "Pairing percentage: %.2f%%", 100 * (double)pairing.getPossibleDuplicateCount() / (double)pairing.getAddsNumber() ) ) ); 
+            double pairing_level = (double)pairing.getPossibleDuplicateCount() / ( (double)( pairing.getAddsNumber() - pairing.getPossibleDuplicateCount() ) );
+            pairing_level = 100 * ( 1 < pairing_level ? 1/ pairing_level : pairing_level );
+            String msg = String.format( "Pairing percentage: %.2f%%", pairing_level );
+            vr.append( fMsg( Severity.INFO, msg ) ); 
+            printlnToConsole( msg );
             
             //TODO: estimate bloom false positives impact
-            if( (double)pairing.getPossibleDuplicateCount() < (double)pairing.getAddsNumber() / (double)3  )
+            if( (double)PAIRING_THRESHOLD > pairing_level )
             {
                 //terminal error
-                vr.append( fMsg( Severity.ERROR, "Detected paired fastq submission with less than 30% of paired reads" ) );
+                msg = String.format( "Detected paired fastq submission with less than %d%% of paired reads", PAIRING_THRESHOLD );
+                vr.append( fMsg( Severity.ERROR, msg ) );
+                printlnToConsole( msg );
             }
 
         } else if( labelset.size() > 2 )
         {
-            String msg = "When submitting paired reads using two Fastq files the reads must follow Illumina paired read naming conventions. "
-                       + "This was not the case for the submitted Fastq files: ";
-
-            vr.append( fMsg( Severity.ERROR, 
-                             String.format( "%s%s. Unable to determine pairing from set: %s", 
-                                            msg, 
-                                            rfs,
-                                            labelset.stream().limit( 10 ).collect( Collectors.joining( ",", "", 10 < labelset.size() ? "..." : "" ) ) ) ) ); 
+            String msg = String.format( "When submitting paired reads using two Fastq files the reads must follow Illumina paired read naming conventions. "
+                                      + "This was not the case for the submitted Fastq files: %s. Unable to determine pairing from set: %s",
+                                        rfs,
+                                        labelset.stream().limit( 10 ).collect( Collectors.joining( ",", "", 10 < labelset.size() ? "..." : "" ) ) ); 
+            vr.append( fMsg( Severity.ERROR, msg ) ); 
+            printlnToConsole( msg );
         }   
         
         //extra check for suspected reads
@@ -318,9 +322,9 @@ FastqScanner
                 
                 
             dvr.append( result.entrySet().stream().map( ( e ) -> fMsg( Severity.ERROR, 
-                                                                      String.format( "Read %s has duplicate(s): %s", 
-                                                                                     e.getKey(), 
-                                                                                     e.getValue().toString() ) ) ).collect( Collectors.toList() ) );
+                                                                       String.format( "Read %s has duplicate(s): %s", 
+                                                                                      e.getKey(), 
+                                                                                      e.getValue().toString() ) ) ).collect( Collectors.toList() ) );
             if( dvr.isValid() )
                 dvr.append( fMsg( Severity.INFO, "No duplicates confirmed." ) );
             
@@ -328,6 +332,38 @@ FastqScanner
         }
 
         return vr;
+    }
+
+    
+    private void
+    flushConsole()
+    {
+        if( verbose )
+            WebinCliReporter.flushConsole();
+    }
+    
+
+    private void
+    printlnToConsole( String msg )
+    {
+        if( verbose )
+            WebinCliReporter.printlnToConsole( msg );
+    }
+
+    
+    private void
+    printlnToConsole()
+    {
+        if( verbose )
+            WebinCliReporter.printlnToConsole();
+    }
+
+    
+    private void
+    printfToConsole( String msg, Object... arg1 )
+    {
+        if( verbose )
+            WebinCliReporter.printfToConsole( msg, arg1 );
     }
 
     

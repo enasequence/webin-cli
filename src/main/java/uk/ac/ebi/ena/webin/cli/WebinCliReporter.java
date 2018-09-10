@@ -71,8 +71,31 @@ public class WebinCliReporter {
     writeToConsole(Severity severity, String message, Origin origin) {
         writeMessages(System.out, (s) -> writeMessage(s, createValidationMessage(severity, message, origin)));
     }
-
+    
     public static void
+    flushConsole() {
+        System.out.flush();
+    }
+
+    
+    public static void 
+    printfToConsole(String message, Object... arg1 ) {
+        System.out.printf( message, arg1 );
+    }
+
+
+    public static void 
+    printlnToConsole() {
+        System.out.println();
+    }
+
+    
+    public static void 
+    printlnToConsole( String message ) {
+        System.out.println( message );
+    }
+    
+    public static void 
     writeToConsole(String message) {
         System.out.println(message.replaceAll("^\\n+", "").replaceAll("\\n+$", ""));
     }
