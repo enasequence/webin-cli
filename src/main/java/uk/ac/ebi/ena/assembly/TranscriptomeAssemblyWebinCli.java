@@ -65,19 +65,17 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 
 	@Override
 	protected TranscriptomeAssemblyManifest createManifestReader() {
-		return new TranscriptomeAssemblyManifest(isFetchSample() ? new SampleProcessor(getParameters(), this::setSample) : null,
+		// Create manifest parser which will also set the sample and study fields.
+
+		return new TranscriptomeAssemblyManifest(isFetchSample() ?
+				new SampleProcessor(getParameters(), this::setSample) : null,
 				isFetchStudy() ? new StudyProcessor(getParameters(), this::setStudy) : null);
 	}
 
 	@Override
 	public void readManifest(Path inputDir, File manifestFile) {
 		getManifestReader().readManifest(inputDir, manifestFile);
-		/*
-		if (isFetchStudy() && getManifestReader().getStudyId() != null)
-			setStudy(fetchStudy( getManifestReader().getStudyId(), getTestMode()));
-		if (isFetchSample() && getManifestReader().getSampleId() != null)
-			setSample(fetchSample( getManifestReader().getSampleId(), getTestMode()));
-		*/
+
 		if (getManifestReader().getFastaFile() != null)
 			this.fastaFiles.add(getManifestReader().getFastaFile());
 		if (getManifestReader().getFlatFile() != null)
@@ -90,6 +88,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 			assemblyInfo.setSampleId(getSample().getBiosampleId());
 		assemblyInfo.setPlatform(getManifestReader().getPlatform());
 		assemblyInfo.setProgram(getManifestReader().getProgram());
+		assemblyInfo.setTpa(getManifestReader().getTpa());
 		this.setAssemblyInfo(assemblyInfo);
 	}
 
@@ -149,9 +148,6 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 					entry.addProjectAccession( new Text( getStudy().getProjectId() ) );
 				validationPlanResult = validationPlan.execute(entry);
 				if (!validationPlanResult.isValid()) {
-					List<ValidationMessage<Origin>> validationMessageList = validationPlanResult.getMessages(Severity.ERROR);
-					for (ValidationMessage<Origin> validationMessage: validationMessageList)
-						WebinCliReporter.writeToFile(reportFile, validationMessage);
 					FAILED_VALIDATION = true;
 					WebinCliReporter.writeToFile(reportFile, validationResult);
 				}
@@ -197,9 +193,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 				entry.getPrimarySourceFeature().setLocations(order);
 				validationPlanResult = validationPlan.execute(entry);
 				if (!validationPlanResult.isValid()) {
-					List<ValidationMessage<Origin>> validationMessageList = validationPlanResult.getMessages(Severity.ERROR);
-					for (ValidationMessage<Origin> validationMessage: validationMessageList)
-						WebinCliReporter.writeToFile(reportFile, validationMessage);
+					WebinCliReporter.writeToFile(reportFile, validationPlanResult);
 					FAILED_VALIDATION = true;
 				}
 				fastaFileReader.read();
@@ -221,6 +215,8 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		typeE.addContent( createTextElement( "NAME", entry.getName() ) );
 		typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
 		typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
+		if ( entry.isTpa())
+			typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
 		return typeE;
 	}
 }
