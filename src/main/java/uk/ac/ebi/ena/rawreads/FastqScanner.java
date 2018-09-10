@@ -41,7 +41,6 @@ public class
 FastqScanner 
 {
     private static final String S_READ_D = "%s, Read %d";
-    private static final int BLOOM_EXPECTED_READS = 800_000_000;
     protected static final int MAX_LABEL_SET_SIZE = 10;
     private static final int PAIRING_THRESHOLD = 30;
     
@@ -57,13 +56,6 @@ FastqScanner
         this.expected_size = expected_size;
     }
 
-    
-    public
-    FastqScanner() 
-    {
-        this( BLOOM_EXPECTED_READS );
-    }
-    
     
     InputStream 
     openFileInputStream( Path path )
@@ -270,7 +262,7 @@ FastqScanner
         }   
         
         ReadNameSet<String> duplications = new ReadNameSet<>( expected_size );
-        ReadNameSet<Void> pairing = new ReadNameSet<>( expected_size, false );
+        ReadNameSet<Void> pairing = new ReadNameSet<>( expected_size / 10, false );
         
         int index = 1;
         for( RawReadsFile rf : rfs )
@@ -316,6 +308,7 @@ FastqScanner
             ValidationResult dvr = new ValidationResult();
             for( RawReadsFile rf : rfs )
             {
+                printlnToConsole( "Performing additional checks for file " + rf.getFilename() );
                 String stream_name = formatStreamName( index++, rf.getFilename() );
                 result.putAll( checkSuspected( rf, stream_name, duplications ) );
             }

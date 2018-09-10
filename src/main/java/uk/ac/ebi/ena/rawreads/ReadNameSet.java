@@ -10,7 +10,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import com.skjegstad.utils.BloomFilter;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 
 public class 
 ReadNameSet<T> 
@@ -19,7 +20,7 @@ ReadNameSet<T>
     private BloomFilter<String> bloom;
     private Map<String, Set<T>> suspected;
     private final boolean collect_suspected;
-    private final double edup = 0.001;
+    private final double edup = 0.01;
     private final AtomicLong adds_no = new AtomicLong();
     private final AtomicLong susp_no = new AtomicLong();
     private final static int COLLECT_MAX = 100_000; 
@@ -27,7 +28,7 @@ ReadNameSet<T>
     
     //TODO: Map cannot accomodate more than MAXINT
     
-    public 
+    public
     ReadNameSet( int expected_reads )
     {
         this( expected_reads, true );
@@ -39,7 +40,7 @@ ReadNameSet<T>
     {
 //        System.out.println( "expected reads: " + expected_reads );
         //this.bloom = new Bloom( edup, expected_reads );
-        this.bloom = new BloomFilter<>( edup, expected_reads );
+        this.bloom = BloomFilter.create( Funnels.unencodedCharsFunnel(), expected_reads, edup );
         this.suspected = Collections.synchronizedMap( new HashMap<>( (int) ( expected_reads * edup ) ) );
         this.collect_suspected = collect_suspected;
     }
@@ -50,7 +51,7 @@ ReadNameSet<T>
     {
         adds_no.incrementAndGet();
         
-        if( bloom.contains( read_name ) )
+        if( bloom.mightContain( read_name ) )
         {
             if( collect_suspected && susp_no.get() < COLLECT_MAX )
             {
@@ -60,7 +61,7 @@ ReadNameSet<T>
             }
             susp_no.incrementAndGet();
         } else
-            bloom.add( read_name );
+            bloom.put( read_name );
     }
     
     
@@ -147,6 +148,6 @@ ReadNameSet<T>
     public boolean 
     contains( String read_name )
     {
-        return bloom.contains( read_name );
+        return bloom.mightContain( read_name );
     }
 }

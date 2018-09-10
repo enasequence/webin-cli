@@ -77,7 +77,7 @@ RawReadsManifest extends ManifestReader {
     private String sample_id = null;
     private String platform = null;
     private Integer insert_size;
-    private Integer pairing_horizon = 1000;
+    private Integer pairing_horizon = 500_000_000;
     private String library_construction_protocol;
     private String library_name;
     private String instrument;

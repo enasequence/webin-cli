@@ -74,6 +74,7 @@ import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCli.manifestFileValidator;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
@@ -256,7 +257,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             }
             
             
-            FastqScanner fs = new FastqScanner();            
+            FastqScanner fs = new FastqScanner( getManifestReader().getPairingHorizon() );            
             ValidationResult vr = fs.checkFiles( files.toArray( new RawReadsFile[ files.size() ] ) );
             paired.set( fs.getPaired() );
             files.forEach( rf -> WebinCliReporter.writeToFile( getReportFile( rf.getFilename() ), vr ) );

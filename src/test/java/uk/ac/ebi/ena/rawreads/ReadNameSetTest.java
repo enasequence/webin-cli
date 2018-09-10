@@ -14,8 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.skjegstad.utils.BloomFilter;
-
 
 
 public class 
@@ -92,7 +90,7 @@ ReadNameSetTest
                 }   
             }
             
-            Assert.assertTrue( total_count == sard );
+            Assert.assertTrue( String.format(  "total %d, sard: %d\n %s", total_count, sard, Arrays.asList( sar ) ), total_count == sard );
         }   
     }
     
@@ -190,49 +188,4 @@ ReadNameSetTest
         System.out.println( "Expected bitset size: " + (int) num * Math.ceil(-(Math.log(falsePositiveProbability) / Math.log(2))) / Math.log(2) );
         System.out.println( "Number of hash functions : " + (int)Math.ceil( -( Math.log( falsePositiveProbability ) / Math.log( 2 ) ) ) );
     }
-   
-    
-    
-    @Test public void
-    test()
-    {
-        Bloom b = new Bloom( 10, 1_000_00, 7 );
-        int falsep = 0;
-        for( int index = 0; index < sar.length; index ++ )
-        {
-            falsep += b.contains( sar[ index ] ) ? 1: 0;
-            b.add( sar[ index ] );
-        }
-        
-        System.out.println( "Smirnov false positive rate: " + falsep );
-        
-        for( int index = 0; index < sar.length; index ++ )
-            Assert.assertTrue( b.contains( sar[ index ] ) );
-        
-    }
-
-    
-    @Test public void
-    testSk()
-    {
-        //BloomFilter<String> bf = new BloomFilter<String>( 0.001, 10_000 );
-        //BloomFilter<String> bf = new BloomFilter<String>( 0.001, 100_000 );
-        BloomFilter<String> bf = new BloomFilter<String>( 10, 100_000, 7 );
-        //BloomFilter<String> bf = new BloomFilter<String>( 16_384, 10_000 );
-        int falsep = 0;
-        for( int index = 0; index < sar.length; index ++ )
-        {
-            if( bf.contains( sar[ index ] ) )
-                falsep += 1;
-            else
-                bf.add( sar[ index ] );
-        }
-        
-        System.out.println( "Skjegstad false positive rate: " + falsep );
-        
-        for( int index = 0; index < sar.length; index ++ )
-            Assert.assertTrue( bf.contains( sar[ index ] ) );
-        
-    }
-
 }
