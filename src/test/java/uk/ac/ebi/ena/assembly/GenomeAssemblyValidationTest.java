@@ -25,25 +25,25 @@ import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-	public class GenomeAssemblyWebinCliTest {
+	public class GenomeAssemblyValidationTest {
 	@Before public void
 	before()
 	{
 		Locale.setDefault( Locale.UK );
 	}
 
-	public static Sample getDefaultSample() {
+	private static Sample getDefaultSample() {
 		Sample sample = new Sample();
 		sample.setOrganism( "Quercus robur" );
 		return sample;
 	}
 
-	public static Study getDefaultStudy() {
+	private static Study getDefaultStudy() {
 		return new Study();
 	}
 
 	private File getDefaultInputDir() {
-		URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/valid_fasta.txt" );
+		URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/valid_fasta.txt" );
 		return new File( url.getFile() ).getParentFile();
 	}
 
@@ -306,7 +306,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	@Test public void
 	testGenomeFileValidation_Valid_ERZ449652() throws Exception
 	{
-		URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/genome/ERZ449652/ERZ449652.manifest" );
+		URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/genome/ERZ449652/ERZ449652.manifest" );
 		File manifestFile = new File( url.getFile() );
 		File inputDir = manifestFile.getParentFile();
 
@@ -324,7 +324,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	@Test public void
 	testGenomeFileValidation_Invalid_ERZ092580() throws Exception
 	{
-		URL url = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/genome/ERZ092580/ERZ092580.manifest" );
+		URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/genome/ERZ092580/ERZ092580.manifest" );
 		File manifestFile = new File( url.getFile() );
 		File inputDir = manifestFile.getParentFile();
 
