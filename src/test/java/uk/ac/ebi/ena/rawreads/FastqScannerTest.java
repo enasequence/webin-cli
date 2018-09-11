@@ -197,7 +197,7 @@ FastqScannerTest
 
         ValidationResult vr = fs.checkFiles( rf1, rf2 );
         
-        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 2, vr.getMessages( Severity.ERROR ).size() );
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 1, vr.getMessages( Severity.ERROR ).size() );
     }
     
     /* */
@@ -317,7 +317,7 @@ FastqScannerTest
 
         ValidationResult vr = fs.checkFiles( rf2, rf2 );
         
-        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 4, vr.getMessages( Severity.ERROR ).size() );
+        Assert.assertEquals( toString( vr.getMessages( Severity.ERROR ) ), 2, vr.getMessages( Severity.ERROR ).size() );
     }
     
     
@@ -334,7 +334,7 @@ FastqScannerTest
         StringWriter sw = new StringWriter();
         for( ValidationMessage<?> m : result )
         {
-            sw.write( String.format( "%s: %s\n", m.getSeverity(), Arrays.asList( m.getParams() ) ) );
+            sw.write( String.format( "%s: %s%s\n", m.getSeverity(), m.getMessage(), Arrays.asList( m.getParams() ) ) );
         }
         return sw.toString();
     }
@@ -355,7 +355,7 @@ FastqScannerTest
            
             read.append( "@" )
                 .append( ThreadLocalRandom.current()
-                                          .ints( ThreadLocalRandom.current().nextInt( min_name_len, max_name_len ), 48, 127 )
+                                          .ints( ThreadLocalRandom.current().nextInt( min_name_len, max_name_len ), 55, 95 )
                                           .mapToObj( e -> String.valueOf( Character.toString( (char)e ) ) )
                                           .collect( Collectors.joining() ) )
                 .append( '\n' )
@@ -383,7 +383,7 @@ FastqScannerTest
     {
         FastqScanner fs = new FastqScanner( expected_reads );
         RawReadsFile rf = new RawReadsFile();
-        Path path = generateRandomFastq( 1000, 2, 5, 80 );
+        Path path = generateRandomFastq( 1000, 2, 3, 80 );
         rf.setFilename( path.toString() );
         
         ValidationResult vr = fs.checkFiles( rf );

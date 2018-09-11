@@ -1,9 +1,12 @@
 package uk.ac.ebi.ena.rawreads;
 
 import java.math.BigInteger;
-import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -17,7 +20,7 @@ import org.junit.Test;
 
 
 public class 
-ReadNameSetTest 
+BloomWrapperTest 
 {
     String[] sar = new String[ 100_000 ]; 
     int sar_degeneration = -1;
@@ -36,7 +39,7 @@ ReadNameSetTest
         for( int index = 0; index < string_array.length; index ++ )
         {
             string_array[ index ] = ThreadLocalRandom.current()
-                                                     .ints( ThreadLocalRandom.current().nextInt( min_string_len, max_string_len ), 33, 127 )
+                                                     .ints( ThreadLocalRandom.current().nextInt( min_string_len, max_string_len ), 33, 65 )
                                                      .mapToObj( e -> String.valueOf( Character.toString( (char)e ) ) )
                                                      .collect( Collectors.joining() );
         }
@@ -66,11 +69,26 @@ ReadNameSetTest
         
         Assert.assertTrue( sard > 0 );
         
-        ReadNameSet<String> rns = new ReadNameSet<>( (int)( sar.length ) );
+        BloomWrapper rns = new BloomWrapper( (int)( sar.length ) / 10 );
+        Set<String> set = new LinkedHashSet<>( sar.length );
+        List<String> dup = new ArrayList<>( sar.length );
+        int nadd = 0;
         for( int i = 0; i < sar.length; ++i )
         {
-            rns.add( sar[ i ], getMarker( "file", i ) );
+            boolean s = set.add( sar[ i ] );
+            
+            if( !s ) 
+                dup.add( sar[ i ] );
+            
+            rns.add( sar[ i ] );
+            
+            System.out.printf( "%d\tvalue\t%s\tadded\t%b\n", i, sar[ i ], s );
+            
         }
+        System.out.printf( "total: %d, not-added: %d, set-size: %d\n", sar.length, nadd, set.size() );
+        
+        Map<String, Integer> dmap = dup.stream().collect( Collectors.toMap( e -> e, e -> Integer.valueOf( 1 ), ( v1, v2 ) -> v1 + v2, LinkedHashMap::new ) );
+        
         
         Assert.assertTrue( rns.hasPossibleDuplicates() );
         
@@ -83,12 +101,17 @@ ReadNameSetTest
             {
                 if( dups.containsKey( sar[ i ] ) )
                 {
+                    if( null == dmap.get( sar[ i ] ) )
+                    {
+                        total_count += 0;
+                    }
                     Set<String> ds = dups.get( sar[ i ]  );
-                    total_count += ds.size();
-                    System.out.printf( "Read %s at %d duplicated at: %s\n", sar[ i ], i, ds );
+                    total_count += ds.size() - 1;
+                    System.out.printf( "Multiple %d (%d) occurance of read %s at: %s\n", ds.size(), dmap.get( sar[ i ] ), sar[ i ], ds );
                     dups.remove( sar[ i ] );
-                }   
+                } 
             }
+
             
             Assert.assertTrue( String.format(  "total %d, sard: %d\n %s", total_count, sard, Arrays.asList( sar ) ), total_count == sard );
         }   
@@ -126,9 +149,9 @@ ReadNameSetTest
         System.out.println( "Sar size: " + Stream.of( sar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         System.out.println( "Tar size: " + Stream.of( tar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         
-        ReadNameSet<SimpleEntry<String, Long>> rns = new ReadNameSet<>( (int)( sar.length ) );
+        BloomWrapper rns = new BloomWrapper( (int)( sar.length ) );
         for( int i = 0; i < sar.length; ++i )
-            rns.add( sar[ i ], new SimpleEntry<String, Long>( String.valueOf( i ), (long)i ) );
+            rns.add( sar[ i ] );
 
         int not_contains = 0;
         
@@ -142,7 +165,8 @@ ReadNameSetTest
         set2.addAll( Arrays.asList( tar ) );
         set1.removeAll( set2 );
        
-        Assert.assertTrue( String.format( "Not found in bloom %d, set size %d", not_contains, set1.size() ), not_contains >= set1.size() - ( (double)rns.getAddsNumber() * 0.01 /* TODO */) );
+        Assert.assertTrue( String.format( "Not found in bloom %d, set size %d", not_contains, set1.size() ), 
+                                          not_contains >= set1.size() - ( (double)rns.getAddsNumber() * 0.015 /* TODO check for Bloom degradation */) );
     }
     
     
@@ -161,17 +185,17 @@ ReadNameSetTest
         System.out.println( "Sar size: " + Stream.of( sar ).map( e -> e.length() ).collect( Collectors.summarizingInt( e -> e ) ) );
         Assert.assertEquals( 0, getArrayDegeneration( sar ) );
         
-        ReadNameSet<String> rns = new ReadNameSet<>( (int)( sar.length ) );
+        BloomWrapper rns = new BloomWrapper( (int)( sar.length ) );
         for( int i = 0; i < sar.length; ++i )
-            rns.add( sar[ i ], getMarker( "File 1", i ) );
+            rns.add( sar[ i ] );
 
         for( int i = 0; i < sar.length; ++i )
-            rns.add( sar[ i ], getMarker( "File 1", i ) );
+            rns.add( sar[ i ] );
 
         Assert.assertTrue( rns.hasPossibleDuplicates() );
            
         for( int i = 0; i < sar.length; ++ i )
-            Assert.assertTrue( "No duplication on pos: " + i, !rns.findDuplicateLocations( sar[ i ] ).isEmpty() );
+            Assert.assertTrue( "No duplication on pos: " + i, rns.contains( sar[ i ] ) );
     }
 
     

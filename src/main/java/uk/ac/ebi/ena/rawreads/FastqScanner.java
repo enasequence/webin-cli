@@ -8,8 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,6 +21,9 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
@@ -132,8 +138,8 @@ FastqScanner
     read( RawReadsFile rf,
           String       stream_name,
           Set<String>labels, 
-          ReadNameSet<Void> pairing,
-          ReadNameSet<String> duplications,
+          BloomWrapper pairing,
+          BloomWrapper duplications,
           AtomicLong count ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
     {
         try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
@@ -170,8 +176,8 @@ FastqScanner
                         labels.add( label );
                     
                     count.incrementAndGet();
-                    pairing.add( name, null );
-                    duplications.add( spot.bname, String.format( S_READ_D, stream_name, read_no.getAndIncrement() ) );
+                    pairing.add( name );
+                    duplications.add( spot.bname );
                     
                     if( 0 == count.get() % 1000 )
                         printProcessedReadNumber( count );
@@ -202,8 +208,8 @@ FastqScanner
     checkSingleFile( RawReadsFile rf, 
                      String stream_name, 
                      Set<String> labelset,
-                     ReadNameSet<Void> pairing,
-                     ReadNameSet<String> duplications ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+                     BloomWrapper pairing,
+                     BloomWrapper duplications ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
         ValidationResult vr = new ValidationResult();
         AtomicLong count = new AtomicLong();
@@ -261,9 +267,9 @@ FastqScanner
             return vr;
         }   
         
-        ReadNameSet<String> duplications = new ReadNameSet<>( expected_size );
-        ReadNameSet<Void> pairing = new ReadNameSet<>( expected_size / 10, false );
-        
+        BloomWrapper duplications = new BloomWrapper( expected_size );
+        BloomWrapper pairing = new BloomWrapper( expected_size / 10 );
+
         int index = 1;
         for( RawReadsFile rf : rfs )
         {
@@ -303,19 +309,14 @@ FastqScanner
         //extra check for suspected reads
         if( duplications.hasPossibleDuplicates() )
         {
-            index = 1;
+    
             Map<String, Set<String>> result = new LinkedHashMap<>();
             ValidationResult dvr = new ValidationResult();
-            for( RawReadsFile rf : rfs )
-            {
-                printlnToConsole( "Performing additional checks for file " + rf.getFilename() );
-                String stream_name = formatStreamName( index++, rf.getFilename() );
-                result.putAll( checkSuspected( rf, stream_name, duplications ) );
-            }
-                
+            result = findAllduplications( duplications, 100, rfs );
                 
             dvr.append( result.entrySet().stream().map( ( e ) -> fMsg( Severity.ERROR, 
-                                                                       String.format( "Read %s has duplicate(s): %s", 
+                                                                       String.format( "Multiple (%d) occurance of read name \"%s\" at: %s\n",
+                                                                                      e.getValue().size(), 
                                                                                       e.getKey(), 
                                                                                       e.getValue().toString() ) ) ).collect( Collectors.toList() ) );
             if( dvr.isValid() )
@@ -360,27 +361,49 @@ FastqScanner
     }
 
     
-    private Map<String, Set<String>>
-    checkSuspected( RawReadsFile rf,
-                    String stream_name,
-                    ReadNameSet<String> rns ) throws InterruptedException, SecurityException, NoSuchMethodException, DataFeederException, IOException
+    public Map<String, Set<String>>
+    findAllduplications( BloomWrapper duplications, int limit, RawReadsFile...rfs )
     {
-        IlluminaIterativeEater wrapper = new IlluminaIterativeEater();
-        wrapper.setFiles( new File[] { new File( rf.getFilename() ) } );  
-        wrapper.setNormalizers( new QualityNormalizer[] { QualityNormalizer.SANGER } );
-        wrapper.setReadType( READ_TYPE.SINGLE );
+        Map<String, Integer> counts = new HashMap<>( limit );
+        Map<String, Set<String>> results = new LinkedHashMap<>( limit );
+        for( RawReadsFile rf: rfs )
+        {
+            printlnToConsole( "Performing additional checks for file " + rf.getFilename() );
 
-        Map<String, Set<String>> map = rns.findAllduplications( new DelegateIterator<IlluminaSpot, String>( wrapper.iterator() ) {
-            @Override public String convert( IlluminaSpot obj )
+            long index = 1;
+            Map<String, Long> first_seen = new LinkedHashMap<>( limit );
+            
+            IlluminaIterativeEater wrapper = new IlluminaIterativeEater();
+            wrapper.setFiles( new File[] { new File( rf.getFilename() ) } );  
+            wrapper.setNormalizers( new QualityNormalizer[] { QualityNormalizer.SANGER } );
+            wrapper.setReadType( READ_TYPE.SINGLE );
+
+            Iterator<String> read_name_iterator = new DelegateIterator<IlluminaSpot, String>( wrapper.iterator() ) {
+                @Override public String convert( IlluminaSpot obj )
+                {
+                    return obj.read_name[ IlluminaSpot.FORWARD ];
+                }
+            };
+            
+            while( read_name_iterator.hasNext() )
             {
-                return obj.read_name[ IlluminaSpot.FORWARD ];
+                String read_name = read_name_iterator.next();
+                if( duplications.getSuspected().contains( read_name ) )
+                {
+                    counts.put( read_name, counts.getOrDefault( read_name, 0 ) + 1 );
+                    Set<String> dlist = results.getOrDefault( read_name, new LinkedHashSet<>() );
+                    first_seen.putIfAbsent( read_name, index );
+                    dlist.add( String.format( "%s, read %s", rf.getFilename(), index ) );
+                    results.put( read_name, dlist );
+                }
+                index ++;
             }
-        }, 100 );
+        }
         
-        return map.entrySet().stream().collect( Collectors.toMap( e -> String.format( "%s from %s", e.getKey(), stream_name ), 
-                                                                  e -> e.getValue(), 
-                                                                  ( e1, e2 ) -> e1, 
-                                                                  LinkedHashMap::new ) );
+        return results.entrySet()
+                      .stream()
+                      .filter( e-> counts.get( e.getKey() ).intValue() > 1 )
+                      .limit( limit )
+                      .collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue(), ( v1, v2 ) -> v1, LinkedHashMap::new ) );
     }
-
 }
