@@ -23,8 +23,8 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCliTest;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
+import uk.ac.ebi.ena.webin.cli.WebinCliTest;
 
 
 public class 
@@ -36,7 +36,7 @@ FastqScannerTest
     @Test public void 
     testSingle() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
-        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.gz" );
+        URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
         RawReadsFile rf = new RawReadsFile();
         
@@ -51,7 +51,7 @@ FastqScannerTest
     @Test public void 
     testSingleDuplications() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
-        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
+        URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
         RawReadsFile rf = new RawReadsFile();
         
@@ -66,7 +66,7 @@ FastqScannerTest
     @Test public void 
     testPaired() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
-        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.TXT.GZ" );
+        URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.TXT.GZ" );
         FastqScanner fs = new FastqScanner( expected_reads );
         RawReadsFile rf = new RawReadsFile();
         
@@ -81,8 +81,8 @@ FastqScannerTest
     @Test public void 
     testPair() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
-        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.gz" );
-        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
+        URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.gz" );
+        URL  url2 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
         RawReadsFile rf1 = new RawReadsFile();
         rf1.setFilename( new File( url1.getFile() ).getCanonicalPath() );
@@ -287,8 +287,8 @@ FastqScannerTest
     @Test public void 
     testPairWithDuplication() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
-        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
-        URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
+        URL  url2 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
+        URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
 
         FastqScanner fs = new FastqScanner( expected_reads );
         
@@ -306,7 +306,7 @@ FastqScannerTest
     @Test public void 
     testPairWithDuplication2() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
-        URL  url2 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
+        URL  url2 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
         //URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
         //RawReadsFile rf1 = new RawReadsFile();
