@@ -20,6 +20,7 @@ ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : 
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
 
+/*
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
     environment 'webin-cli-password', webinCliPassword
@@ -32,7 +33,7 @@ task printWebinTestCredentials {
         println 'webinCliPassword: ' + webinCliPassword
     }
 }
-
+*/
 
 jar {
     from {
@@ -65,8 +66,8 @@ dependencies {
     compile group: 'com.beust', name: 'jcommander', version: '1.72'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.1.264')
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.1.264')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.1.272')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.1.272')
     compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
     compile("com.googlecode.json-simple:json-simple:1.1.1")
     compile(group: 'uk.ac.ebi.ena-template-expansion', name: 'ena-template-expansion', version: '1.0.4')

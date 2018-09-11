@@ -9,7 +9,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package uk.ac.ebi.ena.sequence;
+package uk.ac.ebi.ena.assembly;
 
 import static org.junit.Assert.assertEquals;
 
@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 
-public class SequenceValidationTest {
+public class SequenceAssemblyValidationTest {
     private final static String SEQUENCE_BASE_DIR = "src/test/resources/uk/ac/ebi/ena/template/tsvfile";
     private final static String[] allTemplatesA = {"ERT000002-rRNA.tsv.gz",
                                                     "ERT000003-EST-1.tsv.gz",
