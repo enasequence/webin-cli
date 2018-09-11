@@ -26,6 +26,7 @@ SampleProcessorTest
         parameters.setUsername(System.getenv( "webin-cli-username" ));
         parameters.setPassword(System.getenv( "webin-cli-password" ));
         parameters.setTestMode(true);
+        Assert.assertTrue( "webin-cli-username is null", null != parameters.getUsername() );
     }
 
     @Test public void 

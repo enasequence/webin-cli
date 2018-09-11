@@ -20,7 +20,7 @@ ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : 
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
 
-/*
+
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
     environment 'webin-cli-password', webinCliPassword
@@ -33,7 +33,7 @@ task printWebinTestCredentials {
         println 'webinCliPassword: ' + webinCliPassword
     }
 }
-*/
+
 
 jar {
     from {
