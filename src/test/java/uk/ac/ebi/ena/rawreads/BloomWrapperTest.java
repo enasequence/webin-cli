@@ -33,6 +33,18 @@ BloomWrapperTest
     }
 
 
+    @Test( expected = RuntimeException.class ) public void 
+    testLimits()
+    {
+        BloomWrapper rns = new BloomWrapper( 2, 1 );
+        rns.add( "1" );
+        rns.add( "1" );
+        rns.add( "1" );
+        rns.add( "2" );
+        rns.add( "2" );
+    }
+    
+    
     private String[] 
     initStringArray( String[] string_array, int min_string_len, int max_string_len )
     {
