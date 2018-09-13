@@ -178,7 +178,7 @@ BloomWrapperTest
         set1.removeAll( set2 );
        
         Assert.assertTrue( String.format( "Not found in bloom %d, set size %d", not_contains, set1.size() ), 
-                                          not_contains >= set1.size() - ( (double)rns.getAddsNumber() * 0.015 /* TODO check for Bloom degradation */) );
+                                          not_contains >= set1.size() - ( (double)rns.getAddsNumber() * 0.019 /* TODO check for Bloom degradation */) );
     }
     
     

@@ -66,7 +66,7 @@ FastqScannerTest
     @Test public void 
     testPaired() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
     {
-        URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.TXT.GZ" );
+        URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.txt.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
         RawReadsFile rf = new RawReadsFile();
         

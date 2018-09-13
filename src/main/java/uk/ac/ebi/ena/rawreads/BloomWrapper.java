@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 
-import oracle.net.aso.d;
-
 public class 
 BloomWrapper 
 {
@@ -34,7 +32,6 @@ BloomWrapper
     }
     
     
-     
     BloomWrapper( long expected_reads, int collect_max )
     {
         this.expected_reads = expected_reads;
