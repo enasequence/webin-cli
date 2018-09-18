@@ -14,6 +14,8 @@ package uk.ac.ebi.ena.rawreads;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -25,8 +27,17 @@ import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.cram.ref.ReferenceSource;
+import htsjdk.samtools.reference.ReferenceSequenceFile;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
@@ -40,6 +51,13 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 public class 
 RawReadsWebinCliTest
 {
+    @BeforeClass public static void
+    beforeClass()
+    {
+        System.setProperty( "samjdk.use_cram_ref_download", Boolean.TRUE.toString() );
+    }
+    
+    
     @Before public void
     before()
     {
@@ -588,6 +606,28 @@ RawReadsWebinCliTest
         Assert.assertTrue( "Should validate correctly", rr.validate() );
     }
 
+    
+    
+    @Ignore @Test public void 
+    openSamExamples() throws MalformedURLException, UnsupportedEncodingException 
+    {
+        final SamReaderFactory factory =
+                SamReaderFactory.makeDefault().enable(SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS).validationStringency(ValidationStringency.LENIENT);
+        
+        URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/20416_1#274.cram" );
+        final SamInputResource resource = SamInputResource.of( new File( URLDecoder.decode( url.getFile(), "UTF-8" ) ) );
+        factory.referenceSource( new ReferenceSource((ReferenceSequenceFile)null) );
+        final SamReader myReader = factory.open(resource);
+
+        for (final SAMRecord samRecord : myReader) 
+        {
+            System.err.print(samRecord);
+        }
+
+    }
+
+
+    
     
     private File
     createOutputFolder() throws IOException

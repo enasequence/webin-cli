@@ -74,13 +74,17 @@ import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli.manifestFileValidator;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
 {   
+    static 
+    {
+        System.setProperty( "samjdk.use_cram_ref_download", Boolean.TRUE.toString() );
+    }
+    
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
     private static final String BAM_STAR = "*";
