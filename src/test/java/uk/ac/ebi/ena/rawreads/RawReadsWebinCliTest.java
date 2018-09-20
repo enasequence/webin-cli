@@ -607,8 +607,7 @@ RawReadsWebinCliTest
         
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/20416_1#274.cram" );
         final SamInputResource resource = SamInputResource.of( new File( URLDecoder.decode( url.getFile(), "UTF-8" ) ) );
-        //factory.referenceSource( new ReferenceSource((ReferenceSequenceFile)null) );
-        factory.referenceSource( new ENAReferenceSource( new File( System.getProperty( "java.io.tmpdir" ), "/cram-ref-cache/%2s/%2s/%s" ).getPath() ) );
+        factory.referenceSource( new ENAReferenceSource() );
         final SamReader myReader = factory.open(resource);
 
         for (final SAMRecord samRecord : myReader) 
