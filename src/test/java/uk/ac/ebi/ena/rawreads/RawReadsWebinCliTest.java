@@ -28,7 +28,6 @@ import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import htsjdk.samtools.SAMRecord;
@@ -36,13 +35,12 @@ import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
-import htsjdk.samtools.cram.ref.ReferenceSource;
-import htsjdk.samtools.reference.ReferenceSequenceFile;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
+import uk.ac.ebi.ena.rawreads.refs.ENAReferenceSource;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -51,13 +49,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 public class 
 RawReadsWebinCliTest
 {
-    @BeforeClass public static void
-    beforeClass()
-    {
-        System.setProperty( "samjdk.use_cram_ref_download", Boolean.TRUE.toString() );
-    }
-    
-    
     @Before public void
     before()
     {
@@ -608,15 +599,16 @@ RawReadsWebinCliTest
 
     
     
-    @Ignore @Test public void 
+    /*@Ignore*/ @Test( /*timeout = 20000*/ ) public void 
     openSamExamples() throws MalformedURLException, UnsupportedEncodingException 
     {
         final SamReaderFactory factory =
-                SamReaderFactory.makeDefault().enable(SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS).validationStringency(ValidationStringency.LENIENT);
+                SamReaderFactory.makeDefault().enable( SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS ).validationStringency( ValidationStringency.LENIENT );
         
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/20416_1#274.cram" );
         final SamInputResource resource = SamInputResource.of( new File( URLDecoder.decode( url.getFile(), "UTF-8" ) ) );
-        factory.referenceSource( new ReferenceSource((ReferenceSequenceFile)null) );
+        //factory.referenceSource( new ReferenceSource((ReferenceSequenceFile)null) );
+        factory.referenceSource( new ENAReferenceSource( new File( System.getProperty( "java.io.tmpdir" ), "/cram-ref-cache/%2s/%2s/%s" ).getPath() ) );
         final SamReader myReader = factory.open(resource);
 
         for (final SAMRecord samRecord : myReader) 
@@ -627,8 +619,6 @@ RawReadsWebinCliTest
     }
 
 
-    
-    
     private File
     createOutputFolder() throws IOException
     {
