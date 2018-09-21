@@ -303,7 +303,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 SamReaderFactory factory = SamReaderFactory.make();
                 factory.enable( SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX );
                 factory.validationStringency( ValidationStringency.SILENT );
-                factory.referenceSource( new ENAReferenceSource( (File) null ) );
+                factory.referenceSource( new ENAReferenceSource() );
                 factory.samRecordFactory( DefaultSAMRecordFactory.getInstance() );
                 SamInputResource ir = SamInputResource.of( file );
                 File indexMaybe = SamFiles.findIndex( file );

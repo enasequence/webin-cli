@@ -21,7 +21,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,18 +30,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.cram.io.InputStreamUtils;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
-import htsjdk.samtools.reference.FastaSequenceIndex;
-import htsjdk.samtools.reference.ReferenceSequence;
-import htsjdk.samtools.reference.ReferenceSequenceFile;
-import htsjdk.samtools.reference.ReferenceSequenceFileFactory;
 import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.Log;
+
 
 
 /**
@@ -62,35 +63,44 @@ import htsjdk.samtools.util.Log;
 public class ENAReferenceSource implements CRAMReferenceSource {
 	private static final int REF_BASES_TO_CHECK_FOR_SANITY = 1000;
 	private static final Pattern chrPattern = Pattern.compile("chr.*", Pattern.CASE_INSENSITIVE);
-	private static String REF_CACHE = System.getenv("REF_CACHE");
+//	private static String REF_CACHE = System.getenv("REF_CACHE");
 	private static String REF_PATH = System.getenv("REF_PATH");
-	private static List<PathPattern> refPatterns = new ArrayList<PathPattern>();
-	private static List<PathPattern> cachePatterns = new ArrayList<PathPattern>();
+	private List<PathPattern> refPatterns = new ArrayList<PathPattern>();
+	private List<PathPattern> cachePatterns = new ArrayList<PathPattern>();
 	
+	Map<String, Integer> download_map = new HashMap<>();
+	private AtomicInteger download_counter = new AtomicInteger();
+	private AtomicLong    download_sz = new AtomicLong();
+	private AtomicInteger memory_hit_counter = new AtomicInteger();
+	private AtomicLong    total_spent = new AtomicLong();
 	
-	static {
+	{
 		if (REF_PATH == null)
 			REF_PATH = "https://www.ebi.ac.uk/ena/cram/md5/%s";
 
-		if( REF_CACHE != null )
-			cachePatterns.add( new PathPattern( REF_CACHE ) );
+//		if( REF_CACHE != null )
+//			cachePatterns.add( new PathPattern( REF_CACHE ) );
 		
 		for (String s : REF_PATH.split("(?i)(?<!(https?|ftp)):")) {
 			refPatterns.add(new PathPattern(s));
 		}
 
 	}
-
+//	static class Log 
+//	{
+//	    public void debug( String s ) { System.out.println( s ); }
+//	    public void warn( String s ) { debug( s ); }
+//	    public void error( String s ) { debug( s ); }
+//	    public void info( String s ) { debug( s ); }
+//	}
 	private static Log log = Log.getInstance(ENAReferenceSource.class);
-	private ReferenceSequenceFile rsFile;
-	private FastaSequenceIndex fastaSequenceIndex;
 	private int downloadTriesBeforeFailing = 2;
 
 	/*
 	 * In-memory cache of ref bases by sequence name. Garbage collector will
 	 * automatically clean it if memory is low.
 	 */
-	private Map<String, WeakReference<byte[]>> cacheW = new HashMap<String, WeakReference<byte[]>>();
+	private Map<String, Reference<byte[]>> cacheW = new ConcurrentHashMap<String, Reference<byte[]>>();
 
 	public ENAReferenceSource() {
 	}
@@ -98,29 +108,16 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	public
 	ENAReferenceSource( String... cachePatterns )
 	{
-	    ENAReferenceSource.cachePatterns.addAll( Arrays.stream( cachePatterns ).map( e -> new PathPattern( e ) ).collect( Collectors.toList() ) );
+	    this.cachePatterns.addAll( Arrays.stream( cachePatterns ).map( e -> new PathPattern( e ) ).collect( Collectors.toList() ) );
 	}
 	
-	public ENAReferenceSource(File file) {
-		if (file != null) {
-			rsFile = ReferenceSequenceFileFactory.getReferenceSequenceFile(file);
-
-			File indexFile = new File(file.getAbsoluteFile() + ".fai");
-			if (indexFile.exists())
-				fastaSequenceIndex = new FastaSequenceIndex(indexFile);
-		}
-	}
-
-	public ENAReferenceSource(ReferenceSequenceFile rsFile) {
-		this.rsFile = rsFile;
-	}
 
 	public void clearCache() {
 		cacheW.clear();
 	}
 
 	private byte[] findInCache(String name) {
-		WeakReference<byte[]> r = cacheW.get(name);
+		Reference<byte[]> r = cacheW.get(name);
 		if (r != null) {
 			byte[] bytes = r.get();
 			if (bytes != null)
@@ -135,14 +132,14 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 		if (bases == null)
 			return null;
 
-		cacheW.put(record.getSequenceName(), new WeakReference<byte[]>(bases));
-
 		String md5 = record.getAttribute(SAMSequenceRecord.MD5_TAG);
 		if (md5 == null) {
 			md5 = Utils.calculateMD5String(bases);
 			record.setAttribute(SAMSequenceRecord.MD5_TAG, md5);
 		}
-
+        
+		cacheW.put( md5, new SoftReference<byte[]>( bases ) );
+        
 		if( !cachePatterns.isEmpty() )
 			addToRefCache(md5, bases);
 
@@ -173,7 +170,7 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 			if (md5 != null) {
 				byte[] bases = findInCache(md5);
 				if (bases != null) {
-					log.debug("Reference found in memory cache by md5: " + md5);
+					log.debug( String.format( "% 6d Reference found in memory cache by md5: %s", memory_hit_counter.incrementAndGet(), md5 ) );
 					return ReferenceRegion.copyRegion(bases, record.getSequenceIndex(), record.getSequenceName(),
 							start_1based, endInclusive_1based);
 				}
@@ -199,7 +196,7 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 					throw new RuntimeException(e);
 				}
 			if (bases != null) {
-				cacheW.put(record.getSequenceName(), new WeakReference<byte[]>(bases));
+				cacheW.put( md5, new SoftReference<byte[]>(bases) );
 
 				if( !cachePatterns.isEmpty() )
 					addToRefCache(md5, bases);
@@ -219,21 +216,13 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 			if (md5 != null) {
 				byte[] bases = findInCache(md5);
 				if (bases != null) {
-					log.debug("Reference found in memory cache by md5: " + md5);
+					log.debug( String.format( "% 6d Reference found in memory cache by md5: %s", memory_hit_counter.incrementAndGet(), md5 ) );
 					return bases;
 				}
 			}
 		}
 
-		byte[] bases;
-
-		{ // try to fetch sequence by name:
-			bases = findBasesByName(record.getSequenceName(), tryNameVariants);
-			if (bases != null) {
-				Utils.upperCase(bases);
-				return bases;
-			}
-		}
+		byte[] bases = null;
 
 		{ // try to fetch sequence by md5:
 			if (md5 != null)
@@ -261,36 +250,6 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 		return null;
 	}
 
-	protected byte[] findBasesByName(String name, boolean tryVariants) {
-		if (rsFile == null || !rsFile.isIndexed())
-			return null;
-
-		ReferenceSequence sequence = null;
-		if (fastaSequenceIndex != null)
-			if (fastaSequenceIndex.hasIndexEntry(name))
-				sequence = rsFile.getSequence(name);
-			else
-				sequence = null;
-
-		if (sequence != null)
-			return sequence.getBases();
-
-		if (tryVariants) {
-			for (String variant : getVariants(name)) {
-				try {
-					sequence = rsFile.getSequence(variant);
-				} catch (Exception e) {
-					log.info("Sequence not found: " + variant);
-				}
-				if (sequence != null) {
-					log.debug("Reference found in memory cache for name %s by variant %s", name, variant);
-					return sequence.getBases();
-				}
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * @param path
 	 * @return true if the path is a valid URL, false otherwise.
@@ -298,7 +257,7 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	private static boolean isURL(String path) {
 		try {
 			URL url = new URL(path);
-			return true;
+			return null != url;
 		} catch (MalformedURLException e) {
 			return false;
 		}
@@ -352,19 +311,28 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	}
 
 	protected byte[] findBasesByMD5(String md5) throws MalformedURLException, IOException {
+	    long start = System.currentTimeMillis();
 		for (PathPattern p : refPatterns) {
 			String path = p.format(md5);
 			byte[] data = loadFromPath(path, md5);
 			if (data == null)
 				continue;
-			log.debug("Reference found at the location ", path);
+		    //download_map.merge( md5, 1, v -> v + 1 ); 
+			log.debug( String.format( "*% 5d Reference found at the location %s sz:%d, total: %d, spent: %d, total spent: %d, attempt %d", 
+			                          download_counter.incrementAndGet(), 
+			                          path, 
+			                          data.length, 
+			                          download_sz.addAndGet( data.length ),
+			                          System.currentTimeMillis() - start,
+			                          total_spent.addAndGet( System.currentTimeMillis() - start ),
+			                          download_map.merge( md5, (Integer)1, ( v1, v2 ) -> v1 + v2 ) ) );
 			return data;
 		}
 
 		return null;
 	}
 
-	private static void addToRefCache(String md5, byte[] data) {
+	private void addToRefCache(String md5, byte[] data) {
 	    for( PathPattern p : cachePatterns ) {
     		File cachedFile = new File( p.format( md5 ) );
     		if (!cachedFile.exists()) {
@@ -387,7 +355,7 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	    }
 	}
 
-	private static String addToRefCache(String md5, InputStream stream) {
+	private String addToRefCache(String md5, InputStream stream) {
 	    for( PathPattern p : cachePatterns ) {
     		String localPath = p.format(md5);
     		File cachedFile = new File(localPath);
