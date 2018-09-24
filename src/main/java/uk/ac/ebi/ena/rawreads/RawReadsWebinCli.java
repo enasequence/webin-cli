@@ -24,6 +24,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -64,6 +65,7 @@ import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
+import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo;
 import uk.ac.ebi.ena.rawreads.refs.ENAReferenceSource;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
@@ -210,8 +212,34 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     
     private boolean
     readCramFile( List<RawReadsFile> files, AtomicBoolean paired ) throws ValidationEngineException
-    {
-        return readBamFile( files, paired );
+    { 
+        boolean valid = true;
+        CramReferenceInfo cri = new CramReferenceInfo();
+        for( RawReadsFile rf : files )
+        {
+            File reportFile = getReportFile( rf.getFilename() );
+            try
+            {
+
+                Map<String, Boolean> ref_set = cri.confirmFileReferences( new File( rf.getFilename() ) );
+                if( !ref_set.isEmpty() && ref_set.containsValue( Boolean.FALSE ) )
+                {
+                    WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "Unable to confirm public availability of reference(s): " + ref_set.entrySet()
+                                                                                                                                                 .stream()
+                                                                                                                                                 .filter( e -> !e.getValue() )
+                                                                                                                                                 .map( e -> e.getKey() )
+                                                                                                                                                 .collect( Collectors.toList() ) );
+                    valid &= false;
+                }
+            
+            } catch( IOException ioe )
+            {
+                WebinCliReporter.writeToFile( reportFile, Severity.ERROR, ioe.getMessage() );
+                valid &= false;
+            }
+        }
+
+        return valid && readBamFile( files, paired );
     }
     
     
@@ -297,13 +325,14 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             
             try
             {
+                ENAReferenceSource reference_source = new ENAReferenceSource();
                 File file = new File( rf.getFilename() );
                 Log.setGlobalLogLevel( LogLevel.ERROR );
                 SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
                 SamReaderFactory factory = SamReaderFactory.make();
                 factory.enable( SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX );
                 factory.validationStringency( ValidationStringency.SILENT );
-                factory.referenceSource( new ENAReferenceSource() );
+                factory.referenceSource( reference_source );
                 factory.samRecordFactory( DefaultSAMRecordFactory.getInstance() );
                 SamInputResource ir = SamInputResource.of( file );
                 File indexMaybe = SamFiles.findIndex( file );

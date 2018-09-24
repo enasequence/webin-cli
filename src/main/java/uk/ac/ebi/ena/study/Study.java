@@ -15,8 +15,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -100,6 +98,7 @@ public class Study {
 		this.projectId = projectId;
 	}
 
+    @SuppressWarnings( "unchecked" )
     private void extractResults(String result, String studyId) {
         try {
             JSONParser jsonParser = new JSONParser();

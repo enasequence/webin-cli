@@ -41,6 +41,7 @@ import htsjdk.samtools.cram.io.InputStreamUtils;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.Log;
+import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo.ReferenceInfo;
 
 
 
@@ -67,8 +68,10 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	private static String REF_PATH = System.getenv("REF_PATH");
 	private List<PathPattern> refPatterns = new ArrayList<PathPattern>();
 	private List<PathPattern> cachePatterns = new ArrayList<PathPattern>();
+	private CramReferenceInfo cram_info = new CramReferenceInfo();
 	
-	Map<String, Integer> download_map = new HashMap<>();
+	Map<String, Boolean>  cram_info_map = new ConcurrentHashMap<>();
+	Map<String, Integer>  download_map  = new HashMap<>();
 	private AtomicInteger download_counter = new AtomicInteger();
 	private AtomicLong    download_sz = new AtomicLong();
 	private AtomicInteger memory_hit_counter = new AtomicInteger();
@@ -123,6 +126,23 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	}
 
 	
+	public Map<String, Boolean>
+	getReferenceConfirmationSet()
+	{
+	    return cram_info_map;
+	}
+	
+	
+	private void
+	confirmReference( String md5 )
+	{
+	    getReferenceConfirmationSet().computeIfAbsent( md5, k -> { 
+	        ReferenceInfo info = cram_info.fetchReferenceMetadata( md5 );
+	        return md5.equals( info.getMd5() );
+	    } );
+	}
+	
+	
     private byte[] 
     findInCache( String name )
     {
@@ -137,11 +157,10 @@ public class ENAReferenceSource implements CRAMReferenceSource {
     }
 
     
-    @Override
-    public synchronized byte[] 
+    @Override public synchronized byte[] 
     getReferenceBases( SAMSequenceRecord record, boolean tryNameVariants )
     {
-        byte[] bases = findBases( record, tryNameVariants );
+        byte[] bases = findBases( record );
         if( bases == null )
             return null;
 
@@ -190,19 +209,21 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	{
 
         String md5 = record.getAttribute( SAMSequenceRecord.MD5_TAG );
+        if( md5 == null )
+            return null;
+         
+        confirmReference( md5 );
+        
         { // check cache by md5:
-            if( md5 != null )
+            byte[] bases = findInCache( md5 );
+            if( bases != null )
             {
-                byte[] bases = findInCache( md5 );
-                if( bases != null )
-                {
-                    log.debug( String.format( "% 6d Reference found in memory cache by md5: %s", memory_hit_counter.incrementAndGet(), md5 ) );
-                    return ReferenceRegion.copyRegion( bases, 
-                                                       record.getSequenceIndex(), 
-                                                       record.getSequenceName(),
-                                                       start_1based, 
-                                                       endInclusive_1based );
-                }
+                log.debug( String.format( "% 6d Reference found in memory cache by md5: %s", memory_hit_counter.incrementAndGet(), md5 ) );
+                return ReferenceRegion.copyRegion( bases, 
+                                                   record.getSequenceIndex(), 
+                                                   record.getSequenceName(),
+                                                   start_1based, 
+                                                   endInclusive_1based );
             }
         }
 
@@ -218,17 +239,14 @@ public class ENAReferenceSource implements CRAMReferenceSource {
         }
 
         { // try to fetch sequence by md5:
-            if( md5 != null )
+            try
             {
-                try
-                {
-                    bases = findBasesByMD5( md5 );
-                } catch( Exception e )
-                {
-                    if( e instanceof RuntimeException )
-                        throw (RuntimeException) e;
-                    throw new RuntimeException( e );
-                }
+                bases = findBasesByMD5( md5 );
+            } catch( Exception e )
+            {
+                if( e instanceof RuntimeException )
+                    throw (RuntimeException) e;
+                throw new RuntimeException( e );
             }
             
             if( bases != null )
@@ -250,36 +268,35 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 
 	
     private byte[] 
-    findBases( SAMSequenceRecord record, boolean tryNameVariants )
+    findBases( SAMSequenceRecord record )
     {
 
         String md5 = record.getAttribute( SAMSequenceRecord.MD5_TAG );
+        if( null == md5 )
+            return null;
+
+        confirmReference( md5 );
+        
         { // check cache by md5:
-            if( md5 != null )
+            byte[] bases = findInCache( md5 );
+            if( bases != null )
             {
-                byte[] bases = findInCache( md5 );
-                if( bases != null )
-                {
-                    log.debug( String.format( "% 6d Reference found in memory cache by md5: %s", memory_hit_counter.incrementAndGet(), md5 ) );
-                    return bases;
-                }
+                log.debug( String.format( "% 6d Reference found in memory cache by md5: %s", memory_hit_counter.incrementAndGet(), md5 ) );
+                return bases;
             }
         }
 
         byte[] bases = null;
 
         { // try to fetch sequence by md5:
-            if( md5 != null )
+            try
             {
-                try
-                {
-                    bases = findBasesByMD5( md5 );
-                } catch( Exception e )
-                {
-                    if( e instanceof RuntimeException )
-                        throw (RuntimeException) e;
-                    throw new RuntimeException( e );
-                }
+                bases = findBasesByMD5( md5 );
+            } catch( Exception e )
+            {
+                if( e instanceof RuntimeException )
+                    throw (RuntimeException) e;
+                throw new RuntimeException( e );
             }
             
             if( bases != null )
