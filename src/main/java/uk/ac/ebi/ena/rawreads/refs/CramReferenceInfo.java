@@ -127,7 +127,7 @@ CramReferenceInfo
     public ReferenceInfo
     fetchReferenceMetadata( String md5, PrintStream... pss )
     {
-        for( int i = 0; i < 2; ++i )
+        for( int i = 0; i < 4; ++i )
         try
         {
             String data = fetchData( new URL( String.format( service_link, md5 ) ) );
@@ -184,7 +184,7 @@ CramReferenceInfo
     main( String args[] ) throws MalformedURLException, IOException, ScriptException, URISyntaxException, InterruptedException
     {
         CramReferenceInfo m = new CramReferenceInfo();
-        m.fetchReferenceMetadata( /* args[ 0 ] */ "a0d9851da00400dec1098a9255ac712e", System.out );
+        m.fetchReferenceMetadata( args[ 0 ] /* "a0d9851da00400dec1098a9255ac712e"*/, System.out );
     }
         
 }

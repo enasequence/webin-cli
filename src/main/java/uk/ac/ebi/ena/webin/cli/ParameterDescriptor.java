@@ -26,6 +26,12 @@ public interface ParameterDescriptor {
     String tryAscp    = "-ascp";
     String help       = "-help";
 
+    //synonyms
+    String userNameSynonym   = "-username";
+    String centerNameSynonym = "-centername";
+    String outputDirSynonym  = "-outputdir";
+    String inputDirSynonym   = "-inputdir";
+    
     String OPTION_LINE = "\n\t";
     String MANDATORY_LINE = "[Required] ";
     String VALUE_LINE = "\n\t\t";

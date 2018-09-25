@@ -224,7 +224,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 Map<String, Boolean> ref_set = cri.confirmFileReferences( new File( rf.getFilename() ) );
                 if( !ref_set.isEmpty() && ref_set.containsValue( Boolean.FALSE ) )
                 {
-                    WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "Unable to confirm public availability of reference(s): " + ref_set.entrySet()
+                    WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "Unable to find reference sequence(s) from the CRAM reference registry: " + ref_set.entrySet()
                                                                                                                                                  .stream()
                                                                                                                                                  .filter( e -> !e.getValue() )
                                                                                                                                                  .map( e -> e.getKey() )
@@ -325,7 +325,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             
             try
             {
-                ENAReferenceSource reference_source = new ENAReferenceSource();
+                ENAReferenceSource reference_source = new ENAReferenceSource( System.getenv( "REF_CACHE" ) );
                 File file = new File( rf.getFilename() );
                 Log.setGlobalLogLevel( LogLevel.ERROR );
                 SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );

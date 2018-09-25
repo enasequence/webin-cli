@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import htsjdk.samtools.SAMSequenceRecord;
@@ -41,7 +40,6 @@ import htsjdk.samtools.cram.io.InputStreamUtils;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.Log;
-import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo.ReferenceInfo;
 
 
 
@@ -61,16 +59,18 @@ import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo.ReferenceInfo;
  * 
  * @author vadim
  */
-public class ENAReferenceSource implements CRAMReferenceSource {
+public class 
+ENAReferenceSource implements CRAMReferenceSource 
+{
 	private static final int REF_BASES_TO_CHECK_FOR_SANITY = 1000;
-	private static final Pattern chrPattern = Pattern.compile("chr.*", Pattern.CASE_INSENSITIVE);
-//	private static String REF_CACHE = System.getenv("REF_CACHE");
-	private static String REF_PATH = System.getenv("REF_PATH");
+
+//	private static String REF_CACHE = System.getenv( "REF_CACHE" );
+	private static String REF_PATH = System.getenv( "REF_PATH" );
+
 	private List<PathPattern> refPatterns = new ArrayList<PathPattern>();
 	private List<PathPattern> cachePatterns = new ArrayList<PathPattern>();
-	private CramReferenceInfo cram_info = new CramReferenceInfo();
-	
-	Map<String, Boolean>  cram_info_map = new ConcurrentHashMap<>();
+
+
 	Map<String, Integer>  download_map  = new HashMap<>();
 	private AtomicInteger download_counter = new AtomicInteger();
 	private AtomicLong    download_sz = new AtomicLong();
@@ -78,17 +78,19 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 	private AtomicLong    total_spent = new AtomicLong();
 	
 	{
-		if (REF_PATH == null)
+		if( REF_PATH == null )
 			REF_PATH = "https://www.ebi.ac.uk/ena/cram/md5/%s";
 
 //		if( REF_CACHE != null )
 //			cachePatterns.add( new PathPattern( REF_CACHE ) );
 		
-		for (String s : REF_PATH.split("(?i)(?<!(https?|ftp)):")) {
-			refPatterns.add(new PathPattern(s));
+		for( String s : REF_PATH.split( "(?i)(?<!(https?|ftp)):" ) )
+		{
+			refPatterns.add( new PathPattern( s ) );
 		}
 
 	}
+	
 //	static class Log 
 //	{
 //	    public void debug( String s ) { System.out.println( s ); }
@@ -96,7 +98,8 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 //	    public void error( String s ) { debug( s ); }
 //	    public void info( String s ) { debug( s ); }
 //	}
-	private static Log log = Log.getInstance(ENAReferenceSource.class);
+	
+	private static Log log = Log.getInstance( ENAReferenceSource.class );
 	private int downloadTriesBeforeFailing = 2;
 
 	/*
@@ -125,23 +128,6 @@ public class ENAReferenceSource implements CRAMReferenceSource {
 		cacheW.clear();
 	}
 
-	
-	public Map<String, Boolean>
-	getReferenceConfirmationSet()
-	{
-	    return cram_info_map;
-	}
-	
-	
-	private void
-	confirmReference( String md5 )
-	{
-	    getReferenceConfirmationSet().computeIfAbsent( md5, k -> { 
-	        ReferenceInfo info = cram_info.fetchReferenceMetadata( md5 );
-	        return md5.equals( info.getMd5() );
-	    } );
-	}
-	
 	
     private byte[] 
     findInCache( String name )
@@ -212,8 +198,6 @@ public class ENAReferenceSource implements CRAMReferenceSource {
         if( md5 == null )
             return null;
          
-        confirmReference( md5 );
-        
         { // check cache by md5:
             byte[] bases = findInCache( md5 );
             if( bases != null )
@@ -275,8 +259,6 @@ public class ENAReferenceSource implements CRAMReferenceSource {
         if( null == md5 )
             return null;
 
-        confirmReference( md5 );
-        
         { // check cache by md5:
             byte[] bases = findInCache( md5 );
             if( bases != null )

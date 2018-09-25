@@ -71,7 +71,7 @@ public class WebinCli {
 	
 	private Params params;
 	private ContextE contextE;
-    private AbstractWebinCli validator;
+    private AbstractWebinCli<?> validator;
 
 	public static class
 	Params	
@@ -88,7 +88,7 @@ public class WebinCli {
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = contextValidator.class)
 		public String context;
 		
-		@Parameter(names = ParameterDescriptor.userName, description = ParameterDescriptor.userNameFlagDescription, required = true)
+		@Parameter(names = { ParameterDescriptor.userName, ParameterDescriptor.userNameSynonym }, description = ParameterDescriptor.userNameFlagDescription, required = true)
 		public String userName;
 		
 		@Parameter(names = ParameterDescriptor.password, description = ParameterDescriptor.passwordFlagDescription, required = true)
@@ -97,7 +97,7 @@ public class WebinCli {
 		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = manifestFileValidator.class)
 		public String manifest;
 		
-		@Parameter(names = ParameterDescriptor.outputDir, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class)
+		@Parameter(names = { ParameterDescriptor.outputDir, ParameterDescriptor.outputDirSynonym }, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class)
 		public String outputDir;
 		
 		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription, required = false)
@@ -106,13 +106,13 @@ public class WebinCli {
 		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription, required = false)
 		public boolean submit;
 		
-        @Parameter(names = ParameterDescriptor.centerName, description = ParameterDescriptor.centerNameFlagDescription, required = false )
+        @Parameter(names = { ParameterDescriptor.centerName, ParameterDescriptor.centerNameSynonym }, description = ParameterDescriptor.centerNameFlagDescription, required = false )
         public String centerName;
         
         @Parameter(names = ParameterDescriptor.version, description = ParameterDescriptor.versionFlagDescription, required = false )
         public boolean version;
 	
-        @Parameter(names = ParameterDescriptor.inputDir, description = ParameterDescriptor.inputDirFlagDescription, required = false, hidden=true )
+        @Parameter(names = { ParameterDescriptor.inputDir, ParameterDescriptor.inputDirSynonym }, description = ParameterDescriptor.inputDirFlagDescription, required = false, hidden=true )
         public String inputDir = ".";
         
         @Parameter(names = ParameterDescriptor.tryAscp, description = ParameterDescriptor.tryAscpDescription, required = false )
@@ -329,19 +329,61 @@ public class WebinCli {
 
 	private static void printUsage() {
 	    WebinCliReporter.writeToConsole( new StringBuilder().append( "Program options: " )
-	                                                .append( "\n" + ParameterDescriptor.context + ParameterDescriptor.contextFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.userName + ParameterDescriptor.userNameFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.password + ParameterDescriptor.passwordFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.manifest + ParameterDescriptor.manifestFlagDescription )
-                                                    .append( "\n" + ParameterDescriptor.inputDir + ParameterDescriptor.inputDirFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.outputDir + ParameterDescriptor.outputDirFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.validate + ParameterDescriptor.validateFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.submit + ParameterDescriptor.submitFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.centerName + ParameterDescriptor.centerNameFlagDescription )
-	                                                .append( "\n" + ParameterDescriptor.tryAscp + ParameterDescriptor.tryAscpDescription )
-	                                                .append( "\n" + ParameterDescriptor.version + ParameterDescriptor.versionFlagDescription )
-													.append( "\n" + ParameterDescriptor.help + ParameterDescriptor.helpDescription )
-	                                                .append( "\n" ).toString() );
+	                                                .append( '\n' )
+	                                                .append( '\t' )
+	                                                .append( "\n" + ParameterDescriptor.context )
+	                                                .append( ParameterDescriptor.contextFlagDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.userName )
+	                                                //.append( "\n" + ParameterDescriptor.userNameSynonym )
+	                                                .append( ParameterDescriptor.userNameFlagDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.password )
+	                                                .append( ParameterDescriptor.passwordFlagDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.manifest )
+	                                                .append( ParameterDescriptor.manifestFlagDescription )
+	                                                .append( '\n' )
+	                                                
+                                                    .append( "\n" + ParameterDescriptor.inputDir )
+                                                    //.append( "\n" + ParameterDescriptor.inputDirSynonym )
+                                                    .append( ParameterDescriptor.inputDirFlagDescription )
+                                                    .append( '\n' )
+	                                                
+                                                    .append( "\n" + ParameterDescriptor.outputDir )
+	                                                //.append( "\n" + ParameterDescriptor.outputDirSynonym 
+                                                    .append( ParameterDescriptor.outputDirFlagDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.validate )
+	                                                .append( ParameterDescriptor.validateFlagDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.submit )
+	                                                .append( ParameterDescriptor.submitFlagDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.centerName )
+	                                                //.append( "\n" + ParameterDescriptor.centerNameSynonym ) 
+	                                                .append( ParameterDescriptor.centerNameFlagDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.tryAscp )
+	                                                .append( ParameterDescriptor.tryAscpDescription )
+	                                                .append( '\n' )
+	                                                
+	                                                .append( "\n" + ParameterDescriptor.version )
+	                                                .append( ParameterDescriptor.versionFlagDescription )
+	                                                .append( '\n' )
+	                                                
+													.append( "\n" + ParameterDescriptor.help )
+													.append( ParameterDescriptor.helpDescription )
+													.append( '\n' )
+													.append( '\t' )
+	                                                .append( '\n' ).toString() );
 		writeReturnCodes();
 	}
 
