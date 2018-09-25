@@ -24,16 +24,21 @@ import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-
 
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamFiles;
@@ -44,12 +49,15 @@ import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.util.Log;
 import htsjdk.samtools.util.Log.LogLevel;
+import uk.ac.ebi.ena.rawreads.VerboseLogger;
 
 public class 
-CramReferenceInfo 
+CramReferenceInfo implements VerboseLogger
 {
     private static String service_link = "https://www.ebi.ac.uk/ena/cram/sequence/%32s/metadata";
+    private static String info_path = System.getProperty( "user.home" ) + "/.webin-cli/cram-ref-info/%2s/%2s/%s";
     private ScriptEngine engine;
+    private PathPattern  cache_pattern;
     
     
     public 
@@ -57,6 +65,7 @@ CramReferenceInfo
     {
         ScriptEngineManager sem = new ScriptEngineManager();
         this.engine = sem.getEngineByName( "javascript" );
+        this.cache_pattern = new PathPattern( info_path );
     }
     
     
@@ -154,6 +163,41 @@ CramReferenceInfo
     }
     
     
+    private boolean
+    findOnDisk( String md5 )
+    {
+        String path = cache_pattern.format( md5 );
+        Path entry = Paths.get( path );
+        if( Files.exists( entry, LinkOption.NOFOLLOW_LINKS ) )
+        {
+            if( 1 != entry.toFile().length() )
+                return false; //throw new RuntimeException( "The reference sequence is too long: " + md5 );
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    
+    private boolean
+    putOnDisk( String md5 )
+    {
+        try
+        {
+            String path = cache_pattern.format( md5 );
+            Path entry = Paths.get( path );
+            Files.createDirectories( entry.getParent() );
+            Files.write( entry, new byte[] { '1' }, StandardOpenOption.CREATE, StandardOpenOption.SYNC );
+            return true;
+        } catch( IOException ioe )
+        {
+            return true;
+        }
+    }
+    
+    
+    
     public Map<String, Boolean>
     confirmFileReferences( File file ) throws IOException
     {
@@ -165,20 +209,49 @@ CramReferenceInfo
         SamInputResource ir = SamInputResource.of( file );
         File indexMaybe = SamFiles.findIndex( file );
         //System.out.println( "proposed index: " + indexMaybe );
+        AtomicLong count = new AtomicLong();
         try( SamReader reader = factory.open( ir ); )
         {
+            printfToConsole( "Checking reference existance in the CRAM reference registry for %s\n", file.getPath() );
             for( SAMSequenceRecord sequenceRecord : reader.getFileHeader().getSequenceDictionary().getSequences() )
             {
+                count.incrementAndGet();
                 String md5 = sequenceRecord.getAttribute( SAMSequenceRecord.MD5_TAG );
-                result.computeIfAbsent( md5, k -> { 
-                    ReferenceInfo info = fetchReferenceMetadata( md5 );
-                    return k.equals( info.getMd5() );
+                result.computeIfAbsent( md5, k -> {
+                    if( findOnDisk( md5 ) )
+                    {
+                        return true;
+                    } else
+                    {
+                        ReferenceInfo info = fetchReferenceMetadata( md5 );
+                        if( k.equals( info.getMd5() ) )
+                        {
+                            return putOnDisk( md5 );
+                        } 
+                        
+                        return false;
+                    }
                 } );
+                
+                
+                if( 0 == count.get() % 10 )
+                    printProcessedReferenceNumber( count );
             }
+            
+            printProcessedReferenceNumber( count );
+            printfToConsole( "\n" );
         } 
         return result;
     }
     
+    
+    private void 
+    printProcessedReferenceNumber( AtomicLong count )
+    {
+        printfToConsole( "\rChecked %16d references(s)", count.get() );
+        flushConsole();
+    }
+
     
     public static void
     main( String args[] ) throws MalformedURLException, IOException, ScriptException, URISyntaxException, InterruptedException

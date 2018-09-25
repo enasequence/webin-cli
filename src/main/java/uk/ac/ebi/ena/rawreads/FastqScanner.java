@@ -33,9 +33,6 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
-import com.google.common.hash.BloomFilter;
-import com.google.common.hash.Funnels;
-
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
@@ -52,19 +49,16 @@ import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater.READ_TYPE;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaSpot;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
-FastqScanner 
+FastqScanner implements VerboseLogger
 {
-    private static final String S_READ_D = "%s, Read %d";
     protected static final int MAX_LABEL_SET_SIZE = 10;
     private static final int PAIRING_THRESHOLD = 30;
     
     private final int expected_size;
     private Set<String> labelset = new HashSet<>();
     private AtomicBoolean paired = new AtomicBoolean();
-    private boolean verbose = true;
     
     
     public
@@ -173,7 +167,6 @@ FastqScanner
             
             df.setEater( new NullDataEater<DataSpot>() 
             {
-                AtomicLong read_no = new AtomicLong( 1 );
                 @Override public void
                 eat( DataSpot spot ) throws DataEaterException
                 {
@@ -191,7 +184,7 @@ FastqScanner
                     duplications.add( spot.bname );
                     
                     if( 0 == count.get() % 1000 )
-                        printProcessedReadNumber( count );
+                        printProcessedReadNumber( count.get() );
                 }  
             } );
 
@@ -200,18 +193,10 @@ FastqScanner
             df.start();
             df.join();
             DataFeederException result = df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause();
-            printProcessedReadNumber( count );
+            printProcessedReadNumber( count.get() );
             printlnToConsole();
             return result;
         }
-    }
-
-
-    private void 
-    printProcessedReadNumber( AtomicLong count )
-    {
-        printfToConsole( "\rProcessed %16d read(s)", count.get() );
-        flushConsole();
     }
 
     
@@ -337,38 +322,6 @@ FastqScanner
         }
 
         return vr;
-    }
-
-    
-    private void
-    flushConsole()
-    {
-        if( verbose )
-            WebinCliReporter.flushConsole();
-    }
-    
-
-    private void
-    printlnToConsole( String msg )
-    {
-        if( verbose )
-            WebinCliReporter.printlnToConsole( msg );
-    }
-
-    
-    private void
-    printlnToConsole()
-    {
-        if( verbose )
-            WebinCliReporter.printlnToConsole();
-    }
-
-    
-    private void
-    printfToConsole( String msg, Object... arg1 )
-    {
-        if( verbose )
-            WebinCliReporter.printfToConsole( msg, arg1 );
     }
 
     

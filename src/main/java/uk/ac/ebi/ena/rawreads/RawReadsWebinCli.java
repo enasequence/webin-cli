@@ -80,7 +80,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
-RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
+RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLogger
 {   
     static 
     {
@@ -225,10 +225,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 if( !ref_set.isEmpty() && ref_set.containsValue( Boolean.FALSE ) )
                 {
                     WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "Unable to find reference sequence(s) from the CRAM reference registry: " + ref_set.entrySet()
-                                                                                                                                                 .stream()
-                                                                                                                                                 .filter( e -> !e.getValue() )
-                                                                                                                                                 .map( e -> e.getKey() )
-                                                                                                                                                 .collect( Collectors.toList() ) );
+                                                                                                                                                                 .stream()
+                                                                                                                                                                 .filter( e -> !e.getValue() )
+                                                                                                                                                                 .map( e -> e.getKey() )
+                                                                                                                                                                 .collect( Collectors.toList() ) );
                     valid &= false;
                 }
             
@@ -325,6 +325,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             
             try
             {
+                printfToConsole( "Processing file %s\n", rf.getFilename() );
                 ENAReferenceSource reference_source = new ENAReferenceSource( System.getenv( "REF_CACHE" ) );
                 File file = new File( rf.getFilename() );
                 Log.setGlobalLogLevel( LogLevel.ERROR );
@@ -367,8 +368,13 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     
                     paired.compareAndSet( false, record.getReadPairedFlag() );
                     reads_cnt ++;
+                    if( 0 == reads_cnt % 1000 )
+                        printProcessedReadNumber( reads_cnt );
                 }
-        
+
+                printProcessedReadNumber( reads_cnt );
+                printlnToConsole();
+                
                 reader.close();
                 
                 WebinCliReporter.writeToFile( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt );

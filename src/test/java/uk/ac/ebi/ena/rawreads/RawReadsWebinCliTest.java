@@ -599,7 +599,7 @@ RawReadsWebinCliTest
 
     
     
-    /*@Ignore*/ @Test( /*timeout = 20000*/ ) public void 
+    /*@Ignore*/ @Test( timeout = 200_000 ) public void 
     openSamExamples() throws MalformedURLException, UnsupportedEncodingException 
     {
         final SamReaderFactory factory =
