@@ -26,6 +26,16 @@ public class
 ENAReferenceSourceTest 
 {
     @Test public void
+    testSplit()
+    {
+        String path = "https://www.ebi.ac.uk/ena/cram/md5/%s;https://www.bie.ac.uk/ena/cram/md5/%s";
+        System.out.println( String.valueOf( ENAReferenceSource.splitRefPath( path ) ) );
+        Assert.assertEquals( String.valueOf( ENAReferenceSource.splitRefPath( path ) ), 2, ENAReferenceSource.splitRefPath( path ).size() );
+
+    }
+    
+    
+    @Test public void
     test() throws IOException
     {
         Path cache = Files.createTempDirectory( "tmp-ref-cache" );

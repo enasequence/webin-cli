@@ -326,7 +326,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
             try
             {
                 printfToConsole( "Processing file %s\n", rf.getFilename() );
-                ENAReferenceSource reference_source = new ENAReferenceSource( System.getenv( "REF_CACHE" ) );
+                ENAReferenceSource reference_source = new ENAReferenceSource();
                 File file = new File( rf.getFilename() );
                 Log.setGlobalLogLevel( LogLevel.ERROR );
                 SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
