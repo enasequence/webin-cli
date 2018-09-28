@@ -46,6 +46,7 @@ import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.cram.CRAMException;
 import htsjdk.samtools.util.Log;
 import htsjdk.samtools.util.Log.LogLevel;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
@@ -327,6 +328,32 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
             {
                 printfToConsole( "Processing file %s\n", rf.getFilename() );
                 ENAReferenceSource reference_source = new ENAReferenceSource();
+                reference_source.setLoggerWrapper( new ENAReferenceSource.LoggerWrapper() 
+                {
+                    private File rFile = reportFile;
+                    @Override public void 
+                    error( Object... messageParts )
+                    {
+                        WebinCliReporter.writeToFile( rFile, Severity.ERROR, null == messageParts ? "null" : String.valueOf( Arrays.asList( messageParts ) ) );
+                    }
+
+                    @Override public void 
+                    warn( Object... messageParts )
+                    {
+                        WebinCliReporter.writeToFile( rFile, Severity.WARNING, null == messageParts ? "null" : String.valueOf( Arrays.asList( messageParts ) ) );
+                    }  
+
+                    @Override public void 
+                    info( Object... messageParts )
+                    {
+                        WebinCliReporter.writeToFile( rFile, Severity.INFO, null == messageParts ? "null" : String.valueOf( Arrays.asList( messageParts ) ) );
+                    }  
+                } );
+                
+                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "REF_PATH  " + reference_source.getRefPathList() );
+                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "REF_CACHE " + reference_source.getRefCacheList() );
+
+
                 File file = new File( rf.getFilename() );
                 Log.setGlobalLogLevel( LogLevel.ERROR );
                 SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
@@ -386,7 +413,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                     valid &= false;
                 }
                 
-            } catch( SAMFormatException e )
+            } catch( SAMFormatException | CRAMException e )
             {
                 WebinCliReporter.writeToFile( reportFile, Severity.ERROR, e.getMessage() );
                 valid &= false;

@@ -30,9 +30,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -201,7 +205,8 @@ CramReferenceInfo implements VerboseLogger
     public Map<String, Boolean>
     confirmFileReferences( File file ) throws IOException
     {
-        Map<String, Boolean> result = new HashMap<>(); 
+        ThreadPoolExecutor es = new ThreadPoolExecutor( 10, 10, 1, TimeUnit.HOURS, new ArrayBlockingQueue<Runnable>( 10 ) );
+        Map<String, Boolean> result = new ConcurrentHashMap<>(); 
         Log.setGlobalLogLevel( LogLevel.ERROR );
         SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
         SamReaderFactory factory = SamReaderFactory.make();
@@ -213,33 +218,42 @@ CramReferenceInfo implements VerboseLogger
         try( SamReader reader = factory.open( ir ); )
         {
             printfToConsole( "Checking reference existance in the CRAM reference registry for %s\n", file.getPath() );
+            es.prestartAllCoreThreads();
             for( SAMSequenceRecord sequenceRecord : reader.getFileHeader().getSequenceDictionary().getSequences() )
             {
-                count.incrementAndGet();
-                String md5 = sequenceRecord.getAttribute( SAMSequenceRecord.MD5_TAG );
-                result.computeIfAbsent( md5, k -> {
-                    if( findOnDisk( md5 ) )
+                es.getQueue().put( new Runnable()
+                {
+                    public void 
+                    run()
                     {
-                        return true;
-                    } else
-                    {
-                        ReferenceInfo info = fetchReferenceMetadata( md5 );
-                        if( k.equals( info.getMd5() ) )
-                        {
-                            return putOnDisk( md5 );
-                        } 
-                        
-                        return false;
+                        count.incrementAndGet();
+                        String md5 = sequenceRecord.getAttribute( SAMSequenceRecord.MD5_TAG );
+                        result.computeIfAbsent( md5, k -> {
+                            if( findOnDisk( md5 ) )
+                            {
+                                return true;
+                            } else
+                            {
+                                ReferenceInfo info = fetchReferenceMetadata( md5 );
+                                return k.equals( info.getMd5() ) ? putOnDisk( md5 ) : false; 
+                            }
+                        } );
+                    
+                        if( 0 == count.get() % 10 )
+                            printProcessedReferenceNumber( count );
                     }
                 } );
-                
-                
-                if( 0 == count.get() % 10 )
-                    printProcessedReferenceNumber( count );
             }
+            
+            es.shutdown();
+            es.awaitTermination( 1, TimeUnit.HOURS );
             
             printProcessedReferenceNumber( count );
             printfToConsole( "\n" );
+
+        } catch( InterruptedException e )
+        {
+            Thread.currentThread().interrupt();
         } 
         return result;
     }

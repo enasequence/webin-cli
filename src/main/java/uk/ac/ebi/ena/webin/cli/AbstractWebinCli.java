@@ -167,7 +167,7 @@ AbstractWebinCli<T extends ManifestReader>
     }
 
     protected File
-    getReportFile(String filename)
+    getReportFile( String filename )
     {
         return WebinCli.getReportFile( getValidationDir(), filename, REPORT_FILE_SUFFIX );
     }

@@ -28,6 +28,12 @@ class PathPattern {
 		this.pathPatternFormat = format;
 	}
 
+	public String 
+	toString()
+	{
+	    return pathPatternFormat;
+	}
+	
 	public String format(String id) {
 		Matcher matcher = pattern.matcher(pathPatternFormat);
 		StringBuffer sb = new StringBuffer();

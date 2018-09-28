@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Assert;
@@ -41,6 +42,7 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
 import uk.ac.ebi.ena.rawreads.refs.ENAReferenceSource;
+import uk.ac.ebi.ena.rawreads.refs.ENAReferenceSource.LoggerWrapper;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -607,7 +609,35 @@ RawReadsWebinCliTest
         
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/20416_1#274.cram" );
         final SamInputResource resource = SamInputResource.of( new File( URLDecoder.decode( url.getFile(), "UTF-8" ) ) );
-        factory.referenceSource( new ENAReferenceSource( new String[] { } ) );
+        ENAReferenceSource rs = new ENAReferenceSource( new String[] { } );
+        rs.setLoggerWrapper( new LoggerWrapper() {
+
+            @Override public void 
+            debug( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+
+            @Override public void 
+            warn( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+            
+            @Override public void 
+            error( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+
+            @Override public void 
+            info( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+            
+        } );
+        factory.referenceSource( rs );
         final SamReader myReader = factory.open(resource);
 
         for (final SAMRecord samRecord : myReader) 

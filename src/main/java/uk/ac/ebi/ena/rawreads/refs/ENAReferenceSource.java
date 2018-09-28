@@ -28,8 +28,10 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,17 @@ import htsjdk.samtools.util.Log;
 public class 
 ENAReferenceSource implements CRAMReferenceSource 
 {
+    public interface 
+    LoggerWrapper 
+    {
+        final static Log log = Log.getInstance( ENAReferenceSource.class );
+          
+        default public void debug( final Object... messageParts ) { log.debug( messageParts ); }
+        default public void warn( final Object... messageParts ) { log.warn( messageParts ); }
+        default public void error( final Object... messageParts ) { log.error( messageParts ); }
+        default public void info( final Object... messageParts ) { log.info( messageParts ); }
+    }
+    
 	private static final String JAVA_IO_TMPDIR_PROPERTY_NAME = "java.io.tmpdir";
     private static final String USER_HOME_PROPERTY_NAME = "user.home";
 
@@ -112,23 +125,29 @@ ENAReferenceSource implements CRAMReferenceSource
 		refPatterns.addAll( splitRefPath( REF_PATH ).stream().map( e -> new PathPattern( e ) ).collect( Collectors.toList() ) );  
 	}
 	
-
+	//TODO more strict regexp  
 	static List<String>
 	splitRefPath( String paths )
 	{
-	    return Arrays.stream( paths.split( "(?i)(?<!(https?|ftp))(:|;)" ) ).collect( Collectors.toList() );
+	    return Arrays.stream( paths.split( "(?i)(?<!(https?|ftp))(:^[0-9]+|;)" ) ).collect( Collectors.toList() );
 	}
 	
-	/*
-	static class Log 
+	
+	public List<String>
+	getRefPathList()
 	{
-	    public void debug( String s ) { System.out.println( s ); }
-	    public void warn( String s ) { debug( s ); }
-	    public void error( String s ) { debug( s ); }
-	    public void info( String s ) { debug( s ); }
+	    return Collections.unmodifiableList( refPatterns.stream().map( e -> e.toString() ).collect( Collectors.toList() ) );
 	}
-	*/
-	private static Log log = Log.getInstance( ENAReferenceSource.class );
+	
+
+    public List<String>
+    getRefCacheList()
+    {
+        return Collections.unmodifiableList( cachePatterns.stream().map( e -> e.toString() ).collect( Collectors.toList() ) );
+    }
+	    
+	
+	private LoggerWrapper log = new LoggerWrapper() {};
 	private int downloadTriesBeforeFailing = 2;
 
 	/*
@@ -152,6 +171,13 @@ ENAReferenceSource implements CRAMReferenceSource
 	}
 	
 
+	public void
+	setLoggerWrapper( LoggerWrapper log )
+	{
+	    this.log = log;
+	}
+	
+	
 	public void 
 	clearCache()
 	{
@@ -196,17 +222,17 @@ ENAReferenceSource implements CRAMReferenceSource
     }
     
     
-	private static byte[] 
+	private byte[] 
     readBytesFromFile( File file, int offset, int len ) throws IOException
     {
         long size = file.length();
         if( size < offset || len < 0 )
         {
             log.warn( String.format( "Ref request is out of range: %s, size=%d, offset=%d, len=%d",
-                                     file.getAbsolutePath(), 
-                                     size, 
-                                     offset, 
-                                     len ) );
+                                      file.getAbsolutePath(), 
+                                      size, 
+                                      offset, 
+                                      len ) );
             return new byte[] {};
         }
         
@@ -306,11 +332,11 @@ ENAReferenceSource implements CRAMReferenceSource
             try
             {
                 bases = findBasesByMD5( md5 );
-            } catch( Exception e )
+            } catch( Throwable t )
             {
-                if( e instanceof RuntimeException )
-                    throw (RuntimeException) e;
-                throw new RuntimeException( e );
+                if( t instanceof RuntimeException )
+                    throw (RuntimeException) t;
+                throw new RuntimeException( t );
             }
             
             if( bases != null )
@@ -322,10 +348,16 @@ ENAReferenceSource implements CRAMReferenceSource
         { // try @SQ:UR file location
             if( record.getAttribute( SAMSequenceRecord.URI_TAG ) != null )
             {
-                ReferenceSequenceFromSeekable s = ReferenceSequenceFromSeekable.fromString( record.getAttribute( SAMSequenceRecord.URI_TAG ) );
-                bases = s.getSubsequenceAt( record.getSequenceName(), 1, record.getSequenceLength() );
-                Utils.upperCase( bases );
-                return bases;
+                try
+                {
+                    ReferenceSequenceFromSeekable s = ReferenceSequenceFromSeekable.fromString( record.getAttribute( SAMSequenceRecord.URI_TAG ) );
+                    bases = s.getSubsequenceAt( record.getSequenceName(), 1, record.getSequenceLength() );
+                    Utils.upperCase( bases );
+                    return bases;
+                } catch( Throwable t )
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -354,39 +386,53 @@ ENAReferenceSource implements CRAMReferenceSource
     {
         if( isURL( path ) )
         {
-            URL url = new URL( path );
             for( int i = 0; i < downloadTriesBeforeFailing; i++ )
             {
-                InputStream stream = url.openStream();
-                if( stream == null )
-                    return null;
-                
-                try( BufferedInputStream is = new BufferedInputStream( stream ) )
+                try
                 {
-                    if( !cachePatterns.isEmpty() )
+                    URL url = new URL( path );
+                    URLConnection conn = url.openConnection();
+                    conn.connect();
+                    long length = conn.getContentLengthLong();
+                    InputStream stream = conn.getInputStream();
+                    
+                    if( stream == null || 0 == length )
+                        return null;
+                    
+                    try( BufferedInputStream is = new BufferedInputStream( stream ) )
                     {
-                        String localPath = addToRefCache( md5, is );
-                        File file = new File( localPath );
-                        if( file.length() > Integer.MAX_VALUE )
-                            throw new RuntimeException( "The reference sequence is too long: " + md5 );
-    
-                        return readBytesFromFile( file, 0, (int) file.length() );
-                    }
-        
-                    byte[] data = InputStreamUtils.readFully( is );
-
-                    if( confirmMD5( md5, data ) )
-                    {
-                        // sanitise, Internet is a wild place:
-                        if( Utils.isValidSequence( data, REF_BASES_TO_CHECK_FOR_SANITY ) )
-                            return data;
-                        else
+                        if( !cachePatterns.isEmpty() )
                         {
-                            // reject, it looks like garbage
-                            log.error( "Downloaded sequence looks suspicous, rejected: " + url.toExternalForm() );
-                            break;
+                            String localPath = addToRefCache( md5, is );
+                            File file = new File( localPath );
+                            if( file.length() > Integer.MAX_VALUE )
+                            {
+                                log.warn( "The reference sequence is too long: " + url.toExternalForm() );
+                                //throw new RuntimeException( "The reference sequence is too long: " + md5 );
+                                continue;
+                            }
+                            return readBytesFromFile( file, 0, (int) file.length() );
+                        }
+            
+                        byte[] data = length > 0 ? InputStreamUtils.readFully( is, (int) length ) : InputStreamUtils.readFully( is );
+    
+                        if( confirmMD5( md5, data ) )
+                        {
+                            // sanitise, Internet is a wild place:
+                            if( Utils.isValidSequence( data, REF_BASES_TO_CHECK_FOR_SANITY ) )
+                                return data;
+                            else
+                            {
+                                // reject, it looks like garbage
+                                log.warn( "Downloaded sequence looks suspicous, rejected: " + url.toExternalForm() );
+                                continue;
+                            }
                         }
                     }
+                } catch( IOException ioe )
+                {
+                    log.warn( ioe.getClass().getSimpleName() + ". Unable to fetch data from " + path );
+                    return null;
                 }
             }
         } else
@@ -478,7 +524,7 @@ ENAReferenceSource implements CRAMReferenceSource
             File cachedFile = new File( localPath );
             if( !cachedFile.exists() )
             {
-                log.info( String.format( "Adding to REF_CACHE sequence md5=%s", md5 ) );
+                log.debug( String.format( "Adding to REF_CACHE sequence md5=%s", md5 ) );
                 cachedFile.getParentFile().mkdirs();
                 File tmpFile;
                 try
