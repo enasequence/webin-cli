@@ -129,7 +129,7 @@ ENAReferenceSource implements CRAMReferenceSource
 	static List<String>
 	splitRefPath( String paths )
 	{
-	    return Arrays.stream( paths.split( "(?i)(?<!(https?|ftp))(:^[0-9]+|;)" ) ).collect( Collectors.toList() );
+	    return Arrays.stream( paths.split( "(?i)(?<!(https?|ftp))(?!:([0-9]+))(:|;)" ) ).collect( Collectors.toList() );
 	}
 	
 	

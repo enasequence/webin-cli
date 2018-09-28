@@ -28,9 +28,9 @@ ENAReferenceSourceTest
     @Test public void
     testSplit()
     {
-        String path = "https://www.ebi.ac.uk/ena/cram/md5/%s;https://www.bie.ac.uk:8080/ena/cram/md5/%s";
+        String path = "https://www.ebi.ac.uk/ena/cram/md5/%s;https://www.bie.ac.uk:8080/ena/cram/md5/%s:ftp://nfs/era/panda/data/8/%s:/file/storage/%s";
         System.out.println( String.valueOf( ENAReferenceSource.splitRefPath( path ) ) );
-        Assert.assertEquals( String.valueOf( ENAReferenceSource.splitRefPath( path ) ), 2, ENAReferenceSource.splitRefPath( path ).size() );
+        Assert.assertEquals( String.valueOf( ENAReferenceSource.splitRefPath( path ) ), 4, ENAReferenceSource.splitRefPath( path ).size() );
 
     }
     
