@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -58,8 +57,13 @@ import uk.ac.ebi.ena.rawreads.VerboseLogger;
 public class 
 CramReferenceInfo implements VerboseLogger
 {
-    private static String service_link = "https://www.ebi.ac.uk/ena/cram/sequence/%32s/metadata";
-    private static String info_path = System.getProperty( "user.home" ) + "/.webin-cli/cram-ref-info/%2s/%2s/%s";
+    private static final String REF_INFO_PATH = "/.webin-cli/cram-ref-info/%2s/%2s/%s";
+    private static final String JAVA_IO_TMPDIR_PROPERTY_NAME = "java.io.tmpdir";
+    private static final String USER_HOME_PROPERTY_NAME = "user.home";    
+    
+    private static final String service_link = "https://www.ebi.ac.uk/ena/cram/sequence/%32s/metadata";
+    private static final String info_path = null != System.getProperty( USER_HOME_PROPERTY_NAME ) ? System.getProperty( USER_HOME_PROPERTY_NAME )      + REF_INFO_PATH 
+                                                                                                  : System.getProperty( JAVA_IO_TMPDIR_PROPERTY_NAME ) + REF_INFO_PATH ;
     private ScriptEngine engine;
     private PathPattern  cache_pattern;
     
