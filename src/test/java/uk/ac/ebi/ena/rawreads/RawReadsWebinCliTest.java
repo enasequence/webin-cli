@@ -28,7 +28,6 @@ import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import htsjdk.samtools.SAMRecord;
@@ -36,13 +35,13 @@ import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
+import net.sf.cram.ref.ENAReferenceSource;
+import net.sf.cram.ref.ENAReferenceSource.LoggerWrapper;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
-import uk.ac.ebi.ena.rawreads.refs.ENAReferenceSource;
-import uk.ac.ebi.ena.rawreads.refs.ENAReferenceSource.LoggerWrapper;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
