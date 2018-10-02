@@ -23,7 +23,7 @@ ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : 
 
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
-//	maxHeapSize = '16G'
+	maxHeapSize = '4G'
     environment 'webin-cli-password', webinCliPassword
 	environment 'webin-cli-username', webinCliUsername
 }
