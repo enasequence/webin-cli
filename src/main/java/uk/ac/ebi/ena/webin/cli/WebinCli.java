@@ -483,12 +483,11 @@ public class WebinCli {
 
 	public static String[]
 	getSafeOutputDir(String ... dirs ) {
-		return Stream
-				.of(dirs)
-				.map(str -> str.replaceAll("[^a-zA-Z0-9-_\\.]", "_"))
-				.map(str -> str.replaceAll("__", "_"))
-				.map(str -> str.replaceAll("^_ +", ""))
-				.map(str -> str.replaceAll("_+$", ""))
+		return Arrays.stream( dirs )
+		.map(str -> str.replaceAll("[^a-zA-Z0-9-_\\.]", "_"))
+				.map(str -> str.replaceAll("_+", "_"))
+				.map(str -> str.replaceAll("^_+(?=[^_])", ""))
+				.map(str -> str.replaceAll("(?<=[^_])_+$", ""))
 				.toArray(String[]::new);
 	}
 }

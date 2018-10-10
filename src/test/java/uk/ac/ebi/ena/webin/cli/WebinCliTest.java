@@ -25,6 +25,8 @@ import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest;
 import uk.ac.ebi.ena.submit.ContextE;
 
+import static org.junit.Assert.assertEquals;
+
 public class 
 WebinCliTest
 {
@@ -214,5 +216,26 @@ WebinCliTest
         testWebinCli(ContextE.transcriptome, input_dir,
                 TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName() + "\n" +
                 getTranscriptomeManifestFields());
+    }
+
+
+    @Test public void
+    testGetSafeOutputDir() throws Exception
+    {
+        assertEquals("AaZ", WebinCli.getSafeOutputDir("AaZ")[0]);
+        assertEquals("A_AA", WebinCli.getSafeOutputDir("A&AA")[0]);
+        assertEquals("A.AA", WebinCli.getSafeOutputDir("A.AA")[0]);
+        assertEquals("A-AA", WebinCli.getSafeOutputDir("A-AA")[0]);
+        assertEquals("A_AA", WebinCli.getSafeOutputDir("A_____AA")[0]);
+        assertEquals("AA", WebinCli.getSafeOutputDir("_____AA")[0]);
+        assertEquals("AA", WebinCli.getSafeOutputDir("AA_____")[0]);
+        assertEquals("_", WebinCli.getSafeOutputDir("_______")[0]);
+        assertEquals(".", WebinCli.getSafeOutputDir(".")[0]);
+
+        assertEquals(".", WebinCli.getSafeOutputDir(".", "E_vermicularis_Canary_Islands_upd")[0]);
+        assertEquals("E_vermicularis_Canary_Islands_upd", WebinCli.getSafeOutputDir(".", "E_vermicularis_Canary_Islands_upd")[1]);
+
+        assertEquals("AaZ", WebinCli.getSafeOutputDir("AaZ","AaZ")[0]);
+        assertEquals("A.AA", WebinCli.getSafeOutputDir("AaZ","A.AA")[1]);
     }
 }
