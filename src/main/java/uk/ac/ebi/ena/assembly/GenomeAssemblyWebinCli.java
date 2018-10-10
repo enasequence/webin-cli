@@ -173,15 +173,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 		}
 	}
 
-
-    @Override public SubmissionBundle
-    getSubmissionBundle()
-    {
-        if( valid )
-            prepareSubmissionBundle();
-        return super.getSubmissionBundle();
-    }
-    
     
     EmblEntryValidationPlanProperty 
     getValidationProperties() 

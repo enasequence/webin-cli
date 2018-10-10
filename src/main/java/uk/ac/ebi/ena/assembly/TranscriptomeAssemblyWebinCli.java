@@ -202,14 +202,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 			throw new ValidationEngineException(e);
 		}
 	}
-
-	@Override
-	public SubmissionBundle getSubmissionBundle() {
-		if( !FAILED_VALIDATION)
-			prepareSubmissionBundle();
-		return super.getSubmissionBundle();
-	}
-
+	
 	Element makeAnalysisType( AssemblyInfoEntry entry ) {
 		Element typeE = new Element( ContextE.transcriptome.getType() );
 		typeE.addContent( createTextElement( "NAME", entry.getName() ) );

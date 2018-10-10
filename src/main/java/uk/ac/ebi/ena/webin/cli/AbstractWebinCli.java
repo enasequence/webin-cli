@@ -172,7 +172,6 @@ AbstractWebinCli<T extends ManifestReader>
         return WebinCli.getReportFile( getValidationDir(), filename, REPORT_FILE_SUFFIX );
     }
 
-    //TODO consider relative paths in file names
     public SubmissionBundle
     getSubmissionBundle()
     {
@@ -183,19 +182,19 @@ AbstractWebinCli<T extends ManifestReader>
 
             WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), result );
 
-            if( !result.isValid() ) {
+            if( result.count(Severity.INFO) > 0 ) {
                 // Submission bundle was invalid.
                 WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(),
-                        Severity.ERROR, "Invalid file: " + SUBMISSION_BUNDLE);
+                        Severity.INFO, "Submission requires re-validation." );
                 return null;
             }
             
             return sb;
         } catch( ClassNotFoundException | IOException e )
         {
-            // Submission bundle count not be read.
+            // Submission bundle could not be read.
             WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(),
-                    Severity.ERROR, "Unable to read file: " + SUBMISSION_BUNDLE + " " + e.getMessage() );
+                    Severity.INFO, "Submission has not been validated previously." );
             return null;
         }
     }

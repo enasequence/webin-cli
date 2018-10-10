@@ -399,6 +399,7 @@ RawReadsWebinCliTest
         rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.prepareSubmissionBundle();
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( lines.contains( "<SINGLE />" ) );
@@ -467,6 +468,7 @@ RawReadsWebinCliTest
         rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.prepareSubmissionBundle();
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( lines.contains( "<PAIRED" ) );
@@ -495,6 +497,7 @@ RawReadsWebinCliTest
         rr.setFetchStudy( false );
         rr.init( parameters );
         Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.prepareSubmissionBundle();
         String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                     StandardCharsets.UTF_8 );
         Assert.assertTrue( rlines.contains( file1.getFileName().toString() ) );
@@ -600,7 +603,7 @@ RawReadsWebinCliTest
 
     
     
-    /*@Ignore*/ @Test( timeout = 200_000 ) public void 
+    /*@Ignore*/ @Test( timeout = 200_000 ) public void
     openSamExamples() throws MalformedURLException, UnsupportedEncodingException 
     {
         final SamReaderFactory factory =

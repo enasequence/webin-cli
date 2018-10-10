@@ -160,20 +160,21 @@ SubmissionBundle implements Serializable
 
         String current = getVersion();
         if( null != current && !current.equals( this.version ) )
-            result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Program version has changed" ) );
+            result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Program version has changed" ) );
 
         for( SubmissionXMLFile file : getXMLFileList() )
         {
             try
             {
-                if( !file.getMd5().equalsIgnoreCase( FileUtils.calculateDigest( "MD5", file.getFile() ) ) )
-                    result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Generated xml file has changed: " + file.getFile() ) );
+                if( !file.getMd5().equalsIgnoreCase( FileUtils.calculateDigest( "MD5", file.getFile() ) ) ) {
+                    result.append(WebinCliReporter.createValidationMessage(Severity.INFO, "Generated xml file has changed: " + file.getFile()));
+                }
             } catch( FileNotFoundException e )
             {
-                result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Generated xml file not found: " + file.getFile() ) );
+                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Generated xml file not found: " + file.getFile() ) );
             } catch( NoSuchAlgorithmException | IOException e )
             {
-                result.append( WebinCliReporter.createValidationMessage( Severity.ERROR, "Error reading generated xml file: " + file.getFile() + " " + e.getMessage() ) );
+                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Error reading generated xml file: " + file.getFile() + " " + e.getMessage() ) );
             }            
         }
 

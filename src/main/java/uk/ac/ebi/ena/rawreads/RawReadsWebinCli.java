@@ -426,18 +426,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         return valid;
     }
 
-
-    @Override public SubmissionBundle
-    getSubmissionBundle()
-    {
-        if( valid )
-        {
-            prepareSubmissionBundle();
-        }
-        return super.getSubmissionBundle();
-    }
-
-
     public void
     prepareSubmissionBundle() throws WebinCliException
     {
