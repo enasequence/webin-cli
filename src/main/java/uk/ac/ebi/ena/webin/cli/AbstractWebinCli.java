@@ -130,6 +130,11 @@ AbstractWebinCli<T extends ManifestReader>
         this.submitDir = submitDir;
     }
 
+    public String getAlias () {
+        String alias = "webin-" + getContext().name() + "-" + getName();
+        return alias;
+    }
+
     public abstract boolean validate() throws ValidationEngineException;
     public abstract void prepareSubmissionBundle() throws IOException;
 

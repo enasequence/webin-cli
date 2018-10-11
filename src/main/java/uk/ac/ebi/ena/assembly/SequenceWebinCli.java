@@ -187,7 +187,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             analysisSetE.addContent( analysisE );
             
             Document doc = new Document( analysisSetE );
-            analysisE.setAttribute( "alias", "ena-ANALYSIS-" + System.currentTimeMillis() );
+            analysisE.setAttribute( "alias", getAlias() );
             
             if( null != centerName && !centerName.isEmpty() )
                 analysisE.setAttribute( "center_name", centerName );

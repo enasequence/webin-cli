@@ -451,7 +451,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                                        .collect( Collectors.toList() );
     
             //do something
-            String experiment_ref = String.format( "exp-%s", getName() );
+            String experiment_ref = getAlias();
             
             String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), is_paired );
             String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
@@ -606,7 +606,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
             runSetE.addContent( runE );
             
             Document doc = new Document( runSetE );
-            runE.setAttribute( "alias", "ena-RUN-" + System.currentTimeMillis() );
+            runE.setAttribute( "alias", getAlias() );
             
             if( null != centerName && !centerName.isEmpty() )
                 runE.setAttribute( "center_name", centerName );
