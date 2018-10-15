@@ -29,6 +29,7 @@ import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamInputResource;
@@ -603,7 +604,7 @@ RawReadsWebinCliTest
 
     
     
-    /*@Ignore*/ @Test( timeout = 200_000 ) public void
+    @Ignore @Test( timeout = 200_000 ) public void
     openSamExamples() throws MalformedURLException, UnsupportedEncodingException 
     {
         final SamReaderFactory factory =
@@ -643,6 +644,53 @@ RawReadsWebinCliTest
         final SamReader myReader = factory.open(resource);
 
         for (final SAMRecord samRecord : myReader) 
+        {
+            System.err.print(samRecord);
+        }
+
+    }
+
+
+    @Test( timeout = 200_000 ) public void
+    openSamSmall() throws MalformedURLException, UnsupportedEncodingException
+    {
+        final SamReaderFactory factory =
+                SamReaderFactory.makeDefault().enable( SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS ).validationStringency( ValidationStringency.LENIENT );
+
+        URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/16258_6#32.cram" );
+        final SamInputResource resource = SamInputResource.of( new File( URLDecoder.decode( url.getFile(), "UTF-8" ) ) );
+        ENAReferenceSource rs = new ENAReferenceSource( new String[] { } );
+        rs.setLoggerWrapper( new LoggerWrapper() {
+
+            @Override public void
+            debug( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+
+            @Override public void
+            warn( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+
+            @Override public void
+            error( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+
+            @Override public void
+            info( Object... messageParts )
+            {
+                System.out.println( Arrays.asList( messageParts ) );
+            }
+
+        } );
+        factory.referenceSource( rs );
+        final SamReader myReader = factory.open(resource);
+
+        for (final SAMRecord samRecord : myReader)
         {
             System.err.print(samRecord);
         }
