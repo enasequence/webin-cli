@@ -47,6 +47,7 @@ AbstractWebinCli<T extends ManifestReader>
 
     private boolean fetchSample = true;
     private boolean fetchStudy = true;
+ 	private boolean fetchSource = true;
 
     protected abstract T createManifestReader();
 
@@ -253,4 +254,14 @@ AbstractWebinCli<T extends ManifestReader>
         return this.test_mode;
         
     }
+    
+    public boolean isFetchSource() 
+    {
+ 		return fetchSource;
+ 	}
+
+ 	public void setFetchSource(boolean fetchSource) 
+ 	{
+ 		this.fetchSource = fetchSource;
+ 	}
 }
