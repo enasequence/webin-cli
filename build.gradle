@@ -15,12 +15,14 @@ version = version_base
 ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : "${System.properties['user.home']}/.ssh/id_dsa")
 
         repositories {
-    flatDir { dirs 'lib' }
+//    flatDir { dirs 'lib' }
     mavenLocal()
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
 
-
+jar {
+    from sourceSets.main.allSource
+}
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
 	maxHeapSize = '4G'
@@ -36,7 +38,7 @@ task printWebinTestCredentials {
 }
 
 
-jar {
+/*jar {
     from {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
@@ -52,7 +54,7 @@ jar {
                 'Built-Date': new Date(),
                 "Main-Class": 'uk.ac.ebi.ena.webin.cli.WebinCli'
     }
-}
+}*/
 
 dependencies {
     compile 'org.apache.commons:commons-lang3:3.0'
@@ -67,23 +69,24 @@ dependencies {
     compile group: 'com.beust', name: 'jcommander', version: '1.72'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.0.3-DEV')
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.0.3-DEV')
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: '1.0.3-DEV')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.0.8-DEV')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.0.8-DEV')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: '1.0.8-DEV')
     compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
     compile("com.googlecode.json-simple:json-simple:1.1.1")
-    compile(group: 'uk.ac.ebi.ena-template-expansion', name: 'ena-template-expansion', version: '1.0.4')
+  //  compile(group: 'uk.ac.ebi.ena-template-expansion', name: 'ena-template-expansion', version: '1.0.4')
     compile("org.jdom:jdom:2.0.2")
     compile( group: 'uk.ac.ebi', name: 'ena-fastq-validator', version: '1.1.0' )
     compile( group: 'uk.ac.ebi.ena', name: 'ena-cram-processing-tools', version: '1.1.0' ); 
     compile( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
     compile( group: 'com.google.guava', name: 'guava', version: '26.0-jre' )
+    compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     testCompile 'junit:junit:4.11'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
-}
+//task wrapper(type: Wrapper) {
+//    gradleVersion = '4.7'
+//}
 
 configurations.all {
     resolutionStrategy {
@@ -91,9 +94,16 @@ configurations.all {
     }
 }
 
-task sourceJar(type: Jar) { from sourceSets.main.allJava }
+//task sourceJar(type: Jar) { from sourceSets.main.allJava }
 
 //task Wrapper(type: Wrapper) { gradleVersion = '4.1' }
+
+task sourceJar(type: Jar) { from sourceSets.main.allJava }
+
+task wrapper(type: Wrapper) { gradleVersion = '4.8' }
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 publishing {
     publications {

@@ -17,6 +17,7 @@ import java.util.Optional;
 import org.jdom2.Element;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
@@ -26,6 +27,7 @@ import uk.ac.ebi.ena.submit.ContextE;
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 {
+	
 	@Override
 	public ContextE getContext() {
 		return ContextE.genome;
@@ -45,26 +47,23 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	@Override
 	public void readManifest(Path inputDir, File manifestFile) {
 		getManifestReader().readManifest(inputDir, manifestFile);
-
-		if(getManifestReader().getSubmissionOptions().assemblyInfoEntry.isPresent())
+		setSubmissionOptions(getManifestReader().getSubmissionOptions());
+		if(getSubmissionOptions().assemblyInfoEntry.isPresent())
 		{
 			if (getStudy() != null)
-				getManifestReader().getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
+				getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
 			if (getSample() != null)
-				getManifestReader().getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBiosampleId());
+				getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBiosampleId());
 		}
-		this.setAssemblyInfo(getManifestReader().getSubmissionOptions().assemblyInfoEntry.get());
-		getManifestReader().getSubmissionOptions().source = Optional.of(getSource());
-		getManifestReader().getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-		if(getManifestReader().getSubmissionOptions().submissionFiles.isPresent())
-			submissionFiles=getManifestReader().getSubmissionOptions().submissionFiles.get();
-	}
+		this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
+		getSubmissionOptions().source = Optional.of(getSource());
+		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
+		}
 
 	@Override public boolean 
 	validateInternal() throws ValidationEngineException 
 	{
-		SubmissionValidator validator = new SubmissionValidator(getManifestReader().getSubmissionOptions());
-		return validator.validate();
+		return new SubmissionValidator(getSubmissionOptions()).validate();
 	}
 
 	@Override

@@ -20,6 +20,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
+import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -37,6 +40,12 @@ SequenceWebinCliTest
     // Test manifest parsing of file fields
     //
 
+	private static SourceFeature getDefaultSourceFeature()
+	{
+		SourceFeature source= new FeatureFactory().createSourceFeature();
+		source.setScientificName("Micrococcus sp. 5");
+		return source;
+	}
     @Test( expected = WebinCliException.class )
     public void testGenomeFastaFileField() throws Exception
     {
@@ -45,11 +54,11 @@ SequenceWebinCliTest
             testManifestParsingFileField(webinCli, "FASTA", "test.fasta.gz" );
         }
         finally {
-            Assert.assertEquals(1, webinCli.fastaFiles.size());
-            Assert.assertEquals(0, webinCli.agpFiles.size());
-            Assert.assertEquals(0, webinCli.flatFiles.size());
-            Assert.assertNull(webinCli.chromosomeListFile);
-            Assert.assertNull(webinCli.unlocalisedListFile);
+            Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size());
+            Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size());
+            Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
+            Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size());
+            Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.UNLOCALISED_LIST).size());
         }
     }
 
@@ -61,12 +70,12 @@ SequenceWebinCliTest
             testManifestParsingFileField(webinCli, "FLATFILE", "test.dat.gz" );
         }
         finally {
-            Assert.assertEquals(0, webinCli.fastaFiles.size());
-            Assert.assertEquals(0, webinCli.agpFiles.size());
-            Assert.assertEquals(1, webinCli.flatFiles.size());
-            Assert.assertNull(webinCli.chromosomeListFile);
-            Assert.assertNull(webinCli.unlocalisedListFile);
-        }
+        	  Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size());
+              Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size());
+              Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
+              Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size());
+              Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.UNLOCALISED_LIST).size());
+                }
     }
 
     @Test( expected = WebinCliException.class )
@@ -77,11 +86,11 @@ SequenceWebinCliTest
             testManifestParsingFileField(webinCli, "AGP", "test.agp.gz" );
         }
         finally {
-            Assert.assertEquals(0, webinCli.fastaFiles.size());
-            Assert.assertEquals(1, webinCli.agpFiles.size());
-            Assert.assertEquals(0, webinCli.flatFiles.size());
-            Assert.assertNull(webinCli.chromosomeListFile);
-            Assert.assertNull(webinCli.unlocalisedListFile);
+        	 Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size());
+             Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.UNLOCALISED_LIST).size());
         }
     }
 
@@ -93,11 +102,11 @@ SequenceWebinCliTest
             testManifestParsingFileField(webinCli, "CHROMOSOME_LIST", "test.txt.gz" );
         }
         finally {
-            Assert.assertEquals(0, webinCli.fastaFiles.size());
-            Assert.assertEquals(0, webinCli.agpFiles.size());
-            Assert.assertEquals(0, webinCli.flatFiles.size());
-            Assert.assertNotNull(webinCli.chromosomeListFile);
-            Assert.assertNull(webinCli.unlocalisedListFile);
+        	 Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
+             Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.UNLOCALISED_LIST).size());
         }
     }
 
@@ -109,11 +118,11 @@ SequenceWebinCliTest
             testManifestParsingFileField(webinCli, "UNLOCALISED_LIST", "test.txt.gz" );
         }
         finally {
-            Assert.assertEquals(0, webinCli.fastaFiles.size());
-            Assert.assertEquals(0, webinCli.agpFiles.size());
-            Assert.assertEquals(0, webinCli.flatFiles.size());
-            Assert.assertNull(webinCli.chromosomeListFile);
-            Assert.assertNotNull(webinCli.unlocalisedListFile);
+        	 Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
+             Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size());
+             Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.UNLOCALISED_LIST).size());
         }
     }
 
@@ -121,12 +130,13 @@ SequenceWebinCliTest
     public void testTranscriptome_ManifestParsing_FastaFileField() throws Exception
     {
         TranscriptomeAssemblyWebinCli webinCli = new TranscriptomeAssemblyWebinCli();
+        webinCli.setSource(getDefaultSourceFeature());
         try {
             testManifestParsingFileField(webinCli, "FASTA", "test.fasta.gz" );
         }
         finally {
-            Assert.assertEquals(1, webinCli.fastaFiles.size());
-            Assert.assertEquals(0, webinCli.flatFiles.size());
+        	Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size());
+            Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
         }
     }
 
@@ -138,8 +148,8 @@ SequenceWebinCliTest
             testManifestParsingFileField(webinCli, "FLATFILE", "test.dat.gz" );
         }
         finally {
-            Assert.assertEquals(0, webinCli.tsvFiles.size());
-            Assert.assertEquals(1, webinCli.flatFiles.size());
+        	Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.TSV).size());
+            Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
         }
     }
 
@@ -151,8 +161,8 @@ SequenceWebinCliTest
             testManifestParsingFileField(webinCli, "TAB", "test.dat.gz" );
         }
         finally {
-            Assert.assertEquals(1, webinCli.tsvFiles.size());
-            Assert.assertEquals(0, webinCli.flatFiles.size());
+        	Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.TSV).size());
+            Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
         }
     }
 
@@ -160,12 +170,14 @@ SequenceWebinCliTest
     public void testTranscriptome_ManifestParsing_FlatFileField() throws Exception
     {
         TranscriptomeAssemblyWebinCli webinCli = new TranscriptomeAssemblyWebinCli();
+        webinCli.setSource(getDefaultSourceFeature());
+
         try {
             testManifestParsingFileField(webinCli, "FLATFILE", "test.dat.gz" );
         }
         finally {
-            Assert.assertEquals(0, webinCli.fastaFiles.size());
-            Assert.assertEquals(1, webinCli.flatFiles.size());
+        	Assert.assertEquals(0, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size());
+            Assert.assertEquals(1, webinCli.getManifestReader().getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size());
         }
     }
 
@@ -177,7 +189,7 @@ SequenceWebinCliTest
         Path filePath = WebinCliTestUtils.createDefaultTempFile( fileName, inputDir, true );
 
         Path manifestFilePath = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                (fieldName + " " + inputDir.relativize( filePath ).toString() ).getBytes(),
+                ("NAME\ttest\n"+fieldName + " " + inputDir.relativize( filePath ).toString()+"\n").getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -185,7 +197,6 @@ SequenceWebinCliTest
         parameters.setManifestFile( manifestFilePath.toFile() );
         parameters.setInputDir( inputDir.toFile() );
         parameters.setOutputDir( WebinCliTestUtils.createTempDir() );
-
         try {
             webinCli.init(parameters);
         }

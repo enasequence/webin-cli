@@ -17,11 +17,20 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.submission.Context;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
+import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
+import uk.ac.ebi.ena.study.Study;
 
 public class SequenceAssemblyValidationTest {
     private final static String SEQUENCE_BASE_DIR = "src/test/resources/uk/ac/ebi/ena/template/tsvfile";
@@ -68,7 +77,7 @@ public class SequenceAssemblyValidationTest {
         try {
             String testTsvFile = SEQUENCE_BASE_DIR + File.separator + "Sequence-mandatory-field-missing.tsv.gz";
             SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-            sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
+          //  sequenceAssemblyWebinCli.setValidationDir(new File(SEQUENCE_BASE_DIR));
             StringBuilder resultsSb = sequenceAssemblyWebinCli.validateTestTsv(testTsvFile);
             String expectedResults = new String(Files.readAllBytes(Paths.get(SEQUENCE_BASE_DIR  + File.separator + "Sequence-mandatory-field-missing-expected-results.txt")));
             assertEquals(resultsSb.toString().replaceAll("\\s+", ""), expectedResults.replaceAll("\\s+", ""));
@@ -177,4 +186,29 @@ public class SequenceAssemblyValidationTest {
             e.printStackTrace();
         }
     }
+    
+    
+	private GenomeAssemblyWebinCli getValidator(File file,FileType fileType)
+	
+	{
+		SubmissionOptions options = new SubmissionOptions();
+		if(file!=null)
+		{
+		SubmissionFiles files = new SubmissionFiles();
+        SubmissionFile SubmissionFile= new SubmissionFile(fileType,file);
+        files.addFile(SubmissionFile);
+		options.submissionFiles = Optional.of(files);
+		}
+        options.assemblyInfoEntry = Optional.of(new AssemblyInfoEntry());
+        options.context =Optional.of(Context.genome);
+		options.isFixMode =true;
+		options.isRemote =true;
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
+    	validator.setTestMode( true );
+        validator.setStudy( new Study() );
+        options.reportDir=Optional.of(WebinCliTestUtils.createTempDir().getAbsolutePath());
+        validator.setSubmitDir(WebinCliTestUtils.createTempDir());
+        validator.setSubmissionOptions(options);
+        return validator;
+	}
 }

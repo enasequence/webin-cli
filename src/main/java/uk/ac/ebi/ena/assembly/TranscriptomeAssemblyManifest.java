@@ -94,10 +94,11 @@ public class TranscriptomeAssemblyManifest extends ManifestReader
 		}
 
 		getFiles(getInputDir(), getResult(), Fields.FASTA).forEach(fastaFile-> submissionFiles.addFile(new SubmissionFile(FileType.FASTA,fastaFile)));
-		getFiles(getInputDir(), getResult(), Fields.FLATFILE).forEach(fastaFile-> submissionFiles.addFile(new SubmissionFile(FileType.FASTA,fastaFile)));
+		getFiles(getInputDir(), getResult(), Fields.FLATFILE).forEach(fastaFile-> submissionFiles.addFile(new SubmissionFile(FileType.FLATFILE,fastaFile)));
 		submissionOptions.assemblyInfoEntry = Optional.of(assemblyInfo);
 		submissionOptions.context =Optional.of(Context.transcriptome);
 		submissionOptions.submissionFiles= Optional.of(submissionFiles);
+		submissionOptions.isRemote = true;
 	}
 	
 	public SubmissionOptions getSubmissionOptions() {

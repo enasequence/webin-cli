@@ -28,113 +28,113 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class
 TranscriptomeAssemblyXmlTest {
-    @Before
-    public void
-    before() {
-        Locale.setDefault(Locale.UK);
-    }
-
-    @Test
-    public void
-    testAnalysisXML_AssemblyInfo_WithFastaFile() {
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
-        String name = "test_transcriptome";
-        cli.setName(name);
-
-        Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
-        cli.getParameters().setInputDir(fastaFile.getParent().toFile());
-        cli.fastaFiles = Arrays.asList(new File(fastaFile.toString()));
-
-        AssemblyInfoEntry info = new AssemblyInfoEntry();
-        cli.setAssemblyInfo(info);
-        info.setName(name);
-        info.setSampleId("test_sample");
-        info.setStudyId("test_study");
-        info.setProgram("test_program");
-        info.setPlatform("test_platform");
-        info.setTpa(false);
-
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
-
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
-
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
-                "<ANALYSIS_SET>\n" +
-                        "  <ANALYSIS>\n" +
-                        "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
-                        "    <STUDY_REF accession=\"test_study\" />\n" +
-                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
-                        "    <ANALYSIS_TYPE>\n" +
-                        "      <TRANSCRIPTOME_ASSEMBLY>\n" +
-                        "        <NAME>test_transcriptome</NAME>\n" +
-                        "        <PROGRAM>test_program</PROGRAM>\n" +
-                        "        <PLATFORM>test_platform</PLATFORM>\n" +
-                        "      </TRANSCRIPTOME_ASSEMBLY>\n" +
-                        "    </ANALYSIS_TYPE>\n" +
-                        "    <FILES>\n" +
-                        "      <FILE filename=\"transcriptome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"6f82bc96add84ece757afad265d7e341\" />\n" +
-                        "    </FILES>\n" +
-                        "  </ANALYSIS>\n" +
-                        "</ANALYSIS_SET>\n");
-    }
-
-    @Test
-    public void
-    testAnalysisXML_Manifest_WithFlatFile() {
-        String name = "test_transcriptome";
-        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
-        Path inputDir = flatFile.getParent();
-        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
-                "NAME\t" + name + "\n" +
-                        "SAMPLE\ttest_sample\n" +
-                        "STUDY\ttest_study\n" +
-                        "PROGRAM\ttest_program\n" +
-                        "PLATFORM\ttest_platform\n" +
-                        "TPA\ttrue\n" +
-                        "FLATFILE\t" + flatFile.getFileName() + "\n"
-        );
-
-        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
-
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
-
-        cli.setFetchSample(false);
-        Sample sample = new Sample();
-        sample.setBiosampleId("test_sample");
-        cli.setSample(sample);
-
-        cli.setFetchStudy(false);
-        Study study = new Study();
-        study.setProjectId("test_study");
-        cli.setStudy(study);
-
-        try {
-            cli.init(parameters);
-        } finally {
-            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
-
-            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
-
-            WebinCliTestUtils.assertAnalysisXml(analysisXml,
-                    "<ANALYSIS_SET>\n" +
-                            "<ANALYSIS>\n" +
-                            "<TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
-                            "<STUDY_REF accession=\"test_study\"/>\n" +
-                            "<SAMPLE_REF accession=\"test_sample\"/>\n" +
-                            "<ANALYSIS_TYPE>\n" +
-                            "<TRANSCRIPTOME_ASSEMBLY>\n" +
-                            "<NAME>test_transcriptome</NAME>\n" +
-                            "<PROGRAM>test_program</PROGRAM>\n" +
-                            "<PLATFORM>test_platform</PLATFORM>\n" +
-                            "<TPA>true</TPA>\n" +
-                            "</TRANSCRIPTOME_ASSEMBLY>\n" +
-                            "</ANALYSIS_TYPE>\n" +
-                            "<FILES>\n" +
-                            "      <FILE filename=\"transcriptome/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
-                            "</FILES>\n" +
-                            "</ANALYSIS>\n" +
-                            "</ANALYSIS_SET>");
-        }
-    }
+//    @Before
+//    public void
+//    before() {
+//        Locale.setDefault(Locale.UK);
+//    }
+//
+//    @Test
+//    public void
+//    testAnalysisXML_AssemblyInfo_WithFastaFile() {
+//        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
+//        String name = "test_transcriptome";
+//        cli.setName(name);
+//
+//        Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
+//        cli.getParameters().setInputDir(fastaFile.getParent().toFile());
+//        cli.fastaFiles = Arrays.asList(new File(fastaFile.toString()));
+//
+//        AssemblyInfoEntry info = new AssemblyInfoEntry();
+//        cli.setAssemblyInfo(info);
+//        info.setName(name);
+//        info.setSampleId("test_sample");
+//        info.setStudyId("test_study");
+//        info.setProgram("test_program");
+//        info.setPlatform("test_platform");
+//        info.setTpa(false);
+//
+//        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+//
+//        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+//
+//        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+//                "<ANALYSIS_SET>\n" +
+//                        "  <ANALYSIS>\n" +
+//                        "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
+//                        "    <STUDY_REF accession=\"test_study\" />\n" +
+//                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+//                        "    <ANALYSIS_TYPE>\n" +
+//                        "      <TRANSCRIPTOME_ASSEMBLY>\n" +
+//                        "        <NAME>test_transcriptome</NAME>\n" +
+//                        "        <PROGRAM>test_program</PROGRAM>\n" +
+//                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+//                        "      </TRANSCRIPTOME_ASSEMBLY>\n" +
+//                        "    </ANALYSIS_TYPE>\n" +
+//                        "    <FILES>\n" +
+//                        "      <FILE filename=\"transcriptome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"6f82bc96add84ece757afad265d7e341\" />\n" +
+//                        "    </FILES>\n" +
+//                        "  </ANALYSIS>\n" +
+//                        "</ANALYSIS_SET>\n");
+//    }
+//
+//    @Test
+//    public void
+//    testAnalysisXML_Manifest_WithFlatFile() {
+//        String name = "test_transcriptome";
+//        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+//        Path inputDir = flatFile.getParent();
+//        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+//                "NAME\t" + name + "\n" +
+//                        "SAMPLE\ttest_sample\n" +
+//                        "STUDY\ttest_study\n" +
+//                        "PROGRAM\ttest_program\n" +
+//                        "PLATFORM\ttest_platform\n" +
+//                        "TPA\ttrue\n" +
+//                        "FLATFILE\t" + flatFile.getFileName() + "\n"
+//        );
+//
+//        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
+//
+//        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
+//
+//        cli.setFetchSample(false);
+//        Sample sample = new Sample();
+//        sample.setBiosampleId("test_sample");
+//        cli.setSample(sample);
+//
+//        cli.setFetchStudy(false);
+//        Study study = new Study();
+//        study.setProjectId("test_study");
+//        cli.setStudy(study);
+//
+//        try {
+//            cli.init(parameters);
+//        } finally {
+//            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+//
+//            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+//
+//            WebinCliTestUtils.assertAnalysisXml(analysisXml,
+//                    "<ANALYSIS_SET>\n" +
+//                            "<ANALYSIS>\n" +
+//                            "<TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
+//                            "<STUDY_REF accession=\"test_study\"/>\n" +
+//                            "<SAMPLE_REF accession=\"test_sample\"/>\n" +
+//                            "<ANALYSIS_TYPE>\n" +
+//                            "<TRANSCRIPTOME_ASSEMBLY>\n" +
+//                            "<NAME>test_transcriptome</NAME>\n" +
+//                            "<PROGRAM>test_program</PROGRAM>\n" +
+//                            "<PLATFORM>test_platform</PLATFORM>\n" +
+//                            "<TPA>true</TPA>\n" +
+//                            "</TRANSCRIPTOME_ASSEMBLY>\n" +
+//                            "</ANALYSIS_TYPE>\n" +
+//                            "<FILES>\n" +
+//                            "      <FILE filename=\"transcriptome/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+//                            "</FILES>\n" +
+//                            "</ANALYSIS>\n" +
+//                            "</ANALYSIS_SET>");
+//        }
+//    }
 }
 

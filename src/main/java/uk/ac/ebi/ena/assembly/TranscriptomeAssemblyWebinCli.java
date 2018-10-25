@@ -87,16 +87,13 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		}
 		getManifestReader().getSubmissionOptions().source = Optional.of(getSource());
 		getManifestReader().getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-		if(getManifestReader().getSubmissionOptions().submissionFiles.isPresent())
-			submissionFiles=getManifestReader().getSubmissionOptions().submissionFiles.get();
 	}
 
 	
 
 	@Override
 	protected boolean validateInternal() throws ValidationEngineException {
-		SubmissionValidator validator = new SubmissionValidator(getManifestReader().getSubmissionOptions());
-		return validator.validate();
+		return new SubmissionValidator(getManifestReader().getSubmissionOptions()).validate();
 	}
 
 	@Override	

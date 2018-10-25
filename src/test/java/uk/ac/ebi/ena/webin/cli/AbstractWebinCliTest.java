@@ -22,9 +22,9 @@ public class AbstractWebinCliTest {
         transcriptomeAssemblyWebinCli.setName("TEST_NAME");
         assertEquals("webin-transcriptome-TEST_NAME", transcriptomeAssemblyWebinCli.getAlias());
 
-        SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
-        sequenceAssemblyWebinCli.setName("TEST_NAME");
-        assertEquals("webin-sequence-TEST_NAME", sequenceAssemblyWebinCli.getAlias());
+//        SequenceAssemblyWebinCli sequenceAssemblyWebinCli = new SequenceAssemblyWebinCli();
+//        sequenceAssemblyWebinCli.setName("TEST_NAME");
+//        assertEquals("webin-sequence-TEST_NAME", sequenceAssemblyWebinCli.getAlias());
 
         RawReadsWebinCli rawReadsWebinCli = new RawReadsWebinCli();
         rawReadsWebinCli.setName("TEST_NAME");

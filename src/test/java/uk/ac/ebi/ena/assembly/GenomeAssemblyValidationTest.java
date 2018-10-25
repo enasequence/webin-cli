@@ -15,17 +15,33 @@ import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
+import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
+import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.submission.Context;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.WebinCliTestUtils;
+import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 	public class GenomeAssemblyValidationTest {
+		
+		@Rule
+		public ExpectedException thrown = ExpectedException.none();
 	@Before public void
 	before()
 	{
@@ -41,6 +57,14 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	private static Study getDefaultStudy() {
 		return new Study();
 	}
+	
+	private static SourceFeature getDefaultSourceFeature()
+	{
+		SourceFeature source= new FeatureFactory().createSourceFeature();
+		source.setScientificName("Micrococcus sp. 5");
+		return source;
+	}
+	
 
 	private File getDefaultInputDir() {
 		URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/valid_fasta.txt" );
@@ -48,18 +72,18 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	}
 
 	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli() {
-		return prepareGenomeAssemblyWebinCli(getDefaultStudy(), getDefaultSample(), getDefaultInputDir());
+		return prepareGenomeAssemblyWebinCli(getDefaultStudy(), getDefaultSample(),getDefaultSourceFeature(), getDefaultInputDir());
 	}
 
 	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(File inputDir) {
-		return prepareGenomeAssemblyWebinCli(getDefaultStudy(), getDefaultSample(), inputDir);
+		return prepareGenomeAssemblyWebinCli(getDefaultStudy(), getDefaultSample(),getDefaultSourceFeature(), inputDir);
 	}
 
 	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(Study study, Sample sample) {
-		return prepareGenomeAssemblyWebinCli(study, sample, getDefaultInputDir());
+		return prepareGenomeAssemblyWebinCli(study, sample,getDefaultSourceFeature(), getDefaultInputDir());
 	}
 
-	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(Study study, Sample sample, File inputDir) {
+	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(Study study, Sample sample,SourceFeature source, File inputDir) {
 		GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
 		cli.setTestMode(true);
 		cli.setInputDir( inputDir );
@@ -67,7 +91,9 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 		cli.setSubmitDir( WebinCliTestUtils.createTempDir() );
 		cli.setFetchSample(false);
 		cli.setFetchStudy(false);
+		cli.setFetchSource(false);
 		cli.setSample(sample);
+		cli.setSource(source);
 		cli.setStudy(study);
 		return cli;
 	}
@@ -89,7 +115,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(validator.validate());
 		}
 	}
@@ -110,7 +136,9 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			thrown.expect(ValidationEngineException.class);
+			thrown.expectMessage("fasta file validation failed: invalid_fasta.txt");
 			Assert.assertFalse(validator.validate());
 		}
 	}
@@ -131,7 +159,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.flatFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
 			Assert.assertTrue(validator.validate());
 		}
 	}
@@ -152,7 +180,9 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.flatFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
+			thrown.expect(ValidationEngineException.class);
+			thrown.expectMessage("flat file validation failed: invalid_flatfile.txt");
 			Assert.assertFalse(validator.validate());
 		}
 	}
@@ -174,8 +204,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
-			Assert.assertNotNull(validator.unlocalisedListFile);
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.UNLOCALISED_LIST).isEmpty());
 			Assert.assertTrue(validator.validate());
 		}
 	}
@@ -197,8 +227,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
-			Assert.assertTrue(!validator.agpFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			Assert.assertTrue(validator.validate());
 		}
 	}
@@ -221,9 +251,9 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
-			Assert.assertTrue(!validator.agpFiles.isEmpty());
-			Assert.assertNotNull(validator.chromosomeListFile);
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).isEmpty());
 			Assert.assertTrue(validator.validate());
 		}
 	}
@@ -245,8 +275,10 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
-			Assert.assertTrue(!validator.agpFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
+			thrown.expect(ValidationEngineException.class);
+			thrown.expectMessage("AGP file validation failed: invalid_agp.txt");
 			Assert.assertFalse(validator.validate());
 		}
 	}
@@ -268,8 +300,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.flatFiles.isEmpty());
-			Assert.assertTrue(!validator.agpFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			Assert.assertTrue(validator.validate());
 		}
 	}
@@ -293,9 +325,11 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
-			Assert.assertTrue(!validator.agpFiles.isEmpty());
-			Assert.assertNotNull(validator.chromosomeListFile);
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).isEmpty());
+			thrown.expect(ValidationEngineException.class);
+			thrown.expectMessage("Sequenceless chromosomes are not allowed in assembly : IWGSC_CSS_6DL_SCAFF_3330719,IWGSC_CSS_6DL_SCAFF_3330717,IWGSC_CSS_6DL_SCAFF_3330716");
 			Assert.assertFalse(validator.validate());
 		}
 	}
@@ -316,7 +350,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 			validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
 		}
 		finally {
-			Assert.assertTrue(!validator.flatFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
 			Assert.assertTrue(validator.validate());
 		}
 	}
@@ -332,43 +366,62 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 		try {
 			validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-		}
+			}
 		catch (WebinCliException ex) {
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
 		finally {
-			Assert.assertTrue(!validator.fastaFiles.isEmpty());
-			Assert.assertTrue(!validator.agpFiles.isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
+			thrown.expect(ValidationEngineException.class);
 			Assert.assertFalse(validator.validate());
 		}
 	}
 
-
-	//
-	//
-
-
 	@Test public void
 	testGenomeFileValidation_InvalidFasta_ERZ480053() throws Exception
     {
-        GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
-        validator.setTestMode( true );
-        validator.setStudy( new Study() );
-        validator.setValidationDir( WebinCliTestUtils.createTempDir() );
-        validator.setSubmitDir( WebinCliTestUtils.createTempDir() );
-        Assert.assertTrue( !validator.validateFastaFiles( validator.getValidationProperties(), 
-						  Arrays.asList( WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz" ))));
-    }
+		
+       File file =WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz");
+       GenomeAssemblyWebinCli validator=getValidator(file, FileType.FASTA);
+		thrown.expect(ValidationEngineException.class);
+		thrown.expectMessage("fasta file validation failed: PYO97_7.fa.gz");
+        validator.validateInternal();
+     }
 
 	@Test public void
 	testGenomeFileValidation_InvalidChromosomeList_ERZ496213() throws Exception
     {
-        GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
-		validator.setTestMode( true );
-        validator.setStudy( new Study() );
-        validator.setValidationDir( WebinCliTestUtils.createTempDir() );
-        validator.setSubmitDir( WebinCliTestUtils.createTempDir() );
-        Assert.assertTrue( !validator.validateChromosomeList( validator.getValidationProperties(),
-				WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz" )));
+        File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz");
+        GenomeAssemblyWebinCli validator=getValidator(file, FileType.CHROMOSOME_LIST);
+		thrown.expect(ValidationEngineException.class);
+		thrown.expectMessage("chromosome list file validation failed: RUG553.fa.chromlist.gz");
+        validator.validateInternal();
     }
+	
+	private GenomeAssemblyWebinCli getValidator(File file,FileType fileType)
+	
+	{
+		SubmissionOptions options = new SubmissionOptions();
+		if(file!=null)
+		{
+		SubmissionFiles files = new SubmissionFiles();
+        SubmissionFile SubmissionFile= new SubmissionFile(fileType,file);
+        files.addFile(SubmissionFile);
+		options.submissionFiles = Optional.of(files);
+		}
+        options.assemblyInfoEntry = Optional.of(new AssemblyInfoEntry());
+        options.context =Optional.of(Context.genome);
+		options.isFixMode =true;
+		options.isRemote =true;
+		options.source =Optional.of(getDefaultSourceFeature());
+		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
+    	validator.setTestMode( true );
+        validator.setStudy( new Study() );
+        options.reportDir=Optional.of(WebinCliTestUtils.createTempDir().getAbsolutePath());
+        validator.setSubmitDir(WebinCliTestUtils.createTempDir());
+        validator.setSubmissionOptions(options);
+        return validator;
+	}
+	
 }

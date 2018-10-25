@@ -38,8 +38,7 @@ public class GenomeAssemblyManifest extends ManifestReader
 
 	private String name;
 	private static final String DEFAULT_MOLECULE_TYPE = "genomic DNA";
-	SubmissionOptions submissionOptions;
-
+	private SubmissionOptions submissionOptions;
 	private final static String[] CV_MOLECULETYPE = {
 			"genomic DNA",
 			"genomic RNA",
@@ -55,7 +54,7 @@ public class GenomeAssemblyManifest extends ManifestReader
 	};
 
 	public
-	GenomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor,SourceFeatureProcessor sourceProcessor ) {
+	GenomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor,SourceFeatureProcessor sourceProcessor) {
 		super(
 				// Fields.
 				new ArrayList<ManifestFieldDefinition>() {{
@@ -159,16 +158,15 @@ public class GenomeAssemblyManifest extends ManifestReader
 		submissionOptions.assemblyInfoEntry = Optional.of(assemblyInfo);
 		submissionOptions.context =Optional.of(Context.genome);
 		submissionOptions.submissionFiles= Optional.of(submissionFiles);
+		submissionOptions.isRemote = true;
 	}
 
 	public String getName() {
 		return name;
 	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public SubmissionOptions getSubmissionOptions() {
+	
+	public SubmissionOptions getSubmissionOptions()
+	{
 		return submissionOptions;
 	}
-
 }

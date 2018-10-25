@@ -35,6 +35,7 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
@@ -52,19 +53,14 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	private static final String DIGEST_NAME = "MD5";
 	protected final static String ANALYSIS_XML = "analysis.xml";
 
-
+	SubmissionOptions submissionOptions;
 	private Study  study;
 	private Sample sample;
 	private SourceFeature source;
 	protected AssemblyInfoEntry assembly_info;
 
-	protected SubmissionFiles submissionFiles;
-
 	protected abstract boolean validateInternal() throws ValidationEngineException;
 
-	public SubmissionFiles getSubmissionFiles() {
-		return submissionFiles;
-	}
 
 
 	public void
@@ -135,6 +131,14 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 		Element e = new Element( name );
 		e.setText( text );
 		return e;
+	}
+	
+	public SubmissionOptions getSubmissionOptions() {
+		return submissionOptions;
+	}
+
+	public void setSubmissionOptions(SubmissionOptions submissionOptions) {
+		this.submissionOptions = submissionOptions;
 	}
 
 
@@ -307,6 +311,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
 	private List<File> getFilesToUpload(FileType fileType)
 	{
-		return submissionFiles.getFiles(fileType).stream().map(SubmissionFile::getFile).collect(toCollection(ArrayList::new));
+		if(getSubmissionOptions().submissionFiles.isPresent())
+		return getSubmissionOptions().submissionFiles.get().getFiles(fileType).stream().map(SubmissionFile::getFile).collect(toCollection(ArrayList::new));
+		return new ArrayList<File>();
 	}
 }
