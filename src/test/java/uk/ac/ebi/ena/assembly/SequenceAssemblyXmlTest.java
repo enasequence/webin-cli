@@ -15,11 +15,16 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -39,19 +44,23 @@ SequenceAssemblyXmlTest
     public void
     testAnalysisXML_AssemblyInfo_WithFlatFile()
     {
+    	
+        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+   	SubmissionOptions submissionOptions =  new SubmissionOptions();
+   	SubmissionFiles submissionFiles = new SubmissionFiles();
+   	SubmissionFile submissionFile = new SubmissionFile(FileType.FLATFILE,flatFile.toFile());
+   	submissionFiles.addFile(submissionFile);
+   	submissionOptions.submissionFiles = Optional.of(submissionFiles);
         SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
         String name = "test_sequence";
         cli.setName( name );
-
-        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        cli.setSubmissionOptions(submissionOptions);
         cli.getParameters().setInputDir( flatFile.getParent().toFile() );
-        cli.flatFiles = Arrays.asList(new File(flatFile.toString()));
 
         AssemblyInfoEntry info = new AssemblyInfoEntry();
-        cli.setAssemblyInfo( info );
         info.setName( name );
         info.setStudyId( "test_study" );
-
+        cli.setAssemblyInfo( info );
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);

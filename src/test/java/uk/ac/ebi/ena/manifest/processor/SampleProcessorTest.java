@@ -23,8 +23,10 @@ SampleProcessorTest
     public void
     before() throws UnsupportedEncodingException
     {
-        parameters.setUsername(System.getenv( "webin-cli-username" ));
-        parameters.setPassword(System.getenv( "webin-cli-password" ));
+      //  parameters.setUsername(System.getenv( "webin-cli-username" ));
+       // parameters.setPassword(System.getenv( "webin-cli-password" ));
+    	parameters.setUsername("Webin-256");
+        parameters.setPassword("3n@!@2-128" );
         parameters.setTestMode(true);
         Assert.assertTrue( "webin-cli-username is null", null != parameters.getUsername() );
     }
@@ -43,7 +45,6 @@ SampleProcessorTest
     testIncorrect()
     {
         SampleProcessor processor = new SampleProcessor(parameters, (Sample sample) -> Assert.assertNull(sample) );
-
         ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "SRP000392");
         Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.ERROR) );
         Assert.assertEquals( "SRP000392", fieldValue.getValue() );

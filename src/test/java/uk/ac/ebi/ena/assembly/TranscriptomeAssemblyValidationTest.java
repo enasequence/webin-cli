@@ -13,45 +13,94 @@ package uk.ac.ebi.ena.assembly;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
+import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
+import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.submission.Context;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
+import java.io.File;
+import java.net.URL;
 import java.util.Locale;
+import java.util.Optional;
 
 public class TranscriptomeAssemblyValidationTest {
 
-    @Before
-    public void
-    before()
-    {
-        Locale.setDefault( Locale.UK );
-    }
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+	@Before public void
+	before()
+	{
+		Locale.setDefault( Locale.UK );
+	}
 
-    private static Sample getDefaultSample() {
-        Sample sample = new Sample();
-        sample.setOrganism( "Quercus robur" );
-        return sample;
-    }
+	private static Sample getDefaultSample() {
+		Sample sample = new Sample();
+		sample.setOrganism( "Quercus robur" );
+		return sample;
+	}
 
-    private static Study getDefaultStudy() {
-        return new Study();
-    }
+	private static Study getDefaultStudy() {
+		return new Study();
+	}
 
+	private static SourceFeature getDefaultSourceFeature()
+	{
+		SourceFeature source= new FeatureFactory().createSourceFeature();
+		source.setScientificName("Micrococcus sp. 5");
+		return source;
+	}
+
+
+	private TranscriptomeAssemblyWebinCli prepareTranscriptomAssemblyWebinCli(File inputDir) {
+		return prepareTranscriptomAssemblyWebinCli(getDefaultStudy(), getDefaultSample(),getDefaultSourceFeature(), inputDir);
+	}
+
+	private TranscriptomeAssemblyWebinCli prepareTranscriptomAssemblyWebinCli(Study study, Sample sample,SourceFeature source, File inputDir) {
+		TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
+		cli.setTestMode(true);
+		cli.setInputDir( inputDir );
+		cli.setValidationDir( WebinCliTestUtils.createTempDir() );
+		cli.setSubmitDir( WebinCliTestUtils.createTempDir() );
+		cli.setFetchSample(false);
+		cli.setFetchStudy(false);
+		cli.setFetchSource(false);
+		cli.setSample(sample);
+		cli.setSource(source);
+		cli.setStudy(study);
+		return cli;
+	}
     @Test
     public void
     testTranscriptomeFileValidation_ValidFasta() throws Exception
     {
-        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(
-                WebinCliTestUtils.getFile("uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.manifest"));
-        TranscriptomeAssemblyWebinCli validator = new TranscriptomeAssemblyWebinCli();
-        validator.setFetchSample(false);
-        validator.setFetchStudy(false);
-        validator.setSample(getDefaultSample());
-        validator.setStudy(getDefaultStudy());
-        validator.init(parameters);
-        Assert.assertTrue( validator.validate() );
+    	URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.manifest" );
+		File manifestFile = new File( url.getFile() );
+		File inputDir = manifestFile.getParentFile();
+
+		TranscriptomeAssemblyWebinCli validator = prepareTranscriptomAssemblyWebinCli(inputDir);
+
+		try {
+			validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
+		}
+		finally {
+			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
+			Assert.assertTrue(validator.validate());
+		}
+		
     }
+    
 }

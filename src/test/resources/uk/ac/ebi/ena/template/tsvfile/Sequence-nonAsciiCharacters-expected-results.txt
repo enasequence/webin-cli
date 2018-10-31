@@ -1,20 +1,10 @@
-ERROR: Sequence 1: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 1: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 2: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 2: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 3: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 3: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 4: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 4: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 5: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 5: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 6: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 6: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 7: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 7: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 8: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 8: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 9: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 9: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 10: Flatfile contains non-ascii characters: "Régis Vivien".
-ERROR: Sequence 10: Flatfile contains non-ascii characters: "Régis Vivien".
+{"Sequence":"1","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"2","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"3","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"4","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"5","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"6","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"7","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"8","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"9","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}
+{"Sequence":"10","USER_ERROR":"Flatfile contains non-ascii characters: \"Régis Vivien\"."}

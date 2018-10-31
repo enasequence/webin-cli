@@ -15,11 +15,16 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
@@ -37,18 +42,22 @@ TranscriptomeAssemblyXmlTest {
     @Test
     public void
     testAnalysisXML_AssemblyInfo_WithFastaFile() {
+    	
+    	 Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
+    	SubmissionOptions submissionOptions =  new SubmissionOptions();
+    	SubmissionFiles submissionFiles = new SubmissionFiles();
+    	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
+    	submissionFiles.addFile(submissionFile);
+    	submissionOptions.submissionFiles = Optional.of(submissionFiles);
         TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
         String name = "test_transcriptome";
         cli.setName(name);
-
-        Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
         cli.getParameters().setInputDir(fastaFile.getParent().toFile());
-        cli.fastaFiles = Arrays.asList(new File(fastaFile.toString()));
-
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo(info);
+        cli.setSubmissionOptions(submissionOptions);
         info.setName(name);
-        info.setSampleId("test_sample");
+        info.setBiosampleId("test_sample");
         info.setStudyId("test_study");
         info.setProgram("test_program");
         info.setPlatform("test_platform");
@@ -99,6 +108,7 @@ TranscriptomeAssemblyXmlTest {
         TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
 
         cli.setFetchSample(false);
+        cli.setFetchSource(false);
         Sample sample = new Sample();
         sample.setBiosampleId("test_sample");
         cli.setSample(sample);

@@ -97,7 +97,6 @@ WebinCliTest
                 manifestContents).toAbsolutePath().toString();
         parameters.userName = System.getenv( "webin-cli-username" );
         parameters.password = System.getenv( "webin-cli-password" );
-        // parameters.centerName = "C E N T E R N A M E";
         parameters.test = true;
         parameters.validate = true;
         parameters.submit = true;

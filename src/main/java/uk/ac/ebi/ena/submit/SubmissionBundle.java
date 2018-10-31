@@ -39,7 +39,7 @@ SubmissionBundle implements Serializable
         EXPERIMENT
     };
     
-    
+    public static final String SUBMISSION_BUNDLE = ".data";
     public static class 
     SubmissionXMLFile implements Serializable
     {
