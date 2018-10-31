@@ -57,7 +57,7 @@ TranscriptomeAssemblyXmlTest {
         cli.setAssemblyInfo(info);
         cli.setSubmissionOptions(submissionOptions);
         info.setName(name);
-        info.setSampleId("test_sample");
+        info.setBiosampleId("test_sample");
         info.setStudyId("test_study");
         info.setProgram("test_program");
         info.setPlatform("test_platform");
@@ -108,6 +108,7 @@ TranscriptomeAssemblyXmlTest {
         TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
 
         cli.setFetchSample(false);
+        cli.setFetchSource(false);
         Sample sample = new Sample();
         sample.setBiosampleId("test_sample");
         cli.setSample(sample);
