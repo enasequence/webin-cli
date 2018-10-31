@@ -95,8 +95,8 @@ WebinCliTest
         parameters.outputDir  = WebinCliTestUtils.createTempDir().getPath();
         parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
                 manifestContents).toAbsolutePath().toString();
-        parameters.userName = System.getenv( "webin-cli-username" );
-        parameters.password = System.getenv( "webin-cli-password" );
+        parameters.userName = "Webin-2";//System.getenv( "webin-cli-username" );
+        parameters.password = "3n@!@2-128";//System.getenv( "webin-cli-password" );
         parameters.test = true;
         parameters.validate = true;
         parameters.submit = true;

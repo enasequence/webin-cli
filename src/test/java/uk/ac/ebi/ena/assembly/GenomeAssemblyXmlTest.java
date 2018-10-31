@@ -180,7 +180,8 @@ GenomeAssemblyXmlTest
     {
     	SubmissionOptions submissionOptions =  new SubmissionOptions();
     	SubmissionFiles submissionFiles = new SubmissionFiles();
-    	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT").toFile());
+        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
+    	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
     	submissionFiles.addFile(submissionFile);
     	submissionOptions.submissionFiles = Optional.of(submissionFiles);
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
@@ -188,7 +189,6 @@ GenomeAssemblyXmlTest
         cli.setName( name );
         cli.setSource(getDefaultSourceFeature());
         cli.setSubmissionOptions(submissionOptions);
-        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
         cli.getParameters().setInputDir( fastaFile.getParent().toFile() );
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo( info );
@@ -247,10 +247,10 @@ GenomeAssemblyXmlTest
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         cli.setSource(getDefaultSourceFeature());
         cli.setFetchSample(false);
+        cli.setFetchSource(false);
         Sample sample = new Sample();
         sample.setBiosampleId("test_sample");
         cli.setSample(sample);
-
         cli.setFetchStudy(false);
         Study study = new Study();
         study.setProjectId("test_study");
