@@ -83,6 +83,6 @@ ManifestFieldValue
     public String
     toString()
     {
-        return String.format( "%s = %s [%s], %s", definition, value, null != origin ? origin.getOriginText() : "", validFieldValueOrFileSuffix );
+        return String.format( "%s = %s [%s], %s", definition, value, null != origin ? String.valueOf( origin ) : "", validFieldValueOrFileSuffix );
     }
 }
