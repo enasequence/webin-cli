@@ -1,13 +1,21 @@
 package uk.ac.ebi.ena.assembly;
 
+import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.submission.Context;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
+import uk.ac.ebi.ena.assembly.GenomeAssemblyManifest.Fields;
 import uk.ac.ebi.ena.manifest.*;
 import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang.StringUtils;
 
 public class SequenceAssemblyManifest extends ManifestReader
 {
@@ -18,12 +26,9 @@ public class SequenceAssemblyManifest extends ManifestReader
         String TAB = "TAB";
         String FLATFILE = "FLATFILE";
     }
+	private SubmissionOptions submissionOptions;
 
     private String name;
-    private String studyId;
-
-    private File tsvFile;
-    private File flatFile;
 
     public
     SequenceAssemblyManifest(StudyProcessor studyProcessor ) {
@@ -50,30 +55,27 @@ public class SequenceAssemblyManifest extends ManifestReader
     }
 
 
-    public String getName() {
-        return name;
-    }
-
-    public String getStudyId() {
-        return studyId;
-    }
-
-    public File getTsvFile() {
-        return tsvFile;
-    }
-
-    public File getFlatFile() {
-        return flatFile;
-    }
-
     @Override
     public void
     processManifest() {
-
-        name = getResult().getValue(Fields.NAME);
-        studyId = getResult().getValue(Fields.STUDY);
-
-        tsvFile = getFile(getInputDir(), getResult().getField(Fields.TAB));
-        flatFile =  getFile(getInputDir(), getResult().getField(Fields.FLATFILE));
+    	submissionOptions =new SubmissionOptions();
+		SubmissionFiles submissionFiles = new SubmissionFiles();
+		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
+		name =getResult().getValue(Fields.NAME);
+		assemblyInfo.setName(name);
+		getFiles(getInputDir(), getResult(), Fields.TAB).forEach(fastaFile-> submissionFiles.addFile(new SubmissionFile(FileType.TSV,fastaFile)));
+		getFiles(getInputDir(), getResult(), Fields.FLATFILE).forEach(flatFile->submissionFiles.addFile(new SubmissionFile(FileType.FLATFILE,flatFile)));
+		submissionOptions.assemblyInfoEntry = Optional.of(assemblyInfo);
+		submissionOptions.context =Optional.of(Context.sequence);
+		submissionOptions.submissionFiles= Optional.of(submissionFiles);
+		submissionOptions.isRemote = true;
     }
+    
+	public String getName() {
+		return name;
+	}
+	
+	public SubmissionOptions getSubmissionOptions() {
+		return submissionOptions;
+	}
 }

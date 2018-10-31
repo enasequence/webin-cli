@@ -29,17 +29,16 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import uk.ac.ebi.embl.agp.reader.AGPFileReader;
-import uk.ac.ebi.embl.agp.reader.AGPLineReader;
+import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
+import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.fasta.reader.FastaFileReader;
-import uk.ac.ebi.embl.fasta.reader.FastaLineReader;
-import uk.ac.ebi.embl.flatfile.reader.EntryReader;
-import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
-import uk.ac.ebi.embl.flatfile.reader.genomeassembly.AssemblyInfoReader;
-import uk.ac.ebi.embl.flatfile.reader.genomeassembly.ChromosomeListFileReader;
-import uk.ac.ebi.embl.flatfile.reader.genomeassembly.UnlocalisedListFileReader;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
@@ -57,20 +56,14 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     private static final String DIGEST_NAME = "MD5";
     protected final static String ANALYSIS_XML = "analysis.xml";
 
-
+	SubmissionOptions submissionOptions;
     private Study  study;
     private Sample sample;
-
-    protected File chromosomeListFile;
-    protected File unlocalisedListFile;
-    protected List<File> fastaFiles = new ArrayList<>();
-    protected List<File> flatFiles = new ArrayList<>();
-    protected List<File> agpFiles = new ArrayList<>();
-    protected List<File> tsvFiles = new ArrayList<>();
-
-    protected AssemblyInfoEntry assembly_info;
+	private SourceFeature source;
+	protected AssemblyInfoEntry assembly_info;
 
     protected abstract boolean validateInternal() throws ValidationEngineException;
+
 
     public void
     setStudy( Study study )
@@ -98,40 +91,12 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         return this.sample;
     }
 
-    @SuppressWarnings( "unchecked" ) protected <T> T
-    getFileReader( FileFormat format, File file ) throws IOException
-    {
-         if( !EntryReader.getBlockCounter().isEmpty() )
-             EntryReader.getBlockCounter().clear();
+	public SourceFeature getSource() {
+		return source;
+	}
          
-          if( !EntryReader.getSkipTagCounter().isEmpty() )
-              EntryReader.getSkipTagCounter().clear();
-          
-        switch( format )
-        {
-        default:
-            return null;
-        
-        case FASTA:
-            return (T) new FastaFileReader( new FastaLineReader( FileUtils.getBufferedReader( file ) ) );
-
-        case AGP:
-            return (T) new AGPFileReader( new AGPLineReader( FileUtils.getBufferedReader( file ) ) );
-        
-        case FLATFILE:
-            EmblEntryReader emblReader = new EmblEntryReader( FileUtils.getBufferedReader( file ), EmblEntryReader.Format.EMBL_FORMAT, file.getName() );
-            emblReader.setCheckBlockCounts( true );
-            return (T) emblReader;
-
-        case INFO:
-            return (T) new AssemblyInfoReader( file );
-
-        case CHROMOSOME_LIST:
-            return (T) new ChromosomeListFileReader( file );
-            
-        case UNLOCALISED_LIST:
-            return (T) new UnlocalisedListFileReader( file );
-        }
+	public void setSource( SourceFeature source ) {
+		this.source = source;
     }
 
 
@@ -170,6 +135,13 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         return e;
     }
    
+	public SubmissionOptions getSubmissionOptions() {
+		return submissionOptions;
+	}
+
+	public void setSubmissionOptions( SubmissionOptions submissionOptions ) {
+		this.submissionOptions = submissionOptions;
+	}
     
    abstract Element makeAnalysisType( AssemblyInfoEntry entry );
 
@@ -196,11 +168,11 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             Element studyRefE = new Element( "STUDY_REF" );
             analysisE.addContent( studyRefE );
             studyRefE.setAttribute( "accession", entry.getStudyId() );
-            if( entry.getSampleId() != null && !entry.getSampleId().isEmpty() )
+			if( entry.getBiosampleId() != null && !entry.getBiosampleId().isEmpty() )
             {
                 Element sampleRefE = new Element( "SAMPLE_REF" );
                 analysisE.addContent( sampleRefE );
-                sampleRefE.setAttribute( "accession", entry.getSampleId() );
+				sampleRefE.setAttribute( "accession", entry.getBiosampleId() );
             }
             Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
             analysisE.addContent(analysisTypeE);
@@ -276,19 +248,15 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     protected List<File>
     getUploadFiles() throws IOException
     {
-        List<File> uploadFileList = new ArrayList<>();
-        if( null != chromosomeListFile )
-            uploadFileList.add( chromosomeListFile );           
+		List<File> uploadFiles = new ArrayList<File>();
+		uploadFiles.addAll( getFilesToUpload( FileType.CHROMOSOME_LIST ) );
+		uploadFiles.addAll( getFilesToUpload( FileType.UNLOCALISED_LIST ) );
+		uploadFiles.addAll( getFilesToUpload( FileType.FASTA ) );
+		uploadFiles.addAll( getFilesToUpload( FileType.AGP ) );
+		uploadFiles.addAll( getFilesToUpload( FileType.FLATFILE ) );
+		uploadFiles.addAll( getFilesToUpload( FileType.TSV ) );
         
-        if( null != unlocalisedListFile )
-            uploadFileList.add( unlocalisedListFile );
-        
-        uploadFileList.addAll( fastaFiles );
-        uploadFileList.addAll( flatFiles );
-        uploadFileList.addAll( agpFiles );
-        uploadFileList.addAll( tsvFiles );
-       
-        return uploadFileList;
+		return uploadFiles;
     }
     
     
@@ -297,17 +265,13 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     {
         List<Element> eList = new ArrayList<>();
 
-        if( null != chromosomeListFile )
-            eList.add( createfileElement( uploadDir, chromosomeListFile, "chromosome_list" ) );
+        getFilesToUpload( FileType.CHROMOSOME_LIST ).forEach( file -> eList.add( createfileElement( uploadDir, file, "chromosome_list" ) ) );
+	    getFilesToUpload( FileType.UNLOCALISED_LIST ).forEach( file -> eList.add( createfileElement( uploadDir, file, "unlocalised_list" ) ) );
+	    getFilesToUpload( FileType.FASTA ).forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
+	    getFilesToUpload( FileType.FLATFILE ).forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
+	    getFilesToUpload( FileType.AGP ).forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
+	    getFilesToUpload( FileType.TSV ).forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
         
-        if( null != unlocalisedListFile )
-            eList.add( createfileElement( uploadDir, unlocalisedListFile, "unlocalised_list" ) );
-        
-        fastaFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
-        flatFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
-        agpFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
-        tsvFiles.forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
-
         return eList;
     }
     
@@ -339,4 +303,19 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             throw WebinCliException.createSystemError( e.getMessage() );
         }        
     }
+
+	private List<File> getFilesToUpload(FileType fileType)
+	{
+		List<File> files=new ArrayList<File>();
+		if( getSubmissionOptions() != null && getSubmissionOptions().submissionFiles.isPresent() )
+		{
+			for( SubmissionFile submissionFile : getSubmissionOptions().submissionFiles.get().getFiles() )
+			{
+				if( fileType!=null && fileType.equals( submissionFile.getFileType() ) )
+					files.add( submissionFile.getFile() );
+			}
+
+		}
+		return files;
+	}
 }

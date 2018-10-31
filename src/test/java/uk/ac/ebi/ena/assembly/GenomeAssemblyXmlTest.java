@@ -11,21 +11,22 @@
 
 package uk.ac.ebi.ena.assembly;
 
-import java.io.*;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Locale;
-
-import org.junit.Assert;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
-
+import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
+import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class
@@ -37,6 +38,13 @@ GenomeAssemblyXmlTest
     {
         Locale.setDefault( Locale.UK );
     }
+    
+    private static SourceFeature getDefaultSourceFeature()
+	{
+		SourceFeature source= new FeatureFactory().createSourceFeature();
+		source.setScientificName("Micrococcus sp. 5");
+		return source;
+	}
 
     @Test
     public void
@@ -49,12 +57,13 @@ GenomeAssemblyXmlTest
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo( info );
         info.setName( name );
-        info.setSampleId( "test_sample" );
+        info.setBiosampleId( "test_sample" );
         info.setStudyId( "test_study" );
         info.setCoverage( "1" );
         info.setProgram( "test_program" );
         info.setPlatform( "test_platform" );
 
+        cli.setSource(getDefaultSourceFeature());
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
@@ -85,11 +94,12 @@ GenomeAssemblyXmlTest
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         String name = "test_genome";
         cli.setName( name );
+        cli.setSource(getDefaultSourceFeature());
 
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo( info );
         info.setName( name );
-        info.setSampleId( "test_sample" );
+        info.setBiosampleId( "test_sample" );
         info.setStudyId( "test_study" );
         info.setCoverage( "1" );
         info.setProgram( "test_program" );
@@ -127,11 +137,12 @@ GenomeAssemblyXmlTest
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         String name = "test_genome";
         cli.setName( name );
+        cli.setSource(getDefaultSourceFeature());
 
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo( info );
         info.setName( name );
-        info.setSampleId( "test_sample" );
+        info.setBiosampleId( "test_sample" );
         info.setStudyId( "test_study" );
         info.setCoverage( "1" );
         info.setProgram( "test_program" );
@@ -167,18 +178,22 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_AssemblyInfo_WithFastaFile()
     {
+    	SubmissionOptions submissionOptions =  new SubmissionOptions();
+    	SubmissionFiles submissionFiles = new SubmissionFiles();
+        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
+    	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
+    	submissionFiles.addFile(submissionFile);
+    	submissionOptions.submissionFiles = Optional.of(submissionFiles);
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         String name = "test_genome";
         cli.setName( name );
-
-        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
+        cli.setSource(getDefaultSourceFeature());
+        cli.setSubmissionOptions(submissionOptions);
         cli.getParameters().setInputDir( fastaFile.getParent().toFile() );
-        cli.fastaFiles = Arrays.asList(new File(fastaFile.toString()));
-
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo( info );
         info.setName( name );
-        info.setSampleId( "test_sample" );
+        info.setBiosampleId( "test_sample" );
         info.setStudyId( "test_study" );
         info.setProgram( "test_program" );
         info.setPlatform( "test_platform" );
@@ -187,6 +202,7 @@ GenomeAssemblyXmlTest
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+  
 
         WebinCliTestUtils.assertAnalysisXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
@@ -229,12 +245,12 @@ GenomeAssemblyXmlTest
         WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
 
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-
+        cli.setSource(getDefaultSourceFeature());
         cli.setFetchSample(false);
+        cli.setFetchSource(false);
         Sample sample = new Sample();
         sample.setBiosampleId("test_sample");
         cli.setSample(sample);
-
         cli.setFetchStudy(false);
         Study study = new Study();
         study.setProjectId("test_study");

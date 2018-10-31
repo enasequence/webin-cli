@@ -12,18 +12,13 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.embl.api.validation.DefaultOrigin;
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -49,7 +44,8 @@ AbstractWebinCli<T extends ManifestReader>
 
     private boolean fetchSample = true;
     private boolean fetchStudy = true;
-    private SubmissionBundleHelper submissionBundleHelper = new SubmissionBundleHelper( SUBMISSION_BUNDLE );
+    private SubmissionBundleHelper submissionBundleHelper = new SubmissionBundleHelper( getSubmissionBundleFileName() );
+ 	private boolean fetchSource = true;
 
     protected abstract T createManifestReader();
 
@@ -141,10 +137,10 @@ AbstractWebinCli<T extends ManifestReader>
     public abstract boolean validate() throws ValidationEngineException;
     public abstract void prepareSubmissionBundle() throws IOException;
 
-    private File
+    private String
     getSubmissionBundleFileName()
     {
-        return new File( getSubmitDir(), "validate.receipt" );
+        return new File( getSubmitDir(), SUBMISSION_BUNDLE ).getPath();
     }
 
     public boolean
@@ -235,4 +231,14 @@ AbstractWebinCli<T extends ManifestReader>
         return this.test_mode;
         
     }
+    
+    public boolean isFetchSource() 
+    {
+ 		return fetchSource;
+ 	}
+
+ 	public void setFetchSource(boolean fetchSource) 
+ 	{
+ 		this.fetchSource = fetchSource;
+ 	}
 }
