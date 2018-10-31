@@ -167,11 +167,11 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 			Element studyRefE = new Element( "STUDY_REF" );
 			analysisE.addContent( studyRefE );
 			studyRefE.setAttribute( "accession", entry.getStudyId() );
-			if( entry.getSampleId() != null && !entry.getSampleId().isEmpty() )
+			if( entry.getBiosampleId() != null && !entry.getBiosampleId().isEmpty() )
 			{
 				Element sampleRefE = new Element( "SAMPLE_REF" );
 				analysisE.addContent( sampleRefE );
-				sampleRefE.setAttribute( "accession", entry.getSampleId() );
+				sampleRefE.setAttribute( "accession", entry.getBiosampleId() );
 			}
 			Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
 			analysisE.addContent(analysisTypeE);
