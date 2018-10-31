@@ -76,24 +76,24 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	@Override
 	public void readManifest(Path inputDir, File manifestFile) {
 		getManifestReader().readManifest(inputDir, manifestFile);
-
-		if(getManifestReader().getSubmissionOptions().assemblyInfoEntry.isPresent())
+		setSubmissionOptions(getManifestReader().getSubmissionOptions());
+		if(getSubmissionOptions().assemblyInfoEntry.isPresent())
 		{
 		if (getStudy() != null)
-			getManifestReader().getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
+			getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
 		if (getSample() != null)
-			getManifestReader().getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBiosampleId());
-			this.setAssemblyInfo(getManifestReader().getSubmissionOptions().assemblyInfoEntry.get());
+			getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBiosampleId());
+			this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
 		}
-		getManifestReader().getSubmissionOptions().source = Optional.of(getSource());
-		getManifestReader().getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
+		getSubmissionOptions().source = Optional.of(getSource());
+		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 	}
 
 	
 
 	@Override
 	protected boolean validateInternal() throws ValidationEngineException {
-		return new SubmissionValidator(getManifestReader().getSubmissionOptions()).validate();
+		return new SubmissionValidator(getSubmissionOptions()).validate();
 	}
 
 	@Override	

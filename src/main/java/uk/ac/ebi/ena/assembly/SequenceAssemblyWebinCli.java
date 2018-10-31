@@ -26,23 +26,23 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     }
 
     @Override
-    public void readManifest(Path inputDir, File manifestFile) {
+    public void readManifest(Path inputDir, File manifestFile) 
+    {
         getManifestReader().readManifest(inputDir, manifestFile);
-        if(getManifestReader().getSubmissionOptions().assemblyInfoEntry.isPresent())
+        if(getSubmissionOptions().assemblyInfoEntry.isPresent())
         {
          if (getStudy() != null)
-            getManifestReader().getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
-        this.setAssemblyInfo(getManifestReader().getSubmissionOptions().assemblyInfoEntry.get());
+            getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
+        this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
         }
-        
-        getManifestReader().getSubmissionOptions().source = Optional.of(getSource());
-		getManifestReader().getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-		}
+        getSubmissionOptions().source = Optional.of(getSource());
+		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
+	}
 
     @Override protected boolean 
     validateInternal() throws ValidationEngineException 
     {
-		return new SubmissionValidator(getManifestReader().getSubmissionOptions()).validate();
+		return new SubmissionValidator(getSubmissionOptions()).validate();
 
     }
 

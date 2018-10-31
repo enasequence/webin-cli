@@ -247,8 +247,16 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	protected List<File>
 	getUploadFiles() throws IOException
 	{
+		List<File> uploadFiles = new ArrayList<File>();
+		uploadFiles.addAll(getFilesToUpload(FileType.CHROMOSOME_LIST));
+		uploadFiles.addAll(getFilesToUpload(FileType.UNLOCALISED_LIST));
+		uploadFiles.addAll(getFilesToUpload(FileType.FASTA));
+		uploadFiles.addAll(getFilesToUpload(FileType.AGP));
+		uploadFiles.addAll(getFilesToUpload(FileType.FLATFILE));
+		uploadFiles.addAll(getFilesToUpload(FileType.TSV));
 
-		return new ArrayList<File>()
+		return uploadFiles;
+	/*	return new ArrayList<File>()
 		{
 			{
 				addAll(getFilesToUpload(FileType.CHROMOSOME_LIST));
@@ -259,7 +267,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 				addAll(getFilesToUpload(FileType.TSV));
 			}
 
-		};
+		};*/
 
 	}
 
@@ -267,18 +275,17 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	protected List<Element>
 	getXMLFiles( Path uploadDir ) throws IOException
 	{
-		return new ArrayList<Element>()
-		{
-			{
-				addAll(getFilesToUpload(FileType.CHROMOSOME_LIST).stream().map(file->createfileElement( uploadDir, file, "chromosome_list" )).collect(toCollection(ArrayList::new)));
-				addAll(getFilesToUpload(FileType.UNLOCALISED_LIST).stream().map(file->createfileElement( uploadDir, file, "unlocalised_list" )).collect(toCollection(ArrayList::new)));
-				addAll(getFilesToUpload(FileType.FASTA).stream().map(file->createfileElement( uploadDir, file, "fasta" )).collect(toCollection(ArrayList::new)));
-				addAll(getFilesToUpload(FileType.FLATFILE).stream().map(file->createfileElement( uploadDir, file, "flatfile" )).collect(toCollection(ArrayList::new)));
-				addAll(getFilesToUpload(FileType.AGP).stream().map(file->createfileElement( uploadDir, file, "agp" )).collect(toCollection(ArrayList::new)));
-				addAll(getFilesToUpload(FileType.TSV).stream().map(file->createfileElement( uploadDir, file, "tab" )).collect(toCollection(ArrayList::new)));
+		
+		 List<Element> eList = new ArrayList<>();
 
-			}
-		};
+            getFilesToUpload(FileType.CHROMOSOME_LIST).forEach( file -> eList.add( createfileElement( uploadDir, file, "chromosome_list" ) ) );
+	       getFilesToUpload(FileType.UNLOCALISED_LIST).forEach( file -> eList.add( createfileElement( uploadDir, file, "unlocalised_list" ) ) );
+	        getFilesToUpload(FileType.FASTA).forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
+	        getFilesToUpload(FileType.FLATFILE).forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
+	        getFilesToUpload(FileType.AGP).forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
+	        getFilesToUpload(FileType.AGP).forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
+
+	        return eList;
 	}
 
 
@@ -311,8 +318,16 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
 	private List<File> getFilesToUpload(FileType fileType)
 	{
-		if(getSubmissionOptions().submissionFiles.isPresent())
-		return getSubmissionOptions().submissionFiles.get().getFiles(fileType).stream().map(SubmissionFile::getFile).collect(toCollection(ArrayList::new));
-		return new ArrayList<File>();
+		List<File> files=new ArrayList<File>();
+		if(getSubmissionOptions()!=null &&getSubmissionOptions().submissionFiles.isPresent())
+		{
+			for(SubmissionFile submissionFile : getSubmissionOptions().submissionFiles.get().getFiles())
+			{
+				if(fileType!=null && fileType.equals(submissionFile.getFileType()))
+					files.add(submissionFile.getFile());
+			}
+
+		}
+		return files;
 	}
 }

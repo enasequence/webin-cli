@@ -1,4 +1,4 @@
-	/*
+/*
  * Copyright 2018 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -13,16 +13,13 @@ package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
@@ -33,15 +30,14 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.WebinCliTestUtils;
-import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-	public class GenomeAssemblyValidationTest {
-		
-		@Rule
-		public ExpectedException thrown = ExpectedException.none();
+public class GenomeAssemblyValidationTest {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 	@Before public void
 	before()
 	{
@@ -57,14 +53,14 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	private static Study getDefaultStudy() {
 		return new Study();
 	}
-	
+
 	private static SourceFeature getDefaultSourceFeature()
 	{
 		SourceFeature source= new FeatureFactory().createSourceFeature();
 		source.setScientificName("Micrococcus sp. 5");
 		return source;
 	}
-	
+
 
 	private File getDefaultInputDir() {
 		URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/assembly/valid_fasta.txt" );
@@ -77,10 +73,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(File inputDir) {
 		return prepareGenomeAssemblyWebinCli(getDefaultStudy(), getDefaultSample(),getDefaultSourceFeature(), inputDir);
-	}
-
-	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(Study study, Sample sample) {
-		return prepareGenomeAssemblyWebinCli(study, sample,getDefaultSourceFeature(), getDefaultInputDir());
 	}
 
 	private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(Study study, Sample sample,SourceFeature source, File inputDir) {
@@ -192,7 +184,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	{
 		File manifestFile = WebinCliTestUtils.createTempFile(false,
 				"NAME\ttest\n" +
-				"UNLOCALISED_LIST\tunlocalised_list.txt\n" +
+						"UNLOCALISED_LIST\tunlocalised_list.txt\n" +
 				"FASTA\tvalid_fasta.txt").toFile();
 
 		GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -215,7 +207,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	{
 		File manifestFile = WebinCliTestUtils.createTempFile(false,
 				"NAME\ttest\n" +
-				"AGP\tvalid_agp.txt\n" +
+						"AGP\tvalid_agp.txt\n" +
 				"FASTA\tvalid_fasta.txt").toFile();
 
 		GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -238,8 +230,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	{
 		File manifestFile = WebinCliTestUtils.createTempFile(false,
 				"NAME\ttest\n" +
-				"CHROMOSOME_LIST\tchromosome_list.txt\n" +
-				"AGP\tvalid_agp.txt\n" +
+						"CHROMOSOME_LIST\tchromosome_list.txt\n" +
+						"AGP\tvalid_agp.txt\n" +
 				"FASTA\tvalid_fasta.txt").toFile();
 
 		GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -263,7 +255,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	{
 		File manifestFile = WebinCliTestUtils.createTempFile(false,
 				"NAME\ttest\n" +
-				"FASTA\tvalid_fasta.txt\n" +
+						"FASTA\tvalid_fasta.txt\n" +
 				"AGP\tinvalid_agp.txt\n").toFile();
 
 		GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -288,7 +280,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	{
 		File manifestFile = WebinCliTestUtils.createTempFile(false,
 				"NAME\ttest\n" +
-				"FLATFILE\tvalid_flatfileforAgp.txt\n" +
+						"FLATFILE\tvalid_flatfileforAgp.txt\n" +
 				"AGP\tvalid_flatfileagp.txt").toFile();
 
 		GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -312,8 +304,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 	{
 		File manifestFile = WebinCliTestUtils.createTempFile(false,
 				"NAME\ttest\n" +
-				"FASTA\tvalid_fasta.txt\n" +
-				"CHROMOSOME_LIST\tchromosome_list_sequenceless.txt\n" +
+						"FASTA\tvalid_fasta.txt\n" +
+						"CHROMOSOME_LIST\tchromosome_list_sequenceless.txt\n" +
 				"AGP\tvalid_agp.txt\n").toFile();
 
 		GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -366,7 +358,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 		try {
 			validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-			}
+		}
 		catch (WebinCliException ex) {
 			Assert.assertTrue(ex.getMessage().startsWith("Invalid manifest file"));
 		}
@@ -380,48 +372,48 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 	@Test public void
 	testGenomeFileValidation_InvalidFasta_ERZ480053() throws Exception
-    {
-		
-       File file =WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz");
-       GenomeAssemblyWebinCli validator=getValidator(file, FileType.FASTA);
+	{
+
+		File file =WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz");
+		GenomeAssemblyWebinCli validator=getValidator(file, FileType.FASTA);
 		thrown.expect(ValidationEngineException.class);
 		thrown.expectMessage("fasta file validation failed: PYO97_7.fa.gz");
-        validator.validateInternal();
-     }
+		validator.validateInternal();
+	}
 
 	@Test public void
 	testGenomeFileValidation_InvalidChromosomeList_ERZ496213() throws Exception
-    {
-        File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz");
-        GenomeAssemblyWebinCli validator=getValidator(file, FileType.CHROMOSOME_LIST);
+	{
+		File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz");
+		GenomeAssemblyWebinCli validator=getValidator(file, FileType.CHROMOSOME_LIST);
 		thrown.expect(ValidationEngineException.class);
 		thrown.expectMessage("chromosome list file validation failed: RUG553.fa.chromlist.gz");
-        validator.validateInternal();
-    }
-	
+		validator.validateInternal();
+	}
+
 	private GenomeAssemblyWebinCli getValidator(File file,FileType fileType)
-	
+
 	{
 		SubmissionOptions options = new SubmissionOptions();
 		if(file!=null)
 		{
-		SubmissionFiles files = new SubmissionFiles();
-        SubmissionFile SubmissionFile= new SubmissionFile(fileType,file);
-        files.addFile(SubmissionFile);
-		options.submissionFiles = Optional.of(files);
+			SubmissionFiles files = new SubmissionFiles();
+			SubmissionFile SubmissionFile= new SubmissionFile(fileType,file);
+			files.addFile(SubmissionFile);
+			options.submissionFiles = Optional.of(files);
 		}
-        options.assemblyInfoEntry = Optional.of(new AssemblyInfoEntry());
-        options.context =Optional.of(Context.genome);
+		options.assemblyInfoEntry = Optional.of(new AssemblyInfoEntry());
+		options.context =Optional.of(Context.genome);
 		options.isFixMode =true;
 		options.isRemote =true;
 		options.source =Optional.of(getDefaultSourceFeature());
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
-    	validator.setTestMode( true );
-        validator.setStudy( new Study() );
-        options.reportDir=Optional.of(WebinCliTestUtils.createTempDir().getAbsolutePath());
-        validator.setSubmitDir(WebinCliTestUtils.createTempDir());
-        validator.setSubmissionOptions(options);
-        return validator;
+		validator.setTestMode( true );
+		validator.setStudy( new Study() );
+		options.reportDir=Optional.of(WebinCliTestUtils.createTempDir().getAbsolutePath());
+		validator.setSubmitDir(WebinCliTestUtils.createTempDir());
+		validator.setSubmissionOptions(options);
+		return validator;
 	}
-	
+
 }

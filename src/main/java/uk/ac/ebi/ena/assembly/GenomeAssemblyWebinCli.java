@@ -56,6 +56,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 				getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBiosampleId());
 		}
 		this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
+		if(getSource()!=null)
 		getSubmissionOptions().source = Optional.of(getSource());
 		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 		}
