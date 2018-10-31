@@ -13,13 +13,13 @@ package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang.StringUtils;
+
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
@@ -27,6 +27,8 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.submit.SubmissionBundleHelper;
+import uk.ac.ebi.ena.utils.FileUtils;
 
 public abstract class 
 AbstractWebinCli<T extends ManifestReader>
@@ -47,6 +49,7 @@ AbstractWebinCli<T extends ManifestReader>
 
     private boolean fetchSample = true;
     private boolean fetchStudy = true;
+    private SubmissionBundleHelper submissionBundleHelper = new SubmissionBundleHelper( SUBMISSION_BUNDLE );
 
     protected abstract T createManifestReader();
 
@@ -62,7 +65,7 @@ AbstractWebinCli<T extends ManifestReader>
         File reportFile = getReportFile(manifestFile.getName() );
 
         reportFile.delete();
-
+        
         try
         {
             readManifest( getParameters().getInputDir().toPath(), manifestFile );
@@ -177,30 +180,16 @@ AbstractWebinCli<T extends ManifestReader>
         return WebinCli.getReportFile( getValidationDir(), filename, REPORT_FILE_SUFFIX );
     }
 
+    
     public SubmissionBundle
     getSubmissionBundle()
     {
-        try( ObjectInputStream os = new ObjectInputStream( new FileInputStream(SUBMISSION_BUNDLE) ) )
+        try
         {
-            SubmissionBundle sb = (SubmissionBundle) os.readObject();
-            ValidationResult result = sb.validate( new ValidationResult( new DefaultOrigin( String.valueOf(SUBMISSION_BUNDLE) ) ) );
-
-            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), result );
-
-            if( result.count(Severity.INFO) > 0 ) {
-                // Submission bundle was invalid.
-                WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(),
-                        Severity.INFO, "Submission requires re-validation." );
-                return null;
-            }
-            
-            return sb;
-        } catch( ClassNotFoundException | IOException e )
+            return submissionBundleHelper.read( FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) ;
+        } catch( NoSuchAlgorithmException | IOException e )
         {
-            // Submission bundle could not be read.
-            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(),
-                    Severity.INFO, "Submission has not been validated previously." );
-            return null;
+            return submissionBundleHelper.read();
         }
     }
 
@@ -208,14 +197,7 @@ AbstractWebinCli<T extends ManifestReader>
     protected void
     setSubmissionBundle( SubmissionBundle submissionBundle )
     {
-        try( ObjectOutputStream os = new ObjectOutputStream( new FileOutputStream(SUBMISSION_BUNDLE) ) )
-        {
-            os.writeObject( submissionBundle );
-            os.flush();
-        } catch( IOException e )
-        {
-            throw WebinCliException.createSystemError( "Unable to write file: " + SUBMISSION_BUNDLE);
-        }
+        submissionBundleHelper.write( submissionBundle );
     }
 
 

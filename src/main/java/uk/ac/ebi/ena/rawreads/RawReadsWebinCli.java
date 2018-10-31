@@ -467,7 +467,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                                                        uploadFileList,
                                                        Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile(), FileUtils.calculateDigest( "MD5", experimentXmlFile.toFile() ) ), 
                                                                       new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() ) ) ),
-                                                       getParameters().getCenterName() ) );
+                                                       getParameters().getCenterName(),
+                                                       FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );
         } catch( NoSuchAlgorithmException | IOException e )
         {
             throw WebinCliException.createSystemError( e.getMessage() );

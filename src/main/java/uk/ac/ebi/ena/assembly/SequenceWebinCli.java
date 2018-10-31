@@ -332,7 +332,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                                                        uploadDir.toString(), 
                                                        uploadFileList, 
                                                        Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) ), 
-                                                       getParameters().getCenterName() ) );   
+                                                       getParameters().getCenterName(),
+                                                       FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );   
         } catch( IOException | NoSuchAlgorithmException e )
         {
             throw WebinCliException.createSystemError( e.getMessage() );

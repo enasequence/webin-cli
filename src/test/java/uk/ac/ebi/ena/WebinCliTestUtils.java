@@ -166,8 +166,9 @@ public class WebinCliTestUtils {
 
 
     public static SubmissionBundle
-    prepareSubmissionBundle(AbstractWebinCli cli) {
+    prepareSubmissionBundle(AbstractWebinCli<?> cli) {
         try {
+            cli.getParameters().setManifestFile( File.createTempFile( "test", "test" ) );
             File submitDir = createTempDir();
             cli.setSubmitDir( submitDir );
             cli.prepareSubmissionBundle();
