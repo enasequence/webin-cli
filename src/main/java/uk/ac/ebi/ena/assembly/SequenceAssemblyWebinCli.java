@@ -35,7 +35,6 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
             getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
         this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
         }
-        getSubmissionOptions().source = Optional.of(getSource());
 		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 	}
 
