@@ -283,7 +283,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	        getFilesToUpload(FileType.FASTA).forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
 	        getFilesToUpload(FileType.FLATFILE).forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
 	        getFilesToUpload(FileType.AGP).forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
-	        getFilesToUpload(FileType.AGP).forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
+	        getFilesToUpload(FileType.TSV).forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
 
 	        return eList;
 	}
