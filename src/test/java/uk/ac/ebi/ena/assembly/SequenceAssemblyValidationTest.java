@@ -83,7 +83,7 @@ public class SequenceAssemblyValidationTest {
 			File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-mandatory-field-missing.tsv.gz");
 			SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage("TSV file validation failed : Sequence-mandatory-field-missing.tsv.gz");
+			thrown.expectMessage(getmessage("tsv",file.getName(), validator.getSubmissionOptions().reportDir.get()));
 			assertFalse(validator.validate());
 			String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-mandatory-field-missing-expected-results.txt")));
 			assertEquals(validator.getValidationDir()+File.separator+"Sequence-mandatory-field-missing.tsv.gz.report", expectedResults.replaceAll("\\s+", ""));
@@ -107,7 +107,7 @@ public class SequenceAssemblyValidationTest {
 			File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-invalid-alphanumeric-entrynumber-.tsv.gz");
 			SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage("TSV file validation failed : Sequence-invalid-alphanumeric-entrynumber-.tsv.gz");
+			thrown.expectMessage(getmessage("tsv",file.getName(), validator.getSubmissionOptions().reportDir.get()));
 			assertFalse(validator.validate());
 			String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-invalidAlphanumericEntrynumber-expected-results.txt")));
 			assertEquals(validator.getValidationDir()+File.separator+"Sequence-invalid-alphanumeric-entrynumber-.tsv.gz.report", expectedResults.replaceAll("\\s+", ""));
@@ -132,7 +132,7 @@ public class SequenceAssemblyValidationTest {
 			File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-invalid-marker.tsv.gz");
 			SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage("TSV file validation failed : Sequence-invalid-marker.tsv.gz");
+			thrown.expectMessage(getmessage("tsv",file.getName(), validator.getSubmissionOptions().reportDir.get()));
 			assertFalse(validator.validate());
 			String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-invalidMarker-expected-results.txt")));
 			assertEquals(validator.getValidationDir()+File.separator+"Sequence-invalid-marker.tsv.gz.report", expectedResults.replaceAll("\\s+", ""));
@@ -144,7 +144,7 @@ public class SequenceAssemblyValidationTest {
 			File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-invalid-sediment.tsv.gz");
 			SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage("TSV file validation failed : Sequence-invalid-sediment.tsv.gz");
+			thrown.expectMessage(getmessage("tsv",file.getName(), validator.getSubmissionOptions().reportDir.get()));
 			assertFalse(validator.validate());
 			String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-invalidSediment-expected-results.txt")));
 			assertEquals(validator.getValidationDir()+File.separator+"Sequence-invalid-sediment.tsv.gz.report", expectedResults.replaceAll("\\s+", ""));
@@ -157,7 +157,7 @@ public class SequenceAssemblyValidationTest {
 			File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-invalid-entrynumber-start-.tsv.gz");
 			SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage("TSV file validation failed : Sequence-invalid-entrynumber-start-.tsv.gz");
+			thrown.expectMessage(getmessage("tsv",file.getName(), validator.getSubmissionOptions().reportDir.get()));
 			assertFalse(validator.validate());
 			String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-invalidEntrynumberStart-expected-results.txt")));
 			assertEquals(validator.getValidationDir()+File.separator+"Sequence-invalid-entrynumber-start-.tsv.gz.report", expectedResults.replaceAll("\\s+", ""));
@@ -170,7 +170,7 @@ public class SequenceAssemblyValidationTest {
 			File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-non-ascii-characters.gz");
 			SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage("TSV file validation failed : Sequence-non-ascii-characters.gz");
+			thrown.expectMessage(getmessage("tsv",file.getName(), validator.getSubmissionOptions().reportDir.get()));
 			assertFalse(validator.validate());
 			String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-nonAsciiCharacters-expected-results.txt")));
 			assertEquals(validator.getValidationDir()+File.separator+"Sequence-non-ascii-characters.gz.report", expectedResults.replaceAll("\\s+", ""));
@@ -201,5 +201,10 @@ public class SequenceAssemblyValidationTest {
 		validator.setSubmissionOptions(options);
 		validator.setValidationDir( WebinCliTestUtils.createTempDir() );
 		return validator;
+	}
+	
+	private String getmessage(String fileType,String fileName,String reportDir)
+	{
+		return fileType+" file validation failed : "+fileName+", Please see the error report: "+ reportDir+File.separator+fileName+".report";
 	}
 }

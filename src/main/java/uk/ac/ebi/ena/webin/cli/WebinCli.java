@@ -31,6 +31,7 @@ import com.beust.jcommander.ParameterException;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.submit.ContextE;
@@ -196,7 +197,10 @@ public class WebinCli {
         {
 			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
 			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
-            System.exit( SYSTEM_ERROR );
+			if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
+				System.exit( SYSTEM_ERROR );
+			else
+				System.exit( USER_ERROR);
             
         } catch( Throwable e ) 
         {
@@ -269,7 +273,17 @@ public class WebinCli {
             }
             validator.prepareSubmissionBundle();
             WebinCliReporter.writeToConsole( Severity.INFO, VALIDATE_SUCCESS );
-		} catch( IOException | ValidationEngineException e )
+		}catch(ValidationEngineException e)
+		{
+			switch(e.getErrorType())
+			{
+			case SYSTEM_ERROR:
+			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
+			case USER_ERROR:
+			throw WebinCliException.createSystemError(VALIDATE_USER_ERROR, e.getMessage());
+			}
+		}
+		catch( IOException e )
 		{
 			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
 		}
