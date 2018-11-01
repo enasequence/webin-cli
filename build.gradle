@@ -44,6 +44,9 @@ jar {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
         }
+        exclude("**/*.RSA")
+        exclude("**/*.SF")
+        
         configurations.runtime.collect {
             it.isDirectory() ? it : zipTree(it)
         }
@@ -94,7 +97,10 @@ configurations.all {
     }
 }
 
-task sourceJar(type: Jar) { from sourceSets.main.allJava }
+task sourceJar(type: Jar) { 
+	from sourceSets.main.allJava 
+	
+}
 
 //task Wrapper(type: Wrapper) { gradleVersion = '4.1' }
 
