@@ -1,12 +1,10 @@
 package uk.ac.ebi.ena;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +15,13 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
+
+import org.apache.commons.compress.utils.IOUtils;
+import org.junit.Assert;
+
+import uk.ac.ebi.ena.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class WebinCliTestUtils {
 
@@ -166,8 +171,9 @@ public class WebinCliTestUtils {
 
 
     public static SubmissionBundle
-    prepareSubmissionBundle(AbstractWebinCli cli) {
+    prepareSubmissionBundle(AbstractWebinCli<?> cli) {
         try {
+            cli.getParameters().setManifestFile( File.createTempFile( "test", "test" ) );
             File submitDir = createTempDir();
             cli.setSubmitDir( submitDir );
             cli.prepareSubmissionBundle();

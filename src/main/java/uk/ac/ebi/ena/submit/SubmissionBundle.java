@@ -18,19 +18,50 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 SubmissionBundle implements Serializable
 {
     private static final long serialVersionUID = 1L;
+    
+    private String                  version;
+    private List<SubmissionXMLFile> xmlFileList;
+    private File                    submitDirectory;
+    private String                  uploadDirectory;
+    private List<File>              uploadFileList = Collections.emptyList();
+    private List<Long>              uploadFileSize = Collections.emptyList();
+    transient private File          manifest_file;
+    private String                  manifest_md5;
+    private String                  centerName;
 
 
+    public boolean
+    equals( Object other )
+    {
+        if( other instanceof SubmissionBundle )
+        {
+            SubmissionBundle sb = (SubmissionBundle)other;
+            return //this.version.equals( sb.version ) 
+               /* && */ this.xmlFileList.equals( sb.xmlFileList )
+                && this.submitDirectory.equals( sb.submitDirectory ) 
+                && this.uploadDirectory.equals( sb.uploadDirectory )
+                && this.uploadFileList.equals( sb.uploadFileList )
+                && this.uploadFileSize.equals( sb.uploadFileSize )
+                && this.manifest_md5.equals( sb.manifest_md5 )
+                && this.centerName.equals( sb.centerName );
+        }
+        return false;
+    }
+    
+    
+    
     public enum
     SubmissionXMLFileType
     {
@@ -39,7 +70,7 @@ SubmissionBundle implements Serializable
         EXPERIMENT
     };
     
-    public static final String SUBMISSION_BUNDLE = ".data";
+    
     public static class 
     SubmissionXMLFile implements Serializable
     {
@@ -87,29 +118,41 @@ SubmissionBundle implements Serializable
     }
     
     
-    private List<SubmissionXMLFile> xmlFileList;
-    private File              submitDirectory;
-    private String            uploadDirectory;
-    private List<File>        uploadFileList = Collections.emptyList();
-    private String            centerName;
-    private String            version;
-    
-    
     public 
     SubmissionBundle( File              submitDirectory, 
                       String            uploadDirectory, 
                       List<File>        uploadFileList, 
                       List<SubmissionXMLFile> xmlFileList, 
-                      String            centerName )
+                      String            centerName,
+                      String            manifest_md5 ) throws NoSuchAlgorithmException, IOException
     {
         this.version = getVersion();
         this.submitDirectory = submitDirectory;
         this.uploadDirectory = uploadDirectory;
+        
         this.uploadFileList = uploadFileList;
+        this.uploadFileSize = uploadFileList.stream().sequential().map( f -> f.length() ).collect( Collectors.toList() );
+        
         this.xmlFileList = xmlFileList;
         this.centerName = centerName;
+        
+        this.manifest_md5 = manifest_md5;
     }
 
+    
+    public void 
+    setManifestMd5( String manifest_md5 )
+    {
+        this.manifest_md5 = manifest_md5;
+    }
+    
+ 
+    public String 
+    getManifestMd5()
+    {
+        return this.manifest_md5;
+    }
+    
     
     private String
     getVersion()
@@ -162,6 +205,20 @@ SubmissionBundle implements Serializable
         if( null != current && !current.equals( this.version ) )
             result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Program version has changed" ) );
 
+        if( null != this.manifest_file )
+        {
+            try
+            {
+                String current_md5 = FileUtils.calculateDigest( "MD5", this.manifest_file );
+                if( null != current_md5 && !current_md5.equals( this.manifest_md5 ) )
+                    result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Manifest has changed" ) );
+                
+            } catch( IOException | NoSuchAlgorithmException e )
+            {
+                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Unable to confirm manifest checksum" ) );
+            }
+        }
+        
         for( SubmissionXMLFile file : getXMLFileList() )
         {
             try
@@ -178,6 +235,22 @@ SubmissionBundle implements Serializable
             }            
         }
 
+        
+        for( int index = 0; index < uploadFileList.size(); index ++ )
+        {
+            File file = uploadFileList.get( index );
+            Long file_sz = uploadFileSize.get( index );
+           
+            if( !file.exists() || file.isDirectory() )
+            {
+                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Error reading file: " + file.getPath() ) );
+                continue;
+            }
+            
+            if( file.length() != file_sz )
+                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Error confirming length for: " + file.getPath() + ", expected: " + file_sz + " got: " + file.length() ) );
+        
+        }
         return result;
     }
 }
