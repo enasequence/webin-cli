@@ -279,9 +279,9 @@ public class WebinCli {
 			switch(e.getErrorType())
 			{
 			case SYSTEM_ERROR:
-			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
+			    throw WebinCliException.createSystemError( VALIDATE_SYSTEM_ERROR, e.getMessage() );
 			case USER_ERROR:
-			throw WebinCliException.createSystemError(VALIDATE_USER_ERROR, e.getMessage());
+			    throw WebinCliException.createUserError( VALIDATE_USER_ERROR, e.getMessage() );
 			}
 		}
 		catch( IOException e )
