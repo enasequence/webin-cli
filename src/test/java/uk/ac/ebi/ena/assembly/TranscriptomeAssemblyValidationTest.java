@@ -11,6 +11,10 @@
 
 package uk.ac.ebi.ena.assembly;
 
+import java.io.File;
+import java.net.URL;
+import java.util.Locale;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,23 +23,10 @@ import org.junit.rules.ExpectedException;
 
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.submission.Context;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.sample.Sample;
 import uk.ac.ebi.ena.study.Study;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Locale;
-import java.util.Optional;
 
 public class TranscriptomeAssemblyValidationTest {
 
@@ -98,7 +89,7 @@ public class TranscriptomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 		
     }
