@@ -38,12 +38,11 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
         }
 	}
 
-    @Override protected boolean 
+    @Override protected void
     validateInternal() throws ValidationEngineException 
     {
 	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-		return new SubmissionValidator(getSubmissionOptions()).validate();
-
+	    new SubmissionValidator(getSubmissionOptions()).validate();
     }
 
 

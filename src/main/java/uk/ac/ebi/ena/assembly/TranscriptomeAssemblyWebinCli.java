@@ -92,12 +92,14 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 
 	
 
-	@Override
-	protected boolean validateInternal() throws ValidationEngineException {
-	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-		return new SubmissionValidator(getSubmissionOptions()).validate();
+	@Override protected void 
+	validateInternal() throws ValidationEngineException 
+	{
+	   	getSubmissionOptions().reportDir = Optional.of( getValidationDir().getAbsolutePath() );
+		new SubmissionValidator( getSubmissionOptions() ).validate();
 	}
 
+	
 	@Override	
 	Element makeAnalysisType( AssemblyInfoEntry entry ) {
 		Element typeE = new Element( ContextE.transcriptome.getType() );

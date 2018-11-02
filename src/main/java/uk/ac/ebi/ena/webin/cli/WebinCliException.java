@@ -11,7 +11,10 @@
 
 package uk.ac.ebi.ena.webin.cli;
 
-public class WebinCliException extends RuntimeException {
+public class 
+WebinCliException extends RuntimeException
+{
+    private static final long serialVersionUID = 1L;
 
     public enum ErrorType {
         USER_ERROR,

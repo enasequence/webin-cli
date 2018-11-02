@@ -134,7 +134,7 @@ AbstractWebinCli<T extends ManifestReader>
         return alias;
     }
 
-    public abstract boolean validate() throws ValidationEngineException;
+    public abstract void validate() throws WebinCliException;
     public abstract void prepareSubmissionBundle() throws IOException;
 
     private String

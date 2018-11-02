@@ -53,7 +53,6 @@ import net.sf.cram.ref.ENAReferenceSource;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
@@ -168,8 +167,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
     }
     
 
-    @Override public boolean
-    validate() throws ValidationEngineException
+    @Override public void
+    validate() throws WebinCliException
     {
         if( !FileUtils.emptyDirectory(getValidationDir()) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + getValidationDir());
@@ -207,12 +206,13 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         this.valid = valid;
         is_paired = paired.get();
         
-        return valid;
+        if( !valid )
+            throw WebinCliException.createValidationError();
     }
 
     
     private boolean
-    readCramFile( List<RawReadsFile> files, AtomicBoolean paired ) throws ValidationEngineException
+    readCramFile( List<RawReadsFile> files, AtomicBoolean paired )
     { 
         boolean valid = true;
         CramReferenceInfo cri = new CramReferenceInfo();
@@ -315,7 +315,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
 
 
     private boolean
-    readBamFile( List<RawReadsFile> files, AtomicBoolean paired ) throws ValidationEngineException
+    readBamFile( List<RawReadsFile> files, AtomicBoolean paired ) throws WebinCliException
     {
         boolean valid = true;
         for( RawReadsFile rf : files )
@@ -420,7 +420,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                 
             } catch( IOException e )
             {
-                throw new ValidationEngineException( e );
+                throw WebinCliException.createSystemError( e.getMessage() );
             }
         }
         return valid;

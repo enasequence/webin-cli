@@ -30,14 +30,10 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
-import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.sample.Sample;
@@ -62,7 +58,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	private SourceFeature source;
 	protected AssemblyInfoEntry assembly_info;
 
-    protected abstract boolean validateInternal() throws ValidationEngineException;
+    protected abstract void validateInternal() throws ValidationEngineException;
 
 
     public void
@@ -232,8 +228,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
 
-    @Override public boolean
-    validate() throws ValidationEngineException
+   
+    @Override public void
+    validate() throws WebinCliException
     {
         if( !FileUtils.emptyDirectory( getValidationDir() ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + getValidationDir() );
@@ -241,7 +238,23 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
         
-        return validateInternal();
+        try
+        {
+            validateInternal();
+        } catch( ValidationEngineException ve )
+        {
+            switch( ve.getErrorType() )
+            {
+            default:
+                throw new RuntimeException();
+            
+            case SYSTEM_ERROR:
+                throw WebinCliException.createSystemError( ve.getMessage() );
+
+            case USER_ERROR:
+                throw WebinCliException.createValidationError( ve.getMessage() );
+            }
+        }
     }
     
     

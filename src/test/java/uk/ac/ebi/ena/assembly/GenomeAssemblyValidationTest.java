@@ -15,16 +15,17 @@ import java.io.File;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.check.file.FileValidationCheck;
 import uk.ac.ebi.embl.api.validation.submission.Context;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
@@ -109,9 +110,12 @@ public class GenomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 	}
+
+
+
 
 	@Test public void
 	testGenomeFileValidation_InvalidFasta() throws Exception
@@ -130,9 +134,9 @@ public class GenomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
-			thrown.expect(ValidationEngineException.class);
+			thrown.expect(WebinCliException.class);
 			thrown.expectMessage(getmessage("fasta","invalid_fasta.txt", validator.getValidationDir().getAbsolutePath()));
-			Assert.assertFalse(validator.validate());
+		    validator.validate();
 		}
 	}
 
@@ -153,7 +157,7 @@ public class GenomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -174,9 +178,9 @@ public class GenomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
-			thrown.expect(ValidationEngineException.class);
+			thrown.expect( WebinCliException.class );
 			thrown.expectMessage(getmessage("flatfile","invalid_flatfile.txt", validator.getValidationDir().getAbsolutePath()));
-			Assert.assertFalse(validator.validate());
+		    validator.validate();
 		}
 	}
 
@@ -199,7 +203,7 @@ public class GenomeAssemblyValidationTest {
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.UNLOCALISED_LIST).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -222,7 +226,7 @@ public class GenomeAssemblyValidationTest {
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -247,7 +251,7 @@ public class GenomeAssemblyValidationTest {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -270,9 +274,9 @@ public class GenomeAssemblyValidationTest {
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
-			thrown.expect(ValidationEngineException.class);
+			thrown.expect(WebinCliException.class);
 			thrown.expectMessage(getmessage("agp","invalid_agp.txt",validator.getValidationDir().getAbsolutePath()));
-			Assert.assertFalse(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -295,7 +299,7 @@ public class GenomeAssemblyValidationTest {
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -321,9 +325,9 @@ public class GenomeAssemblyValidationTest {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).isEmpty());
-			thrown.expect(ValidationEngineException.class);
+			thrown.expect(WebinCliException.class);
 			thrown.expectMessage("Sequenceless chromosomes are not allowed in assembly : IWGSC_CSS_6DL_SCAFF_3330719,IWGSC_CSS_6DL_SCAFF_3330717,IWGSC_CSS_6DL_SCAFF_3330716");
-			Assert.assertFalse(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -344,7 +348,7 @@ public class GenomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
-			Assert.assertTrue(validator.validate());
+			validator.validate();
 		}
 	}
 
@@ -366,8 +370,8 @@ public class GenomeAssemblyValidationTest {
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
-			thrown.expect(ValidationEngineException.class);
-			Assert.assertFalse(validator.validate());
+			thrown.expect(WebinCliException.class);
+			validator.validate();
 		}
 	}
 

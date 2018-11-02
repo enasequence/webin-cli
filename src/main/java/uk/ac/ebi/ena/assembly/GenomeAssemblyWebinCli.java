@@ -27,46 +27,54 @@ import uk.ac.ebi.ena.submit.ContextE;
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 {
-	
-	@Override
-	public ContextE getContext() {
+	@Override public ContextE 
+	getContext() 
+	{
 		return ContextE.genome;
 	}
 
-	@Override
-	protected GenomeAssemblyManifest createManifestReader() {
-
+	
+	@Override protected GenomeAssemblyManifest 
+	createManifestReader()
+	{
 		// Call manifest parser which also set the sample and study fields.
 
 		return new GenomeAssemblyManifest(
-				isFetchSample() ? new SampleProcessor(getParameters(), this::setSample ) : null,
-						isFetchStudy() ? new StudyProcessor(getParameters(), this::setStudy ) : null,
-								isFetchSource() ? new SourceFeatureProcessor(getParameters(), this::setSource ) : null);
+				isFetchSample() ? new SampleProcessor( getParameters(), this::setSample ) : null,
+						isFetchStudy() ? new StudyProcessor( getParameters(), this::setStudy ) : null,
+								isFetchSource() ? new SourceFeatureProcessor( getParameters(), this::setSource ) : null );
 	}
 
-	@Override
-	public void readManifest(Path inputDir, File manifestFile) {
-		getManifestReader().readManifest(inputDir, manifestFile);
-		setSubmissionOptions(getManifestReader().getSubmissionOptions());
-		if(getSubmissionOptions().assemblyInfoEntry.isPresent())
+	
+	@Override public void 
+	readManifest( Path inputDir, File manifestFile ) 
+	{
+		getManifestReader().readManifest( inputDir, manifestFile );
+		setSubmissionOptions( getManifestReader().getSubmissionOptions() );
+		
+		if( getSubmissionOptions().assemblyInfoEntry.isPresent() )
 		{
 			if (getStudy() != null)
-				getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
+				getSubmissionOptions().assemblyInfoEntry.get().setStudyId( getStudy().getProjectId() );
 			if (getSample() != null)
-				getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBiosampleId());
+				getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId( getSample().getBiosampleId() );
 		}
-		this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
-		if(getSource()!=null)
-		getSubmissionOptions().source = Optional.of(getSource());
-		}
+		
+		this.setAssemblyInfo( getSubmissionOptions().assemblyInfoEntry.get() );
 
-	@Override public boolean 
+		if( getSource()!=null )
+		    getSubmissionOptions().source = Optional.of( getSource() );
+	}
+
+	
+	@Override public void 
 	validateInternal() throws ValidationEngineException 
 	{ 
 	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-		return new SubmissionValidator(getSubmissionOptions()).validate();
+	    new SubmissionValidator(getSubmissionOptions()).validate();
 	}
 
+	
 	@Override
 	Element 
 	makeAnalysisType( AssemblyInfoEntry entry )
@@ -87,7 +95,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 		if( null != entry.getMoleculeType() && !entry.getMoleculeType().isEmpty() )
 			typeE.addContent( createTextElement( "MOL_TYPE", entry.getMoleculeType() ) );
 
-		if ( entry.isTpa()) 
+		if( entry.isTpa() ) 
 			typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
 
 		return typeE;

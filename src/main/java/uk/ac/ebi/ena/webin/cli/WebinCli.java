@@ -12,16 +12,18 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
@@ -266,31 +268,32 @@ public class WebinCli {
 	private void 
 	doValidation() 
 	{
-		try 
-		{
-            if( !validator.validate() )
-            {
-                throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, String.valueOf( validator.getValidationDir() ) );
-            }
-            validator.prepareSubmissionBundle();
-            WebinCliReporter.writeToConsole( Severity.INFO, VALIDATE_SUCCESS );
-		}catch(ValidationEngineException e)
-		{
-			switch(e.getErrorType())
-			{
-			case SYSTEM_ERROR:
-			    throw WebinCliException.createSystemError( VALIDATE_SYSTEM_ERROR, e.getMessage() );
-			case USER_ERROR:
-			    throw WebinCliException.createUserError( VALIDATE_USER_ERROR, e.getMessage() );
-			}
-		}
-		catch( IOException e )
-		{
-			throw WebinCliException.createSystemError(VALIDATE_SYSTEM_ERROR, e.getMessage());
-		}
+	   try 
+	   {
+           validator.validate();
+           validator.prepareSubmissionBundle();
+           WebinCliReporter.writeToConsole( Severity.INFO, VALIDATE_SUCCESS );
+           
+	   } catch( WebinCliException e ) 
+	   {
+	      switch( e.getErrorType() ) 
+	      { 
+	          case USER_ERROR:
+	               throw WebinCliException.createUserError( VALIDATE_USER_ERROR, e.getMessage() );
+	               
+	          case VALIDATION_ERROR:
+	               throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, e.getMessage() );
+	               
+	          case SYSTEM_ERROR:
+	               throw WebinCliException.createSystemError( VALIDATE_SYSTEM_ERROR, e.getMessage() );
+	      }
+	   } catch( Throwable e ) 
+	   {
+	      throw WebinCliException.createSystemError( VALIDATE_SYSTEM_ERROR, e.getMessage() );
+	   }
 	}
-
-
+	 
+	
 	private void 
     doSubmit( SubmissionBundle bundle )
     {
