@@ -58,12 +58,12 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 		this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
 		if(getSource()!=null)
 		getSubmissionOptions().source = Optional.of(getSource());
-		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 		}
 
 	@Override public boolean 
 	validateInternal() throws ValidationEngineException 
-	{
+	{ 
+	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 		return new SubmissionValidator(getSubmissionOptions()).validate();
 	}
 
