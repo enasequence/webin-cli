@@ -11,6 +11,8 @@
 
 package uk.ac.ebi.ena.rawreads;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -28,8 +30,8 @@ import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamInputResource;
@@ -304,7 +306,7 @@ RawReadsWebinCliTest
 
     
     @Test( expected = WebinCliException.class ) public void
-    manifestCRAMCompression() throws IOException, ValidationEngineException
+    manifestCRAMCompression() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
@@ -323,7 +325,7 @@ RawReadsWebinCliTest
 
 
     @Test public void
-    testCorrectBAM() throws IOException, ValidationEngineException
+    testCorrectBAM() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/OUTO500m_MetOH_narG_OTU18.bam" );
@@ -337,7 +339,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.validate();
     }
 
     
@@ -357,7 +359,7 @@ RawReadsWebinCliTest
     
     
     @Test public void
-    testIncorrectBAM() throws IOException, ValidationEngineException
+    testIncorrectBAM() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/m54097_170904_165950.subreads.bam" );
@@ -375,17 +377,24 @@ RawReadsWebinCliTest
         
         rr.init( parameters );
         
-        Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
-        Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
-            @Override public boolean accept( File dir, String name ) 
-            { 
-                return name.contains( file.getName() ); 
-            } } ).length );
+        try
+        {
+            rr.validate();
+            fail( "Should not validate correctly" );
+            
+        } catch( WebinCliException wce )
+        {
+            Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
+                @Override public boolean accept( File dir, String name ) 
+                { 
+                    return name.contains( file.getName() ); 
+                } } ).length );
+        }
     }
 
     
     @Test public void
-    testCorrectFastq() throws IOException, ValidationEngineException
+    testCorrectFastq() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz" );
@@ -399,7 +408,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.validate();
         rr.prepareSubmissionBundle();
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
@@ -407,8 +416,8 @@ RawReadsWebinCliTest
     }
     
     
-    @Test public void
-    sameFilePairedFastq() throws IOException, ValidationEngineException
+    @Test( expected = WebinCliException.class ) public void
+    sameFilePairedFastq() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
@@ -425,12 +434,12 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( !rr.validate() );
+        rr.validate();
     }
     
     
-    @Test public void
-    samePairedFastq() throws IOException, ValidationEngineException
+    @Test( expected = WebinCliException.class ) public void
+    samePairedFastq() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
@@ -447,12 +456,12 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( !rr.validate() );
+        rr.validate();
     }
     
     
     @Test public void
-    pairedFastq() throws IOException, ValidationEngineException
+    pairedFastq() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
@@ -468,7 +477,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.validate();
         rr.prepareSubmissionBundle();
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
@@ -477,7 +486,7 @@ RawReadsWebinCliTest
     
     
     @Test public void
-    fastqPair() throws IOException, ValidationEngineException
+    fastqPair() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
@@ -497,7 +506,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.validate();
         rr.prepareSubmissionBundle();
         String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                     StandardCharsets.UTF_8 );
@@ -510,8 +519,8 @@ RawReadsWebinCliTest
     }
     
     //TODO remove?
-    @Test public void
-    fastqFalsePair() throws IOException, ValidationEngineException
+    @Test( expected = WebinCliException.class ) public void
+    fastqFalsePair() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         
@@ -531,12 +540,12 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "False pair", !rr.validate() );
+        rr.validate();
     }
 
     
     @Test public void
-    testIncorrectFastq() throws IOException, ValidationEngineException
+    testIncorrectFastq() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/MG23S_431.fastq.gz" );
@@ -551,17 +560,24 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
-        Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
-            @Override public boolean accept( File dir, String name ) 
-            { 
-                return name.contains( file.getName() ); 
-            } } ).length );
+        try
+        {
+            rr.validate();
+            fail( "Should validate incorrectly" );
+            
+        } catch( WebinCliException wce )
+        {
+            Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
+                @Override public boolean accept( File dir, String name ) 
+                { 
+                    return name.contains( file.getName() ); 
+                } } ).length );
+        }
     }
 
     
     @Test public void
-    testIncorrectCram() throws IOException, ValidationEngineException
+    testIncorrectCram() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/15194_1#135.cram" );
@@ -575,17 +591,24 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate incorrectly", !rr.validate() );
-        Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
-            @Override public boolean accept( File dir, String name ) 
-            { 
-                return name.contains( file.getName() ); 
-            } } ).length );
+        try
+        {
+            rr.validate();
+            fail( "Should validate incorrectly" );
+            
+        } catch( WebinCliException wce )
+        {
+            Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
+                @Override public boolean accept( File dir, String name ) 
+                { 
+                    return name.contains( file.getName() ); 
+                } } ).length );
+        }
     }
     
   
     @Test public void
-    testCorrectCram() throws IOException, ValidationEngineException
+    testCorrectCram() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram" );
@@ -599,7 +622,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         rr.init( parameters );
-        Assert.assertTrue( "Should validate correctly", rr.validate() );
+        rr.validate();
     }
 
     
