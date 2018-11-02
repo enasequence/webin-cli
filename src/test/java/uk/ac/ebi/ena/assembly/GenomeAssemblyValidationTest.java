@@ -131,7 +131,7 @@ public class GenomeAssemblyValidationTest {
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage(getmessage("fasta","invalid_fasta.txt", validator.getSubmissionOptions().reportDir.get()));
+			thrown.expectMessage(getmessage("fasta","invalid_fasta.txt", validator.getValidationDir().getAbsolutePath()));
 			Assert.assertFalse(validator.validate());
 		}
 	}
@@ -175,7 +175,7 @@ public class GenomeAssemblyValidationTest {
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage(getmessage("flatfile","invalid_flatfile.txt", validator.getSubmissionOptions().reportDir.get()));
+			thrown.expectMessage(getmessage("flatfile","invalid_flatfile.txt", validator.getValidationDir().getAbsolutePath()));
 			Assert.assertFalse(validator.validate());
 		}
 	}
@@ -271,7 +271,7 @@ public class GenomeAssemblyValidationTest {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			thrown.expect(ValidationEngineException.class);
-			thrown.expectMessage(getmessage("agp","invalid_agp.txt", validator.getSubmissionOptions().reportDir.get()));
+			thrown.expectMessage(getmessage("agp","invalid_agp.txt",validator.getValidationDir().getAbsolutePath()));
 			Assert.assertFalse(validator.validate());
 		}
 	}
@@ -378,7 +378,7 @@ public class GenomeAssemblyValidationTest {
 		File file =WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz");
 		GenomeAssemblyWebinCli validator=getValidator(file, FileType.FASTA);
 		thrown.expect(ValidationEngineException.class);
-		thrown.expectMessage(getmessage("fasta",file.getName(), validator.getSubmissionOptions().reportDir.get()));
+		thrown.expectMessage(getmessage("fasta",file.getName(), validator.getValidationDir().getAbsolutePath()));
 		validator.validateInternal();
 	}
 
@@ -388,7 +388,7 @@ public class GenomeAssemblyValidationTest {
 		File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz");
 		GenomeAssemblyWebinCli validator=getValidator(file, FileType.CHROMOSOME_LIST);
 		thrown.expect(ValidationEngineException.class);
-		thrown.expectMessage(getmessage("chromosome_list",file.getName(), validator.getSubmissionOptions().reportDir.get()));
+		thrown.expectMessage(getmessage("chromosome_list",file.getName(), validator.getValidationDir().getAbsolutePath()));
 		validator.validateInternal();
 	}
 	
@@ -412,9 +412,9 @@ public class GenomeAssemblyValidationTest {
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
 		validator.setTestMode( true );
 		validator.setStudy( new Study() );
-		options.reportDir=Optional.of(WebinCliTestUtils.createTempDir().getAbsolutePath());
 		validator.setSubmitDir(WebinCliTestUtils.createTempDir());
 		validator.setSubmissionOptions(options);
+		validator.setValidationDir(WebinCliTestUtils.createTempDir());
 		return validator;
 	}
 

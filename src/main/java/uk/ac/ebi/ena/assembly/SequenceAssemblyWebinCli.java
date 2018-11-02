@@ -36,12 +36,12 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
             getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
         this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
         }
-		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 	}
 
     @Override protected boolean 
     validateInternal() throws ValidationEngineException 
     {
+	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 		return new SubmissionValidator(getSubmissionOptions()).validate();
 
     }
