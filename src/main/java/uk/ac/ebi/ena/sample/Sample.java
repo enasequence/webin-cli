@@ -37,6 +37,7 @@ import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
 import uk.ac.ebi.embl.api.validation.dao.EraproDAOUtilsImpl;
+import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
 import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -91,6 +92,7 @@ public class Sample {
         try {
         	Sample sample = new Sample();
             String uniqueName =null;
+            MasterSourceFeatureUtils sourceUtils = new MasterSourceFeatureUtils();
             SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpGet httpGet = new HttpGet( ( TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples/" : "https://www.ebi.ac.uk/ena/submit/drop-box/samples/" ) +  URLEncoder.encode( sampleId.trim(), "UTF-8" ) );
@@ -152,10 +154,12 @@ public class Sample {
                               .getElementsByTagName("VALUE")
                               .item(0)
                               .getTextContent();
-                            EraproDAOUtilsImpl.addSourceQualifier(qualifierName, qualifierValue, sourceFeature, new TaxonHelperImpl(), uniqueName);
+                             sourceUtils.addSourceQualifier(qualifierName, qualifierValue, sourceFeature);
 
                         }
                     }
+                    
+                    sourceUtils.addExtraSourceQualifiers(sourceFeature,new TaxonHelperImpl(), uniqueName);
                    
                     return sourceFeature;
                     
