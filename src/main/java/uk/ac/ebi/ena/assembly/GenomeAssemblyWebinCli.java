@@ -17,7 +17,6 @@ import java.util.Optional;
 import org.jdom2.Element;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
@@ -51,23 +50,22 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	{
 		getManifestReader().readManifest( inputDir, manifestFile );
 		setSubmissionOptions( getManifestReader().getSubmissionOptions() );
-		
+
 		if( getSubmissionOptions().assemblyInfoEntry.isPresent() )
 		{
 			if (getStudy() != null)
-			{
 				getSubmissionOptions().assemblyInfoEntry.get().setStudyId( getStudy().getProjectId() );
-				if( getStudy().getLocusTagsList()!=null)
-				getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTagsList());
-			}
 			if (getSample() != null)
 				getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId( getSample().getBiosampleId() );
+			this.setAssemblyInfo( getSubmissionOptions().assemblyInfoEntry.get() );
+
 		}
-		
-		this.setAssemblyInfo( getSubmissionOptions().assemblyInfoEntry.get() );
+
+		if(getStudy()!=null&&getStudy().getLocusTagsList()!=null)
+			getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTagsList());
 
 		if( getSource()!=null )
-		    getSubmissionOptions().source = Optional.of( getSource() );
+			getSubmissionOptions().source = Optional.of( getSource() );
 	}
 
 	

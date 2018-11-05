@@ -33,13 +33,11 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     	if(getSubmissionOptions().assemblyInfoEntry.isPresent())
     	{
     		if (getStudy() != null)
-    		{
-    			if( getStudy().getLocusTagsList()!=null)
-    				getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTagsList());
-    			getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
-    		}
-    		this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
+    	  	  getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
+    	    this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
     	}
+		if(getStudy()!=null&&getStudy().getLocusTagsList()!=null)
+ 			getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTagsList());
 	}
 
     @Override protected void

@@ -80,18 +80,15 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		if(getSubmissionOptions().assemblyInfoEntry.isPresent())
 		{
 		if (getStudy() != null)
-		{
-			 if( getStudy().getLocusTagsList()!=null)
-	 			getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTagsList());
 			getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
-		}
 		if (getSample() != null)
 			getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBiosampleId());
 			this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
 		}
+		if(getStudy()!=null&&getStudy().getLocusTagsList()!=null)
+ 			getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTagsList());
 		if(getSource()!=null)
 		getSubmissionOptions().source = Optional.of(getSource());
-		getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
 	}
 
 	
