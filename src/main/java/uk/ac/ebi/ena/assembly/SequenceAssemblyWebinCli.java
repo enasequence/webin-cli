@@ -28,14 +28,18 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     @Override
     public void readManifest(Path inputDir, File manifestFile) 
     {
-        getManifestReader().readManifest(inputDir, manifestFile);
-		setSubmissionOptions(getManifestReader().getSubmissionOptions());
-        if(getSubmissionOptions().assemblyInfoEntry.isPresent())
-        {
-         if (getStudy() != null)
-            getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
-        this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
-        }
+    	getManifestReader().readManifest(inputDir, manifestFile);
+    	setSubmissionOptions(getManifestReader().getSubmissionOptions());
+    	if(getSubmissionOptions().assemblyInfoEntry.isPresent())
+    	{
+    		if (getStudy() != null)
+    		{
+    			if( getStudy().getLocusTagsList()!=null)
+    				getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTagsList());
+    			getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
+    		}
+    		this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
+    	}
 	}
 
     @Override protected void

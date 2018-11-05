@@ -251,7 +251,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             case SYSTEM_ERROR:
                 throw WebinCliException.createSystemError( ve.getMessage() );
 
-            case USER_ERROR:
+            case VALIDATION_ERROR:
                 throw WebinCliException.createValidationError( ve.getMessage() );
             }
         }

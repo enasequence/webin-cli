@@ -149,8 +149,6 @@ public class SequenceAssemblyValidationTest {
 	
 		File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-invalid-sediment.tsv.gz" );
 		SequenceAssemblyWebinCli validator = getValidator( file, FileType.TSV );
-		thrown.expect( WebinCliException.class );
-		thrown.expectMessage( getmessage( "tsv",file.getName(), validator.getValidationDir().getAbsolutePath() ) );
 		try
 		{
 		    validator.validate();
@@ -158,9 +156,9 @@ public class SequenceAssemblyValidationTest {
 		    
 		} catch( WebinCliException wce )
 		{
+			assertEquals( getmessage( "tsv",file.getName(), validator.getValidationDir().getAbsolutePath() ),wce.getMessage());
 		    String expectedResults = new String( Files.readAllBytes( Paths.get( "src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-invalidSediment-expected-results.txt" ) ) );
-		    assertEquals( new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-invalid-sediment.tsv.gz.report" ) ), StandardCharsets.UTF_8 ),
-		                  expectedResults.replaceAll( "\\s+", "" ) );
+		    assertEquals( expectedResults.replaceAll( "\\s+", "" ), new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-invalid-sediment.tsv.gz.report" ) ), StandardCharsets.UTF_8 ).replaceAll( "\\s+", "" ));
 		}
 	}
 
@@ -171,16 +169,15 @@ public class SequenceAssemblyValidationTest {
 	
 		File file=WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-invalid-entrynumber-start-.tsv.gz");
 		SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
-		thrown.expect( WebinCliException.class );
-		thrown.expectMessage( getmessage( "tsv",file.getName(), validator.getValidationDir().getAbsolutePath() ) );
 		try
 		{
 		    validator.validate();
 		    fail();
 		} catch( WebinCliException wce )
 		{
+			assertEquals( getmessage( "tsv",file.getName(), validator.getValidationDir().getAbsolutePath() ),wce.getMessage());
 		    String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-invalidEntrynumberStart-expected-results.txt")));
-		    assertEquals( new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-invalid-entrynumber-start-.tsv.gz.report" ) ), StandardCharsets.UTF_8 ),
+		    assertEquals( new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-invalid-entrynumber-start-.tsv.gz.report" ) ), StandardCharsets.UTF_8 ).replaceAll("\\s+", ""),
 		                  expectedResults.replaceAll("\\s+", ""));
 		}
 	}
@@ -192,17 +189,16 @@ public class SequenceAssemblyValidationTest {
 	
 		File file = WebinCliTestUtils.getFile( "uk/ac/ebi/ena/template/tsvfile/Sequence-non-ascii-characters.gz" );
 		SequenceAssemblyWebinCli validator = getValidator( file, FileType.TSV );
-		thrown.expect( WebinCliException.class );
-		thrown.expectMessage( getmessage( "tsv",file.getName(), validator.getValidationDir().getAbsolutePath() ) );
 		try
 		{
 		    validator.validate();
 		    fail();
 		} catch( WebinCliException wce )
 		{
+			assertEquals( getmessage( "tsv",file.getName(), validator.getValidationDir().getAbsolutePath() ),wce.getMessage());
 		    String expectedResults = new String( Files.readAllBytes( Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-nonAsciiCharacters-expected-results.txt" ) ) );
-		    assertEquals( new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-non-ascii-characters.gz.report" ) ), StandardCharsets.UTF_8 ),
-		                  expectedResults.replaceAll( "\\s+", "" ) );
+		    assertEquals( new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-non-ascii-characters.gz.report" ) ), StandardCharsets.UTF_8 ).replaceAll("\\s+", ""),
+		                  expectedResults.replaceAll( "\\s+", "" ).trim() );
 		}
 
 	}
