@@ -326,7 +326,7 @@ public class GenomeAssemblyValidationTest {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).isEmpty());
 			thrown.expect(WebinCliException.class);
-			thrown.expectMessage("Sequenceless chromosomes are not allowed in assembly : IWGSC_CSS_6DL_SCAFF_3330719,IWGSC_CSS_6DL_SCAFF_3330717,IWGSC_CSS_6DL_SCAFF_3330716");
+			thrown.expectMessage("Sequenceless chromosomes are not allowed in assembly : IWGSC_CSS_6DL_scaff_3330719");
 			validator.validate();
 		}
 	}
