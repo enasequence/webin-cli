@@ -38,6 +38,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class GenomeAssemblyValidationTest {
 
+	String SequenceCountMessage ="Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2";
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 	@Before public void
@@ -157,6 +158,8 @@ public class GenomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
+			thrown.expect( WebinCliException.class );
+			thrown.expectMessage(SequenceCountMessage);
 			validator.validate();
 		}
 	}
@@ -348,6 +351,8 @@ public class GenomeAssemblyValidationTest {
 		}
 		finally {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).isEmpty());
+			thrown.expect( WebinCliException.class );
+			thrown.expectMessage(SequenceCountMessage);
 			validator.validate();
 		}
 	}
@@ -412,6 +417,7 @@ public class GenomeAssemblyValidationTest {
 		options.context =Optional.of(Context.genome);
 		options.isFixMode =true;
 		options.isRemote =true;
+		options.ignoreErrors =true;
 		options.source =Optional.of(getDefaultSourceFeature());
 		GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
 		validator.setTestMode( true );
