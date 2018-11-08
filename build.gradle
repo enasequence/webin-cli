@@ -75,7 +75,7 @@ dependencies {
     compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.1.283')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.1.283')
-    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: '1.1.282')
+    compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: '1.1.283')
     compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
     compile("com.googlecode.json-simple:json-simple:1.1.1")
   //  compile(group: 'uk.ac.ebi.ena-template-expansion', name: 'ena-template-expansion', version: '1.0.4')
