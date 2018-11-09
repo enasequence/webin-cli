@@ -61,18 +61,11 @@ jar {
 }
 
 dependencies {
-    compile 'org.apache.commons:commons-lang3:3.0'
-    compile 'org.apache.commons:commons-compress:1.10'
+    compile('org.apache.commons:commons-lang3:3.0')
+    compile('org.apache.commons:commons-compress:1.10')
+    compile("commons-cli:commons-cli:1.2")
     compile("commons-net:commons-net:3.4")
-    compile group: 'com.beust', name: 'jcommander', version: '1.72'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
-    compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
-    compile 'org.apache.commons:commons-lang3:3.0'
-    compile 'org.apache.commons:commons-compress:1.10'
-    compile group: 'com.beust', name: 'jcommander', version: '1.72'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    compile(group: 'com.oracle', name: 'ojdbc6', version: '11.2.0.3')
+    compile(group: 'com.beust', name: 'jcommander', version: '1.72')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.1.284')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.1.284')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: '1.1.284')
