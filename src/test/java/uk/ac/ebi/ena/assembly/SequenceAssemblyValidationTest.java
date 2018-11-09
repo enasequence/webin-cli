@@ -38,6 +38,8 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 
 public class SequenceAssemblyValidationTest {
 	@Rule
@@ -77,6 +79,8 @@ public class SequenceAssemblyValidationTest {
 	before()
 	{
 		Locale.setDefault( Locale.UK );
+                ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_MESSAGE_FORMATTER_TRAILING_LINE_END );
+                ValidationResult.setDefaultMessageFormatter( null );
 	}
 
 
