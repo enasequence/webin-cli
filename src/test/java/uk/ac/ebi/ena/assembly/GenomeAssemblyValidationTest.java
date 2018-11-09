@@ -254,6 +254,8 @@ public class GenomeAssemblyValidationTest {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).isEmpty());
+			thrown.expect(WebinCliException.class);
+			thrown.expectMessage(getmessage("agp","valid_agp.txt",validator.getValidationDir().getAbsolutePath()));
 			validator.validate();
 		}
 	}
@@ -329,7 +331,7 @@ public class GenomeAssemblyValidationTest {
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).isEmpty());
 			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).isEmpty());
 			thrown.expect(WebinCliException.class);
-			thrown.expectMessage("Sequenceless chromosomes are not allowed in assembly : IWGSC_CSS_6DL_scaff_3330719");
+			thrown.expectMessage(getmessage("agp","valid_agp.txt",validator.getValidationDir().getAbsolutePath()));
 			validator.validate();
 		}
 	}
