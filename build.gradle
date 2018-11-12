@@ -12,7 +12,7 @@ apply from:   'checkerframework.gradle'
 
 
 group = 'uk.ac.ebi.ena.webin-cli'
-ext.version_base = '1.4.2'
+ext.version_base = '1.5.0'
 version = version_base
 
 ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : "${System.properties['user.home']}/.ssh/id_dsa")
