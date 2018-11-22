@@ -30,6 +30,8 @@ import org.junit.rules.ExpectedException;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.embl.api.validation.submission.Context;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
@@ -77,6 +79,8 @@ public class SequenceAssemblyValidationTest {
 	before()
 	{
 		Locale.setDefault( Locale.UK );
+        ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_MESSAGE_FORMATTER_TRAILING_LINE_END );
+        ValidationResult.setDefaultMessageFormatter( null );
 	}
 
 
@@ -177,8 +181,8 @@ public class SequenceAssemblyValidationTest {
 		{
 			assertEquals( getmessage( "tsv",file.getName(), validator.getValidationDir().getAbsolutePath() ),wce.getMessage());
 		    String expectedResults = new String(Files.readAllBytes(Paths.get("src/test/resources/uk/ac/ebi/ena/template/tsvfile/Sequence-invalidEntrynumberStart-expected-results.txt")));
-		    assertEquals( new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-invalid-entrynumber-start-.tsv.gz.report" ) ), StandardCharsets.UTF_8 ).replaceAll("\\s+", ""),
-		                  expectedResults.replaceAll("\\s+", ""));
+		    assertEquals( expectedResults.replaceAll("\\s+", ""),
+		    		      new String( Files.readAllBytes( validator.getValidationDir().toPath().resolve( "Sequence-invalid-entrynumber-start-.tsv.gz.report" ) ), StandardCharsets.UTF_8 ).replaceAll("\\s+", "") );
 		}
 	}
 
