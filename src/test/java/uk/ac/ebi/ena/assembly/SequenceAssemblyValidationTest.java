@@ -79,8 +79,8 @@ public class SequenceAssemblyValidationTest {
 	before()
 	{
 		Locale.setDefault( Locale.UK );
-                ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_MESSAGE_FORMATTER_TRAILING_LINE_END );
-                ValidationResult.setDefaultMessageFormatter( null );
+        ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_MESSAGE_FORMATTER_TRAILING_LINE_END );
+        ValidationResult.setDefaultMessageFormatter( null );
 	}
 
 
