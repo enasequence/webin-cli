@@ -31,9 +31,18 @@ test {
     	environment 'webin-cli-password', webinCliPassword
     }
     
+	if( !environment.get( 'webin_cli_password' ) ) {
+    	environment 'webin_cli_password', webinCliPassword
+    }
+
     if( !environment.get( 'webin-cli-username' ) ) {
 		environment 'webin-cli-username', webinCliUsername
 	}
+	
+	if( !environment.get( 'webin_cli_username' ) ) {
+		environment 'webin_cli_username', webinCliUsername
+	}
+	
 }
 
 task printWebinTestCredentials {
