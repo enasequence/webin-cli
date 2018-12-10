@@ -17,12 +17,23 @@ version = version_base
 
 ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : "${System.properties['user.home']}/.ssh/id_dsa")
 
-        repositories {
+repositories {
     flatDir { dirs 'lib' }
     mavenLocal()
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
 
+configurations.all {
+	if( !hasProperty( 'artifactoryUsername' ) )
+		project.ext.properties.artifactoryUsername = ''
+	else
+		project.ext.properties.artifactoryUsername = artifactoryUsername;
+		
+	if( !hasProperty( 'artifactoryPassword' ) )
+		project.ext.properties.artifactoryPassword = ''
+	else
+	 	project.ext.properties.artifactoryPassword = artifactoryPassword;
+}
 
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
@@ -109,7 +120,6 @@ task sourceJar(type: Jar) {
 	
 }
 
-//task Wrapper(type: Wrapper) { gradleVersion = '4.1' }
 
 publishing {
     publications {
@@ -121,8 +131,8 @@ publishing {
     repositories {
         maven {
             credentials {
-                username artifactoryUsername
-                password artifactoryPassword
+                username project.ext.properties.artifactoryUsername
+                password project.ext.properties.artifactoryPassword
             }
             url "http://ena-dev:8081/artifactory/libs-release-local"
         }
