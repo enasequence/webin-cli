@@ -32,7 +32,7 @@ SampleTest
         SourceFeature source = Sample.getSourceFeature( "SAMEA2757765", usernm, passwd, true );
         Assert.assertNotNull( source );
 
-        source = Sample.getSourceFeature( "SAMEA275776", usernm, passwd, true );
+        source = Sample.getSourceFeature( "SAMEA749881", usernm, passwd, true );
         Assert.assertNotNull( source );
       
     }
