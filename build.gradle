@@ -37,6 +37,7 @@ configurations.all {
 	 	project.ext.properties.artifactoryPassword = artifactoryPassword;
 }
 
+
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
 	maxHeapSize = '4G'
