@@ -56,9 +56,21 @@ dependencies {
 // To typecheck only the current project's main source set (in a multi-project
 // build), use this instead:
 allprojects {
-  tasks.withType(JavaCompile).all { JavaCompile compile ->
+	task setupBootClasspath {
+  		doFirst {
+    		tasks.withType( JavaCompile ) {
+      			options.bootClasspath = configurations.checkerFrameworkAnnotatedJDK.asPath
+      			options.annotationProcessorPath = configurations.checkerFrameworkCheckerJar.asPath
+    		}
+  		}
+	}
+  
+
+  tasks.withType( JavaCompile ).all { JavaCompile compile ->
 //	compileJava {
   compile.doFirst {
+	options.bootstrapClasspath = configurations.checkerFrameworkAnnotatedJDK
+    options.annotationProcessorPath = configurations.checkerFrameworkCheckerJar
     options.compilerArgs = [
         //'-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
         '-processor', 'org.checkerframework.checker.regex.RegexChecker',
@@ -66,9 +78,9 @@ allprojects {
         '-Xmaxwarns', '10000',
         '-XDignore.symbol.file', '-Xdoclint:none', '-Xlint:none', '-nowarn',
         //'-Awarns',      // -Awarns turns Checker Framework errors into warnings
-        '-AcheckPurityAnnotations',
-        '-processorpath', "${configurations.checkerFrameworkCheckerJar.asPath}",
-        "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        '-AcheckPurityAnnotations'//,
+        //'-processorpath', "${configurations.checkerFrameworkCheckerJar.asPath}",
+        //"-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
     ]
   }
 }
