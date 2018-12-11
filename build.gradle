@@ -47,12 +47,13 @@ test {
     	environment 'webin-cli-password', webinCliPassword
     }
 
-	if( System.env.webin_cli_password ) {
+	if( System.env.webin_cli_username ) {
       	environment 'webin-cli-username', System.env.webin_cli_username
     } else {
-    	environment 'webin-cli-username', webinCliPassword
+    	environment 'webin-cli-username', webinCliUsername
     }
 }
+
 
 task printWebinTestCredentials {
     doLast {
