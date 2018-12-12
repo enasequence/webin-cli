@@ -76,15 +76,24 @@ public class GenomeAssemblyManifest extends ManifestReader
 							CVFieldProcessor.CV_BOOLEAN));
 
 					add(new ManifestFieldDefinition(Fields.CHROMOSOME_LIST, ManifestFieldType.FILE, 0, 1,
-							new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+							                        new ASCIIFileNameProcessor(), 
+							                        new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					
 					add(new ManifestFieldDefinition(Fields.UNLOCALISED_LIST, ManifestFieldType.FILE, 0, 1,
-							new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					                                new ASCIIFileNameProcessor(), 
+					                                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					
 					add(new ManifestFieldDefinition(Fields.FASTA, ManifestFieldType.FILE, 0, 1,
-							new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX)));
+					                                new ASCIIFileNameProcessor(), 
+					                                new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX)));
+					
 					add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
-							new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					                                new ASCIIFileNameProcessor(), 
+					                                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					
 					add(new ManifestFieldDefinition(Fields.AGP, ManifestFieldType.FILE, 0, 1,
-							new FileSuffixProcessor( ManifestFileSuffix.AGP_FILE_SUFFIX)));
+					                                new ASCIIFileNameProcessor(), 
+					                                new FileSuffixProcessor( ManifestFileSuffix.AGP_FILE_SUFFIX)));
 				}},
 
 				// File groups.

@@ -8,6 +8,7 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyManifest.Fields;
 import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import java.util.ArrayList;
@@ -37,10 +38,14 @@ public class SequenceAssemblyManifest extends ManifestReader
                 new ArrayList<ManifestFieldDefinition>() {{
                     add(new ManifestFieldDefinition(Fields.NAME, ManifestFieldType.META, 1, 1));
                     add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor));
+                    
                     add(new ManifestFieldDefinition(Fields.TAB, ManifestFieldType.FILE, 0, 1,
-                            new FileSuffixProcessor( ManifestFileSuffix.TAB_FILE_SUFFIX)));
+                                                    new ASCIIFileNameProcessor(), 
+                                                    new FileSuffixProcessor( ManifestFileSuffix.TAB_FILE_SUFFIX)));
+                    
                     add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
-                            new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                                                    new ASCIIFileNameProcessor(), 
+                                                    new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
                 }},
 
                 // File groups.

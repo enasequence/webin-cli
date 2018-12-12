@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
@@ -130,11 +131,16 @@ RawReadsManifest extends ManifestReader {
                         add( new ManifestFieldDefinition( Fields.__HORIZON, ManifestFieldType.META, 0, 1 ) );
 
                         add( new ManifestFieldDefinition( Fields.FASTQ, ManifestFieldType.FILE, 0, 2,
-                                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
+                                                          new ASCIIFileNameProcessor(), 
+                                                          new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
+                        
                         add( new ManifestFieldDefinition( Fields.BAM, ManifestFieldType.FILE, 0, 1,
-                                new FileSuffixProcessor( ManifestFileSuffix.BAM_FILE_SUFFIX ) ) );
+                                                          new ASCIIFileNameProcessor(), 
+                                                          new FileSuffixProcessor( ManifestFileSuffix.BAM_FILE_SUFFIX ) ) );
+                        
                         add( new ManifestFieldDefinition( Fields.CRAM, ManifestFieldType.FILE, 0, 1,
-                                new FileSuffixProcessor( ManifestFileSuffix.CRAM_FILE_SUFFIX ) ) );
+                                                          new ASCIIFileNameProcessor(), 
+                                                          new FileSuffixProcessor( ManifestFileSuffix.CRAM_FILE_SUFFIX ) ) );
                     }
             },
 

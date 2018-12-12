@@ -9,6 +9,7 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
@@ -47,10 +48,15 @@ public class TranscriptomeAssemblyManifest extends ManifestReader
 					add(new ManifestFieldDefinition(Fields.SAMPLE, ManifestFieldType.META, 1, 1, sampleProcessor,sourceProcessor));
 					add(new ManifestFieldDefinition(Fields.PROGRAM, ManifestFieldType.META, 1, 1));
 					add(new ManifestFieldDefinition(Fields.PLATFORM, ManifestFieldType.META, 1, 1));
+					
 					add(new ManifestFieldDefinition(Fields.FASTA, ManifestFieldType.FILE, 0, 1,
-							new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX)));
+					                                new ASCIIFileNameProcessor(), 
+					                                new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX)));
+					
 					add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
-							new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					                                new ASCIIFileNameProcessor(), 
+					                                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					
 					add(new ManifestFieldDefinition(Fields.TPA, ManifestFieldType.META, 0, 1,
 							CVFieldProcessor.CV_BOOLEAN));
 				}},
