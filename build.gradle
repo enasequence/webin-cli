@@ -37,6 +37,7 @@ configurations.all {
 	 	project.ext.properties.artifactoryPassword = artifactoryPassword;
 }
 
+
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
 	maxHeapSize = '4G'
@@ -47,12 +48,13 @@ test {
     	environment 'webin-cli-password', webinCliPassword
     }
 
-	if( System.env.webin_cli_password ) {
+	if( System.env.webin_cli_username ) {
       	environment 'webin-cli-username', System.env.webin_cli_username
     } else {
-    	environment 'webin-cli-username', webinCliPassword
+    	environment 'webin-cli-username', webinCliUsername
     }
 }
+
 
 task printWebinTestCredentials {
     doLast {
@@ -82,6 +84,7 @@ jar {
                 "Main-Class": 'uk.ac.ebi.ena.webin.cli.WebinCli'
     }
 }
+
 
 dependencies {
     compile 'org.apache.commons:commons-lang3:3.0'
