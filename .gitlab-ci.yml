@@ -13,19 +13,19 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
-  - gradle wrapper --gradle-version 4.2
-  - ls
-  - pwd
 
 build:
   stage: build
+  before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - gradle wrapper --gradle-version 4.2
   script: ./gradlew --build-cache assemble
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
-      - build
-      - .gradle
+      - ./build
+      - ./.gradle
 
 
 test:
@@ -35,7 +35,5 @@ test:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull
     paths:
-      - build
-      - .gradle
-
-
+      - ./build
+      - ./.gradle
