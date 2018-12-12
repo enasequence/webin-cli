@@ -13,10 +13,10 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
-    gradle wrapper --gradle-version 4.2
+  - gradle wrapper --gradle-version 4.2
   - ls .
   - ls $GRADLE_USER_HOME
-    du -sh $GRADLE_USER_HOME
+  - du -sh $GRADLE_USER_HOME
 
 build:
   stage: build
