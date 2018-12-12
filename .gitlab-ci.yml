@@ -13,9 +13,8 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
+  - gradle wrapper --gradle-version 4.2
 
-before_build:
-  gradle wrapper --gradle-version 4.2
 
 build:
   stage: build
@@ -37,4 +36,5 @@ test:
     paths:
       - build
       - .gradle
+
 
