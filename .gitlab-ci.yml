@@ -14,9 +14,12 @@ variables:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
+before_build:
+  gradle wrapper --gradle-version 4.2
+
 build:
   stage: build
-  script: gradle --build-cache assemble
+  script: gradlew --build-cache assemble
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
@@ -27,7 +30,7 @@ build:
 
 test:
   stage: test
-  script: gradle test
+  script: gradlew test
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull

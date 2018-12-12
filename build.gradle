@@ -8,7 +8,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: "jacoco"
-//apply from:   'checkerframework.gradle'
+apply from:   'checkerframework.gradle'
 
 
 group = 'uk.ac.ebi.ena.webin-cli'
