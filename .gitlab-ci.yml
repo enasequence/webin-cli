@@ -13,6 +13,7 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
+  - du -sh $GRADLE_USER_HOME
   - gradle wrapper --gradle-version 4.2
   - ls .
   - ls $GRADLE_USER_HOME
