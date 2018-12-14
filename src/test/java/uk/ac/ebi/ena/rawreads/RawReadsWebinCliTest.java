@@ -16,6 +16,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,6 +28,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -107,6 +111,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nBAM file2.bam" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         
         rr.init( parameters );
         rr.prepareSubmissionBundle();
@@ -126,6 +132,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file1.cram\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         
         rr.init( parameters );
         rr.prepareSubmissionBundle();
@@ -145,6 +153,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         
         rr.init( parameters );
         rr.prepareSubmissionBundle();
@@ -164,6 +174,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         
         rr.init( parameters );
         rr.prepareSubmissionBundle();
@@ -183,7 +195,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ yoba.fastq.gz.bz2 PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -202,7 +215,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ " + createOutputFolder() + " PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -221,7 +235,32 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
+        rr.init( parameters );
+        rr.prepareSubmissionBundle();
+        SubmissionBundle sb = rr.getSubmissionBundle();
+        System.out.println( sb.getXMLFileList() );
+    }
+
+    
+    @Test( expected = WebinCliException.class ) public void
+    manifestNonASCIIPath() throws IOException, ValidationEngineException
+    {
+        RawReadsWebinCli rr = new RawReadsWebinCli();
+
+        URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/MG23S_431.fastq.gz" );
+        File gz = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
+
+        Path file = Files.write( Files.createTempFile( "FILE", "Š.fq.gz" ), Files.readAllBytes( gz.toPath() ), StandardOpenOption.TRUNCATE_EXISTING );
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setInputDir( createOutputFolder() );
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                                 ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -240,7 +279,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         rr.init( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -278,6 +318,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         
         rr.init( parameters );
         rr.prepareSubmissionBundle();
@@ -316,6 +358,8 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
         
         rr.init( parameters );
         rr.prepareSubmissionBundle();

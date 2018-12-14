@@ -405,7 +405,7 @@ public abstract class ManifestReader {
             return true; // Valid
         }
 
-        error( "MANIFEST_ERROR_INVALID_FILE_GROUP", getExpectedFileTypeList( files ) );
+        error( "MANIFEST_ERROR_INVALID_FILE_GROUP", getExpectedFileTypeList( files ), "" );
 
         return false;
     }
@@ -532,7 +532,7 @@ public abstract class ManifestReader {
         }
     }
 
-    private static String
+    protected String
     getExpectedFileTypeList( Set<List<ManifestFileCount>> expectedFileCountSet )
     {
         return expectedFileCountSet.stream()

@@ -115,9 +115,135 @@ public class GenomeAssemblyValidationTest {
 		}
 	}
 
+	
+    @Test public void
+    testBinnedMetagenomeNoFASTA() throws Exception
+    {
+        File manifestFile = WebinCliTestUtils.createTempFile( false, 
+                                                              "STUDY 123\n"
+                                                            + "SAMPLE 123\n"
+                                                            + "COVERAGE 1 \n"
+                                                            + "PROGRAM program\n"
+                                                            + "PLATFORM Illumina\n"
+                                                            + "NAME\ttest\n"
+                                                            + "ASSEMBLY_TYPE binned metagenome\n" ).toFile();
+
+        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+        validator.setFetchSample( false );
+        validator.setFetchStudy( false );
+
+        try 
+        {
+            validator.init( WebinCliTestUtils.createWebinCliParameters( manifestFile, validator.getInputDir() ) );
+        } catch( WebinCliException ex ) 
+        {
+            Assert.assertTrue( ex.getMessage().startsWith( "Invalid manifest file" ) );
+        } finally 
+        {
+            Assert.assertTrue( validator.getSubmissionOptions().submissionFiles.get().getFiles( FileType.FASTA ).isEmpty() );
+        }
+    }
+
+    
+    @Test public void
+    testBinnedMetagenomeExtraFASTA() throws Exception
+    {
+        File manifestFile = WebinCliTestUtils.createTempFile( false, 
+                                                              "STUDY 123\n"
+                                                            + "SAMPLE 123\n"
+                                                            + "COVERAGE 1 \n"
+                                                            + "PROGRAM program\n"
+                                                            + "PLATFORM Illumina\n"
+                                                            + "NAME\ttest\n"
+                                                            + "ASSEMBLY_TYPE binned metagenome\n"
+                                                            + "FASTA correct_fasta.fasta.gz\n"
+                                                            + "FASTA correct_fasta.fasta.gz" ).toFile();
+
+        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+        validator.setFetchSample( false );
+        validator.setFetchStudy( false );
+
+        try 
+        {
+            validator.init( WebinCliTestUtils.createWebinCliParameters( manifestFile, validator.getInputDir() ) );
+        } catch( WebinCliException ex ) 
+        {
+            Assert.assertTrue( ex.getMessage().startsWith( "Invalid manifest file" ) );
+        } finally 
+        {
+            Assert.assertTrue( !validator.getSubmissionOptions().submissionFiles.get().getFiles( FileType.FASTA ).isEmpty() );
+        }
+    }
+	
+	
+	@Test( expected = WebinCliException.class) public void
+    testBinnedMetagenomeExtraFILES() throws Exception
+    {
+        File manifestFile = WebinCliTestUtils.createTempFile( false, 
+                                                              "STUDY 123\n"
+                                                            + "SAMPLE 123\n"
+                                                            + "COVERAGE 1 \n"
+                                                            + "PROGRAM program\n"
+                                                            + "PLATFORM Illumina\n"
+                                                            + "NAME\ttest\n"
+                                                            + "ASSEMBLY_TYPE binned metagenome\n"
+                                                            + "FASTA correct_fasta.fasta.gz\n"
+                                                            + "AGP   valid.agp.gz" ).toFile();
+
+        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+        validator.setFetchSample( false );
+        validator.setFetchStudy( false );
+
+        try 
+        {
+            validator.init( WebinCliTestUtils.createWebinCliParameters( manifestFile, validator.getInputDir() ) );
+            
+        } catch( WebinCliException ex ) 
+        {
+            Assert.assertTrue( ex.getMessage().startsWith( "Invalid manifest file" ) );
+            throw ex;
+        } finally 
+        {
+            Assert.assertTrue( !validator.getSubmissionOptions().submissionFiles.get().getFiles( FileType.FASTA ).isEmpty() );
+            Assert.assertTrue( validator.getSubmissionOptions().submissionFiles.get().getFiles().stream().filter( f -> !FileType.FASTA.equals( f.getFileType() ) ).findAny().isPresent() );
+        }
+    }
 
 
+    @Test( expected = WebinCliException.class) public void
+    testPrimaryMetagenomeExtraFILES() throws Exception
+    {
+        File manifestFile = WebinCliTestUtils.createTempFile( false, 
+                                                              "STUDY 123\n"
+                                                            + "SAMPLE 123\n"
+                                                            + "COVERAGE 1 \n"
+                                                            + "PROGRAM program\n"
+                                                            + "PLATFORM Illumina\n"
+                                                            + "NAME\ttest\n"
+                                                            + "ASSEMBLY_TYPE primarymetagenome\n"
+                                                            + "FASTA correct_fasta.fasta.gz\n"
+                                                            + "AGP   valid.agp.gz" ).toFile();
 
+        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+        validator.setFetchSample( false );
+        validator.setFetchStudy( false );
+
+        try 
+        {
+            validator.init( WebinCliTestUtils.createWebinCliParameters( manifestFile, validator.getInputDir() ) );
+            
+        } catch( WebinCliException ex ) 
+        {
+            Assert.assertTrue( ex.getMessage().startsWith( "Invalid manifest file" ) );
+            throw ex;
+        } finally 
+        {
+            Assert.assertTrue( !validator.getSubmissionOptions().submissionFiles.get().getFiles( FileType.FASTA ).isEmpty() );
+            Assert.assertTrue( validator.getSubmissionOptions().submissionFiles.get().getFiles().stream().filter( f -> !FileType.FASTA.equals( f.getFileType() ) ).findAny().isPresent() );
+        }
+    }
+	
+	
 	@Test public void
 	testGenomeFileValidation_InvalidFasta() throws Exception
 	{
@@ -430,8 +556,9 @@ public class GenomeAssemblyValidationTest {
 		return validator;
 	}
 
-	private String getmessage(String fileType,String fileName,String reportDir)
+	private String
+	getmessage( String fileType, String fileName, String reportDir )
 	{
-		return fileType+" file validation failed : "+fileName+", Please see the error report: "+ reportDir+File.separator+fileName+".report";
+		return fileType + " file validation failed : " + fileName + ", Please see the error report: " + reportDir + File.separator + fileName + ".report";
 	}
 }
