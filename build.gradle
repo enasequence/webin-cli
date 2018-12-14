@@ -12,7 +12,7 @@ apply from:   'checkerframework.gradle'
 
 
 group = 'uk.ac.ebi.ena.webin-cli'
-ext.version_base = '1.5.1'
+ext.version_base = '1.5.2'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
