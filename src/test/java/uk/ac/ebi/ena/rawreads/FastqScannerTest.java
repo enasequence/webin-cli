@@ -34,7 +34,7 @@ FastqScannerTest
     
     
     @Test public void 
-    testSingle() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testSingle() throws Throwable
     {
         URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
@@ -49,7 +49,7 @@ FastqScannerTest
     
     
     @Test public void 
-    testSingleDuplications() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testSingleDuplications() throws Throwable
     {
         URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
@@ -64,7 +64,7 @@ FastqScannerTest
 
 
     @Test public void 
-    testPaired() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testPaired() throws Throwable
     {
         URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_0.txt.gz" );
         FastqScanner fs = new FastqScanner( expected_reads );
@@ -79,7 +79,7 @@ FastqScannerTest
     
     
     @Test public void 
-    testPair() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testPair() throws Throwable
     {
         URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.gz" );
         URL  url2 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
@@ -130,7 +130,7 @@ FastqScannerTest
     /* 4. Paired run with two files with duplication from first file in second file */
     /* 5. Paired run with two files with duplication from second file in second file */
     @Test public void 
-    testCase1() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase1() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME1/1\nACGT\n+\n1234\n"
@@ -146,7 +146,7 @@ FastqScannerTest
 
     
     @Test public void 
-    testCase2() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase2() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME1/1\nACGT\n+\n1234\n"
@@ -162,7 +162,7 @@ FastqScannerTest
     
     
     @Test public void 
-    testCase3() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase3() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME1\nACGT\n+\n1234\n"
@@ -183,7 +183,7 @@ FastqScannerTest
     /* 4. Paired run with two files with duplication from first file in second file */
     /* logically this is not true. The suffixes can be inherited from the file streams */
     @Test public void 
-    testCase4() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase4() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME\nACGT\n+\n1234", output_dir.toPath(), true, "fastq-1", "gz" );
@@ -202,7 +202,7 @@ FastqScannerTest
     
     /* */
     @Test public void 
-    testCase5() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase5() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME1\nACGT\n+\n1234", output_dir.toPath(), true, "fastq-1", "gz" );
@@ -224,7 +224,7 @@ FastqScannerTest
     
     /* three read labels */
     @Test public void 
-    testCase6() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase6() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME\nACGT\n+\n1234", output_dir.toPath(), true, "fastq-1", "gz" );
@@ -246,7 +246,7 @@ FastqScannerTest
 
     /* Wrong pair set in two files */
     @Test public void 
-    testCase7() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase7() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME1/1\nACGT\n+\n1234", output_dir.toPath(), true, "fastq-1", "gz" );
@@ -268,7 +268,7 @@ FastqScannerTest
     
     /* Wrong pair set in one file */
     @Test public void 
-    testCase8() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testCase8() throws Throwable
     {
         File output_dir = createOutputFolder();
         Path f1 = saveRandomized( "@NAME2/1\nACGT\n+\n1234\n"
@@ -285,7 +285,7 @@ FastqScannerTest
     
     
     @Test public void 
-    testPairWithDuplication() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testPairWithDuplication() throws Throwable
     {
         URL  url2 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
         URL  url1 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
@@ -304,7 +304,7 @@ FastqScannerTest
     
 
     @Test public void 
-    testPairWithDuplication2() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testPairWithDuplication2() throws Throwable
     {
         URL  url2 = WebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S1.txt.dup.gz" );
         //URL  url1 = GenomeAssemblyWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/EP0_GTTCCTT_S2.txt.gz" );
@@ -379,7 +379,7 @@ FastqScannerTest
 
     //TODO remove probabilistic nature
     @Test public void 
-    testGeneratedSingleDuplications() throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    testGeneratedSingleDuplications() throws Throwable
     {
         FastqScanner fs = new FastqScanner( expected_reads );
         RawReadsFile rf = new RawReadsFile();

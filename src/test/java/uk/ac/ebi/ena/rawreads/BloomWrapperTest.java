@@ -33,7 +33,7 @@ BloomWrapperTest
     }
 
 
-    @Test( expected = RuntimeException.class ) public void 
+    @Test public void 
     testLimits()
     {
         BloomWrapper rns = new BloomWrapper( 2, 1 );
@@ -42,6 +42,9 @@ BloomWrapperTest
         rns.add( "1" );
         rns.add( "2" );
         rns.add( "2" );
+        Assert.assertEquals( 5, rns.getAddsNumber() );
+        Assert.assertEquals( 1, rns.getSuspected().size() );
+        Assert.assertEquals( Long.valueOf( 3L ), rns.getPossibleDuplicateCount() );
     }
     
     

@@ -198,7 +198,7 @@ GenomeAssemblyXmlTest
         info.setProgram( "test_program" );
         info.setPlatform( "test_platform" );
         info.setCoverage("1");
-
+        
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);

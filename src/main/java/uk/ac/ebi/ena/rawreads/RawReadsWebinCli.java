@@ -296,7 +296,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
             files.forEach( rf -> WebinCliReporter.writeToFile( getReportFile( rf.getFilename() ), vr ) );
             return vr.isValid();
             
-        } catch( SecurityException | NoSuchMethodException | DataFeederException | IOException | InterruptedException e )
+        } catch( Throwable e )
         {
             throw WebinCliException.createSystemError( "Unable to validate file(s): " + files + ", " + e.getMessage() );
         }

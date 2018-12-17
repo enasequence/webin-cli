@@ -15,6 +15,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,6 +50,7 @@ import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater.READ_TYPE;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaSpot;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 FastqScanner implements VerboseLogger
@@ -137,15 +139,13 @@ FastqScanner implements VerboseLogger
     }
     
     
-    
-    
     private DataFeederException 
     read( RawReadsFile rf,
           String       stream_name,
           Set<String>labels, 
           BloomWrapper pairing,
           BloomWrapper duplications,
-          AtomicLong count ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
+          AtomicLong count ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException, Throwable
     {
         try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
         {
@@ -192,9 +192,22 @@ FastqScanner implements VerboseLogger
             flushConsole();
             df.start();
             df.join();
-            DataFeederException result = df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause();
             printProcessedReadNumber( count.get() );
-            printlnToConsole();
+            //printlnToConsole();
+            printfToConsole( ", result: %s\n", null == df.getStoredException() ? "OK" : String.valueOf( df.getStoredException() ) );
+            if( !df.isOk() && !( df.getStoredException() instanceof DataFeederException ) && !( df.getStoredException() instanceof InvocationTargetException ) )
+                throw df.getStoredException();
+            
+            Throwable t = df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) 
+                                    : df.getStoredException();
+            if( df.isOk() && null == t )
+                return null;
+            
+            t = null == t ? new DataFeederException( -1, "Unknown failure" ) : t;
+            t = t instanceof InvocationTargetException ? t.getCause() : t;
+            t = t instanceof DataFeederException ? t : new DataFeederException( t );
+            
+            DataFeederException result = (DataFeederException) t;
             return result;
         }
     }
@@ -205,7 +218,7 @@ FastqScanner implements VerboseLogger
                      String stream_name, 
                      Set<String> labelset,
                      BloomWrapper pairing,
-                     BloomWrapper duplications ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+                     BloomWrapper duplications ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException, Throwable
     {
         ValidationResult vr = new ValidationResult();
         AtomicLong count = new AtomicLong();
@@ -252,7 +265,7 @@ FastqScanner implements VerboseLogger
     
     
     public ValidationResult
-    checkFiles( RawReadsFile... rfs ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException
+    checkFiles( RawReadsFile... rfs ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException, Throwable
     {
         ValidationResult vr = new ValidationResult();
 
@@ -274,6 +287,9 @@ FastqScanner implements VerboseLogger
             labelset.addAll( flabelset );
         }
         
+        if( !vr.isValid() )
+            return vr;
+                
         if( 2 == labelset.size() )
         {
             paired.set( true );

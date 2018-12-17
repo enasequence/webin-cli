@@ -44,7 +44,6 @@ AbstractWebinCli<T extends ManifestReader>
 
     private boolean fetchSample = true;
     private boolean fetchStudy = true;
-    private SubmissionBundleHelper submissionBundleHelper = new SubmissionBundleHelper( getSubmissionBundleFileName() );
  	private boolean fetchSource = true;
 
     protected abstract T createManifestReader();
@@ -180,6 +179,7 @@ AbstractWebinCli<T extends ManifestReader>
     public SubmissionBundle
     getSubmissionBundle()
     {
+        SubmissionBundleHelper submissionBundleHelper = new SubmissionBundleHelper( getSubmissionBundleFileName() );
         try
         {
             return submissionBundleHelper.read( FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) ;
@@ -193,7 +193,7 @@ AbstractWebinCli<T extends ManifestReader>
     protected void
     setSubmissionBundle( SubmissionBundle submissionBundle )
     {
-        submissionBundleHelper.write( submissionBundle );
+        new SubmissionBundleHelper( getSubmissionBundleFileName() ).write( submissionBundle );
     }
 
 
