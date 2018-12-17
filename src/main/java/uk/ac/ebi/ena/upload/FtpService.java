@@ -25,10 +25,11 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
+import uk.ac.ebi.ena.rawreads.VerboseLogger;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-public class FtpService implements UploadService {
+public class FtpService implements UploadService, VerboseLogger {
     private final static String SERVER = "webin.ebi.ac.uk";
     private final static int FTP_PORT = 21;
     private FTPClient ftpClient = new FTPClient() ;
@@ -62,6 +63,7 @@ public class FtpService implements UploadService {
         Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
         try( InputStream fileInputStream = new BufferedInputStream( Files.newInputStream( local ) ) )    
         {
+            printfToConsole( "Uploading file: %s\n", local );
             int level = changeToSubdir( subdir );       
             if( !ftpClient.storeFile( remote.getFileName().toString(), fileInputStream ) )
                 throw WebinCliException.createSystemError( SYSTEM_ERROR_UPLOAD_FILE, "Unable to transfer " + remote.getFileName().toString() );
