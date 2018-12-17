@@ -26,6 +26,7 @@ repositories {
 }
 
 configurations.all {
+	
 	if( !hasProperty( 'artifactoryUsername' ) )
 		project.ext.properties.artifactoryUsername = ''
 	else
@@ -125,6 +126,10 @@ task sourceJar(type: Jar) {
 	
 }
 
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
 
 publishing {
     publications {

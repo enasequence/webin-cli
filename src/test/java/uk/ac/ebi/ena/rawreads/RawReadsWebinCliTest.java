@@ -252,7 +252,7 @@ RawReadsWebinCliTest
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/MG23S_431.fastq.gz" );
         File gz = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
 
-        Path file = Files.write( Files.createTempFile( "FILE", "Š.fq.gz" ), Files.readAllBytes( gz.toPath() ), StandardOpenOption.TRUNCATE_EXISTING );
+        Path file = Files.write( Files.createTempFile( "FILE", "Å .fq.gz" ), Files.readAllBytes( gz.toPath() ), StandardOpenOption.TRUNCATE_EXISTING );
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
