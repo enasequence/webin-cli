@@ -14,30 +14,35 @@ package uk.ac.ebi.ena.upload;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileAttribute;
 import java.util.List;
 
+import uk.ac.ebi.ena.rawreads.VerboseLogger;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class 
-ASCPService implements UploadService
+ASCPService implements UploadService, VerboseLogger
 {
     private static final String EXECUTABLE = "ascp";
     private String userName;
     private String password;
 
-    class 
-    StreamConsumer extends Thread
+    static class 
+    VerboseStreamConsumer extends Thread implements VerboseLogger
     {
-        private InputStream istream;
+        private Reader ireader;
         private long read_cnt;
         
-        StreamConsumer( InputStream istream )
+        
+        VerboseStreamConsumer( InputStream istream )
         {
-            this.istream = istream;
+            this.ireader = new InputStreamReader( istream, StandardCharsets.UTF_8 );
         }
         
         
@@ -46,8 +51,16 @@ ASCPService implements UploadService
         {
             try
             {
-                while( 0 != istream.read() ) 
-                    ++read_cnt; 
+                int ch = 0;
+                while( -1 != ( ch = ireader.read() ) )
+                {
+                    ++read_cnt;
+                    if( ch > 0 )
+                    {
+                        printfToConsole( "%c", (char)ch );
+                        flushConsole();
+                    }
+                }
                 
             } catch( IOException e )
             {
@@ -63,6 +76,20 @@ ASCPService implements UploadService
         }
     }
     
+
+    static class 
+    StreamConsumer extends VerboseStreamConsumer
+    {
+        StreamConsumer( InputStream istream )
+        {
+            super( istream );
+        }
+        
+        
+        public void
+        printfToConsole( String msg, Object... arg1 ) { }
+    }
+
     
     @Override public boolean
     isAvaliable()
@@ -70,7 +97,7 @@ ASCPService implements UploadService
         try
         {            
             Runtime rt = Runtime.getRuntime();
-            Process proc = rt.exec( EXECUTABLE, 
+            Process proc = rt.exec( EXECUTABLE + " -h", 
                                     new String[] { String.format( "PATH=%s", System.getenv( "PATH" ) ) } );
             
             new StreamConsumer( proc.getInputStream() ).start();
@@ -117,11 +144,11 @@ ASCPService implements UploadService
     private String 
     getCommand( Path file_list, Path inputDir, String uploadDir )
     {
-        return String.format( "%s --file-checksum=md5 -d --mode=send --overwrite=always --user=\"%s\" -QT -l300M -L- --src-base=%s --source-prefix=\"%s\" --file-list=\"%s\" --host=webin.ebi.ac.uk \"%s\"",
+        return String.format( "%s --file-checksum=md5 -d --mode=send --overwrite=always --user=\"%s\" -QT -l300M -L- --src-base=%s " /* --source-prefix=\"%s\" */ + " --file-list=\"%s\" --host=webin.ebi.ac.uk \"%s\"",
                               EXECUTABLE,
                               this.userName, 
                               inputDir.normalize().toString(),
-                              inputDir.normalize().toString(),
+                              //inputDir.normalize().toString(),
                               file_list,
                               uploadDir );
     }
@@ -141,15 +168,15 @@ ASCPService implements UploadService
                                          inputDir.toAbsolutePath(),
                                          uploadDir );
             
-            
-System.out.println( "CMD: " + command );   
+            printfToConsole( "Invoking: %s\n", command );
+            flushConsole();
 
             Runtime rt = Runtime.getRuntime();
             Process proc = rt.exec( command, 
                                     new String[] { String.format( "ASPERA_SCP_PASS=%s", this.password ), 
                                                    String.format( "PATH=%s", System.getenv( "PATH" ) ) } );
             
-            new StreamConsumer( proc.getInputStream() ).start();
+            new VerboseStreamConsumer( proc.getInputStream() ).start();
             new StreamConsumer( proc.getErrorStream() ).start();
             
             proc.waitFor();
