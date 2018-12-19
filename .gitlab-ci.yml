@@ -35,6 +35,8 @@ test:
     - ls -la ~/.aspera/cli/bin
       #    - echo ~
       #    - sh -c "~/.aspera/cli/bin/ascp -h"
+    - uname -a
+    - readelf -a ascp
     - sh -c "echo $PATH"
     - which ascp
     - sh -c "`which ascp` -h"
