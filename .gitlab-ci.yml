@@ -33,7 +33,7 @@ test:
     - export PATH=~/.aspera/cli/bin:$PATH
     - echo $PATH
     - ls -la ~/.aspera/cli/bin
-      echo $SHELL
+    - echo $SHELL
     - ascp -h
     - ./gradlew test
   cache:
