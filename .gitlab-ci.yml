@@ -37,8 +37,7 @@ test:
       #    - sh -c "~/.aspera/cli/bin/ascp -h"
     - sh -c "echo $PATH"
     - which ascp
-    - locate ascp
-    - sh -c "ascp -h"
+    - sh -c "`which ascp` -h"
     - ./gradlew test
   cache:
     key: "$CI_COMMIT_REF_NAME"
