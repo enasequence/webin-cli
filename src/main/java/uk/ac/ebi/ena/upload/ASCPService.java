@@ -164,7 +164,7 @@ ASCPService implements UploadService, VerboseLogger
             String file_list = createUploadList( uploadFilesList, inputDir );
             String command = getCommand( Files.write( Files.createTempFile( "FILE", "LIST", new FileAttribute<?>[] {} ), 
                                                       file_list.getBytes(), 
-                                                      StandardOpenOption.CREATE ),
+                                                      StandardOpenOption.CREATE, StandardOpenOption.SYNC ),
                                          inputDir.toAbsolutePath(),
                                          uploadDir );
             
