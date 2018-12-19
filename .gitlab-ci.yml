@@ -34,8 +34,8 @@ test:
     - echo $PATH
     - ls -la ~/.aspera/cli/bin
     - echo ~
-    - /home/gradle/.aspera/cli/bin/ascp -h
-    - ascp -h
+    - sh -c "/home/gradle/.aspera/cli/bin/ascp -h"
+    - sh -c "ascp -h"
     - ./gradlew test
   cache:
     key: "$CI_COMMIT_REF_NAME"
