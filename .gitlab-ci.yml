@@ -31,17 +31,6 @@ test:
     - wget http://download.asperasoft.com/download/sw/cli/3.9.1/ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
     - sh ./ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
     - export PATH=/home/gradle/.aspera/cli/bin:$PATH
-    - echo $PATH
-    - ls -la ~/.aspera/cli/bin
-      #    - echo ~
-      #    - sh -c "~/.aspera/cli/bin/ascp -h"
-    - uname -a
-    - echo `which readelf`
-    - echo `which file`
-      #- strings /home/gradle/.aspera/cli/bin/ascp
-    - sh -c "echo $PATH"
-    - which ascp
-    - sh -c "`which ascp` -h"
     - ./gradlew test
   cache:
     key: "$CI_COMMIT_REF_NAME"
