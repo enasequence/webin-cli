@@ -34,6 +34,7 @@ test:
     - echo $PATH
     - ls -la ~/.aspera/cli/bin
     - echo ~
+    - /home/gradle/.aspera/cli/bin/ascp -h
     - ascp -h
     - ./gradlew test
   cache:
