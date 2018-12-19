@@ -30,10 +30,10 @@ test:
   script:
     - wget http://download.asperasoft.com/download/sw/cli/3.9.1/ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
     - sh ./ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
-    - export PATH=~/.aspera/cli/bin:$PATH
+    - export PATH=`~`/.aspera/cli/bin:$PATH
     - echo $PATH
     - ls -la ~/.aspera/cli/bin
-    - echo $SHELL
+    - echo ~
     - ascp -h
     - ./gradlew test
   cache:
