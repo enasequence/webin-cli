@@ -177,7 +177,7 @@ ASCPService implements UploadService, VerboseLogger
                                                    String.format( "PATH=%s", System.getenv( "PATH" ) ) } );
             
             new VerboseStreamConsumer( proc.getInputStream() ).start();
-            new StreamConsumer( proc.getErrorStream() ).start();
+            new VerboseStreamConsumer( proc.getErrorStream() ).start();
             
             proc.waitFor();
             
