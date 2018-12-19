@@ -14,7 +14,6 @@ variables:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - gradle wrapper --gradle-version 4.2
-
 build:
   stage: build
   script: ./gradlew --build-cache assemble
@@ -27,6 +26,12 @@ build:
 
 
 test:
+  before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - gradle wrapper --gradle-version 4.2
+  - wget https://download.asperasoft.com/download/sw/cli/3.9.1/ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
+  - bash ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
+  - export PATH=`pwd`/.aspera/cli/bin:$PATH
   stage: test
   script: ./gradlew test
   cache:
