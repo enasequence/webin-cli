@@ -16,6 +16,8 @@ before_script:
   - gradle wrapper --gradle-version 4.2
   - pwd
   - echo $PATH
+  - echo $USER
+  - whoami
 build:
   stage: build
   script: ./gradlew --build-cache assemble
