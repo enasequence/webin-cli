@@ -12,14 +12,8 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx3g -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
 
 before_script:
-  - whoami
-  - echo $USER
-  - export GRADLE_USER_HOME=~/.gradle
+  - export GRADLE_USER_HOME=`pwd`/.gradle
   - gradle wrapper --gradle-version 4.2
-  - pwd
-  - echo $PATH
-  - echo $USER
-  - whoami
 build:
   stage: build
   script: ./gradlew --build-cache assemble
