@@ -2,7 +2,7 @@
 # This is the Gradle build system for JVM applications
 # https://gradle.org/
 # https://github.com/gradle/gradle
-image: gradle:alpine
+image: gradle
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
@@ -38,7 +38,7 @@ test:
     - uname -a
     - echo `which readelf`
     - echo `which file`
-    - strings /home/gradle/.aspera/cli/bin/ascp
+      #- strings /home/gradle/.aspera/cli/bin/ascp
     - sh -c "echo $PATH"
     - which ascp
     - sh -c "`which ascp` -h"
