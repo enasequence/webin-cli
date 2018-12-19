@@ -36,7 +36,9 @@ test:
       #    - echo ~
       #    - sh -c "~/.aspera/cli/bin/ascp -h"
     - uname -a
-    - file /home/gradle/.aspera/cli/bin/ascp
+    - which readelf
+    - which file
+    - strings /home/gradle/.aspera/cli/bin/ascp
     - sh -c "echo $PATH"
     - which ascp
     - sh -c "`which ascp` -h"
