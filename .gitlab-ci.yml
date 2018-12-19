@@ -36,6 +36,8 @@ test:
       #    - echo ~
       #    - sh -c "~/.aspera/cli/bin/ascp -h"
     - sh -c "echo $PATH"
+    - which ascp
+    - locate ascp
     - sh -c "ascp -h"
     - ./gradlew test
   cache:
