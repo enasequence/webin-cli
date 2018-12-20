@@ -21,7 +21,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileAttribute;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import uk.ac.ebi.ena.rawreads.VerboseLogger;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -141,16 +144,22 @@ ASCPService implements UploadService, VerboseLogger
     }
     
        
-    private String 
+    private String[] 
     getCommand( Path file_list, Path inputDir, String uploadDir )
     {
-        return String.format( "%s --file-checksum=md5 -d --mode=send --overwrite=always --user=\"%s\" -QT -l300M -L- --src-base=%s " /* --source-prefix=\"%s\" */ + " --file-list=\"%s\" --host=webin.ebi.ac.uk \"%s\"",
-                              EXECUTABLE,
-                              this.userName, 
-                              inputDir.normalize().toString(),
-                              //inputDir.normalize().toString(),
-                              file_list,
-                              uploadDir );
+        return new String[] { EXECUTABLE, 
+                              "--file-checksum=md5",
+                              "-d",
+                              "--mode=send",
+                              "--overwrite=always",
+                              "-QT",
+                              "-l300M",
+                              "-L-",
+                              "--host=webin.ebi.ac.uk",
+                              String.format( "--user=\"%s\"", this.userName ),
+                              String.format( "--src-base=\"%s\"", inputDir.normalize().toString().replaceAll( " ", "\\\\ " ) ),
+                              String.format( "--file-list=\"%s\"", file_list ),
+                              String.format( "\"%s\"", uploadDir ) };
     }
     
     
@@ -162,22 +171,23 @@ ASCPService implements UploadService, VerboseLogger
         try
         {            
             String file_list = createUploadList( uploadFilesList, inputDir );
-            String command = getCommand( Files.write( Files.createTempFile( "FILE", "LIST", new FileAttribute<?>[] {} ), 
+            String[] command = getCommand( Files.write( Files.createTempFile( "FILE", "LIST", new FileAttribute<?>[] {} ), 
                                                       file_list.getBytes(), 
                                                       StandardOpenOption.CREATE, StandardOpenOption.SYNC ),
                                          inputDir.toAbsolutePath(),
                                          uploadDir );
             
-            printfToConsole( "Invoking: %s\n", command );
+            printfToConsole( "Invoking: %s\n", Arrays.stream( command ).collect( Collectors.joining( " " ) ) );
             flushConsole();
 
-            Runtime rt = Runtime.getRuntime();
-            Process proc = rt.exec( command, 
-                                    new String[] { String.format( "ASPERA_SCP_PASS=%s", this.password ), 
-                                                   String.format( "PATH=%s", System.getenv( "PATH" ) ) } );
-            
+            ProcessBuilder pb = System.getProperty( "os.name" ).toLowerCase().contains( "win" ) ? new ProcessBuilder( "cmd", "/c", Arrays.stream( command ).collect( Collectors.joining( " " ) ) ) 
+                                                                                                : new ProcessBuilder( "sh", "-c", Arrays.stream( command ).collect( Collectors.joining( " " ) ) );
+            pb.environment().put( "ASPERA_SCP_PASS", this.password );
+            pb.environment().put( "PATH", System.getenv( "PATH" ) );
+            pb.directory( null );
+            Process proc = pb.start();
             new VerboseStreamConsumer( proc.getInputStream() ).start();
-            new VerboseStreamConsumer( proc.getErrorStream() ).start();
+            new StreamConsumer( proc.getErrorStream() ).start();
             
             proc.waitFor();
             
