@@ -12,98 +12,26 @@
 package uk.ac.ebi.ena.upload;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.ProcessBuilder.Redirect;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileAttribute;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import uk.ac.ebi.ena.rawreads.VerboseLogger;
+import uk.ac.ebi.ena.utils.ShellExec;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 
 public class 
-ASCPService implements UploadService, VerboseLogger
+ASCPService implements UploadService
 {
     private static final String EXECUTABLE = "ascp";
     private String userName;
     private String password;
-
-    
-    class 
-    VerboseStreamConsumer extends Thread
-    {
-        private Reader ireader;
-        private long read_cnt;
-        
-        
-        VerboseStreamConsumer( InputStream istream )
-        {
-            this.ireader = new InputStreamReader( istream, StandardCharsets.UTF_8 );
-            setName( getClass().getSimpleName() );
-        }
-        
-        
-        @Override public void
-        run()
-        {
-            try
-            {
-                int ch = 0;
-                while( -1 != ( ch = ireader.read() ) )
-                {
-                    ++read_cnt;
-                    if( ch > 0 )
-                        printFlush( (char)ch );
-                }
-                
-            } catch( IOException e )
-            {
-                ;
-            }
-        }
-        
-        
-        protected void 
-        printFlush( char ch )
-        {
-            ASCPService.this.printfToConsole( "%c", (char)ch );
-            ASCPService.this.flushConsole();
-        }
-        
-        
-        public long
-        getReadCnt()
-        {
-            return read_cnt;
-        }
-    }
-    
-
-    class 
-    StreamConsumer extends VerboseStreamConsumer
-    {
-        StreamConsumer( InputStream istream )
-        {
-            super( istream );
-        }
-        
-        
-        @Override protected void
-        printFlush( char ch ) {}
-    }
 
     
     @Override public boolean
@@ -111,20 +39,7 @@ ASCPService implements UploadService, VerboseLogger
     {
         try
         {            
-            ExecutorService es = Executors.newFixedThreadPool( 2 );
-            Runtime rt = Runtime.getRuntime();
-            Process proc = rt.exec( EXECUTABLE + " -h", 
-                                    new String[] { String.format( "PATH=%s", System.getenv( "PATH" ) ) } );
-            
-            es.submit( new StreamConsumer( proc.getInputStream() ) );
-            es.submit( new StreamConsumer( proc.getErrorStream() ) );
-            
-            proc.waitFor();
-            int exitVal = proc.exitValue();
-            
-            es.shutdown();
-            es.awaitTermination( 20, TimeUnit.SECONDS );
-            
+            int exitVal = new ShellExec( EXECUTABLE + " -h", new HashMap<String, String>()  { private static final long serialVersionUID = 1L; { put( "PATH", System.getenv( "PATH" ) ); } } ).exec();
             if( 0 != exitVal )
                 return false;
             
@@ -132,7 +47,6 @@ ASCPService implements UploadService, VerboseLogger
         {
             return false;
         }
-        
         return true;
     }
     
@@ -192,29 +106,11 @@ ASCPService implements UploadService, VerboseLogger
                                          inputDir.toAbsolutePath(),
                                          uploadDir );
             
-            printfToConsole( "Invoking: %s\n", Arrays.stream( command ).collect( Collectors.joining( " " ) ) );
-            flushConsole();
-
-            ProcessBuilder pb = System.getProperty( "os.name" ).toLowerCase().contains( "win" ) ? new ProcessBuilder( "cmd", "/c", Arrays.stream( command ).collect( Collectors.joining( " " ) ) ) 
-                                                                                                : new ProcessBuilder( "sh", "-c", Arrays.stream( command ).collect( Collectors.joining( " " ) ) );
-            pb.environment().put( "ASPERA_SCP_PASS", this.password );
-            pb.environment().put( "PATH", System.getenv( "PATH" ) );
-            pb.directory( null );
-            pb.redirectOutput( Redirect.INHERIT );
-            
-            ExecutorService es = Executors.newFixedThreadPool( 2 );
-            
-            Process proc = pb.start();
-            es.submit( new VerboseStreamConsumer( proc.getInputStream() ) );
-            es.submit( new StreamConsumer( proc.getErrorStream() ) );
-            
-            proc.waitFor();
-            
-            int exitVal = proc.exitValue();
-            
-            es.shutdown();
-            es.awaitTermination( 30, TimeUnit.SECONDS );
-            
+            String cmd = Arrays.stream( command ).collect( Collectors.joining( " " ) );
+            Map<String, String> vars = new HashMap<>();
+            vars.put( "ASPERA_SCP_PASS", this.password );
+            vars.put( "PATH", System.getenv( "PATH" ) );
+            int exitVal = new ShellExec( cmd, vars ).exec( true );
             if( 0 != exitVal )
                 throw WebinCliException.createSystemError( "Unable to upload files using ASPERA" );
             
