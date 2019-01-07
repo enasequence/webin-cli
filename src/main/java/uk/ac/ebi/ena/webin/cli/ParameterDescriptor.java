@@ -74,6 +74,6 @@ public interface ParameterDescriptor {
    String helpFlagDescription =
            OPTION_LINE + "Use the -help option to see all command line options.";
    String latestFlagDescription =
-           OPTION_LINE + "Always use latest version of Webi-CLI. Download from GitHub and store in classpath floder if nessecary.";
+           OPTION_LINE + "Always use latest version of Webi-CLI. Download from GitHub and store in classpath floder if necessary.";
 
 }
