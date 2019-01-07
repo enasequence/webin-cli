@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.beust.jcommander.IParameterValidator;
@@ -43,6 +42,7 @@ import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
 import uk.ac.ebi.ena.version.Version;
+import uk.ac.ebi.ena.version.VersionManager;
 
 public class WebinCli {
 	public final static int SUCCESS = 0;
@@ -146,19 +146,21 @@ public class WebinCli {
         {
             if( args != null && args.length > 0 )
             {
-                Set<String> found = Arrays.stream( args ).collect( Collectors.toSet() );
-
-                if( found.contains( "-help" ) ) {
+                List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
+                if( found.contains( ParameterDescriptor.help ) ) {
 					printUsage();
 					System.exit( SUCCESS );
 				}
                 
-                if( found.contains( "-version" ) )
+                if( found.contains( ParameterDescriptor.version ) )
                 {
                     WebinCliReporter.writeToConsole( getFormattedProgramVersion() );
                     System.exit( SUCCESS );
                 }
 
+
+                if( found.contains( ParameterDescriptor.latest ) )
+                    VersionManager.main( found.stream().filter( e -> !e.equals( ParameterDescriptor.latest ) ).toArray( sz -> new String[ sz ] ) );
             }
 
             Params params = parseParameters( args );
@@ -317,7 +319,7 @@ public class WebinCli {
         {
             AssemblyInfoEntry aie = new AssemblyInfoEntry();
             aie.setName( "NAME" );
-            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath());
+            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath() );
             submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
 
         } catch( WebinCliException e ) 
@@ -325,27 +327,36 @@ public class WebinCli {
             e.throwAddMessage( SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR );
         }
     }
+	
 
-    private static Params parseParameters(String... args) {
+    private static Params 
+    parseParameters( String... args ) 
+    {
 		Params params = new Params();
-		JCommander jCommander = new JCommander(params);
-		try {
-			jCommander.parse(args);
+		JCommander jCommander = new JCommander( params );
+		try 
+		{
+			jCommander.parse( args );
 
-			if (!params.unrecognisedOptions.isEmpty()) {
-				WebinCliReporter.writeToConsole(Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", ")));
+			if( !params.unrecognisedOptions.isEmpty() )  
+			{
+				WebinCliReporter.writeToConsole( Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", " ) ) );
 				printHelp();
-				System.exit(USER_ERROR);
+				System.exit( USER_ERROR );
 			}
 
-		} catch (Exception e) {
-			WebinCliReporter.writeToConsole(Severity.ERROR, e.getMessage());
-			System.exit(USER_ERROR);
+		} catch( Exception e )
+		{
+			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
+			System.exit( USER_ERROR );
 		}
 		return params;
 	}
 
-	private static void printUsage() {
+	
+    private static void 
+	printUsage() 
+	{
 	    WebinCliReporter.writeToConsole( new StringBuilder().append( "Program options: " )
 	                                                .append( '\n' )
 	                                                .append( '\t' )
@@ -397,27 +408,38 @@ public class WebinCli {
 	                                                .append( ParameterDescriptor.versionFlagDescription )
 	                                                .append( '\n' )
 	                                                
-													.append( "\n" + ParameterDescriptor.help )
-													.append( ParameterDescriptor.helpDescription )
+                                                    .append( "\n" + ParameterDescriptor.latest )
+                                                    .append( ParameterDescriptor.latestFlagDescription )
+                                                    .append( '\n' )
+
+                                                    .append( "\n" + ParameterDescriptor.help )
+													.append( ParameterDescriptor.helpFlagDescription )
 													.append( '\n' )
 													.append( '\t' )
 	                                                .append( '\n' ).toString() );
 		writeReturnCodes();
 	}
 
-	private static void printHelp() {
-		WebinCliReporter.writeToConsole( Severity.INFO, "Please use -help to see all command line options." );
+	
+    private static void 
+	printHelp() 
+	{
+		WebinCliReporter.writeToConsole( Severity.INFO, "Please use " + ParameterDescriptor.help + " to see all command line options." );
 	}
 
-	private static void writeReturnCodes()	{
+	
+	private static void 
+	writeReturnCodes()	
+	{
 		HashMap<Integer, String> returnCodeMap = new HashMap<>();
-		returnCodeMap.put(SUCCESS, "SUCCESS");
-		returnCodeMap.put(SYSTEM_ERROR, "INTERNAL ERROR");
-		returnCodeMap.put(USER_ERROR, "USER ERROR");
-		returnCodeMap.put(VALIDATION_ERROR, "VALIDATION ERROR");
-		WebinCliReporter.writeToConsole( "Exit codes: " + returnCodeMap.toString());
+		returnCodeMap.put( SUCCESS, "SUCCESS" );
+		returnCodeMap.put( SYSTEM_ERROR, "INTERNAL ERROR" );
+		returnCodeMap.put( USER_ERROR, "USER ERROR" );
+		returnCodeMap.put( VALIDATION_ERROR, "VALIDATION ERROR" );
+		WebinCliReporter.writeToConsole( "Exit codes: " + returnCodeMap.toString() );
 	}
 
+	
 	public static class contextValidator implements IParameterValidator {
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
@@ -448,21 +470,23 @@ public class WebinCli {
 	}
 
 
-	private static void checkVersion( boolean test ) {
+	private static void 
+	checkVersion( boolean test ) 
+	{
 		String version = WebinCli.class.getPackage().getImplementationVersion();
 		
 		if( null == version || version.isEmpty() )
 		    return;
 		
 		Version versionService = new Version();
-		if (!versionService.isVersionValid(version, test ))
-			throw WebinCliException.createUserError(INVALID_VERSION.replaceAll("__VERSION__", version));
+		if( !versionService.isVersionValid( version, test ) )
+			throw WebinCliException.createUserError( INVALID_VERSION.replaceAll( "__VERSION__", version ) );
 	}
 
-	// Directory creation.
 
+	// Directory creation.
 	static File
-	getReportFile(File dir, String filename, String suffix)
+	getReportFile( File dir, String filename, String suffix )
 	{
 		if( dir == null || !dir.isDirectory() )
 			throw WebinCliException.createSystemError( "Invalid report directory: " + filename );
@@ -470,10 +494,12 @@ public class WebinCli {
 		return new File( dir, Paths.get( filename ).getFileName().toString() + suffix );
 	}
 
+	
 	public static File
-	createOutputDir(WebinCliParameters parameters, String... dirs) throws WebinCliException
+	createOutputDir( WebinCliParameters parameters, String... dirs ) throws WebinCliException
 	{
-		if (parameters.getOutputDir() == null) {
+		if (parameters.getOutputDir() == null) 
+		{
 			throw WebinCliException.createSystemError( "Missing output directory" );
 		}
 
@@ -481,12 +507,14 @@ public class WebinCli {
 
 		Path p;
 
-		try {
+		try
+		{
 			p = Paths.get(parameters.getOutputDir().getPath(), safeDirs);
-		}
-		catch (InvalidPathException ex) {
+			
+		}catch( InvalidPathException ex ) 
+		{
 
-			throw WebinCliException.createSystemError("Unable to create directory: " + ex.getInput());
+			throw WebinCliException.createSystemError( "Unable to create directory: " + ex.getInput() );
 		}
 
 		File dir = p.toFile();
@@ -498,14 +526,16 @@ public class WebinCli {
 
 		return dir;
 	}
+	
 
 	public static String[]
-	getSafeOutputDir(String ... dirs ) {
+	getSafeOutputDir( String ... dirs ) 
+	{
 		return Arrays.stream( dirs )
-		.map(str -> str.replaceAll("[^a-zA-Z0-9-_\\.]", "_"))
-				.map(str -> str.replaceAll("_+", "_"))
-				.map(str -> str.replaceAll("^_+(?=[^_])", ""))
-				.map(str -> str.replaceAll("(?<=[^_])_+$", ""))
-				.toArray(String[]::new);
+		             .map( str -> str.replaceAll( "[^a-zA-Z0-9-_\\.]", "_" ) )
+		             .map( str -> str.replaceAll( "_+", "_" ) )
+		             .map( str -> str.replaceAll( "^_+(?=[^_])", "" ) )
+		             .map( str -> str.replaceAll( "(?<=[^_])_+$", "" ) )
+		             .toArray( String[]::new );
 	}
 }

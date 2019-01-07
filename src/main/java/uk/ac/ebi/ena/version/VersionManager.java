@@ -16,14 +16,18 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 import javax.script.ScriptException;
 
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseAsset;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseInfo;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 VersionManager 
@@ -62,6 +66,17 @@ VersionManager
     }
     
     
+    private File
+    getClassPathFolder()
+    {
+        Set<File> cp_list = Arrays.stream( System.getProperty( "java.class.path" )
+                                  .split( ":" ) )
+                                  .map( e -> new File( e ).getParentFile() )
+                                  .collect( Collectors.toSet() );
+        return cp_list.iterator().next();
+    }
+
+    
     private boolean
     findInClassPath( File file )
     {
@@ -93,32 +108,34 @@ VersionManager
         LatestRelease lr = new LatestRelease();
         info = lr.getLatestInfo();
         if( 1 != info.assets.size() )
-            throw new RuntimeException( "Unable to fetch information about latest release" );
+            throw WebinCliException.createSystemError( "Unable to fetch information about latest release" );
         
         GitHubReleaseAsset ra = info.assets.get( 0 );
         
         if( !"uploaded".equals( ra.state ) )
-            throw new RuntimeException( "Unable to fetch information about latest release" );
+            throw WebinCliException.createSystemError( "Unable to fetch information about latest release" );
         
-        File file = new File( ".", ra.name );
+        File file = new File( getClassPathFolder(), ra.name );
         
         if( findInClassPath( file ) )
             return (int) invokeMain( this.getClass().getClassLoader(), args );
         
         if( !file.exists() || ra.size != file.length() )
         {
+            WebinCliReporter.writeToConsole( Severity.INFO, String.format( "Downloading latest version of Webin-CLI as %s", file.getPath() ) );
             long downloaded = download( new URL( info.assets.get( 0 ).browser_download_url ), file.toPath() );
         
             if( ra.size != downloaded )
-                throw new RuntimeException( "Wrong download size" );
+                throw WebinCliException.createSystemError( "Wrong download size" );
         
             if( ra.size != file.length() )
-                throw new RuntimeException( "Wrong file size" );
+                throw WebinCliException.createSystemError( "Wrong file size" );
         }
         
 
         try( URLClassLoader cl = new URLClassLoader( new URL[] { file.toURI().toURL() }, null ) )
         {
+            WebinCliReporter.writeToConsole( Severity.INFO, "Using latest Webin-CLI version: " + file.getPath() );
             return (int) invokeMain( cl, args );
         }
     }

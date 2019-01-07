@@ -22,7 +22,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.rawreads.VerboseLogger;
+import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 
 public class 
@@ -141,8 +143,8 @@ ShellExec implements VerboseLogger
             es = Executors.newFixedThreadPool( 2 );
             if( verbose )
             {
-                printfToConsole( "Invoking: %s\n", command );
-                flushConsole();
+                WebinCliReporter.writeToConsole( Severity.INFO, String.format( "Invoking: %s\n", command ) );
+                WebinCliReporter.flushConsole();
             }
             
             ProcessBuilder pb = System.getProperty( "os.name" ).toLowerCase().contains( "win" ) ? new ProcessBuilder( "cmd", "/c", command )

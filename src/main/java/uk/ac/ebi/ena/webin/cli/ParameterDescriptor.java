@@ -25,6 +25,7 @@ public interface ParameterDescriptor {
     String inputDir   = "-inputDir";
     String tryAscp    = "-ascp";
     String help       = "-help";
+    String latest     = "-latest";
 
     //synonyms
     String userNameSynonym   = "-username";
@@ -70,6 +71,9 @@ public interface ParameterDescriptor {
    String tryAscpDescription =
            OPTION_LINE + "Use Aspera (if Aspera Cli is available) instead of FTP when uploading files." +
            OPTION_LINE + "The path to the installed \"ascp\" program must be in the PATH variable.";
-    String helpDescription =
-            OPTION_LINE + "Use the -help option to see all command line options.";
+   String helpFlagDescription =
+           OPTION_LINE + "Use the -help option to see all command line options.";
+   String latestFlagDescription =
+           OPTION_LINE + "Always use latest version of Webi-CLI. Download from GitHub and store in classpath floder if nessecary.";
+
 }
