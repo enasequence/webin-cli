@@ -11,8 +11,10 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
@@ -122,14 +124,26 @@ VersionManager
         
         if( !file.exists() || ra.size != file.length() )
         {
-            WebinCliReporter.writeToConsole( Severity.INFO, String.format( "Downloading latest version of Webin-CLI as %s", file.getPath() ) );
-            long downloaded = download( new URL( info.assets.get( 0 ).browser_download_url ), file.toPath() );
+            Path tmp_file = Files.createTempFile( "webin-cli", "download" );
+            WebinCliReporter.writeToConsole( Severity.INFO, String.format( "Downloading latest version of Webin-CLI as %s", file.toPath() ) );
+            long downloaded = download( new URL( info.assets.get( 0 ).browser_download_url ), tmp_file );
         
             if( ra.size != downloaded )
                 throw WebinCliException.createSystemError( "Wrong download size" );
         
-            if( ra.size != file.length() )
+            if( ra.size != tmp_file.toFile().length() )
                 throw WebinCliException.createSystemError( "Wrong file size" );
+            
+            if( !file.exists() || ra.size != file.length() )
+            {
+                try
+                {
+                    Files.move( tmp_file, file.toPath(), StandardCopyOption.REPLACE_EXISTING );
+                } catch( IOException ioe )
+                {
+                    throw WebinCliException.createSystemError( String.format( "Unable to copy downloaded file %s into classpath destination folder as %s", tmp_file, file.getPath() ) );
+                }
+            }
         }
         
 
