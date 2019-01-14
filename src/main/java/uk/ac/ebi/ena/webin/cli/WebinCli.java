@@ -41,6 +41,7 @@ import uk.ac.ebi.ena.submit.Submit;
 import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
+import uk.ac.ebi.ena.version.JavaRuntimeVersion;
 import uk.ac.ebi.ena.version.Version;
 import uk.ac.ebi.ena.version.VersionManager;
 
@@ -71,6 +72,7 @@ public class WebinCli {
 	public static final String INVALID_CONTEXT = "Invalid context: ";
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
+    
 	
 	private Params params;
 	private ContextE contextE;
@@ -171,7 +173,10 @@ public class WebinCli {
             	printHelp();
                 System.exit( USER_ERROR );
             }
-
+            
+            
+            checkRuntimeVersion();
+            
             checkVersion( params.test );
 
             WebinCli webinCli = new WebinCli();
@@ -217,6 +222,17 @@ public class WebinCli {
     }
 
   
+    private static void 
+    checkRuntimeVersion()
+    {
+        JavaRuntimeVersion jrv = new JavaRuntimeVersion();
+        if( !jrv.isComplient() )
+            throw WebinCliException.createUserError( String.format( "Your current JVM version %f is out of date and not supported, please download the latest version from https://java.com",
+                                                                    jrv.getCurrentVersion(),
+                                                                    jrv.getMinVersion() ) );
+    }
+
+
     void 
     init( Params params ) throws Exception
     {
