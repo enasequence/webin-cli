@@ -41,7 +41,7 @@ import uk.ac.ebi.ena.submit.Submit;
 import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
-import uk.ac.ebi.ena.version.JavaRuntimeVersion;
+import uk.ac.ebi.ena.version.HotSpotRuntimeVersion;
 import uk.ac.ebi.ena.version.Version;
 import uk.ac.ebi.ena.version.VersionManager;
 
@@ -143,9 +143,10 @@ public class WebinCli {
     {
         ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
         ValidationResult.setDefaultMessageFormatter( null );
-        
+
         try 
         {
+            checkRuntimeVersion();
             if( args != null && args.length > 0 )
             {
                 List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
@@ -174,9 +175,6 @@ public class WebinCli {
                 System.exit( USER_ERROR );
             }
             
-            
-            checkRuntimeVersion();
-            
             checkVersion( params.test );
 
             WebinCli webinCli = new WebinCli();
@@ -188,7 +186,9 @@ public class WebinCli {
         } catch( WebinCliException e ) 
         {
 			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
-            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
+			
+			if( null != WebinCliReporter.getDefaultReport() )
+			    WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
             
             switch( e.getErrorType() )
             {
@@ -225,11 +225,11 @@ public class WebinCli {
     private static void 
     checkRuntimeVersion()
     {
-        JavaRuntimeVersion jrv = new JavaRuntimeVersion();
-        if( !jrv.isComplient() )
-            throw WebinCliException.createUserError( String.format( "Your current JVM version %f is out of date and not supported, please download the latest version from https://java.com",
-                                                                    jrv.getCurrentVersion(),
-                                                                    jrv.getMinVersion() ) );
+        HotSpotRuntimeVersion jrv = new HotSpotRuntimeVersion();
+        if( jrv.isHotSpot() && !jrv.isComplient() )
+            throw WebinCliException.createSystemError( String.format( "Your current HotSpot(TM) JVM %s is out of date and not supported, please download the latest version from https://java.com. Minimal HotSpot(TM) JVM supported is: %s",
+                                                                      String.valueOf( jrv.getCurrentVersion() ),
+                                                                      String.valueOf( jrv.getMinVersion() ) ) );
     }
 
 

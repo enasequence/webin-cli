@@ -1,7 +1,5 @@
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.embl.api.validation.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,6 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashSet;
+
+import uk.ac.ebi.embl.api.validation.Origin;
+import uk.ac.ebi.embl.api.validation.Severity;
+import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 
 public class WebinCliReporter {
 
@@ -162,43 +166,44 @@ public class WebinCliReporter {
         void write(OutputStream strm) throws IOException;
     }
 
+    
     private static void
-    writeMessages(File reportFile, WriteCallback callback) {
-        OutputStream strm = System.out;
-        if (reportFile != null) {
-            try {
-                strm = Files.newOutputStream(reportFile.toPath(),
-                        StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.SYNC);
-            } catch (IOException e) {
-                //
+    writeMessages( File reportFile, WriteCallback callback )
+    {
+        if( reportFile != null )
+        {
+            try( OutputStream strm = Files.newOutputStream( reportFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.SYNC ) )
+            {
+                writeMessages( strm, callback );
+                strm.flush();
+                
+            } catch (IOException e) 
+            {
+                writeMessages( System.out, callback );
             }
+        } else
+        {
+            writeMessages( System.out, callback );
         }
-        writeMessages(strm, callback);
     }
 
+
     private static void
-    writeMessages(OutputStream strm, WriteCallback callback) {
-        try {
-            callback.write(strm);
+    writeMessages( OutputStream strm, WriteCallback callback ) 
+    {
+        try
+        {
+            callback.write( strm );
         }
-        catch( IOException e ) {
+        catch( IOException e )
+        {
             //
         }
-        finally {
-            if (strm != System.out &&
-                strm != System.err) {
-                try {
-                    strm.close();
-                } catch (IOException e) {
-                    //
-                }
-            }
-        }
     }
+
 
     // Write message
     //
-
     private static void
     writeMessage(OutputStream strm, ValidationMessage<Origin> validationMessage ) throws IOException {
         writeMessage(strm, validationMessage, null);
