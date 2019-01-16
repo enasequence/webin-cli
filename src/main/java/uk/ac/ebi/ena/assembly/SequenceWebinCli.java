@@ -44,6 +44,7 @@ import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCli.manifestFileValidator;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public abstract class 
@@ -58,7 +59,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	private SourceFeature source;
 	protected AssemblyInfoEntry assembly_info;
 
-    protected abstract void validateInternal() throws ValidationEngineException;
+	protected abstract void validateInternal() throws ValidationEngineException;
 
 
     public void
@@ -143,7 +144,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
    
     String
-    createAnalysisXml( List<Element> fileList, AssemblyInfoEntry entry, String centerName  ) 
+    createAnalysisXml( List<Element> fileList, AssemblyInfoEntry entry, String centerName, String description ) 
     {
         try 
         {
@@ -161,6 +162,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                 analysisE.setAttribute( "center_name", centerName );
             
             analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            
+            if( null != description && !description.isEmpty() )
+                analysisE.addContent( new Element( "DESCRIPTION" ).setText( description ) );
+                
             Element studyRefE = new Element( "STUDY_REF" );
             analysisE.addContent( studyRefE );
             studyRefE.setAttribute( "accession", entry.getStudyId() );
@@ -171,7 +176,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 				sampleRefE.setAttribute( "accession", entry.getBiosampleId() );
             }
             Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
-            analysisE.addContent(analysisTypeE);
+            analysisE.addContent( analysisTypeE );
             Element typeE = makeAnalysisType( entry );
             analysisTypeE.addContent( typeE );
 
@@ -299,7 +304,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             List<File> uploadFileList = getUploadFiles();
             List<Element> eList = getXMLFiles( uploadDir );
 
-            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName() );
+            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName(), getDescription() );
             
             Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
     
@@ -317,7 +322,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         }        
     }
 
-	private List<File> getFilesToUpload(FileType fileType)
+    
+	private List<File> 
+	getFilesToUpload(FileType fileType)
 	{
 		List<File> files=new ArrayList<File>();
 		if( getSubmissionOptions() != null && getSubmissionOptions().submissionFiles.isPresent() )

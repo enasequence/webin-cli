@@ -50,7 +50,8 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	{
 		getManifestReader().readManifest( inputDir, manifestFile );
 		setSubmissionOptions( getManifestReader().getSubmissionOptions() );
-
+		setDescription( getManifestReader().getDescription() );
+		
 		if( getSubmissionOptions().assemblyInfoEntry.isPresent() )
 		{
 			if (getStudy() != null)
@@ -78,8 +79,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	}
 
 	
-	@Override
-	Element 
+	@Override Element 
 	makeAnalysisType( AssemblyInfoEntry entry )
 	{
 		Element typeE = new Element( ContextE.genome.getType() );

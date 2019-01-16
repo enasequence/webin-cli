@@ -26,4 +26,10 @@ public class TestManifestReader extends ManifestReader {
     @Override
     protected void processManifest() {
     }
+
+    @Override
+    public String getDescription()
+    {
+        return "Description";
+    }
 }

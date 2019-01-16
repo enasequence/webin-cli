@@ -30,7 +30,9 @@ import static uk.ac.ebi.ena.manifest.ManifestReader.Fields.INFO;
 import static uk.ac.ebi.ena.manifest.ManifestReader.ManifestReaderState.State.PARSE;
 import static uk.ac.ebi.ena.manifest.ManifestReader.ManifestReaderState.State.VALIDATE;
 
-public abstract class ManifestReader {
+public abstract class 
+ManifestReader 
+{
 
     public interface
     Fields {
@@ -105,10 +107,14 @@ public abstract class ManifestReader {
         return state.inputDir;
     }
 
+    
     public abstract String getName();
+    public abstract String getDescription();
 
+    
     public final ManifestReaderResult
-    getResult() {
+    getResult()
+    {
         return result;
     }
 

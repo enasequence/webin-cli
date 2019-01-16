@@ -43,7 +43,7 @@ TranscriptomeAssemblyXmlTest {
     public void
     testAnalysisXML_AssemblyInfo_WithFastaFile() {
     	
-    	 Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
+    	Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
     	SubmissionOptions submissionOptions =  new SubmissionOptions();
     	SubmissionFiles submissionFiles = new SubmissionFiles();
     	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
@@ -62,7 +62,7 @@ TranscriptomeAssemblyXmlTest {
         info.setProgram("test_program");
         info.setPlatform("test_platform");
         info.setTpa(false);
-
+        cli.setDescription( "test description" );
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
@@ -71,6 +71,7 @@ TranscriptomeAssemblyXmlTest {
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
+                        "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
                         "    <STUDY_REF accession=\"test_study\" />\n" +
                         "    <SAMPLE_REF accession=\"test_sample\" />\n" +
                         "    <ANALYSIS_TYPE>\n" +
@@ -90,18 +91,19 @@ TranscriptomeAssemblyXmlTest {
     @Test
     public void
     testAnalysisXML_Manifest_WithFlatFile() {
-        String name = "test_transcriptome";
-        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
-        Path inputDir = flatFile.getParent();
-        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
-                "NAME\t" + name + "\n" +
-                        "SAMPLE\ttest_sample\n" +
-                        "STUDY\ttest_study\n" +
-                        "PROGRAM\ttest_program\n" +
-                        "PLATFORM\ttest_platform\n" +
-                        "TPA\ttrue\n" +
-                        "FLATFILE\t" + flatFile.getFileName() + "\n"
-        );
+        String name       = "test_transcriptome";
+        Path flatFile     = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        Path inputDir     = flatFile.getParent();
+        String descr      = "some-descr";
+        Path manifestFile = WebinCliTestUtils.createTempFile( "manifest.txt", inputDir, false,
+                                                              "NAME\t" + name + "\n"
+                                                            + "DESCRIPTION " + descr   + "\n"
+                                                            + "SAMPLE\ttest_sample\n"
+                                                            + "STUDY\ttest_study\n"
+                                                            + "PROGRAM\ttest_program\n"
+                                                            + "PLATFORM\ttest_platform\n"
+                                                            + "TPA\ttrue\n"
+                                                            + "FLATFILE\t" + flatFile.getFileName() + "\n" );
 
         WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
 
@@ -129,6 +131,7 @@ TranscriptomeAssemblyXmlTest {
                     "<ANALYSIS_SET>\n" +
                             "<ANALYSIS>\n" +
                             "<TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
+                            "<DESCRIPTION>" + descr + "</DESCRIPTION>\n" +
                             "<STUDY_REF accession=\"test_study\"/>\n" +
                             "<SAMPLE_REF accession=\"test_sample\"/>\n" +
                             "<ANALYSIS_TYPE>\n" +

@@ -25,10 +25,12 @@ import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 
-public class GenomeAssemblyManifest extends ManifestReader
+public class
+GenomeAssemblyManifest extends ManifestReader
 {
 	public interface
-	Fields {
+	Fields 
+	{
 		String NAME = "NAME";
 		String ASSEMBLYNAME = "ASSEMBLYNAME";
 		String STUDY = "STUDY";
@@ -45,9 +47,13 @@ public class GenomeAssemblyManifest extends ManifestReader
 		String FASTA = "FASTA";
 		String FLATFILE = "FLATFILE";
 		String AGP = "AGP";
+		String DESCRIPTION = "DESCRIPTION";
 	}
 
+	
 	private String name;
+	private String description;
+	
 	private static final String DEFAULT_MOLECULE_TYPE = "genomic DNA";
 	private SubmissionOptions submissionOptions;
 	private final static String[] CV_MOLECULETYPE = {
@@ -76,82 +82,99 @@ public class GenomeAssemblyManifest extends ManifestReader
 			"Environmental Single-Cell Amplified Genome (SAG)"
 	};
 
-	public
-	GenomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor,SourceFeatureProcessor sourceProcessor) {
+	
+	@SuppressWarnings( "serial" ) public
+	GenomeAssemblyManifest( SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor )
+	{
 		super(
 				// Fields.
-				new ArrayList<ManifestFieldDefinition>() {{
-					add(new ManifestFieldDefinition(Fields.NAME, ManifestFieldType.META, 0, 1));
-					add(new ManifestFieldDefinition(Fields.ASSEMBLYNAME, ManifestFieldType.META, 0, 1));
-					add(new ManifestFieldDefinition(Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor));
-					add(new ManifestFieldDefinition(Fields.SAMPLE, ManifestFieldType.META, 1, 1, sampleProcessor,sourceProcessor));
-					add(new ManifestFieldDefinition(Fields.COVERAGE, ManifestFieldType.META, 1, 1));
-					add(new ManifestFieldDefinition(Fields.PROGRAM, ManifestFieldType.META, 1, 1));
-					add(new ManifestFieldDefinition(Fields.PLATFORM, ManifestFieldType.META, 1, 1));
-					add(new ManifestFieldDefinition(Fields.MINGAPLENGTH, ManifestFieldType.META, 0, 1));
-					add(new ManifestFieldDefinition(Fields.MOLECULETYPE, ManifestFieldType.META, 0, 1,
-							new CVFieldProcessor(CV_MOLECULETYPE)));
+				new ArrayList<ManifestFieldDefinition>() {
+				{
+					add( new ManifestFieldDefinition( Fields.NAME,         ManifestFieldType.META, 0, 1 ) );
+					add( new ManifestFieldDefinition( Fields.DESCRIPTION,  ManifestFieldType.META, 0, 1 ) );
+					add( new ManifestFieldDefinition( Fields.ASSEMBLYNAME, ManifestFieldType.META, 0, 1 ) );
+					add( new ManifestFieldDefinition( Fields.STUDY,        ManifestFieldType.META, 1, 1, studyProcessor ) );
+					add( new ManifestFieldDefinition( Fields.SAMPLE,       ManifestFieldType.META, 1, 1, sampleProcessor, sourceProcessor ) );
+					add( new ManifestFieldDefinition( Fields.COVERAGE,     ManifestFieldType.META, 1, 1 ) );
+					add( new ManifestFieldDefinition( Fields.PROGRAM,      ManifestFieldType.META, 1, 1 ) );
+					add( new ManifestFieldDefinition( Fields.PLATFORM,     ManifestFieldType.META, 1, 1 ) );
+					add( new ManifestFieldDefinition( Fields.MINGAPLENGTH, ManifestFieldType.META, 0, 1 ) );
+					add( new ManifestFieldDefinition( Fields.MOLECULETYPE, ManifestFieldType.META, 0, 1,
+							                          new CVFieldProcessor( CV_MOLECULETYPE ) ) );
 
-					add(new ManifestFieldDefinition(Fields.ASSEMBLY_TYPE, ManifestFieldType.META, 0, 1,
-							new CVFieldProcessor(CV_ASSEMBLY_TYPE)));
+					add( new ManifestFieldDefinition( Fields.ASSEMBLY_TYPE, ManifestFieldType.META, 0, 1,
+							                          new CVFieldProcessor( CV_ASSEMBLY_TYPE ) ) );
 
-					add(new ManifestFieldDefinition(Fields.TPA, ManifestFieldType.META, 0, 1,
-							CVFieldProcessor.CV_BOOLEAN));
+					add( new ManifestFieldDefinition( Fields.TPA, ManifestFieldType.META, 0, 1,
+							                          CVFieldProcessor.CV_BOOLEAN ) );
 
-					add(new ManifestFieldDefinition(Fields.CHROMOSOME_LIST, ManifestFieldType.FILE, 0, 1,
-							                        new ASCIIFileNameProcessor(), 
-							                        new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					add( new ManifestFieldDefinition( Fields.CHROMOSOME_LIST, ManifestFieldType.FILE, 0, 1,
+					                                  new ASCIIFileNameProcessor(), 
+					                                  new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
 					
-					add(new ManifestFieldDefinition(Fields.UNLOCALISED_LIST, ManifestFieldType.FILE, 0, 1,
-					                                new ASCIIFileNameProcessor(), 
-					                                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					add( new ManifestFieldDefinition( Fields.UNLOCALISED_LIST, ManifestFieldType.FILE, 0, 1,
+					                                  new ASCIIFileNameProcessor(), 
+					                                  new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
 					
-					add(new ManifestFieldDefinition(Fields.FASTA, ManifestFieldType.FILE, 0, 1,
-					                                new ASCIIFileNameProcessor(), 
-					                                new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX)));
+					add( new ManifestFieldDefinition( Fields.FASTA, ManifestFieldType.FILE, 0, 1,
+					                                  new ASCIIFileNameProcessor(), 
+					                                  new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX ) ) );
 					
-					add(new ManifestFieldDefinition(Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
-					                                new ASCIIFileNameProcessor(), 
-					                                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+					add( new ManifestFieldDefinition( Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
+					                                  new ASCIIFileNameProcessor(), 
+					                                  new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
 					
-					add(new ManifestFieldDefinition(Fields.AGP, ManifestFieldType.FILE, 0, 1,
-					                                new ASCIIFileNameProcessor(), 
-					                                new FileSuffixProcessor( ManifestFileSuffix.AGP_FILE_SUFFIX)));
-				}},
+					add( new ManifestFieldDefinition( Fields.AGP, ManifestFieldType.FILE, 0, 1,
+					                                  new ASCIIFileNameProcessor(), 
+					                                  new FileSuffixProcessor( ManifestFileSuffix.AGP_FILE_SUFFIX ) ) );
+				} },
 
 				// File groups.
-				new HashSet<List<ManifestFileCount>>() {{
+				new HashSet<List<ManifestFileCount>>() {
+			    {
 					// FASTA_WITHOUT_CHROMOSOMES
-					add(new ArrayList<ManifestFileCount>() {{
-						add(new ManifestFileCount(Fields.AGP, 0, null));
-						add(new ManifestFileCount(Fields.FASTA, 1, null));
-						add(new ManifestFileCount(Fields.FLATFILE, 0, null));
-					}});
+					add( new ArrayList<ManifestFileCount>() 
+					{
+					     {
+					         add( new ManifestFileCount( Fields.AGP, 0, null ) );
+					         add( new ManifestFileCount( Fields.FASTA, 1, null ) );
+					         add( new ManifestFileCount( Fields.FLATFILE, 0, null ) );
+					     }
+					} );
+					
 					// FASTA_WITH_CHROMOSOMES
-					add(new ArrayList<ManifestFileCount>() {{
-						add(new ManifestFileCount(Fields.AGP, 0, null));
-						add(new ManifestFileCount(Fields.FASTA, 1, null));
-						add(new ManifestFileCount(Fields.FLATFILE, 0, null));
-						add(new ManifestFileCount(Fields.CHROMOSOME_LIST, 1, 1));
-						add(new ManifestFileCount(Fields.UNLOCALISED_LIST, 0, 1));
-					}});
+					add( new ArrayList<ManifestFileCount>() 
+					{
+					     {
+					         add( new ManifestFileCount( Fields.AGP, 0, null ) );
+					         add( new ManifestFileCount( Fields.FASTA, 1, null ) );
+					         add( new ManifestFileCount( Fields.FLATFILE, 0, null ) );
+					         add( new ManifestFileCount( Fields.CHROMOSOME_LIST, 1, 1 ) );
+					         add( new ManifestFileCount( Fields.UNLOCALISED_LIST, 0, 1 ) );
+					     }
+					} );
+					
 					// FLATFILE_WITHOUT_CHROMOSOMES
-					add(new ArrayList<ManifestFileCount>() {{
-						add(new ManifestFileCount(Fields.AGP, 0, null));
-						add(new ManifestFileCount(Fields.FLATFILE, 1, null));
-					}});
+					add( new ArrayList<ManifestFileCount>() 
+					{
+					    {
+					        add( new ManifestFileCount( Fields.AGP, 0, null ) );
+					        add( new ManifestFileCount( Fields.FLATFILE, 1, null ) );
+					    }
+					} );
+					
 					// FLATFILE_WITH_CHROMOSOMES
-					add(new ArrayList<ManifestFileCount>() {{
-						add(new ManifestFileCount(Fields.AGP, 0, null));
-						add(new ManifestFileCount(Fields.FLATFILE, 1, null));
-						add(new ManifestFileCount(Fields.CHROMOSOME_LIST, 1, 1));
-						add(new ManifestFileCount(Fields.UNLOCALISED_LIST, 0, 1));
-					}});
-
-				}});
+					add( new ArrayList<ManifestFileCount>() 
+					{
+					    {
+					        add( new ManifestFileCount( Fields.AGP, 0, null ) );
+					        add( new ManifestFileCount( Fields.FLATFILE, 1, null ) );
+					        add( new ManifestFileCount( Fields.CHROMOSOME_LIST, 1, 1 ) );
+					        add( new ManifestFileCount( Fields.UNLOCALISED_LIST, 0, 1 ) );
+					    }
+					} );
+				} } );
 	}
-
-
 
 
 	@SuppressWarnings( "serial" )
@@ -170,6 +193,7 @@ public class GenomeAssemblyManifest extends ManifestReader
 		if( name != null )
 			assemblyInfo.setName( name );
 
+		description = getResult().getValue( Fields.DESCRIPTION );
 		assemblyInfo.setPlatform( getResult().getValue( Fields.PLATFORM ) );
 		assemblyInfo.setProgram( getResult().getValue( Fields.PROGRAM ) );
 		assemblyInfo.setMoleculeType( getResult().getValue( Fields.MOLECULETYPE ) == null ? DEFAULT_MOLECULE_TYPE :  getResult().getValue( Fields.MOLECULETYPE ) );
@@ -217,12 +241,24 @@ public class GenomeAssemblyManifest extends ManifestReader
 		submissionOptions.isRemote = true;
 	}
 
-	public String getName() {
+	
+	public String 
+	getName() 
+	{
 		return name;
 	}
 	
-	public SubmissionOptions getSubmissionOptions()
+	
+	public SubmissionOptions 
+	getSubmissionOptions()
 	{
 		return submissionOptions;
 	}
+
+
+    @Override public String 
+    getDescription()
+    {
+        return description;
+    }
 }

@@ -68,6 +68,7 @@ RawReadsManifestTest
     @Test public void
     testValidManifest() throws IOException
     {
+        String descr = "A description";
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
                                 ( Fields.STUDY             + " SRP123456789\n"
                                 + Fields.SAMPLE            + " ERS198522\n"
@@ -80,6 +81,7 @@ RawReadsManifestTest
                                 + Fields.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
                                 + Fields.INSERT_SIZE       + " 100500\n"
                                 + Fields.NAME              + " SOME-FANCY-NAME\n "
+                                + Fields.DESCRIPTION       + " " + descr + "\n"
                                 + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
@@ -95,6 +97,7 @@ RawReadsManifestTest
         Assert.assertNull( rm.getInsertSize() );
         Assert.assertNull( rm.getName() );
         Assert.assertNull( rm.getFiles() );
+        Assert.assertNull( rm.getDescription() );
         
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
@@ -107,9 +110,10 @@ RawReadsManifestTest
         Assert.assertEquals( "Inverse rRNA selection", rm.getLibrarySelection() );
         Assert.assertEquals( "Name library", rm.getLibraryName() );
         Assert.assertEquals( "library construction protocol", rm.getLibraryConstructionProtocol() );
-        Assert.assertEquals( new Integer( 100500 ), rm.getInsertSize() );
+        Assert.assertEquals( Integer.valueOf( 100500 ), rm.getInsertSize() );
         Assert.assertEquals( "SOME-FANCY-NAME", rm.getName() );
         Assert.assertEquals( 1, rm.getFiles().size() );
+        Assert.assertEquals( descr, rm.getDescription() );
     }
 
 

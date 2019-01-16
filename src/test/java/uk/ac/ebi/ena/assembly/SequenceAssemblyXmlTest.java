@@ -11,9 +11,7 @@
 
 package uk.ac.ebi.ena.assembly;
 
-import java.io.*;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -22,9 +20,9 @@ import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.study.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -46,11 +44,11 @@ SequenceAssemblyXmlTest
     {
     	
         Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
-   	SubmissionOptions submissionOptions =  new SubmissionOptions();
-   	SubmissionFiles submissionFiles = new SubmissionFiles();
-   	SubmissionFile submissionFile = new SubmissionFile(FileType.FLATFILE,flatFile.toFile());
-   	submissionFiles.addFile(submissionFile);
-   	submissionOptions.submissionFiles = Optional.of(submissionFiles);
+       	SubmissionOptions submissionOptions =  new SubmissionOptions();
+       	SubmissionFiles submissionFiles = new SubmissionFiles();
+       	SubmissionFile submissionFile = new SubmissionFile(FileType.FLATFILE,flatFile.toFile());
+       	submissionFiles.addFile(submissionFile);
+       	submissionOptions.submissionFiles = Optional.of(submissionFiles);
         SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
         String name = "test_sequence";
         cli.setName( name );
@@ -61,6 +59,7 @@ SequenceAssemblyXmlTest
         info.setName( name );
         info.setStudyId( "test_study" );
         cli.setAssemblyInfo( info );
+        cli.setDescription( "sequence description" );
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
@@ -69,6 +68,7 @@ SequenceAssemblyXmlTest
                 "<ANALYSIS_SET>\n" +
                         "<ANALYSIS>\n" +
                         "<TITLE>Sequence assembly: test_sequence</TITLE>\n" +
+                        "<DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
                         "<STUDY_REF accession=\"test_study\"/>\n" +
                         "<ANALYSIS_TYPE>\n" +
                         "<SEQUENCE_FLATFILE/>\n" +
@@ -89,7 +89,8 @@ SequenceAssemblyXmlTest
         Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
                 "NAME\t" + name + "\n" +
                         "STUDY\ttest_study\n" +
-                        "FLATFILE\t" + flatFile.getFileName() + "\n"
+                        "FLATFILE\t" + flatFile.getFileName() + "\n" +
+                        SequenceAssemblyManifest.Fields.DESCRIPTION + " d e s c r i p t i o n"
         );
 
         WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
@@ -114,6 +115,7 @@ SequenceAssemblyXmlTest
                     "<ANALYSIS_SET>\n" +
                             "<ANALYSIS>\n" +
                             "<TITLE>Sequence assembly: test_sequence</TITLE>\n" +
+                            "<DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
                             "<STUDY_REF accession=\"test_study\"/>\n" +
                             "<ANALYSIS_TYPE>\n" +
                             "<SEQUENCE_FLATFILE/>\n" +

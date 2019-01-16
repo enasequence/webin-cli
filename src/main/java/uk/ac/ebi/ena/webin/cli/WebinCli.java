@@ -152,13 +152,13 @@ public class WebinCli {
                 List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
                 if( found.contains( ParameterDescriptor.help ) ) {
 					printUsage();
-					System.exit( SUCCESS );
+					return;
 				}
                 
                 if( found.contains( ParameterDescriptor.version ) )
                 {
                     WebinCliReporter.writeToConsole( getFormattedProgramVersion() );
-                    System.exit( SUCCESS );
+                    return;
                 }
 
 
@@ -209,7 +209,7 @@ public class WebinCli {
 			if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
 				System.exit( SYSTEM_ERROR );
 			else
-				System.exit( USER_ERROR);
+				System.exit( USER_ERROR );
             
         } catch( Throwable e ) 
         {

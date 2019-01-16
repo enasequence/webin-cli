@@ -30,6 +30,8 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     {
     	getManifestReader().readManifest(inputDir, manifestFile);
     	setSubmissionOptions(getManifestReader().getSubmissionOptions());
+        setDescription( getManifestReader().getDescription() );
+        
     	if(getSubmissionOptions().assemblyInfoEntry.isPresent())
     	{
     		if (getStudy() != null)

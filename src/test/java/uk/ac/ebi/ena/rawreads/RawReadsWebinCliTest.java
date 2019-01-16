@@ -369,6 +369,53 @@ RawReadsWebinCliTest
 
 
     @Test public void
+    testCorrectBAMManifest() throws IOException
+    {
+        RawReadsWebinCli rr = new RawReadsWebinCli();
+        URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/OUTO500m_MetOH_narG_OTU18.bam" );
+        Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setInputDir( createOutputFolder() );
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+                                                 ( getInfoPart() + "BAM " + file + "\n" 
+                                                 + Fields.DESCRIPTION + " description text" ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+        parameters.setOutputDir( createOutputFolder() );
+        rr.setFetchSample( false );
+        rr.setFetchStudy( false );
+        rr.init( parameters );
+        rr.prepareSubmissionBundle();
+        SubmissionBundle sb = rr.getSubmissionBundle();
+        System.out.println( sb.getXMLFileList() );
+        WebinCliTestUtils.assertAnalysisXml( new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 ), 
+       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      + "<EXPERIMENT_SET>\n"
+      + " <EXPERIMENT alias=\"webin-reads-SOME-FANCY-NAME\">\n"
+      + "  <TITLE>Raw reads: SOME-FANCY-NAME</TITLE>\n"
+      + "   <STUDY_REF accession=\"ERP109454\" />\n"
+      + "    <DESIGN>\n"
+      + "     <DESIGN_DESCRIPTION>description text</DESIGN_DESCRIPTION>\n"
+      + "     <SAMPLE_DESCRIPTOR accession=\"ERS2713291\" />\n"
+      + "     <LIBRARY_DESCRIPTOR>\n"
+      + "       <LIBRARY_STRATEGY>CLONEEND</LIBRARY_STRATEGY>\n"
+      + "       <LIBRARY_SOURCE>OTHER</LIBRARY_SOURCE>\n"
+      + "       <LIBRARY_SELECTION>Inverse rRNA selection</LIBRARY_SELECTION>\n"
+      + "       <LIBRARY_LAYOUT>\n"
+      + "        <SINGLE />\n"
+      + "       </LIBRARY_LAYOUT>\n"
+      + "     </LIBRARY_DESCRIPTOR>\n"
+      + "    </DESIGN>\n"
+      + "    <PLATFORM>\n"
+      + "     <ILLUMINA>\n"
+      + "       <INSTRUMENT_MODEL>unspecified</INSTRUMENT_MODEL>\n"
+      + "     </ILLUMINA>\n"
+      + "    </PLATFORM>\n"
+      + " </EXPERIMENT>\n"
+      + "</EXPERIMENT_SET>" );
+    }
+
+    
+    @Test public void
     testCorrectBAM() throws IOException
     {
         RawReadsWebinCli rr = new RawReadsWebinCli();

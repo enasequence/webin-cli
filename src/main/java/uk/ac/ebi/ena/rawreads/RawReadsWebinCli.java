@@ -124,6 +124,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         if (StringUtils.isBlank(sampleId)) {
             sampleId = getManifestReader().getSampleId();
         }
+        
+        setDescription( getManifestReader().getDescription() );
     }
 
     DataFeederException 
@@ -426,7 +428,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         return valid;
     }
 
-    public void
+    
+    @Override public void
     prepareSubmissionBundle() throws WebinCliException
     {
         try
@@ -453,7 +456,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
             //do something
             String experiment_ref = getAlias();
             
-            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), is_paired );
+            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), is_paired, getManifestReader().getDescription() );
             String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
             
             Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
@@ -494,10 +497,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
 */
 
     String
-    createExperimentXml( String experiment_ref, String centerName, boolean is_paired )
+    createExperimentXml( String experiment_ref, String centerName, boolean is_paired, String design_description )
     {
         String instrument_model = getManifestReader().getInstrument();
-        String design_description = "unspecified";
+        design_description = StringUtils.isBlank( design_description ) ? "unspecified" : design_description;
         String library_strategy  = getManifestReader().getLibraryStrategy();
         String library_source    = getManifestReader().getLibrarySource();
         String library_selection = getManifestReader().getLibrarySelection();

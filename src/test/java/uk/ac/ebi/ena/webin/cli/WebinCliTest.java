@@ -14,6 +14,7 @@ package uk.ac.ebi.ena.webin.cli;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +42,7 @@ WebinCliTest
     {
         usernm = System.getenv( "webin-cli-username" );
         passwd = System.getenv( "webin-cli-password" );
+        Assert.assertTrue( "username should not be blank", StringUtils.isNotBlank( usernm ) );
     }
 
     private String
@@ -55,6 +57,7 @@ WebinCliTest
                 + RawReadsManifest.Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
                 + RawReadsManifest.Fields.LIBRARY_SOURCE    + " OTHER\n"
                 + RawReadsManifest.Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + RawReadsManifest.Fields.DESCRIPTION       + " Some reads description\n"
                 + RawReadsManifest.Fields.NAME              + " " + WebinCliTestUtils.createName() + "\n ";
     }
 
@@ -68,7 +71,8 @@ WebinCliTest
                 + GenomeAssemblyManifest.Fields.MINGAPLENGTH + " 34\n"
                 + GenomeAssemblyManifest.Fields.MOLECULETYPE + " genomic DNA\n"
                 + GenomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
-                + GenomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n";
+                + GenomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n"
+                + GenomeAssemblyManifest.Fields.DESCRIPTION  + " Some genome assembly description\n";
     }
 
     private String
@@ -78,14 +82,16 @@ WebinCliTest
                 + TranscriptomeAssemblyManifest.Fields.PROGRAM      + " assembly\n"
                 + TranscriptomeAssemblyManifest.Fields.PLATFORM     + " fghgf\n"
                 + TranscriptomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
-                + TranscriptomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n";
+                + TranscriptomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n"
+                + TranscriptomeAssemblyManifest.Fields.DESCRIPTION  + " Some transcriptome assembly description\n";
     }
 
     private String
     getSequenceManifestFields()
     {
         return    SequenceAssemblyManifest.Fields.NAME  + " " + WebinCliTestUtils.createName() + "\n"
-                + SequenceAssemblyManifest.Fields.STUDY + " PRJEB20083\n";
+                + SequenceAssemblyManifest.Fields.STUDY + " PRJEB20083\n"
+                + SequenceAssemblyManifest.Fields.DESCRIPTION  + " Some sequence assembly description\n";
     }
 
 

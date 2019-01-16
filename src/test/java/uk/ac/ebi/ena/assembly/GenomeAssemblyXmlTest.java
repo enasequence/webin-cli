@@ -198,7 +198,7 @@ GenomeAssemblyXmlTest
         info.setProgram( "test_program" );
         info.setPlatform( "test_platform" );
         info.setCoverage("1");
-        
+        cli.setDescription( "some test description" );
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
@@ -208,6 +208,7 @@ GenomeAssemblyXmlTest
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                        "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
                         "    <STUDY_REF accession=\"test_study\" />\n" +
                         "    <SAMPLE_REF accession=\"test_sample\" />\n" +
                         "    <ANALYSIS_TYPE>\n" +
@@ -235,6 +236,7 @@ GenomeAssemblyXmlTest
         Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
                 "NAME\t" + name + "\n" +
                         "SAMPLE\ttest_sample\n" +
+                        GenomeAssemblyManifest.Fields.DESCRIPTION + " a description\n" +
                         "STUDY\ttest_study\n" +
                         "PROGRAM\ttest_program\n" +
                         "PLATFORM\ttest_platform\n" +
@@ -269,6 +271,7 @@ GenomeAssemblyXmlTest
                     "<ANALYSIS_SET>\n" +
                             "  <ANALYSIS>\n" +
                             "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                            "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
                             "    <STUDY_REF accession=\"test_study\" />\n" +
                             "    <SAMPLE_REF accession=\"test_sample\" />\n" +
                             "    <ANALYSIS_TYPE>\n" +

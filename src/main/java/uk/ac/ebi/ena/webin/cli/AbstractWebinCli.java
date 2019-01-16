@@ -18,7 +18,6 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -48,6 +47,22 @@ AbstractWebinCli<T extends ManifestReader>
 
     protected abstract T createManifestReader();
 
+    protected String description;
+    
+    public String 
+    getDescription()
+    {
+        return description;
+    }
+
+    
+    public void 
+    setDescription( String description )
+    {
+        this.description = description;
+    }
+
+
     public final void
     init( WebinCliParameters parameters )
     {
@@ -69,20 +84,21 @@ AbstractWebinCli<T extends ManifestReader>
                 setName();
                 this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), VALIDATE_DIR );
                 this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), SUBMIT_DIR );
-            }
-            else {
+            } else 
+            {
                 throw WebinCliException.createSystemError( "Missing submission name" );
             }
-        }
-        catch( WebinCliException e )
+            
+        } catch( WebinCliException e )
         {
             throw e;
-        }
-        catch( Throwable t )
+            
+        } catch( Throwable t )
         {
             throw WebinCliException.createSystemError( "Failed to initialise validator" );
-        }
-        finally {
+            
+        } finally 
+        {
             setName();
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
                 WebinCliReporter.writeToConsole( manifestReader.getValidationResult() );

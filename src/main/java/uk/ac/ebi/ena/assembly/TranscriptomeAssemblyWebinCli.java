@@ -11,46 +11,19 @@
 
 package uk.ac.ebi.ena.assembly;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
 
 import org.jdom2.Element;
 
-import uk.ac.ebi.embl.api.entry.Entry;
-import uk.ac.ebi.embl.api.entry.Text;
-import uk.ac.ebi.embl.api.entry.XRef;
-import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
-import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.entry.location.Location;
-import uk.ac.ebi.embl.api.entry.location.LocationFactory;
-import uk.ac.ebi.embl.api.entry.location.Order;
-import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
-import uk.ac.ebi.embl.api.entry.sequence.Sequence;
-import uk.ac.ebi.embl.api.validation.*;
-import uk.ac.ebi.embl.api.validation.plan.EmblEntryValidationPlan;
-import uk.ac.ebi.embl.api.validation.plan.EmblEntryValidationPlanProperty;
-import uk.ac.ebi.embl.api.validation.plan.ValidationPlan;
+import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
-import uk.ac.ebi.embl.fasta.reader.FastaFileReader;
-import uk.ac.ebi.embl.fasta.reader.FastaLineReader;
-import uk.ac.ebi.embl.flatfile.reader.FlatFileReader;
-import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.submit.ContextE;
-import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifest> {
 	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
@@ -77,6 +50,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	public void readManifest(Path inputDir, File manifestFile) {
 		getManifestReader().readManifest(inputDir, manifestFile);
 		setSubmissionOptions(getManifestReader().getSubmissionOptions());
+	    setDescription( getManifestReader().getDescription() );
 		if(getSubmissionOptions().assemblyInfoEntry.isPresent())
 		{
 		if (getStudy() != null)

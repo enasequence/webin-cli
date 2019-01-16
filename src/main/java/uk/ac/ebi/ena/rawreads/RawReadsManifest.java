@@ -23,7 +23,13 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
-import uk.ac.ebi.ena.manifest.*;
+import uk.ac.ebi.ena.manifest.ManifestCVList;
+import uk.ac.ebi.ena.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
@@ -55,8 +61,10 @@ RawReadsManifest extends ManifestReader {
         String FASTQ = "FASTQ";
         String BAM = "BAM";
         String CRAM = "CRAM";
+        String DESCRIPTION = "DESCRIPTION";
     }
 
+    
     private final static String QUALITY_SCORE_PHRED_33 = "PHRED_33";
     private final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
     private final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
@@ -74,6 +82,7 @@ RawReadsManifest extends ManifestReader {
     );
 
     private String name = null;
+    private String description = null;
     private String study_id = null;
     private String sample_id = null;
     private String platform = null;
@@ -89,13 +98,16 @@ RawReadsManifest extends ManifestReader {
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
 
+    
     public
-    RawReadsManifest() {
-        this(null, null);
+    RawReadsManifest() 
+    {
+        this( null, null );
     }
 
-    public
-    RawReadsManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor)
+    
+    @SuppressWarnings( "serial" ) public
+    RawReadsManifest( SampleProcessor sampleProcessor, StudyProcessor studyProcessor )
     {
         super(
             // Fields.
@@ -103,6 +115,7 @@ RawReadsManifest extends ManifestReader {
             {
                 {
                         add( new ManifestFieldDefinition( Fields.NAME, ManifestFieldType.META, 1, 1 ) );
+                        add( new ManifestFieldDefinition( Fields.DESCRIPTION,  ManifestFieldType.META, 0, 1 ) );
                         add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor ) );
                         add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1, sampleProcessor ) );
 
@@ -166,7 +179,7 @@ RawReadsManifest extends ManifestReader {
     }
 
 
-    public String
+    @Override public String
     getName()
     {
         return name;
@@ -263,7 +276,8 @@ RawReadsManifest extends ManifestReader {
         name = getResult().getValue( Fields.NAME );
         study_id = getResult().getValue( Fields.STUDY );
         sample_id = getResult().getValue( Fields.SAMPLE );
-
+        description = getResult().getValue( Fields.DESCRIPTION );
+        
         if (getResult().getCount(Fields.INSTRUMENT) > 0 &&
             getResult().getField(Fields.INSTRUMENT).isValidFieldValueOrFileSuffix())
             instrument = getResult().getValue(Fields.INSTRUMENT);
@@ -395,5 +409,12 @@ RawReadsManifest extends ManifestReader {
             f.setFilename( fileName );
 
         return f;
+    }
+
+
+    @Override public String 
+    getDescription()
+    {
+        return description;
     }
 }
