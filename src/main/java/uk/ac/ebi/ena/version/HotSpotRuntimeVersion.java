@@ -31,7 +31,7 @@ HotSpotRuntimeVersion
     private static final int FROM_MAJOR    = 1;
     private static final int FROM_MINOR    = 8;
     private static final int FROM_SECURITY = 0;
-    static final int   FROM_BUILD          = 151; //151
+    static final int   FROM_BUILD          = 92; //151
     
     public static class 
     VersionInfo implements Comparable<VersionInfo>
