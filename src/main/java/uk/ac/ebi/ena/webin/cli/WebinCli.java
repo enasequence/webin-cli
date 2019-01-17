@@ -423,11 +423,11 @@ public class WebinCli {
 	                                                .append( "\n" + ParameterDescriptor.version )
 	                                                .append( ParameterDescriptor.versionFlagDescription )
 	                                                .append( '\n' )
-	                                                
+/*	                                                
                                                     .append( "\n" + ParameterDescriptor.latest )
                                                     .append( ParameterDescriptor.latestFlagDescription )
                                                     .append( '\n' )
-
+*/
                                                     .append( "\n" + ParameterDescriptor.help )
 													.append( ParameterDescriptor.helpFlagDescription )
 													.append( '\n' )
