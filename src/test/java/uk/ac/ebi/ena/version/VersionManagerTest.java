@@ -9,6 +9,8 @@ import javax.script.ScriptException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+
 
 public class 
 VersionManagerTest 
@@ -17,7 +19,7 @@ VersionManagerTest
     test() throws IOException, InterruptedException, ScriptException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         VersionManager vm = new VersionManager();
-        Assert.assertEquals( 0, vm.launchLatest( new String[] { "-version" } ) );
-        Assert.assertEquals( -1, vm.launchLatest( new String[] { "-versin" } ) );
+        Assert.assertEquals( WebinCli.SUCCESS, vm.launchLatest( new String[] { "-version" } ) );
+        Assert.assertEquals( WebinCli.USER_ERROR, vm.launchLatest( new String[] { "-versin" } ) );
     }
 }
