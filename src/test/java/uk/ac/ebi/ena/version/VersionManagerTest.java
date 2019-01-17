@@ -18,5 +18,6 @@ VersionManagerTest
     {
         VersionManager vm = new VersionManager();
         Assert.assertEquals( 0, vm.launchLatest( new String[] { "-version" } ) );
+        Assert.assertEquals( -1, vm.launchLatest( new String[] { "-versin" } ) );
     }
 }

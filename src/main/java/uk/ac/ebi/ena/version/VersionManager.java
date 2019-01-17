@@ -11,7 +11,6 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -28,6 +27,7 @@ import javax.script.ScriptException;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseAsset;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseInfo;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
@@ -41,10 +41,6 @@ VersionManager
     
     
     GitHubReleaseInfo info;
-    
-    VersionManager(  )
-    {
-    }
     
     
     long
@@ -93,13 +89,13 @@ VersionManager
     
     
     private Object
-    invokeMain( ClassLoader cl, String args[] ) throws IOException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException
+    invokeMainMethod( ClassLoader cl, String args[] ) throws IOException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException
     {
         Manifest m = new Manifest( cl.getResourceAsStream( "META-INF/MANIFEST.MF" ) );
         String main_class_name = m.getMainAttributes().getValue( Name.MAIN_CLASS );
         
         Class<?> klass = cl.loadClass( main_class_name );
-        Method main = klass.getMethod( "main", java.lang.String[].class );
+        Method main = klass.getMethod( "__main", java.lang.String[].class );
         return main.invoke( klass, new Object[] { args } );
     }
     
@@ -120,7 +116,7 @@ VersionManager
         File file = new File( getClassPathFolder(), ra.name );
         
         if( findInClassPath( file ) )
-            return (int) invokeMain( this.getClass().getClassLoader(), args );
+            return (int) invokeMainMethod( this.getClass().getClassLoader(), args );
         
         if( !file.exists() || ra.size != file.length() )
         {
@@ -150,7 +146,7 @@ VersionManager
         try( URLClassLoader cl = new URLClassLoader( new URL[] { file.toURI().toURL() }, null ) )
         {
             WebinCliReporter.writeToConsole( Severity.INFO, "Using latest Webin-CLI version: " + file.getPath() );
-            return (int) invokeMain( cl, args );
+            return (int) invokeMainMethod( cl, args );
         }
     }
     
@@ -158,7 +154,14 @@ VersionManager
     public static void
     main( String[] args ) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, InterruptedException, ScriptException, URISyntaxException
     {
+        System.exit( launchLatestVersion( args ) );
+    }
+
+
+    public static int 
+    launchLatestVersion( String[] args ) throws IOException, InterruptedException, ScriptException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException
+    {
         VersionManager vm = new VersionManager();
-        System.exit( vm.launchLatest( args ) );
+        return vm.launchLatest( args );
     }
 }

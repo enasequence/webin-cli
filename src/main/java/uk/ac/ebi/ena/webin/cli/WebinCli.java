@@ -141,6 +141,13 @@ public class WebinCli {
     public static void 
     main( String... args )
     {
+        System.exit( __main( args ) );
+    }
+
+  
+    public static int 
+    __main( String... args )
+    {
         ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
         ValidationResult.setDefaultMessageFormatter( null );
 
@@ -151,28 +158,29 @@ public class WebinCli {
             {
                 List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
                 if( found.contains( ParameterDescriptor.help ) ) {
-					printUsage();
-					return;
-				}
+                    printUsage();
+                    return SUCCESS;
+                }
                 
                 if( found.contains( ParameterDescriptor.version ) )
                 {
                     WebinCliReporter.writeToConsole( getFormattedProgramVersion() );
-                    return;
+                    return SUCCESS;
                 }
 
-
                 if( found.contains( ParameterDescriptor.latest ) )
-                    VersionManager.main( found.stream().filter( e -> !e.equals( ParameterDescriptor.latest ) ).toArray( sz -> new String[ sz ] ) );
+                    return VersionManager.launchLatestVersion( found.stream().filter( e -> !e.equals( ParameterDescriptor.latest ) ).toArray( sz -> new String[ sz ] ) );
             }
 
             Params params = parseParameters( args );
+            if( null == params )
+                return USER_ERROR;
             
             if( !params.validate && !params.submit ) 
             {
-				WebinCliReporter.writeToConsole( Severity.ERROR, "Either -validate or -submit option must be provided.");
-            	printHelp();
-                System.exit( USER_ERROR );
+                WebinCliReporter.writeToConsole( Severity.ERROR, "Either -validate or -submit option must be provided.");
+                printHelp();
+                return USER_ERROR;
             }
             
             checkVersion( params.test );
@@ -181,47 +189,47 @@ public class WebinCli {
             webinCli.init( params );
             webinCli.execute();
             
-            System.exit( SUCCESS );
+            return SUCCESS;
             
         } catch( WebinCliException e ) 
         {
-			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
-			
-			if( null != WebinCliReporter.getDefaultReport() )
-			    WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
+            WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
+            
+            if( null != WebinCliReporter.getDefaultReport() )
+                WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
             
             switch( e.getErrorType() )
             {
-                case SYSTEM_ERROR:
-                    System.exit( SYSTEM_ERROR );
+                default:
+                    return SYSTEM_ERROR;
                     
                 case USER_ERROR:
-                    System.exit( USER_ERROR );
+                    return USER_ERROR;
                     
                 case VALIDATION_ERROR:
-                    System.exit( VALIDATION_ERROR );
+                    return VALIDATION_ERROR;
             }
             
         } catch( ValidationEngineException e ) 
         {
-			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
-			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
-			if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
-				System.exit( SYSTEM_ERROR );
-			else
-				System.exit( USER_ERROR );
+            WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
+            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
+            if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
+                return SYSTEM_ERROR;
+            else
+                return USER_ERROR;
             
         } catch( Throwable e ) 
         {
             StringWriter sw = new StringWriter();
             e.printStackTrace( new PrintWriter( sw ) );
-			WebinCliReporter.writeToConsole( Severity.ERROR, sw.toString() );
-			WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, sw.toString() );
-            System.exit( SYSTEM_ERROR );
+            WebinCliReporter.writeToConsole( Severity.ERROR, sw.toString() );
+            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, sw.toString() );
+            return SYSTEM_ERROR;
         }
     }
-
-  
+    
+    
     private static void 
     checkRuntimeVersion()
     {
@@ -358,15 +366,16 @@ public class WebinCli {
 			{
 				WebinCliReporter.writeToConsole( Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", " ) ) );
 				printHelp();
-				System.exit( USER_ERROR );
+				return null;
 			}
-
+			
+	        return params;
+	        
 		} catch( Exception e )
 		{
 			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
-			System.exit( USER_ERROR );
+			return null;
 		}
-		return params;
 	}
 
 	
