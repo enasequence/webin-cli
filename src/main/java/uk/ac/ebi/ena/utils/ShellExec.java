@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import uk.ac.ebi.embl.api.validation.Severity;
@@ -141,6 +142,8 @@ ShellExec implements VerboseLogger
         try
         {   
             es = Executors.newFixedThreadPool( 2 );
+            ((ThreadPoolExecutor) es).prestartAllCoreThreads();
+
             if( verbose )
             {
                 WebinCliReporter.writeToConsole( Severity.INFO, String.format( "Invoking: %s\n", command ) );

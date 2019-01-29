@@ -357,7 +357,7 @@ public class WebinCli {
     parseParameters( String... args ) 
     {
 		Params params = new Params();
-		JCommander jCommander = new JCommander( params );
+		JCommander jCommander = JCommander.newBuilder().expandAtSign( false ).addObject( params ).build();
 		try 
 		{
 			jCommander.parse( args );
