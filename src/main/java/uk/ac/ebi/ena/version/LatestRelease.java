@@ -144,10 +144,10 @@ LatestRelease
     
     @SuppressWarnings( "unchecked" )
     public GitHubReleaseInfo 
-    parseGitHubJson( String json ) throws IOException, ScriptException, URISyntaxException 
+    parseGitHubJson( String json ) throws ScriptException
     {
         String script = "Java.asJSONCompatible(" + json + ")";
-        Object result = ( (ScriptEngine) this.engine ).eval( script );
+        Object result = this.engine.eval( script );
         Map<String, Object> content = (Map<String, Object>) result;
         
 //        [url, assets_url, upload_url, html_url, id, node_id, tag_name, target_commitish, name, draft, author, prerelease, created_at, published_at, assets, tarball_url, zipball_url, body]

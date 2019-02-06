@@ -9,7 +9,7 @@ import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.sample.Sample;
+import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 import static uk.ac.ebi.ena.manifest.processor.ProcessorTestUtils.createFieldValue;

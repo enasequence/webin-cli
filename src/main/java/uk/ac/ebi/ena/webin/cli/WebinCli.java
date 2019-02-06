@@ -89,7 +89,10 @@ public class WebinCli {
 		
 		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
 		public boolean test;
-		
+
+		@Parameter(names = ParameterDescriptor.ignoreErrors, description = ParameterDescriptor.ignoreErrorsFlagDescription, required = false)
+		public boolean ignoreErrors;
+
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = contextValidator.class)
 		public String context;
 		
@@ -120,8 +123,8 @@ public class WebinCli {
         @Parameter(names = { ParameterDescriptor.inputDir, ParameterDescriptor.inputDirSynonym }, description = ParameterDescriptor.inputDirFlagDescription, required = false, hidden=true )
         public String inputDir = ".";
         
-        @Parameter(names = ParameterDescriptor.tryAscp, description = ParameterDescriptor.tryAscpDescription, required = false )
-        public boolean tryAscp;
+        @Parameter(names = ParameterDescriptor.ascp, description = ParameterDescriptor.tryAscpDescription, required = false )
+        public boolean ascp;
 	}
 
 
@@ -265,6 +268,7 @@ public class WebinCli {
 
 		this.validator = contextE.getValidatorClass().newInstance();
 		this.validator.setTestMode( params.test );
+		this.validator.setIgnoreErrorsMode( params.ignoreErrors );
 		this.validator.init( parameters );
     }
     
@@ -323,7 +327,7 @@ public class WebinCli {
 	private void 
     doSubmit( SubmissionBundle bundle )
     {
-        UploadService ftpService = params.tryAscp && new ASCPService().isAvaliable() ? new ASCPService() : new FtpService();
+        UploadService ftpService = params.ascp && new ASCPService().isAvaliable() ? new ASCPService() : new FtpService();
         
         try 
         {
@@ -425,7 +429,7 @@ public class WebinCli {
 	                                                .append( ParameterDescriptor.centerNameFlagDescription )
 	                                                .append( '\n' )
 	                                                
-	                                                .append( "\n" + ParameterDescriptor.tryAscp )
+	                                                .append( "\n" + ParameterDescriptor.ascp)
 	                                                .append( ParameterDescriptor.tryAscpDescription )
 	                                                .append( '\n' )
 	                                                

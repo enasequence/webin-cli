@@ -36,15 +36,15 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.manifest.ManifestReader;
-import uk.ac.ebi.ena.sample.Sample;
-import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.service.IgnoreErrorsService;
+import uk.ac.ebi.ena.entity.Sample;
+import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli.manifestFileValidator;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public abstract class 
@@ -54,7 +54,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     protected final static String ANALYSIS_XML = "analysis.xml";
 
 	SubmissionOptions submissionOptions;
-    private Study  study;
+    private Study study;
     private Sample sample;
 	private SourceFeature source;
 	protected AssemblyInfoEntry assembly_info;
@@ -228,7 +228,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     
 
     protected String
-    extractSubpath( File inputDir, File file ) throws IOException
+    extractSubpath( File inputDir, File file )
     {
         return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
@@ -242,7 +242,17 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
-        
+
+        if ( getSubmissionOptions().ignoreErrors &&
+                IgnoreErrorsService.getIgnoreErrors(
+                        getParameters().getUsername(),
+                        getParameters().getPassword(),
+                        getContext().name(),
+                        getName(),
+                        getTestMode())) {
+            getSubmissionOptions().ignoreErrors = getIgnoreErrorsMode();
+        }
+
         try
         {
             validateInternal();

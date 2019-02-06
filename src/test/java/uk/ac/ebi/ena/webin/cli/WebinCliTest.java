@@ -110,7 +110,7 @@ WebinCliTest
         parameters.validate = true;
         parameters.submit = true;
         parameters.test = true;
-        parameters.tryAscp = ascp;
+        parameters.ascp = ascp;
         WebinCli webinCli = new WebinCli();
         webinCli.init( parameters );
         webinCli.execute();

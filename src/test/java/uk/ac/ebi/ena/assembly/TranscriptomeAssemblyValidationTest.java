@@ -25,8 +25,8 @@ import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.ena.WebinCliTestUtils;
-import uk.ac.ebi.ena.sample.Sample;
-import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.entity.Sample;
+import uk.ac.ebi.ena.entity.Study;
 
 public class TranscriptomeAssemblyValidationTest {
 

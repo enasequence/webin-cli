@@ -15,7 +15,8 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.sample.Sample;
+import uk.ac.ebi.ena.entity.Sample;
+import uk.ac.ebi.ena.service.SampleService;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
@@ -38,7 +39,7 @@ SampleProcessor implements ManifestFieldProcessor
 
         try
         {
-            Sample sample = Sample.getSample( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
+            Sample sample = SampleService.getSample( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
             fieldValue.setValue(sample.getBiosampleId());
             callback.notify(sample);
             return null;

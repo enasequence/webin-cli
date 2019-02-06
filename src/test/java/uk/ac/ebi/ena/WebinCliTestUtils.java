@@ -225,4 +225,17 @@ public class WebinCliTestUtils {
         Assert.assertFalse(expectedXml.isEmpty());
         Assert.assertEquals(expectedXml, xml);
     }
+
+
+    public static String getWebinUsername() {
+        String username = System.getenv( "webin-cli-username" );
+        Assert.assertNotNull( "please set up environment variable: webin-cli-username", username);
+        return username;
+    }
+
+    public static String getWebinPassword() {
+        String password = System.getenv( "webin-cli-password" );
+        Assert.assertNotNull( "please set up environment variable: webin-cli-password", password);
+        return password;
+    }
 }

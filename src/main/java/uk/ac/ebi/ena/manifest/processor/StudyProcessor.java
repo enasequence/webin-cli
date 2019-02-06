@@ -15,7 +15,8 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.entity.Study;
+import uk.ac.ebi.ena.service.StudyService;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
@@ -38,7 +39,7 @@ StudyProcessor implements ManifestFieldProcessor
 
         try
         {
-            Study study = Study.getStudy( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode() );
+            Study study = StudyService.getStudy( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode() );
             fieldValue.setValue(study.getProjectId());
             callback.notify(study);
             return null;

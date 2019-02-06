@@ -75,10 +75,10 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	validateInternal() throws ValidationEngineException 
 	{ 
 	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
+
 	    new SubmissionValidator(getSubmissionOptions()).validate();
 	}
 
-	
 	@Override Element 
 	makeAnalysisType( AssemblyInfoEntry entry )
 	{
@@ -103,6 +103,4 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 
 		return typeE;
 	}
-
-
 }

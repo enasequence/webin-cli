@@ -71,6 +71,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	validateInternal() throws ValidationEngineException 
 	{
 	   	getSubmissionOptions().reportDir = Optional.of( getValidationDir().getAbsolutePath() );
+		getSubmissionOptions().ignoreErrors = getIgnoreErrorsMode();
 		new SubmissionValidator( getSubmissionOptions() ).validate();
 	}
 

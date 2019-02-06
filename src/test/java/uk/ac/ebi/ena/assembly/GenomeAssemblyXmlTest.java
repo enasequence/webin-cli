@@ -24,8 +24,8 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.WebinCliTestUtils;
-import uk.ac.ebi.ena.sample.Sample;
-import uk.ac.ebi.ena.study.Study;
+import uk.ac.ebi.ena.entity.Sample;
+import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
