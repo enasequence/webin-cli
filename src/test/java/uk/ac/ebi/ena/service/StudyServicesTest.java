@@ -57,15 +57,15 @@ StudyServicesTest {
     @Test
     public void testGetStudyUsingInvalidId() {
         String studyId = "INVALID";
+        StudyService studyService = new StudyService();
         assertThatThrownBy(() -> {
-            StudyService studyService = new StudyService();
             studyService.getStudy(
                     studyId,
                     WebinCliTestUtils.getWebinUsername(),
                     WebinCliTestUtils.getWebinPassword(),
                     TEST);
         }).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(StudyService.VALIDATION_ERROR + studyId);
+                .hasMessageContaining(studyService.getMessage(StudyService.VALIDATION_ERROR, studyId));
     }
 
     @Test

@@ -14,7 +14,6 @@ import static org.springframework.http.HttpStatus.Series.SERVER_ERROR;
 @Data
 public class StudyServiceErrorHandler implements ResponseErrorHandler {
 
-    private final String id;
     private final String validationError;
     private final String systemError;
 
@@ -31,9 +30,9 @@ public class StudyServiceErrorHandler implements ResponseErrorHandler {
             case FORBIDDEN:
                 throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
             case NOT_FOUND:
-                throw WebinCliException.createValidationError(validationError, id);
+                throw WebinCliException.createValidationError(validationError);
             default:
-                throw WebinCliException.createSystemError(systemError, id);
+                throw WebinCliException.createSystemError(systemError);
         }
     }
 }

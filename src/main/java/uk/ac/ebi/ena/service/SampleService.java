@@ -35,12 +35,10 @@ public class SampleService {
         private boolean canBeReferenced;
     }
 
-    public final static String VALIDATION_ERROR = "Unknown sample or the sample cannot be referenced by your submission account. " +
-            "Samples must be submitted before they can be referenced in the submission. Sample: ";
+    final static String VALIDATION_ERROR = "SampleServiceValidationError";
+    final static String SYSTEM_ERROR = "SampleServiceSystemError";
 
-    public final static String SYSTEM_ERROR = "A server error occurred when retrieving sample information. ";
-
-    WebinCliConfig config = new WebinCliConfig();
+    private WebinCliConfig config = new WebinCliConfig();
 
     private String getSampleUri(boolean test) {
         String uri = "reference/sample/{id}";
@@ -56,9 +54,15 @@ public class SampleService {
                 config.getWebinRestUriProd() + uri;
     }
 
+    String getMessage(String messageKey, String sampleId) {
+        return config.getServiceMessage(messageKey) + " Sample: " + sampleId;
+    }
+
     public Sample getSample(String sampleId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new SampleServiceErrorHandler(sampleId, VALIDATION_ERROR, SYSTEM_ERROR));
+        restTemplate.setErrorHandler(new SampleServiceErrorHandler(
+                getMessage(VALIDATION_ERROR, sampleId),
+                getMessage(SYSTEM_ERROR, sampleId)));
 
         ResponseEntity<SampleResponse> response = restTemplate.exchange(
                 getSampleUri(test),
@@ -69,7 +73,7 @@ public class SampleService {
 
         SampleResponse sampleResponse = response.getBody();
         if (sampleResponse == null || !sampleResponse.isCanBeReferenced()) {
-            throw WebinCliException.createUserError(VALIDATION_ERROR, sampleId);
+            throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, sampleId));
         }
         Sample sample = new Sample();
         sample.setBiosampleId(sampleResponse.getBioSampleId());
@@ -83,7 +87,9 @@ public class SampleService {
     getSourceFeature(String sampleId, String userName, String password, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new SampleServiceErrorHandler(sampleId, VALIDATION_ERROR, SYSTEM_ERROR));
+        restTemplate.setErrorHandler(new SampleServiceErrorHandler(
+                getMessage(VALIDATION_ERROR, sampleId),
+                getMessage(SYSTEM_ERROR, sampleId)));
 
         ResponseEntity<String> response = restTemplate.exchange(
                 getSourceFeatureUri(test),
@@ -148,7 +154,7 @@ public class SampleService {
 
             return sourceFeature;
         } catch (Exception ex) {
-            throw WebinCliException.createUserError(VALIDATION_ERROR, sampleId);
+            throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, sampleId));
         }
     }
 }

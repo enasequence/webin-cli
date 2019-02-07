@@ -45,15 +45,15 @@ SampleServicesTest {
     @Test
     public void testGetSampleUsingInvalidId() {
         String id = "INVALID";
+        SampleService sampleService = new SampleService();
         assertThatThrownBy(() -> {
-            SampleService sampleService = new SampleService();
             sampleService.getSample(
                     id,
                     WebinCliTestUtils.getWebinUsername(),
                     WebinCliTestUtils.getWebinPassword(),
                     TEST);
         }).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(SampleService.VALIDATION_ERROR + id);
+                .hasMessageContaining(sampleService.getMessage(SampleService.VALIDATION_ERROR, id));
     }
 
     @Test
@@ -69,16 +69,15 @@ SampleServicesTest {
     @Test
     public void testGetSourceFeatureUsingInvalidId() {
         String id = "INVALID";
+        SampleService sampleService = new SampleService();
         assertThatThrownBy(() -> {
-            SampleService sampleService = new SampleService();
             sampleService.getSourceFeature(
                     id,
                     WebinCliTestUtils.getWebinUsername(),
                     WebinCliTestUtils.getWebinPassword(),
                     TEST);
         }).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(SampleService.VALIDATION_ERROR + id);
-
+            .hasMessageContaining(sampleService.getMessage(SampleService.VALIDATION_ERROR, id));
     }
 
     private void testGetSampleUsingValidId(String id) {

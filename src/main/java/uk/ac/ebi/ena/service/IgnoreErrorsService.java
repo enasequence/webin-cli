@@ -26,11 +26,9 @@ public class IgnoreErrorsService {
         private final String name;
     }
 
-    public final static String SYSTEM_ERROR =
-            "A server error occurred when retrieving ignore error information.";
+    final static String SYSTEM_ERROR = "IgnoreErrorsServiceSystemError";
 
-
-    WebinCliConfig config = new WebinCliConfig();
+    private WebinCliConfig config = new WebinCliConfig();
 
     private String getUri(boolean test) {
         String uri = "reference/cli/ignore_errors/";
@@ -39,10 +37,14 @@ public class IgnoreErrorsService {
                 config.getWebinRestUriProd() + uri;
     }
 
+    String getMessage(String messageKey) {
+        return config.getServiceMessage(messageKey);
+    }
+
     public boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new IgnoreErrorsErrorHander(SYSTEM_ERROR));
+        restTemplate.setErrorHandler(new IgnoreErrorsErrorHander(getMessage(SYSTEM_ERROR)));
 
         ResponseEntity<String> response = restTemplate.exchange(
                 getUri(test),

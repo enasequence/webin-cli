@@ -22,14 +22,10 @@ public class StudyService {
         private boolean canBeReferenced;
     }
 
-    public final static String VALIDATION_ERROR =
-            "Unknown study or the study cannot be referenced by your submission account. " +
-            "Studies must be submitted before they can be referenced in the submission. Study: ";
+    final static String VALIDATION_ERROR = "StudyServiceValidationError";
+    final static String SYSTEM_ERROR = "StudyServiceSystemError";
 
-    public final static String SYSTEM_ERROR =
-            "A server error occurred when retrieving study information. Study: ";
-
-    WebinCliConfig config = new WebinCliConfig();
+    private WebinCliConfig config = new WebinCliConfig();
 
     private String getUri(boolean test) {
         String uri = "reference/project/{id}";
@@ -38,10 +34,17 @@ public class StudyService {
                 config.getWebinRestUriProd() + uri;
     }
 
+    String getMessage(String messageKey, String studyId) {
+        return config.getServiceMessage(messageKey) + " Study: " + studyId;
+    }
+
     public Study
     getStudy(String studyId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new StudyServiceErrorHandler(studyId, VALIDATION_ERROR, SYSTEM_ERROR));
+
+        restTemplate.setErrorHandler(new StudyServiceErrorHandler(
+                getMessage(VALIDATION_ERROR, studyId),
+                getMessage(SYSTEM_ERROR, studyId)));
 
         ResponseEntity<StudyResponse> response = restTemplate.exchange(
                 getUri(test),
@@ -52,7 +55,7 @@ public class StudyService {
 
         StudyResponse studyResponse = response.getBody();
         if (studyResponse == null || !studyResponse.isCanBeReferenced()) {
-            throw WebinCliException.createUserError(VALIDATION_ERROR, studyId);
+            throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, studyId));
         }
         Study study = new Study();
         study.setProjectId(studyResponse.getBioProjectId());
