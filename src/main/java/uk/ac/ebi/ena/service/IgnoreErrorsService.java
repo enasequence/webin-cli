@@ -16,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.service.utils.UriUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 
 public class IgnoreErrorsService {
@@ -30,13 +31,6 @@ public class IgnoreErrorsService {
 
     private WebinCliConfig config = new WebinCliConfig();
 
-    private String getUri(boolean test) {
-        String uri = "reference/cli/ignore_errors/";
-        return (test) ?
-                config.getWebinRestUriTest() + uri :
-                config.getWebinRestUriProd() + uri;
-    }
-
     String getMessage(String messageKey) {
         return config.getServiceMessage(messageKey);
     }
@@ -47,7 +41,7 @@ public class IgnoreErrorsService {
         restTemplate.setErrorHandler(new DefaultErrorHander(getMessage(SYSTEM_ERROR)));
 
         ResponseEntity<String> response = restTemplate.exchange(
-                getUri(test),
+                UriUtils.getWebinRestUri(config,"reference/cli/ignore_errors/", test),
                 HttpMethod.POST,
                 new HttpEntity(new IgnoreErrorsRequest(context, name), HttpUtils.authHeader(userName, password)),
                 String.class);

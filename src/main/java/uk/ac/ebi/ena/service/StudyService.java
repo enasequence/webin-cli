@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.service.utils.UriUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -27,13 +28,6 @@ public class StudyService {
 
     private WebinCliConfig config = new WebinCliConfig();
 
-    private String getUri(boolean test) {
-        String uri = "reference/project/{id}";
-        return (test) ?
-                config.getWebinRestUriTest() + uri :
-                config.getWebinRestUriProd() + uri;
-    }
-
     String getMessage(String messageKey, String studyId) {
         return config.getServiceMessage(messageKey) + " Study: " + studyId;
     }
@@ -47,7 +41,7 @@ public class StudyService {
                 getMessage(SYSTEM_ERROR, studyId)));
 
         ResponseEntity<StudyResponse> response = restTemplate.exchange(
-                getUri(test),
+                UriUtils.getWebinRestUri(config,"reference/project/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity(HttpUtils.authHeader(userName, password)),
                 StudyResponse.class,
