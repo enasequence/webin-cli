@@ -47,7 +47,7 @@ import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
 import uk.ac.ebi.ena.version.HotSpotRuntimeVersion;
-import uk.ac.ebi.ena.version.Version;
+import uk.ac.ebi.ena.service.VersionService;
 import uk.ac.ebi.ena.version.VersionManager;
 
 @SpringBootApplication
@@ -521,7 +521,7 @@ public class WebinCli implements CommandLineRunner {
 		if( null == version || version.isEmpty() )
 		    return;
 		
-		Version versionService = new Version();
+		VersionService versionService = new VersionService();
 		if( !versionService.isVersionValid( version, test ) )
 			throw WebinCliException.createUserError( INVALID_VERSION.replaceAll( "__VERSION__", version ) );
 	}

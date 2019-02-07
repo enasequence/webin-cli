@@ -104,7 +104,6 @@ jar {
 dependencies {
     compile("commons-net:commons-net:3.4")
     compile group: 'com.beust', name: 'jcommander', version: '1.72'
-    compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: 'submissioninterface-1.1.9')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: 'submissioninterface-1.1.9')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: 'submissioninterface-1.1.9')

@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class
-StudyServicesTest {
+StudyServiceTest {
 
     private final static boolean TEST = true;
 

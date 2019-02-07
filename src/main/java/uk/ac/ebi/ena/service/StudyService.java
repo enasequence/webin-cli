@@ -6,7 +6,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.entity.Study;
-import uk.ac.ebi.ena.service.handler.StudyServiceErrorHandler;
+import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -42,7 +42,7 @@ public class StudyService {
     getStudy(String studyId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
 
-        restTemplate.setErrorHandler(new StudyServiceErrorHandler(
+        restTemplate.setErrorHandler(new NotFoundErrorHandler(
                 getMessage(VALIDATION_ERROR, studyId),
                 getMessage(SYSTEM_ERROR, studyId)));
 

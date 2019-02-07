@@ -16,7 +16,7 @@ import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
 import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
 import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.entity.Sample;
-import uk.ac.ebi.ena.service.handler.SampleServiceErrorHandler;
+import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -60,7 +60,7 @@ public class SampleService {
 
     public Sample getSample(String sampleId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new SampleServiceErrorHandler(
+        restTemplate.setErrorHandler(new NotFoundErrorHandler(
                 getMessage(VALIDATION_ERROR, sampleId),
                 getMessage(SYSTEM_ERROR, sampleId)));
 
@@ -87,7 +87,7 @@ public class SampleService {
     getSourceFeature(String sampleId, String userName, String password, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new SampleServiceErrorHandler(
+        restTemplate.setErrorHandler(new NotFoundErrorHandler(
                 getMessage(VALIDATION_ERROR, sampleId),
                 getMessage(SYSTEM_ERROR, sampleId)));
 
