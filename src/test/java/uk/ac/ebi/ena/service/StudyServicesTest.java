@@ -11,11 +11,15 @@
 
 package uk.ac.ebi.ena.service;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.entity.Study;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class
 StudyServicesTest {
@@ -28,23 +32,53 @@ StudyServicesTest {
 
     @Test
     public void testGetStudyUsingPublicBioProjectId() {
-        testGetStudy(BIO_PROJECT_ID);
+        testGetStudyUsingValidId(BIO_PROJECT_ID);
     }
 
     @Test
     public void testGetStudyUsingPublicStudyId() {
-        testGetStudy(STUDY_ID);
+        testGetStudyUsingValidId(STUDY_ID);
     }
     
-    private void testGetStudy(String id) {
-        Study study = StudyService.getStudy(
+    private void testGetStudyUsingValidId(String id) {
+
+        StudyService studyService = new StudyService();
+        Study study = studyService.getStudy(
                 id,
                 WebinCliTestUtils.getWebinUsername(),
                 WebinCliTestUtils.getWebinPassword(),
                 TEST);
-        Assert.assertNotNull(study);
-        Assert.assertEquals(BIO_PROJECT_ID, study.getProjectId());
-        Assert.assertEquals(1, study.getLocusTagsList().size());
-        Assert.assertEquals(LOCUS_TAG, study.getLocusTagsList().get(0));
+        assertThat(study).isNotNull();
+        assertThat(study.getProjectId()).isEqualTo(BIO_PROJECT_ID);
+        assertThat(study.getLocusTags()).hasSize(1);
+        assertThat(study.getLocusTags()).first().isEqualTo(LOCUS_TAG);
+    }
+
+    @Test
+    public void testGetStudyUsingInvalidId() {
+        String studyId = "INVALID";
+        assertThatThrownBy(() -> {
+            StudyService studyService = new StudyService();
+            studyService.getStudy(
+                    studyId,
+                    WebinCliTestUtils.getWebinUsername(),
+                    WebinCliTestUtils.getWebinPassword(),
+                    TEST);
+        }).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining(StudyService.VALIDATION_ERROR + studyId);
+    }
+
+    @Test
+    public void testGetStudyUsingInvalidCredentials() {
+        String studyId = "INVALID";
+        assertThatThrownBy(() -> {
+            StudyService studyService = new StudyService();
+            studyService.getStudy(
+                    studyId,
+                    "INVALID",
+                    "INVALID",
+                    TEST);
+        }).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining(WebinCli.AUTHENTICATION_ERROR);
     }
 }

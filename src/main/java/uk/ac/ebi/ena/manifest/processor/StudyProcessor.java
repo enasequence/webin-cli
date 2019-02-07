@@ -39,7 +39,8 @@ StudyProcessor implements ManifestFieldProcessor
 
         try
         {
-            Study study = StudyService.getStudy( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode() );
+            StudyService studyService = new StudyService();
+            Study study = studyService.getStudy( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode() );
             fieldValue.setValue(study.getProjectId());
             callback.notify(study);
             return null;

@@ -1,13 +1,15 @@
 package uk.ac.ebi.ena.service;
 
+import lombok.Data;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,38 +21,64 @@ import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
 import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
 import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.entity.Sample;
+import uk.ac.ebi.ena.service.handler.SampleServiceErrorHandler;
+import uk.ac.ebi.ena.service.utils.HttpUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
-import java.util.stream.Collectors;
 
-public final class SampleService {
+public class SampleService {
 
-    private SampleService() {
-        throw new UnsupportedOperationException();
+    @Data
+    private static class SampleResponse {
+        private long taxId;
+        private String organism;
+        private String bioSampleId;
+        private boolean canBeReferenced;
     }
 
-    private final static String VALIDATION_ERROR_SAMPLE = "Unknown sample or the sample cannot be referenced by your submission account. " +
+    public final static String VALIDATION_ERROR = "Unknown sample or the sample cannot be referenced by your submission account. " +
             "Samples must be submitted before they can be referenced in the submission. Sample: ";
-    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when retrieving sample information. ";
-    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when retrieving sample information. ";
-    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when retrieving sample information. ";
 
-    public static Sample getSample(String sampleId, String userName, String password, boolean TEST) {
+    public final static String SYSTEM_ERROR = "A server error occurred when retrieving sample information. ";
+
+    private static String getUri(boolean test) {
+        return (test) ?
+                "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/{id}" :
+                "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/{id}";
+    }
+
+    public Sample getSample(String sampleId, String userName, String password, boolean test) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new SampleServiceErrorHandler(sampleId, VALIDATION_ERROR, SYSTEM_ERROR));
+
+        ResponseEntity<SampleResponse> response = restTemplate.exchange(
+                getUri(test),
+                HttpMethod.GET,
+                new HttpEntity(HttpUtils.authHeader(userName, password)),
+                SampleResponse.class,
+                sampleId.trim());
+
+        SampleResponse sampleResponse = response.getBody();
+        if (sampleResponse == null || !sampleResponse.isCanBeReferenced()) {
+            throw WebinCliException.createUserError(VALIDATION_ERROR, sampleId);
+        }
+        Sample sample = new Sample();
+        sample.setBiosampleId(sampleResponse.getBioSampleId());
+        sample.setTaxId(sampleResponse.getTaxId());
+        sample.setOrganism(sampleResponse.getOrganism());
+        return sample;
+
+        /*
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpGet httpGet = new HttpGet((TEST ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/") + URLEncoder.encode(sampleId.trim(), "UTF-8"));
+            HttpGet httpGet = new HttpGet((test ? "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/" : "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/") + URLEncoder.encode(sampleId.trim(), "UTF-8"));
             String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
             httpGet.setHeader("Authorization", "Basic " + encoding);
             CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -63,7 +91,7 @@ public final class SampleService {
                     return createSample(result, sampleId);
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw WebinCliException.createValidationError(VALIDATION_ERROR_SAMPLE, sampleId);
+                    throw WebinCliException.createValidationError(VALIDATION_ERROR, sampleId);
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                     throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
                 case HttpStatus.SC_SERVICE_UNAVAILABLE:
@@ -72,11 +100,12 @@ public final class SampleService {
                 case HttpStatus.SC_FORBIDDEN:
                     throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
                 default:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR);
             }
         } catch (IOException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
+            throw WebinCliException.createSystemError(SYSTEM_ERROR);
         }
+        */
     }
 
     public static SourceFeature
@@ -142,27 +171,28 @@ public final class SampleService {
 
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_NOT_FOUND:
-                    throw WebinCliException.createValidationError(VALIDATION_ERROR_SAMPLE, sampleId);
+                    throw WebinCliException.createValidationError(VALIDATION_ERROR, sampleId);
 
-                case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
+                //case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+                //    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
 
-                case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
+                //case HttpStatus.SC_SERVICE_UNAVAILABLE:
+                //    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
 
                 case HttpStatus.SC_UNAUTHORIZED:
                 case HttpStatus.SC_FORBIDDEN:
                     throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
 
                 default:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
+                    throw WebinCliException.createSystemError(SYSTEM_ERROR);
             }
         } catch (IOException | ParserConfigurationException | UnsupportedOperationException | SAXException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
+            throw WebinCliException.createSystemError(SYSTEM_ERROR);
         }
     }
 
 
+    /*
     private static Sample createSample(String result, String sampleId) {
         Sample sample = new Sample();
         try {
@@ -171,7 +201,7 @@ public final class SampleService {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             boolean canBeReferenced = (boolean) jsonObject.get("canBeReferenced");
             if (!canBeReferenced)
-                throw WebinCliException.createUserError(VALIDATION_ERROR_SAMPLE, sampleId);
+                throw WebinCliException.createUserError(VALIDATION_ERROR, sampleId);
             sample.setTaxId((long) jsonObject.get("taxId"));
             sample.setOrganism((String) jsonObject.get("organism"));
             sample.setBiosampleId((String) jsonObject.get("bioSampleId"));
@@ -180,4 +210,6 @@ public final class SampleService {
             throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
         }
     }
+    */
+
 }

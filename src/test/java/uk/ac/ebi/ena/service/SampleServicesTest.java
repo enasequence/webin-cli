@@ -11,12 +11,15 @@
 
 package uk.ac.ebi.ena.service;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.entity.Sample;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class
 SampleServicesTest {
@@ -31,48 +34,78 @@ SampleServicesTest {
 
     @Test
     public void testGetSampleUsingPublicBioSampleId() {
-        testGetSample(BIO_SAMPLE_ID);
+        testGetSampleUsingValidId(BIO_SAMPLE_ID);
     }
 
     @Test
     public void testGetSampleUsingPublicSampleId() {
-        testGetSample(SAMPLE_ID);
+        testGetSampleUsingValidId(SAMPLE_ID);
+    }
+
+    @Test
+    public void testGetSampleUsingInvalidId() {
+        String id = "INVALID";
+        assertThatThrownBy(() -> {
+            SampleService sampleService = new SampleService();
+            sampleService.getSample(
+                    id,
+                    WebinCliTestUtils.getWebinUsername(),
+                    WebinCliTestUtils.getWebinPassword(),
+                    TEST);
+        }).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining(SampleService.VALIDATION_ERROR + id);
     }
 
     @Test
     public void testGetSourceFeatureUsingPublicBioSampleId() {
-            testGetSourceFeature(BIO_SAMPLE_ID);
+            testGetSourceFeatureUsingValidId(BIO_SAMPLE_ID);
     }
 
     @Test
     public void testGetSourceFeatureUsingPublicSampleId() {
-        testGetSourceFeature(SAMPLE_ID);
+        testGetSourceFeatureUsingValidId(SAMPLE_ID);
     }
 
-    private void testGetSample(String id) {
-        Sample sample = SampleService.getSample(
+    @Test
+    public void testGetSourceFeatureUsingInvalidId() {
+        String id = "INVALID";
+        assertThatThrownBy(() -> {
+            SampleService sampleService = new SampleService();
+            SampleService.getSourceFeature(
+                    id,
+                    WebinCliTestUtils.getWebinUsername(),
+                    WebinCliTestUtils.getWebinPassword(),
+                    TEST);
+        }).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining(SampleService.VALIDATION_ERROR + id);
+
+    }
+
+    private void testGetSampleUsingValidId(String id) {
+        SampleService sampleService = new SampleService();
+        Sample sample = sampleService.getSample(
                 id,
                 WebinCliTestUtils.getWebinUsername(),
                 WebinCliTestUtils.getWebinPassword(),
                 TEST);
-        Assert.assertNotNull(sample);
-        Assert.assertEquals(BIO_SAMPLE_ID, sample.getBiosampleId());
-        Assert.assertEquals(SCIENTIFIC_NAME, sample.getOrganism());
-        Assert.assertEquals(TAX_ID, sample.getTaxId());
+        assertThat(sample).isNotNull();
+        assertThat(sample.getBiosampleId()).isEqualTo(BIO_SAMPLE_ID);
+        assertThat(sample.getOrganism()).isEqualTo(SCIENTIFIC_NAME);
+        assertThat(sample.getTaxId()).isEqualTo(TAX_ID);
     }
 
-    private void testGetSourceFeature(String id) {
+    private void testGetSourceFeatureUsingValidId(String id) {
         SourceFeature sourceFeature = SampleService.getSourceFeature(
                 id,
                 WebinCliTestUtils.getWebinUsername(),
                 WebinCliTestUtils.getWebinPassword(),
                 TEST);
-        Assert.assertNotNull(sourceFeature);
-        Assert.assertNotNull(sourceFeature.getSingleQualifier("db_xref"));
-        Assert.assertEquals(String.valueOf(TAX_ID), sourceFeature.getSingleQualifierValue("db_xref"));
-        Assert.assertNotNull(sourceFeature.getSingleQualifier("organism"));
-        Assert.assertEquals(SCIENTIFIC_NAME, sourceFeature.getSingleQualifierValue("organism"));
-        Assert.assertNotNull(sourceFeature.getSingleQualifier("strain"));
-        Assert.assertEquals(STRAIN_NAME, sourceFeature.getSingleQualifierValue("strain"));
+        assertThat(sourceFeature).isNotNull();
+        assertThat(sourceFeature.getSingleQualifier("db_xref")).isNotNull();
+        assertThat(sourceFeature.getSingleQualifierValue("db_xref")).isEqualTo(String.valueOf(TAX_ID));
+        assertThat(sourceFeature.getSingleQualifier("organism")).isNotNull();
+        assertThat(sourceFeature.getSingleQualifierValue("organism")).isEqualTo(SCIENTIFIC_NAME);
+        assertThat(sourceFeature.getSingleQualifier("strain")).isNotNull();
+        assertThat(sourceFeature.getSingleQualifierValue("strain")).isEqualTo(STRAIN_NAME);
     }
 }

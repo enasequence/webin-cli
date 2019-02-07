@@ -39,7 +39,8 @@ SampleProcessor implements ManifestFieldProcessor
 
         try
         {
-            Sample sample = SampleService.getSample( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
+            SampleService sampleService = new SampleService();
+            Sample sample = sampleService.getSample( value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
             fieldValue.setValue(sample.getBiosampleId());
             callback.notify(sample);
             return null;

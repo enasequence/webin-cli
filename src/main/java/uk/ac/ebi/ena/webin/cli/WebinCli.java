@@ -29,6 +29,11 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import org.springframework.boot.Banner;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
@@ -45,7 +50,8 @@ import uk.ac.ebi.ena.version.HotSpotRuntimeVersion;
 import uk.ac.ebi.ena.version.Version;
 import uk.ac.ebi.ena.version.VersionManager;
 
-public class WebinCli {
+@SpringBootApplication
+public class WebinCli implements CommandLineRunner {
 	public final static int SUCCESS = 0;
 	public final static int SYSTEM_ERROR = 1;
 	public final static int USER_ERROR = 2;
@@ -144,11 +150,19 @@ public class WebinCli {
     public static void 
     main( String... args )
     {
-        System.exit( __main( args ) );
-    }
+		new SpringApplicationBuilder(WebinCli.class)
+				.bannerMode(Banner.Mode.OFF)
+				.web(WebApplicationType.NONE)
+				.logStartupInfo(false)
+				.run(args);
+	}
 
-  
-    public static int 
+	public void run(String... args)
+	{
+		System.exit( __main( args ));
+	}
+
+    public int
     __main( String... args )
     {
         ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );

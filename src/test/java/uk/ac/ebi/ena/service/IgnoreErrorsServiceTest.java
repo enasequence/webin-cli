@@ -14,7 +14,8 @@ package uk.ac.ebi.ena.service;
 import org.junit.Test;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class
 IgnoreErrorsServiceTest {
@@ -23,12 +24,13 @@ IgnoreErrorsServiceTest {
 
     @Test
     public void testGetIgnoreErrorsFalse() {
-        assertFalse(
-            IgnoreErrorsService.getIgnoreErrors(
+        IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService();
+        assertThat(
+                ignoreErrorsService.getIgnoreErrors(
                     WebinCliTestUtils.getWebinUsername(),
                     WebinCliTestUtils.getWebinPassword(),
                     "UNKNOWN",
-                    "UNKNOWN", TEST));
-
+                    "UNKNOWN", TEST)
+        ).isFalse();
     }
 }

@@ -243,8 +243,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
 
+        IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService();
         if ( getSubmissionOptions().ignoreErrors &&
-                IgnoreErrorsService.getIgnoreErrors(
+                ignoreErrorsService.getIgnoreErrors(
                         getParameters().getUsername(),
                         getParameters().getPassword(),
                         getContext().name(),

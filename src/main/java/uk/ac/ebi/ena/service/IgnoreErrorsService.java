@@ -11,68 +11,39 @@
 
 package uk.ac.ebi.ena.service;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import lombok.Data;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.ena.service.handler.IgnoreErrorsErrorHander;
+import uk.ac.ebi.ena.service.utils.HttpUtils;
 
-import java.io.IOException;
-import java.util.Base64;
+public class IgnoreErrorsService {
 
-public final class IgnoreErrorsService {
-
-    private IgnoreErrorsService() {
-        throw new UnsupportedOperationException();
+    @Data
+    private static class IgnoreErrorsRequest {
+        private final String context;
+        private final String name;
     }
 
-    private final static String SYSTEM_ERROR_INTERNAL = "An internal server error occurred when attempting to ignore errors. ";
-    private final static String SYSTEM_ERROR_UNAVAILABLE = "A service unavailable error occurred when attempting to ignore errors. ";
-    private final static String SYSTEM_ERROR_BAD_REQUEST = "A bad request error occurred when attempting to ignore errors. ";
-    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when when attempting to ignore errors. ";
+    public final static String SYSTEM_ERROR =
+            "A server error occurred when retrieving ignore error information.";
 
-    public static boolean getIgnoreErrors(String userName, String password, String context, String name, boolean TEST) {
+    private static String getUri(boolean test) {
+        return (test) ?
+                "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/cli/ignore_errors/" :
+                "https://www.ebi.ac.uk/ena/submit/drop-box/reference/cli/ignore_errors/";
+    }
 
-        try {
-            CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(TEST ?
-                    "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/cli/ignore_errors/" :
-                    "https://www.ebi.ac.uk/ena/submit/drop-box/cli/ignore_errors/");
+    public boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
 
-            String encoding = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes());
-            httpPost.setHeader("Authorization", "Basic " + encoding);
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new IgnoreErrorsErrorHander(SYSTEM_ERROR));
 
-            httpPost.setEntity(
-                    new StringEntity(
-                            "{\n" +
-                                    "\"context\":\"" + context + "\",\n" +
-                                    "\"name\":\"" + name + "\"\n" +
-                                    "}",
-                            ContentType.APPLICATION_JSON));
-
-            CloseableHttpResponse response = httpClient.execute(httpPost);
-
-            switch (response.getStatusLine().getStatusCode()) {
-                case HttpStatus.SC_OK:
-                    return Boolean.valueOf(EntityUtils.toString(response.getEntity()));
-                case HttpStatus.SC_UNAUTHORIZED:
-                    throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
-                case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_INTERNAL);
-                case HttpStatus.SC_BAD_REQUEST:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_BAD_REQUEST);
-                case HttpStatus.SC_SERVICE_UNAVAILABLE:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_UNAVAILABLE);
-                default:
-                    throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER);
-            }
-        } catch (IOException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_OTHER, e.getMessage());
-        }
+        ResponseEntity<String> response = restTemplate.exchange(
+                getUri(test),
+                HttpMethod.POST,
+                new HttpEntity(new IgnoreErrorsRequest(context, name), HttpUtils.authHeader(userName, password)),
+                String.class);
+        return "true".equals(response.getBody());
     }
 }
