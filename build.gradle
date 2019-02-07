@@ -102,8 +102,6 @@ jar {
 
 
 dependencies {
-    compile 'org.apache.commons:commons-lang3:3.0'
-    compile 'org.apache.commons:commons-compress:1.10'
     compile("commons-net:commons-net:3.4")
     compile group: 'com.beust', name: 'jcommander', version: '1.72'
     compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
