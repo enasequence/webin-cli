@@ -39,7 +39,8 @@ SourceFeatureProcessor implements ManifestFieldProcessor
 
         try
         {
-            SourceFeature source = SampleService.getSourceFeature(value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
+            SampleService sampleService = new SampleService();
+            SourceFeature source = sampleService.getSourceFeature(value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
             callback.notify(source);
             return null;
         } catch( WebinCliException e )

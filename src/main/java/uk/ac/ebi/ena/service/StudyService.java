@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.service.handler.StudyServiceErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 import java.util.List;
@@ -28,10 +29,13 @@ public class StudyService {
     public final static String SYSTEM_ERROR =
             "A server error occurred when retrieving study information. Study: ";
 
-    private static String getUri(boolean test) {
+    WebinCliConfig config = new WebinCliConfig();
+
+    private String getUri(boolean test) {
+        String uri = "reference/project/{id}";
         return (test) ?
-                "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/project/{id}" :
-                "https://www.ebi.ac.uk/ena/submit/drop-box/reference/project/{id}";
+                config.getWebinRestUriTest() + uri :
+                config.getWebinRestUriProd() + uri;
     }
 
     public Study

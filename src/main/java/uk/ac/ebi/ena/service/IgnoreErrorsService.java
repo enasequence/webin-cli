@@ -16,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.service.handler.IgnoreErrorsErrorHander;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 
 public class IgnoreErrorsService {
 
@@ -28,10 +29,14 @@ public class IgnoreErrorsService {
     public final static String SYSTEM_ERROR =
             "A server error occurred when retrieving ignore error information.";
 
-    private static String getUri(boolean test) {
+
+    WebinCliConfig config = new WebinCliConfig();
+
+    private String getUri(boolean test) {
+        String uri = "reference/cli/ignore_errors/";
         return (test) ?
-                "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/cli/ignore_errors/" :
-                "https://www.ebi.ac.uk/ena/submit/drop-box/reference/cli/ignore_errors/";
+                config.getWebinRestUriTest() + uri :
+                config.getWebinRestUriProd() + uri;
     }
 
     public boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {

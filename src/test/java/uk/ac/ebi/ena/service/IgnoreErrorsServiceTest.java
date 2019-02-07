@@ -16,7 +16,6 @@ import uk.ac.ebi.ena.WebinCliTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class
 IgnoreErrorsServiceTest {
 

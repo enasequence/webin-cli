@@ -18,6 +18,7 @@ import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.service.handler.SampleServiceErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,16 +40,20 @@ public class SampleService {
 
     public final static String SYSTEM_ERROR = "A server error occurred when retrieving sample information. ";
 
-    private static String getSampleUri(boolean test) {
+    WebinCliConfig config = new WebinCliConfig();
+
+    private String getSampleUri(boolean test) {
+        String uri = "reference/sample/{id}";
         return (test) ?
-                "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/reference/sample/{id}" :
-                "https://www.ebi.ac.uk/ena/submit/drop-box/reference/sample/{id}";
+                config.getWebinRestUriTest() + uri :
+                config.getWebinRestUriProd() + uri;
     }
 
-    private static String getSourceFeatureUri(boolean test) {
+    private String getSourceFeatureUri(boolean test) {
+        String uri = "samples/{id}";
         return (test) ?
-                "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples/{id}" :
-                "https://www.ebi.ac.uk/ena/submit/drop-box/samples/{id}";
+                config.getWebinRestUriTest() + uri :
+                config.getWebinRestUriProd() + uri;
     }
 
     public Sample getSample(String sampleId, String userName, String password, boolean test) {
@@ -74,7 +79,7 @@ public class SampleService {
     }
 
 
-    public static SourceFeature
+    public SourceFeature
     getSourceFeature(String sampleId, String userName, String password, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
@@ -90,7 +95,7 @@ public class SampleService {
         return getSourceFeature(sampleId, response.getBody());
     }
 
-    private static SourceFeature
+    private SourceFeature
     getSourceFeature(String sampleId, String sampleXml) {
         MasterSourceFeatureUtils sourceUtils = new MasterSourceFeatureUtils();
         SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();

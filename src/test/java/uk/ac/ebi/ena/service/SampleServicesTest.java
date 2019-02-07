@@ -71,7 +71,7 @@ SampleServicesTest {
         String id = "INVALID";
         assertThatThrownBy(() -> {
             SampleService sampleService = new SampleService();
-            SampleService.getSourceFeature(
+            sampleService.getSourceFeature(
                     id,
                     WebinCliTestUtils.getWebinUsername(),
                     WebinCliTestUtils.getWebinPassword(),
@@ -95,7 +95,8 @@ SampleServicesTest {
     }
 
     private void testGetSourceFeatureUsingValidId(String id) {
-        SourceFeature sourceFeature = SampleService.getSourceFeature(
+        SampleService sampleService = new SampleService();
+        SourceFeature sourceFeature = sampleService.getSourceFeature(
                 id,
                 WebinCliTestUtils.getWebinUsername(),
                 WebinCliTestUtils.getWebinPassword(),
