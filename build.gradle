@@ -10,6 +10,11 @@ buildscript {
     }
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.4'
+    distributionType = Wrapper.DistributionType.BIN
+}
+
 plugins {
     id "io.github.ddimtirov.codacy" version "0.1.0"
 }
