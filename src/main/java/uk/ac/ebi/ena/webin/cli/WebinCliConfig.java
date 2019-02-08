@@ -25,7 +25,7 @@ public class WebinCliConfig {
         return serviceMessages.getProperty(messageKey);
     }
 
-    public static String getWebinRestUri(WebinCliConfig config, String uri, boolean test) {
+    public static String getWebinRestUri(String uri, boolean test) {
         return (test) ?
                 webinRestUriTest + uri :
                 webinRestUriProd + uri;

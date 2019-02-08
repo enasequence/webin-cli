@@ -16,7 +16,7 @@ import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
 import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
-import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -68,10 +68,8 @@ public class SampleService {
     final static String VALIDATION_ERROR = "SampleServiceValidationError";
     final static String SYSTEM_ERROR = "SampleServiceSystemError";
 
-    private WebinCliConfig config = new WebinCliConfig();
-
     String getMessage(String messageKey, String sampleId) {
-        return config.getServiceMessage(messageKey) + " Sample: " + sampleId;
+        return WebinCliConfig.getServiceMessage(messageKey) + " Sample: " + sampleId;
     }
 
     public Sample getSample(String sampleId, String userName, String password, boolean test) {
@@ -81,9 +79,9 @@ public class SampleService {
                 getMessage(SYSTEM_ERROR, sampleId)));
 
         ResponseEntity<SampleResponse> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri(config,"reference/sample/{id}", test),
+                WebinCliConfig.getWebinRestUri("reference/sample/{id}", test),
                 HttpMethod.GET,
-                new HttpEntity(HttpUtils.authHeader(userName, password)),
+                new HttpEntity( (new HttpHeaderBuilder()).basicAuth(userName, password).get()),
                 SampleResponse.class,
                 sampleId.trim());
 
@@ -108,9 +106,9 @@ public class SampleService {
                 getMessage(SYSTEM_ERROR, sampleId)));
 
         ResponseEntity<String> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri(config,"samples/{id}", test),
+                WebinCliConfig.getWebinRestUri("samples/{id}", test),
                 HttpMethod.GET,
-                new HttpEntity(HttpUtils.authHeader(userName, password)),
+                new HttpEntity( (new HttpHeaderBuilder()).basicAuth(userName, password).get()),
                 String.class,
                 sampleId.trim());
 

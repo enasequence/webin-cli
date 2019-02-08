@@ -107,7 +107,6 @@ dependencies {
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: 'submissioninterface-1.1.9')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: 'submissioninterface-1.1.9')
     compile(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: 'submissioninterface-1.1.9')
-    compile(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1')
     compile("org.jdom:jdom:2.0.2")
     compile( group: 'uk.ac.ebi', name: 'ena-fastq-validator', version: '1.1.1' )
     compile( group: 'uk.ac.ebi.ena', name: 'ena-cram-processing-tools', version: '1.1.0' ); 

@@ -37,7 +37,7 @@ import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.submit.Submit;
+import uk.ac.ebi.ena.service.SubmitService;
 import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
@@ -355,8 +355,8 @@ public class WebinCli { // implements CommandLineRunner
         {
             AssemblyInfoEntry aie = new AssemblyInfoEntry();
             aie.setName( "NAME" );
-            Submit submit = new Submit( params, bundle.getSubmitDirectory().getPath() );
-            submit.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
+            SubmitService submitService = new SubmitService( params, bundle.getSubmitDirectory().getPath() );
+            submitService.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
 
         } catch( WebinCliException e ) 
         {

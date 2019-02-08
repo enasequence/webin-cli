@@ -14,7 +14,7 @@ package uk.ac.ebi.ena.service;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
-import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 
 public class IgnoreErrorsService {
@@ -39,21 +39,15 @@ public class IgnoreErrorsService {
 
     final static String SYSTEM_ERROR = "IgnoreErrorsServiceSystemError";
 
-    private WebinCliConfig config = new WebinCliConfig();
-
-    String getMessage(String messageKey) {
-        return config.getServiceMessage(messageKey);
-    }
-
     public boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(getMessage(SYSTEM_ERROR)));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliConfig.getServiceMessage(SYSTEM_ERROR)));
 
         ResponseEntity<String> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri(config,"reference/cli/ignore_errors/", test),
+                WebinCliConfig.getWebinRestUri("reference/cli/ignore_errors/", test),
                 HttpMethod.POST,
-                new HttpEntity(new IgnoreErrorsRequest(context, name), HttpUtils.authHeader(userName, password)),
+                new HttpEntity(new IgnoreErrorsRequest(context, name), (new HttpHeaderBuilder()).basicAuth(userName, password).get()),
                 String.class);
         return "true".equals(response.getBody());
     }

@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
-import uk.ac.ebi.ena.service.utils.HttpUtils;
+import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -47,10 +47,8 @@ public class StudyService {
     final static String VALIDATION_ERROR = "StudyServiceValidationError";
     final static String SYSTEM_ERROR = "StudyServiceSystemError";
 
-    private WebinCliConfig config = new WebinCliConfig();
-
     String getMessage(String messageKey, String studyId) {
-        return config.getServiceMessage(messageKey) + " Study: " + studyId;
+        return WebinCliConfig.getServiceMessage(messageKey) + " Study: " + studyId;
     }
 
     public Study
@@ -62,9 +60,9 @@ public class StudyService {
                 getMessage(SYSTEM_ERROR, studyId)));
 
         ResponseEntity<StudyResponse> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri(config,"reference/project/{id}", test),
+                WebinCliConfig.getWebinRestUri("reference/project/{id}", test),
                 HttpMethod.GET,
-                new HttpEntity(HttpUtils.authHeader(userName, password)),
+                new HttpEntity( (new HttpHeaderBuilder()).basicAuth(userName, password).get()),
                 StudyResponse.class,
                 studyId.trim());
 

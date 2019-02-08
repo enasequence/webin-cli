@@ -17,19 +17,14 @@ import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 
 public class VersionService {
+
     private final static String SYSTEM_ERROR = "VersionServiceSystemError";
-
-    private WebinCliConfig config = new WebinCliConfig();
-
-    String getMessage(String messageKey) {
-        return config.getServiceMessage(messageKey);
-    }
 
     public boolean isVersionValid(String version, boolean test ) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(getMessage(SYSTEM_ERROR)));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliConfig.getServiceMessage(SYSTEM_ERROR)));
         ResponseEntity<String> response = restTemplate.getForEntity(
-                WebinCliConfig.getWebinRestUri(config,"check_version/cli/{version}", test), String.class, version);
+                WebinCliConfig.getWebinRestUri("check_version/cli/{version}", test), String.class, version);
         String body = response.getBody();
         return "true".equals(body);
     }
