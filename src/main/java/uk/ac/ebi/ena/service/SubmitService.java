@@ -29,6 +29,7 @@ import org.jdom2.output.XMLOutputter;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -84,10 +85,12 @@ SubmitService {
             body.add("ENA_SUBMISSION_TOOL", submissionTool);
         }
 
+        HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).multipartFormData().build();
+
         ResponseEntity<String> response = restTemplate.exchange(
                 WebinCliConfig.getWebinRestUri("submit/", test),
                 HttpMethod.POST,
-                new HttpEntity( body, (new HttpHeaderBuilder()).basicAuth(userName, password).multipartFormData().get()),
+                new HttpEntity( body, headers),
                 String.class);
 
         processReceipt(response.getBody(), xmlFileList);

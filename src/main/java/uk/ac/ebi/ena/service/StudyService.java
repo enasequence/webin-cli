@@ -1,6 +1,7 @@
 package uk.ac.ebi.ena.service;
 
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -59,10 +60,12 @@ public class StudyService {
                 getMessage(VALIDATION_ERROR, studyId),
                 getMessage(SYSTEM_ERROR, studyId)));
 
+        HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
+
         ResponseEntity<StudyResponse> response = restTemplate.exchange(
                 WebinCliConfig.getWebinRestUri("reference/project/{id}", test),
                 HttpMethod.GET,
-                new HttpEntity( (new HttpHeaderBuilder()).basicAuth(userName, password).get()),
+                new HttpEntity(headers),
                 StudyResponse.class,
                 studyId.trim());
 

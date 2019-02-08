@@ -24,7 +24,7 @@ public class HttpHeaderBuilder {
         return this;
     }
 
-    public HttpHeaders get() {
+    public HttpHeaders build() {
         return headers;
     }
 }

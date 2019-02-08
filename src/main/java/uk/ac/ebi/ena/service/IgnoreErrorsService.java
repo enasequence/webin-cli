@@ -44,10 +44,12 @@ public class IgnoreErrorsService {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliConfig.getServiceMessage(SYSTEM_ERROR)));
 
+        HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
+
         ResponseEntity<String> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri("reference/cli/ignore_errors/", test),
+                WebinCliConfig.getWebinRestUri("cli/ignore_errors/", test),
                 HttpMethod.POST,
-                new HttpEntity(new IgnoreErrorsRequest(context, name), (new HttpHeaderBuilder()).basicAuth(userName, password).get()),
+                new HttpEntity(new IgnoreErrorsRequest(context, name), headers),
                 String.class);
         return "true".equals(response.getBody());
     }
