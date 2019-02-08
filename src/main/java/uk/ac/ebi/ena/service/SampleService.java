@@ -18,7 +18,6 @@ import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpUtils;
-import uk.ac.ebi.ena.service.utils.UriUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -52,7 +51,7 @@ public class SampleService {
                 getMessage(SYSTEM_ERROR, sampleId)));
 
         ResponseEntity<SampleResponse> response = restTemplate.exchange(
-                UriUtils.getWebinRestUri(config,"reference/sample/{id}", test),
+                WebinCliConfig.getWebinRestUri(config,"reference/sample/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity(HttpUtils.authHeader(userName, password)),
                 SampleResponse.class,
@@ -79,7 +78,7 @@ public class SampleService {
                 getMessage(SYSTEM_ERROR, sampleId)));
 
         ResponseEntity<String> response = restTemplate.exchange(
-                UriUtils.getWebinRestUri(config,"samples/{id}", test),
+                WebinCliConfig.getWebinRestUri(config,"samples/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity(HttpUtils.authHeader(userName, password)),
                 String.class,
