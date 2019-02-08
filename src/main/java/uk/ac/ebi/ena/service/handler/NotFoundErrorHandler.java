@@ -1,6 +1,5 @@
 package uk.ac.ebi.ena.service.handler;
 
-import lombok.Data;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
@@ -11,11 +10,15 @@ import java.io.IOException;
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
 import static org.springframework.http.HttpStatus.Series.SERVER_ERROR;
 
-@Data
 public class NotFoundErrorHandler implements ResponseErrorHandler {
 
     private final String validationError;
     private final String systemError;
+
+    public NotFoundErrorHandler(String validationError, String systemError) {
+        this.validationError = validationError;
+        this.systemError = systemError;
+    }
 
     @Override
     public boolean hasError(ClientHttpResponse httpResponse) throws IOException {

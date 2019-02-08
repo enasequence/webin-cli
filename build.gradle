@@ -117,7 +117,7 @@ dependencies {
 
     implementation('org.springframework.boot:spring-boot-starter')
     implementation('org.springframework.boot:spring-boot-starter-web')
-    implementation("org.projectlombok:lombok:1.18.4")
+    // implementation("org.projectlombok:lombok:1.18.4")
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     testImplementation('org.assertj:assertj-core:3.11.1')
     testImplementation('org.mockito:mockito-core:2.23.4')

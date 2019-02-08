@@ -11,11 +11,32 @@
 
 package uk.ac.ebi.ena.entity;
 
-import lombok.Data;
-
-@Data
 public class Sample {
     private String biosampleId;
 	private long taxId;
     private String organism;
+
+    public String getBiosampleId() {
+        return biosampleId;
+    }
+
+    public void setBiosampleId(String biosampleId) {
+        this.biosampleId = biosampleId;
+    }
+
+    public long getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(long taxId) {
+        this.taxId = taxId;
+    }
+
+    public String getOrganism() {
+        return organism;
+    }
+
+    public void setOrganism(String organism) {
+        this.organism = organism;
+    }
 }

@@ -11,7 +11,6 @@
 
 package uk.ac.ebi.ena.service;
 
-import lombok.Data;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
@@ -20,10 +19,22 @@ import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 
 public class IgnoreErrorsService {
 
-    @Data
     private static class IgnoreErrorsRequest {
         private final String context;
         private final String name;
+
+        public IgnoreErrorsRequest(String context, String name) {
+            this.context = context;
+            this.name = name;
+        }
+
+        public String getContext() {
+            return context;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     final static String SYSTEM_ERROR = "IgnoreErrorsServiceSystemError";

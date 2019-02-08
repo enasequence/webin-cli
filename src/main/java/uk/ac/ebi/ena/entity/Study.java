@@ -11,12 +11,25 @@
 
 package uk.ac.ebi.ena.entity;
 
-import lombok.Data;
-
 import java.util.List;
 
-@Data
 public class Study {
     private String projectId;
 	private List<String> locusTags;
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public List<String> getLocusTags() {
+        return locusTags;
+    }
+
+    public void setLocusTags(List<String> locusTags) {
+        this.locusTags = locusTags;
+    }
 }

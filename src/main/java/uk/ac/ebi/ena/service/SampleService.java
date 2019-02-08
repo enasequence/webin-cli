@@ -1,6 +1,5 @@
 package uk.ac.ebi.ena.service;
 
-import lombok.Data;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +26,43 @@ import java.io.StringReader;
 
 public class SampleService {
 
-    @Data
     private static class SampleResponse {
         private long taxId;
         private String organism;
         private String bioSampleId;
         private boolean canBeReferenced;
+
+        public long getTaxId() {
+            return taxId;
+        }
+
+        public void setTaxId(long taxId) {
+            this.taxId = taxId;
+        }
+
+        public String getOrganism() {
+            return organism;
+        }
+
+        public void setOrganism(String organism) {
+            this.organism = organism;
+        }
+
+        public String getBioSampleId() {
+            return bioSampleId;
+        }
+
+        public void setBioSampleId(String bioSampleId) {
+            this.bioSampleId = bioSampleId;
+        }
+
+        public boolean isCanBeReferenced() {
+            return canBeReferenced;
+        }
+
+        public void setCanBeReferenced(boolean canBeReferenced) {
+            this.canBeReferenced = canBeReferenced;
+        }
     }
 
     final static String VALIDATION_ERROR = "SampleServiceValidationError";

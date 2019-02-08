@@ -1,6 +1,5 @@
 package uk.ac.ebi.ena.service;
 
-import lombok.Data;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +14,34 @@ import java.util.List;
 
 public class StudyService {
 
-    @Data
     private static class StudyResponse {
         private String bioProjectId;
         private List<String> locusTags;
         private boolean canBeReferenced;
+
+        public String getBioProjectId() {
+            return bioProjectId;
+        }
+
+        public void setBioProjectId(String bioProjectId) {
+            this.bioProjectId = bioProjectId;
+        }
+
+        public List<String> getLocusTags() {
+            return locusTags;
+        }
+
+        public void setLocusTags(List<String> locusTags) {
+            this.locusTags = locusTags;
+        }
+
+        public boolean isCanBeReferenced() {
+            return canBeReferenced;
+        }
+
+        public void setCanBeReferenced(boolean canBeReferenced) {
+            this.canBeReferenced = canBeReferenced;
+        }
     }
 
     final static String VALIDATION_ERROR = "StudyServiceValidationError";

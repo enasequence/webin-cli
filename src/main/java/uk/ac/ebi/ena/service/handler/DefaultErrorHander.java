@@ -1,6 +1,5 @@
 package uk.ac.ebi.ena.service.handler;
 
-import lombok.Data;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
@@ -11,10 +10,13 @@ import java.io.IOException;
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
 import static org.springframework.http.HttpStatus.Series.SERVER_ERROR;
 
-@Data
 public class DefaultErrorHander implements ResponseErrorHandler {
 
     private final String systemError;
+
+    public DefaultErrorHander(String systemError) {
+        this.systemError = systemError;
+    }
 
     @Override
     public boolean hasError(ClientHttpResponse httpResponse) throws IOException {

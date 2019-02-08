@@ -318,8 +318,9 @@ public class GenomeAssemblyValidationTest {
 	{
 		File manifestFile = WebinCliTestUtils.createTempFile(false,
 				"NAME\ttest\n" +
-						"UNLOCALISED_LIST\tunlocalised_list.txt\n" +
-				"FASTA\tvalid_fasta.txt").toFile();
+						"UNLOCALISED_LIST\tunlocalised_list.txt.gz\n" +
+				"FASTA\tvalid_fasta.fasta.gz").toFile();
+
 
 		GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
 
