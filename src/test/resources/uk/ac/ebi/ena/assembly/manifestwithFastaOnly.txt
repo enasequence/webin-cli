@@ -1,1 +1,0 @@
-   FASTA	valid_fasta.txt

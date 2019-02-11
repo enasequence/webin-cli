@@ -1,2 +1,0 @@
-INFO	invalid_assembly_info.txt
-FASTA	valid_fasta.txt

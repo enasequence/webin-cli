@@ -1,3 +1,0 @@
-INFO	valid_assembly_info.txt
-FASTA	valid_fasta.txt
-AGP	invalid_agp.txt

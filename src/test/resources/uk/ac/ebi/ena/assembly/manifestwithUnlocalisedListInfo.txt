@@ -1,3 +1,0 @@
-INFO	valid_assembly_info.txt
-UNLOCALISED_LIST unlocalised_list.txt
-FASTA	valid_fasta.txt
