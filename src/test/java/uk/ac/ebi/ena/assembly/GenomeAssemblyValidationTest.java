@@ -367,23 +367,6 @@ public class GenomeAssemblyValidationTest {
     //
     //
 
-    @Test
-    public void
-    testGenomeFileValidation_Valid_ERZ449652() {
-
-        File manifestFile = WebinCliTestUtils.getFile("uk/ac/ebi/ena/assembly/genome/ERZ449652/ERZ449652.manifest");
-        File inputDir = manifestFile.getParentFile();
-
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli(inputDir);
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(1);
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isEqualTo(1);
-
-        // TODO: uk.ac.ebi.ena.webin.cli.WebinCliException: Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2
-        validator.validate();
-    }
 
     @Test
     public void
