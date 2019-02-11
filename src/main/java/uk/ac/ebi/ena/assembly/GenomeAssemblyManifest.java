@@ -61,19 +61,7 @@ GenomeAssemblyManifest extends ManifestReader
 			"genomic RNA",
 			"viral cRNA"
 	};
-	
-	
-	private enum 
-	CV_ASSEMBLY_TYPE_ORD
-	{
-        CLONE_OR_ISOLATE,
-        PRIMARY_METAGENOME,
-        BINNED_METAGENOME,
-        MAG,
-        SAG
-	}
-	
-	
+
 	private final static String[] CV_ASSEMBLY_TYPE = {
 			"clone or isolate",
 			"primary metagenome",
@@ -82,7 +70,20 @@ GenomeAssemblyManifest extends ManifestReader
 			"Environmental Single-Cell Amplified Genome (SAG)"
 	};
 
-	
+	private enum
+	CV_ASSEMBLY_TYPE_ORD
+	{
+        CLONE_OR_ISOLATE,
+        PRIMARY_METAGENOME,
+        BINNED_METAGENOME,
+        MAG,
+        SAG
+	};
+
+	private static String getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD ord) {
+		return CV_ASSEMBLY_TYPE[ ord.ordinal()];
+	}
+
 	@SuppressWarnings( "serial" ) public
 	GenomeAssemblyManifest( SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor )
 	{
@@ -219,20 +220,29 @@ GenomeAssemblyManifest extends ManifestReader
 		getFiles( getInputDir(), getResult(), Fields.UNLOCALISED_LIST ).forEach( unlocalisedListFile -> submissionFiles.addFile( new SubmissionFile( FileType.UNLOCALISED_LIST, unlocalisedListFile ) ) );
 
         // "primary metagenome" and "binned metagenome" checks
-		if( CV_ASSEMBLY_TYPE[ CV_ASSEMBLY_TYPE_ORD.PRIMARY_METAGENOME.ordinal() ].equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) )
-		    || CV_ASSEMBLY_TYPE[ CV_ASSEMBLY_TYPE_ORD.BINNED_METAGENOME.ordinal() ].equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) ) )
+		if( getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD.PRIMARY_METAGENOME).equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) ) ||
+			getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD.BINNED_METAGENOME).equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) ) )
 		{
-		    if( submissionFiles.getFiles().stream().filter( file -> FileType.FASTA != file.getFileType() ).findAny().isPresent() )
-		        error( "MANIFEST_ERROR_INVALID_FILE_GROUP", 
-		               getExpectedFileTypeList( new HashSet<List<ManifestFileCount>>() { 
-		                                        {
-                                                    // FASTA ONLY
-                                                    add( new ArrayList<ManifestFileCount>() {
-                                                    {
-                                                        add( new ManifestFileCount( Fields.FASTA, 1, null ) );
-                                                    } } );
-		                                         } } ),
-		               " for assembly types: \"" + CV_ASSEMBLY_TYPE[ CV_ASSEMBLY_TYPE_ORD.PRIMARY_METAGENOME.ordinal() ] +"\" and \"" + CV_ASSEMBLY_TYPE[ CV_ASSEMBLY_TYPE_ORD.BINNED_METAGENOME.ordinal() ] + "\""  );
+		    if( submissionFiles.getFiles()
+					.stream()
+					.filter( file -> FileType.FASTA != file.getFileType() )
+					.findAny()
+					.isPresent() ) {
+				error("MANIFEST_ERROR_INVALID_FILE_GROUP",
+						getExpectedFileTypeList(new HashSet<List<ManifestFileCount>>() {
+							{
+								// FASTA ONLY
+								add(new ArrayList<ManifestFileCount>() {
+									{
+										add(new ManifestFileCount(Fields.FASTA, 1, 1));
+									}
+								});
+							}
+						}),
+						" for assembly types: \"" +
+								CV_ASSEMBLY_TYPE[CV_ASSEMBLY_TYPE_ORD.PRIMARY_METAGENOME.ordinal()] + "\" and \"" +
+								CV_ASSEMBLY_TYPE[CV_ASSEMBLY_TYPE_ORD.BINNED_METAGENOME.ordinal()] + "\"");
+			}
 		}
 	
 		submissionOptions.assemblyInfoEntry = Optional.of( assemblyInfo );

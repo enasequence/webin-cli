@@ -5,11 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -167,6 +169,19 @@ public class WebinCliTestUtils {
                 .getClassLoader()
                 .getResource( filePath )
                 .getFile());
+    }
+
+    public static Path
+    getPath( String filePath ) {
+        URL url =
+                WebinCliTestUtils.class
+                .getClassLoader()
+                .getResource( filePath );
+        try {
+            return Paths.get(url.toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
