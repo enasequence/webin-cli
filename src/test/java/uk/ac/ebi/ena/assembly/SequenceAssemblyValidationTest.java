@@ -127,7 +127,7 @@ public class SequenceAssemblyValidationTest {
     public void
     invalidAlphanumericEntrynumber() {
          assertThatTsvFileIsInvalid("Sequence-invalid-alphanumeric-entrynumber-.tsv.gz",
-                 "Sequence-invalidAlphanumericEntrynumber-expected-results.txt",
+                 "Sequence-invalid-alphanumeric-entrynumber-expected-results.txt",
                  "Sequence-invalid-alphanumeric-entrynumber-.tsv.gz.report");
     }
 
@@ -135,7 +135,7 @@ public class SequenceAssemblyValidationTest {
     public void
     invalidMarker() {
         assertThatTsvFileIsInvalid("Sequence-invalid-marker.tsv.gz",
-        "Sequence-invalidMarker-expected-results.txt",
+        "Sequence-invalid-marker-expected-results.txt",
         "Sequence-invalid-marker.tsv.gz.report");
     }
 
@@ -143,23 +143,23 @@ public class SequenceAssemblyValidationTest {
     public void
     invalidSediment() {
          assertThatTsvFileIsInvalid("Sequence-invalid-sediment.tsv.gz",
-        "Sequence-invalidSediment-expected-results.txt",
+        "Sequence-invalid-sediment-expected-results.txt",
         "Sequence-invalid-sediment.tsv.gz.report");
     }
 
     @Test
     public void
     invalidEntryNumberStart() {
-         assertThatTsvFileIsInvalid("Sequence-invalid-entrynumber-start-.tsv.gz",
-        "Sequence-invalidEntrynumberStart-expected-results.txt",
-        "Sequence-invalid-entrynumber-start-.tsv.gz.report");
+         assertThatTsvFileIsInvalid("Sequence-invalid-entrynumber-start.tsv.gz",
+        "Sequence-invalid-entrynumber-start-expected-results.txt",
+        "Sequence-invalid-entrynumber-start.tsv.gz.report");
     }
 
     @Test
     public void
     invalidNonAsciiCharacters() {
         assertThatTsvFileIsInvalid("Sequence-non-ascii-characters.gz",
-        "Sequence-nonAsciiCharacters-expected-results.txt",
+        "Sequence-non-ascii-characters-expected-results.txt",
         "Sequence-non-ascii-characters.gz.report");
     }
 

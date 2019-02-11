@@ -1,2 +1,0 @@
-INFO    /Users/cleland/git/webin-cli/src/test/resources/uk/ac/ebi/ena/template/flatfile/templateflatfile.info.gz
-FLATFILE    /Users/cleland/git/webin-cli/src/test/resources/uk/ac/ebi/ena/template/flatfile/hla_tgs_entryupload_170623.embl.gz
