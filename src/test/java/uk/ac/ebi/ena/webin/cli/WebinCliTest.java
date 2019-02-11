@@ -162,7 +162,7 @@ WebinCliTest
         Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         
         Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
-        Path agpfile  = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/assembly/valid_flatfileAgp.txt", input_dir, true, ".agp.gz" );
         Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getGenomeManifestInfoFields());
 
         testWebinCli( ContextE.genome, 
@@ -180,7 +180,7 @@ WebinCliTest
         Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         
         Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
-        Path agpfile  = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileagp.txt", input_dir, true, ".agp.gz" );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/assembly/valid_flatfileAgp.txt", input_dir, true, ".agp.gz" );
 
         testWebinCli( ContextE.genome, 
                       input_dir,

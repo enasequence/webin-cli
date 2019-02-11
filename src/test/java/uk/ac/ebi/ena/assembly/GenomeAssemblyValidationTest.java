@@ -152,7 +152,7 @@ public class GenomeAssemblyValidationTest {
     testFastaAndAgp() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tvalid.agp.gz\n" +
+                        "AGP\tvalid_agp.agp.gz\n" +
                         "FASTA\tvalid_fasta.fasta.gz").toFile();
 
         GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -171,7 +171,7 @@ public class GenomeAssemblyValidationTest {
     testFlatFileAndAgp() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tvalid.agp.gz\n" +
+                        "AGP\tvalid_agp.agp.gz\n" +
                         "FLATFILE\tvalid_flatfile.txt.gz").toFile();
 
         GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -190,8 +190,8 @@ public class GenomeAssemblyValidationTest {
     testFastaAndAgpAndChromosomeList() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
-                        "CHROMOSOME_LIST\tchromosome_list.txt.gz\n" +
-                        "AGP\tvalid.agp.gz\n" +
+                        "CHROMOSOME_LIST\tvalid_chromosome_list.txt.gz\n" +
+                        "AGP\tvalid_agp.agp.gz\n" +
                         "FASTA\tvalid_fasta.fasta.gz").toFile();
 
         GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -213,8 +213,8 @@ public class GenomeAssemblyValidationTest {
     testFlatFileAndAgpAndChromosomeList() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
-                        "CHROMOSOME_LIST\tchromosome_list.txt.gz\n" +
-                        "AGP\tvalid.agp.gz\n" +
+                        "CHROMOSOME_LIST\tvalid_chromosome_list.txt.gz\n" +
+                        "AGP\tvalid_agp.agp.gz\n" +
                         "FLATFILE\tvalid_flatfile.txt.gz").toFile();
 
         GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
@@ -236,9 +236,9 @@ public class GenomeAssemblyValidationTest {
     testFastaAndAgpAndSequencelessChromosomeList() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tvalid.agp.gz\n" +
+                        "AGP\tvalid_agp.agp.gz\n" +
                         "FLATFILE\tvalid_flatfile.txt.gz\n" +
-                        "CHROMOSOME_LIST\tchromosome_list_sequenceless.txt.gz\n").toFile();
+                        "CHROMOSOME_LIST\tinvalid_chromosome_list_sequenceless.txt.gz\n").toFile();
 
         GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
         validator.setSample(getHumanSample());
@@ -347,7 +347,7 @@ public class GenomeAssemblyValidationTest {
                 DEFAULT_MANIFEST_META_FIELDS +
                         "ASSEMBLY_TYPE binned metagenome\n" +
                         "FASTA valid_fasta.fasta.gz\n" +
-                        "AGP valid.agp.gz").toFile();
+                        "AGP valid_agp.agp.gz").toFile();
 
         // An invalid set of files has been specified for assembly types: "primary metagenome" and "binned metagenome". Expected data files are: [>= 1 "FASTA" file(s)]. [File name: C:\Users\rasko\AppData\Local\Temp\TEST4728973286845456884TEST]
         assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
