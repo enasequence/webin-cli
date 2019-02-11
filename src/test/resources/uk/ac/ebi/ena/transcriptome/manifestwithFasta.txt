@@ -1,2 +1,0 @@
-INFO    /Users/cleland/git/webin-cli/src/test/resources/uk/ac/ebi/ena/transcriptome/hickmania2.info.gz
-FASTA   /Users/cleland/git/webin-cli/src/test/resources/uk/ac/ebi/ena/transcriptome/MC_ANZ045-chr.fasta.gz
