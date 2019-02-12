@@ -19,20 +19,12 @@ import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 public class IgnoreErrorsService extends AbstractService {
 
     private static class IgnoreErrorsRequest {
-        private final String context;
-        private final String name;
+        public final String context;
+        public final String name;
 
         public IgnoreErrorsRequest(String context, String name) {
             this.context = context;
             this.name = name;
-        }
-
-        public String getContext() {
-            return context;
-        }
-
-        public String getName() {
-            return name;
         }
     }
 

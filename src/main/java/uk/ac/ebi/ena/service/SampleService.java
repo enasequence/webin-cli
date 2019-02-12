@@ -27,42 +27,10 @@ import java.io.StringReader;
 public class SampleService extends AbstractService {
 
     private static class SampleResponse {
-        private long taxId;
-        private String organism;
-        private String bioSampleId;
-        private boolean canBeReferenced;
-
-        public long getTaxId() {
-            return taxId;
-        }
-
-        public void setTaxId(long taxId) {
-            this.taxId = taxId;
-        }
-
-        public String getOrganism() {
-            return organism;
-        }
-
-        public void setOrganism(String organism) {
-            this.organism = organism;
-        }
-
-        public String getBioSampleId() {
-            return bioSampleId;
-        }
-
-        public void setBioSampleId(String bioSampleId) {
-            this.bioSampleId = bioSampleId;
-        }
-
-        public boolean isCanBeReferenced() {
-            return canBeReferenced;
-        }
-
-        public void setCanBeReferenced(boolean canBeReferenced) {
-            this.canBeReferenced = canBeReferenced;
-        }
+        public long taxId;
+        public String organism;
+        public String bioSampleId;
+        public boolean canBeReferenced;
     }
 
     final static String VALIDATION_ERROR = "SampleServiceValidationError";
@@ -86,13 +54,13 @@ public class SampleService extends AbstractService {
                 sampleId.trim());
 
         SampleResponse sampleResponse = response.getBody();
-        if (sampleResponse == null || !sampleResponse.isCanBeReferenced()) {
+        if (sampleResponse == null || !sampleResponse.canBeReferenced) {
             throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, sampleId));
         }
         Sample sample = new Sample();
-        sample.setBiosampleId(sampleResponse.getBioSampleId());
-        sample.setTaxId(sampleResponse.getTaxId());
-        sample.setOrganism(sampleResponse.getOrganism());
+        sample.setBiosampleId(sampleResponse.bioSampleId);
+        sample.setTaxId(sampleResponse.taxId);
+        sample.setOrganism(sampleResponse.organism);
         return sample;
     }
 

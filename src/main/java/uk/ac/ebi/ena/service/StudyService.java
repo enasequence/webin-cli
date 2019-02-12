@@ -15,33 +15,9 @@ import java.util.List;
 public class StudyService extends AbstractService {
 
     private static class StudyResponse {
-        private String bioProjectId;
-        private List<String> locusTags;
-        private boolean canBeReferenced;
-
-        public String getBioProjectId() {
-            return bioProjectId;
-        }
-
-        public void setBioProjectId(String bioProjectId) {
-            this.bioProjectId = bioProjectId;
-        }
-
-        public List<String> getLocusTags() {
-            return locusTags;
-        }
-
-        public void setLocusTags(List<String> locusTags) {
-            this.locusTags = locusTags;
-        }
-
-        public boolean isCanBeReferenced() {
-            return canBeReferenced;
-        }
-
-        public void setCanBeReferenced(boolean canBeReferenced) {
-            this.canBeReferenced = canBeReferenced;
-        }
+        public String bioProjectId;
+        public List<String> locusTags;
+        public boolean canBeReferenced;
     }
 
     final static String VALIDATION_ERROR = "StudyServiceValidationError";
@@ -69,12 +45,12 @@ public class StudyService extends AbstractService {
                 studyId.trim());
 
         StudyResponse studyResponse = response.getBody();
-        if (studyResponse == null || !studyResponse.isCanBeReferenced()) {
+        if (studyResponse == null || !studyResponse.canBeReferenced) {
             throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, studyId));
         }
         Study study = new Study();
-        study.setProjectId(studyResponse.getBioProjectId());
-        study.setLocusTags(studyResponse.getLocusTags());
+        study.setProjectId(studyResponse.bioProjectId);
+        study.setLocusTags(studyResponse.locusTags);
         return study;
     }
 }
