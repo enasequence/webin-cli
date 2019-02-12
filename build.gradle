@@ -27,10 +27,9 @@ version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-ext.webinCliCodacyProjectToken =  file(hasProperty('sshKeyFile') ? sshKeyFile : "${System.properties['user.home']}/.ssh/id_dsa")
+// ext.webinCliCodacyProjectToken =
 
 repositories {
-    flatDir { dirs 'lib' }
     mavenLocal()
     maven { url "http://ena-dev:8081/artifactory/all" }
 }
@@ -73,29 +72,6 @@ task printWebinTestCredentials {
         println 'webinCliPassword: ' + webinCliPassword
     }
 }
-
-
-jar {
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-        exclude("**/*.RSA")
-        exclude("**/*.SF")
-        
-        configurations.runtime.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    manifest {
-        attributes 'Implementation-Title': 'webin-cli',
-                'Implementation-Version': version_base,
-                'Built-By': System.getProperty('user.name'),
-                'Built-Date': new Date(),
-                "Main-Class": 'uk.ac.ebi.ena.webin.cli.WebinCli'
-    }
-}
-
 
 dependencies {
     implementation("commons-net:commons-net:3.4")
