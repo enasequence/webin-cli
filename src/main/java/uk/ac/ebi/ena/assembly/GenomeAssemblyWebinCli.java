@@ -21,15 +21,15 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
-import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 {
-	@Override public ContextE 
+	@Override public WebinCliContext
 	getContext() 
 	{
-		return ContextE.genome;
+		return WebinCliContext.genome;
 	}
 
 	
@@ -82,7 +82,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	@Override Element 
 	makeAnalysisType( AssemblyInfoEntry entry )
 	{
-		Element typeE = new Element( ContextE.genome.getType() );
+		Element typeE = new Element( WebinCliContext.genome.getXmlElement() );
 
 		typeE.addContent( createTextElement( "NAME", entry.getName() ) );
 		if( null != entry.getAssemblyType() && !entry.getAssemblyType().isEmpty() )

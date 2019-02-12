@@ -23,18 +23,13 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
-import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifest> {
-	private static final String VALIDATION_MESSAGES_BUNDLE = "ValidationSequenceMessages";
-	private static final String STANDARD_VALIDATION_BUNDLE = "uk.ac.ebi.embl.api.validation.ValidationMessages";
-	private static final String STANDARD_FIXER_BUNDLE = "uk.ac.ebi.embl.api.validation.FixerMessages";
-	private static final String MOL_TYPE = "transcribed RNA";
-
 
 	@Override
-	public ContextE getContext() {
-		return ContextE.transcriptome;
+	public WebinCliContext getContext() {
+		return WebinCliContext.transcriptome;
 	}
 
 	@Override
@@ -78,7 +73,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	
 	@Override	
 	Element makeAnalysisType( AssemblyInfoEntry entry ) {
-		Element typeE = new Element( ContextE.transcriptome.getType() );
+		Element typeE = new Element( WebinCliContext.transcriptome.getXmlElement() );
 		typeE.addContent( createTextElement( "NAME", entry.getName() ) );
 		typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
 		typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );

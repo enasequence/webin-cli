@@ -8,13 +8,13 @@ import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
-import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 
 
 public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyManifest> {
     @Override
-    public ContextE getContext() {
-        return ContextE.sequence;
+    public WebinCliContext getContext() {
+        return WebinCliContext.sequence;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     @Override
     Element makeAnalysisType( AssemblyInfoEntry entry )
     {
-        Element typeE = new Element( ContextE.sequence.getType() );
+        Element typeE = new Element( WebinCliContext.sequence.getXmlElement() );
         return typeE;
     }
 }

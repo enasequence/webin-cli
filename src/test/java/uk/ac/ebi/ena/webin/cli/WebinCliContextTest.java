@@ -9,22 +9,23 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package uk.ac.ebi.ena.submit;
+package uk.ac.ebi.ena.webin.cli;
 
-import org.junit.Assert;
 import org.junit.Test;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 public class
-ContextETest
+WebinCliContextTest
 {
     @Test public void 
     titleTest()
     {
-        String name = "MY-YOBA-TITLE";
-        for( ContextE c : ContextE.values() )
+        String name = "TEST";
+        for( WebinCliContext context : WebinCliContext.values() )
         {
-            String title = c.getTitle( name );
-            Assert.assertTrue( title.contains( name ) );
+            String title = context.getXmlTitle( name );
+            assertThat(title).contains( name );
         }
     }
 }

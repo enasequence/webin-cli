@@ -35,7 +35,6 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.service.SubmitService;
 import uk.ac.ebi.ena.upload.ASCPService;
@@ -76,7 +75,7 @@ public class WebinCli { // implements CommandLineRunner
     
 	
 	private Params params;
-	private ContextE contextE;
+	private WebinCliContext context;
     private AbstractWebinCli<?> validator;
 
 	public static class
@@ -256,7 +255,7 @@ public class WebinCli { // implements CommandLineRunner
     init( Params params ) throws Exception
     {
         this.params = params;
-        this.contextE = ContextE.valueOf( String.valueOf( params.context ).toLowerCase() );
+        this.context = WebinCliContext.valueOf( params.context );
 
         params.manifest = getFullPath( params.manifest );
         File manifestFile = new File( params.manifest );
@@ -274,7 +273,7 @@ public class WebinCli { // implements CommandLineRunner
 
 		WebinCliReporter.setDefaultReportDir(createOutputDir(parameters, "."));
 
-		this.validator = contextE.getValidatorClass().newInstance();
+		this.validator = context.getValidatorClass().newInstance();
 		this.validator.setTestMode( params.test );
 		this.validator.setIgnoreErrorsMode( params.ignoreErrors );
 		this.validator.init( parameters );
@@ -285,7 +284,7 @@ public class WebinCli { // implements CommandLineRunner
 	execute()
 	{
 		try {
-			contextE = ContextE.valueOf(params.context);
+			context = WebinCliContext.valueOf( params.context );
 		} catch (IllegalArgumentException e) {
 			throw WebinCliException.createUserError(INVALID_CONTEXT, params.context);
 		}
@@ -481,7 +480,7 @@ public class WebinCli { // implements CommandLineRunner
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
 			try {
-				ContextE.valueOf(value);
+				WebinCliContext.valueOf(value);
 			} catch (IllegalArgumentException e) {
 				throw new ParameterException(INVALID_CONTEXT + value);
 			}

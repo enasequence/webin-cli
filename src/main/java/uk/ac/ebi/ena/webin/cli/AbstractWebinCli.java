@@ -19,7 +19,6 @@ import java.security.NoSuchAlgorithmException;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.manifest.ManifestReader;
-import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.utils.FileUtils;
@@ -119,7 +118,7 @@ AbstractWebinCli<T extends ManifestReader>
         }
     }
 
-    public abstract ContextE getContext();
+    public abstract WebinCliContext getContext();
 
     /**
      * Reads the manifest file and returns the submission name.

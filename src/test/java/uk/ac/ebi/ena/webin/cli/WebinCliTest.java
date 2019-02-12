@@ -25,7 +25,6 @@ import uk.ac.ebi.ena.assembly.SequenceAssemblyManifest;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyManifest;
 import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest;
-import uk.ac.ebi.ena.submit.ContextE;
 import uk.ac.ebi.ena.upload.ASCPService;
 
 import static org.junit.Assert.assertEquals;
@@ -96,7 +95,7 @@ WebinCliTest
 
 
     private void
-    testWebinCli( ContextE context, Path inputDir, String manifestContents, boolean ascp ) throws Exception 
+    testWebinCli(WebinCliContext context, Path inputDir, String manifestContents, boolean ascp ) throws Exception
     {
         WebinCli.Params parameters = new WebinCli.Params();
         parameters.context = context.toString();
@@ -123,7 +122,7 @@ WebinCliTest
         Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
         Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getRawReadsInfoFields());
 
-        testWebinCli( ContextE.reads, 
+        testWebinCli( WebinCliContext.reads,
                       input_dir,
                       ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" + RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName(), 
                       false );
@@ -136,7 +135,7 @@ WebinCliTest
         Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
 
-        testWebinCli( ContextE.reads, 
+        testWebinCli( WebinCliContext.reads,
                       input_dir,
                       RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
                       false );
@@ -149,7 +148,7 @@ WebinCliTest
         Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
         Assert.assertTrue( new ASCPService().isAvaliable() );
-        testWebinCli( ContextE.reads, 
+        testWebinCli( WebinCliContext.reads,
                       input_dir,
                       RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
                       true );
@@ -165,7 +164,7 @@ WebinCliTest
         Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/assembly/valid_flatfileAgp.txt", input_dir, true, ".agp.gz" );
         Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getGenomeManifestInfoFields());
 
-        testWebinCli( ContextE.genome, 
+        testWebinCli( WebinCliContext.genome,
                       input_dir,
                       ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
                               GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
@@ -182,7 +181,7 @@ WebinCliTest
         Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
         Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/assembly/valid_flatfileAgp.txt", input_dir, true, ".agp.gz" );
 
-        testWebinCli( ContextE.genome, 
+        testWebinCli( WebinCliContext.genome,
                       input_dir,
                       GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
                               GenomeAssemblyManifest.Fields.AGP + " " + agpfile.getFileName()       + "\n" +
@@ -200,7 +199,7 @@ WebinCliTest
         Path tabfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
         Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getSequenceManifestFields());
 
-        testWebinCli( ContextE.sequence, 
+        testWebinCli( WebinCliContext.sequence,
                       input_dir,
                       ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
                               SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName(),
@@ -215,7 +214,7 @@ WebinCliTest
         
         Path tabfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
 
-        testWebinCli( ContextE.sequence, 
+        testWebinCli( WebinCliContext.sequence,
                       input_dir,
                       SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName() + "\n" + getSequenceManifestFields(),
                       false );
@@ -230,7 +229,7 @@ WebinCliTest
         Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/transcriptome/valid_fasta.fasta.gz", input_dir, false );
         Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getTranscriptomeManifestFields());
 
-        testWebinCli( ContextE.transcriptome, 
+        testWebinCli( WebinCliContext.transcriptome,
                       input_dir,
                       ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
                               TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName(),
@@ -245,7 +244,7 @@ WebinCliTest
 
         Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/transcriptome/valid_fasta.fasta.gz", input_dir, false );
 
-        testWebinCli( ContextE.transcriptome, 
+        testWebinCli( WebinCliContext.transcriptome,
                       input_dir,
                       TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName() + "\n" + getTranscriptomeManifestFields(),
                       false );

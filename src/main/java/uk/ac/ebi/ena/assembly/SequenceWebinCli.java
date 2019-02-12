@@ -148,9 +148,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     {
         try 
         {
-            String full_name = getContext().getTitle( getName() );
-            //String type      = getContext().getType(); 
-            
+            String full_name = getContext().getXmlTitle( getName() );
+
             Element analysisSetE = new Element( "ANALYSIS_SET" );
             Element analysisE = new Element( "ANALYSIS" );
             analysisSetE.addContent( analysisE );

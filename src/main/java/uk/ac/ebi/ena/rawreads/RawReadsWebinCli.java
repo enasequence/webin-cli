@@ -69,7 +69,7 @@ import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.entity.Study;
-import uk.ac.ebi.ena.submit.ContextE;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
@@ -99,8 +99,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
     private boolean is_paired;
 
     @Override
-    public ContextE getContext() {
-        return ContextE.reads;
+    public WebinCliContext getContext() {
+        return WebinCliContext.reads;
     }
 
     @Override
@@ -511,7 +511,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                 
         try 
         {
-            String full_name = ContextE.reads.getTitle( getName() );
+            String full_name = WebinCliContext.reads.getXmlTitle( getName() );
             Element experimentSetE = new Element( "EXPERIMENT_SET" );
             Element experimentE = new Element( "EXPERIMENT" );
             experimentSetE.addContent( experimentE );
@@ -604,7 +604,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
     {
         try 
         {
-            String full_name = ContextE.reads.getTitle( getName() );
+            String full_name = WebinCliContext.reads.getXmlTitle( getName() );
             Element runSetE = new Element( "RUN_SET" );
             Element runE = new Element( "RUN" );
             runSetE.addContent( runE );
