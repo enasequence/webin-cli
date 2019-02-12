@@ -104,13 +104,15 @@ public class GenomeAssemblyValidationTest {
         return cli;
     }
 
-    private void assertThatManifestIsInvalid(File manifestFile, GenomeAssemblyWebinCli genomeAssemblyWebinCli) {
+    private GenomeAssemblyWebinCli assertThatManifestIsInvalid(File manifestFile, GenomeAssemblyWebinCli genomeAssemblyWebinCli) {
         GenomeAssemblyWebinCli validator = genomeAssemblyWebinCli;
 
         assertThatThrownBy(() -> {
             validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
         }).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("Invalid manifest file");
+
+        return validator;
     }
 
     @Test
@@ -262,19 +264,25 @@ public class GenomeAssemblyValidationTest {
     testInvalidSuffix_Fasta() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
-                        "FASTA\tinvalid_fasta.txt").toFile();
+                        "FASTA\tinvalid_fasta.fasta").toFile();
 
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+
+        validator.getManifestReader().getValidationResult().getMessages().forEach( e ->
+            assertThat(e.getMessageKey().equals("MANIFEST_INVALID_FILE_SUFFIX")));
     }
 
     @Test
     public void
     testInvalidSuffix_FlatFile() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
-                "NAME\ttest\n" +
+                DEFAULT_MANIFEST_META_FIELDS +
                         "FLATFILE\tinvalid_flatfile.txt").toFile();
 
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+
+        validator.getManifestReader().getValidationResult().getMessages().forEach( e ->
+                assertThat(e.getMessageKey().equals("MANIFEST_INVALID_FILE_SUFFIX")));
     }
 
     @Test
@@ -282,11 +290,67 @@ public class GenomeAssemblyValidationTest {
     testInvalidFileSuffix_Agp() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tinvalid_agp.txt\n" +
+                        "AGP\tinvalid_agp.agp\n" +
                         "FASTA\tvalid_fasta.fasta.gz").toFile();
 
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+
+        validator.getManifestReader().getValidationResult().getMessages().forEach( e ->
+                assertThat(e.getMessageKey().equals("MANIFEST_INVALID_FILE_SUFFIX")));
     }
+
+    @Test
+    public void
+    testInvalidFile_Fasta() {
+        File manifestFile = WebinCliTestUtils.createTempFile(false,
+                DEFAULT_MANIFEST_META_FIELDS +
+                        "FASTA\tinvalid_fasta.fasta.gz").toFile();
+
+        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+
+        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
+
+        assertThatThrownBy(() -> {
+            validator.validate();
+        }).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining("fasta file validation failed");
+    }
+
+    @Test
+    public void
+    testInvalidFile_FlatFile() {
+        File manifestFile = WebinCliTestUtils.createTempFile(false,
+                DEFAULT_MANIFEST_META_FIELDS +
+                        "FLATFILE\tinvalid_flatfile.txt.gz").toFile();
+
+        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+
+        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
+
+        assertThatThrownBy(() -> {
+            validator.validate();
+        }).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining("flatfile file validation failed");
+    }
+
+    @Test
+    public void
+    testInvalidFile_Agp() {
+        File manifestFile = WebinCliTestUtils.createTempFile(false,
+                DEFAULT_MANIFEST_META_FIELDS +
+                        "FASTA\tvalid_fasta.fasta.gz\n" +
+                        "AGP\tinvalid_agp.agp.gz").toFile();
+
+        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+
+        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
+
+        assertThatThrownBy(() -> {
+            validator.validate();
+        }).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining("agp file validation failed");
+    }
+
 
     @Test
     public void

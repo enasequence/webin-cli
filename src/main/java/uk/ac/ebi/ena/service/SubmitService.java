@@ -52,7 +52,7 @@ SubmitService {
     private final boolean test;
     private final String submitDir;
 
-    final static String SYSTEM_ERROR = "IgnoreErrorsServiceSystemError";
+    final static String SYSTEM_ERROR = "SubmissionServiceSystemError";
 
     public SubmitService(WebinCli.Params params, String submitDir) {
         this.test = params.test;
