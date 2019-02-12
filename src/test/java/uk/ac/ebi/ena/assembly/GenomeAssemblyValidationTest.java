@@ -14,20 +14,13 @@ package uk.ac.ebi.ena.assembly;
 import java.io.File;
 import java.net.URL;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.submission.Context;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.entity.Study;
@@ -80,13 +73,9 @@ public class GenomeAssemblyValidationTest {
         return source;
     }
 
-    private File getDefaultInputDir() {
-        URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/valid_fasta.fasta.gz");
-        return new File(url.getFile()).getParentFile();
-    }
-
     private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli() {
-        return prepareGenomeAssemblyWebinCli(getDefaultInputDir());
+        URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/valid_fasta.fasta.gz");
+        return prepareGenomeAssemblyWebinCli(new File(url.getFile()).getParentFile());
     }
 
     private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(File inputDir) {
@@ -113,6 +102,12 @@ public class GenomeAssemblyValidationTest {
                 .hasMessageContaining("Invalid manifest file");
 
         return validator;
+    }
+
+    private void assertThatManifestErrorIs(GenomeAssemblyWebinCli validator, String messageKey) {
+        assertThat(validator.getManifestReader().getValidationResult().getMessages().size()).isOne();
+        validator.getManifestReader().getValidationResult().getMessages().forEach(e ->
+                assertThat(e.getMessageKey()).isEqualTo(messageKey));
     }
 
     @Test
@@ -267,9 +262,7 @@ public class GenomeAssemblyValidationTest {
                         "FASTA\tinvalid_fasta.fasta").toFile();
 
         GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-
-        validator.getManifestReader().getValidationResult().getMessages().forEach( e ->
-            assertThat(e.getMessageKey().equals("MANIFEST_INVALID_FILE_SUFFIX")));
+        assertThatManifestErrorIs(validator, "MANIFEST_INVALID_FILE_SUFFIX");
     }
 
     @Test
@@ -280,9 +273,7 @@ public class GenomeAssemblyValidationTest {
                         "FLATFILE\tinvalid_flatfile.txt").toFile();
 
         GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-
-        validator.getManifestReader().getValidationResult().getMessages().forEach( e ->
-                assertThat(e.getMessageKey().equals("MANIFEST_INVALID_FILE_SUFFIX")));
+        assertThatManifestErrorIs(validator, "MANIFEST_INVALID_FILE_SUFFIX");
     }
 
     @Test
@@ -294,9 +285,7 @@ public class GenomeAssemblyValidationTest {
                         "FASTA\tvalid_fasta.fasta.gz").toFile();
 
         GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-
-        validator.getManifestReader().getValidationResult().getMessages().forEach( e ->
-                assertThat(e.getMessageKey().equals("MANIFEST_INVALID_FILE_SUFFIX")));
+        assertThatManifestErrorIs(validator, "MANIFEST_INVALID_FILE_SUFFIX");
     }
 
     @Test
@@ -365,6 +354,18 @@ public class GenomeAssemblyValidationTest {
 
     @Test
     public void
+    testInvalidFileGroup_FlatFileAndUnlocalisedList() {
+        File manifestFile = WebinCliTestUtils.createTempFile(false,
+                DEFAULT_MANIFEST_META_FIELDS +
+                        "UNLOCALISED_LIST\tvalid_unlocalised_list.txt.gz\n" +
+                        "FLATFILE\tvalid_flatfile.txt.gz").toFile();
+
+        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        assertThatManifestErrorIs(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
+    }
+
+    @Test
+    public void
     testBinnedMetagenome_Fasta() {
         File manifestFile = WebinCliTestUtils.createTempFile(false,
                 DEFAULT_MANIFEST_META_FIELDS +
@@ -388,7 +389,8 @@ public class GenomeAssemblyValidationTest {
                 DEFAULT_MANIFEST_META_FIELDS +
                         "ASSEMBLY_TYPE binned metagenome\n").toFile();
 
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        assertThatManifestErrorIs(validator, "MANIFEST_ERROR_NO_DATA_FILES");
     }
 
     @Test
@@ -400,8 +402,8 @@ public class GenomeAssemblyValidationTest {
                         "FASTA valid_fasta.fasta.gz\n" +
                         "FASTA valid_fasta.fasta.gz").toFile();
 
-        // Field FASTA should not appear more than 1 times.
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        assertThatManifestErrorIs(validator, "MANIFEST_TOO_MANY_FIELDS");
     }
 
     @Test
@@ -413,79 +415,8 @@ public class GenomeAssemblyValidationTest {
                         "FASTA valid_fasta.fasta.gz\n" +
                         "AGP valid_agp.agp.gz").toFile();
 
-        // An invalid set of files has been specified for assembly types: "primary metagenome" and "binned metagenome". Expected data files are: [>= 1 "FASTA" file(s)]. [File name: C:\Users\rasko\AppData\Local\Temp\TEST4728973286845456884TEST]
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        assertThatManifestErrorIs(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
     }
 
-    @Test
-    public void
-    testInvalidFileGroup_FlatFileAndUnlocalisedList() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "UNLOCALISED_LIST\tvalid_unlocalised_list.txt.gz\n" +
-                        "FLATFILE\tvalid_flatfile.txt.gz").toFile();
-
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-    }
-
-    //
-    //
-
-
-    @Test
-    public void
-    testGenomeFileValidation_Invalid_ERZ092580() {
-        File manifestFile = WebinCliTestUtils.getFile("uk/ac/ebi/ena/assembly/genome/ERZ092580/ERZ092580.manifest");
-        File inputDir = manifestFile.getParentFile();
-
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli(inputDir));
-    }
-
-    @Test
-    public void
-    testGenomeFileValidation_InvalidFastaFormat_ERZ480053() {
-        File file = WebinCliTestUtils.getFile("uk/ac/ebi/ena/assembly/genome/ERZ480053/PYO97_7.fa.gz");
-        GenomeAssemblyWebinCli validator = getValidator(file, FileType.FASTA);
-
-        assertThatThrownBy(() -> {
-            validator.validateInternal();
-        }).isInstanceOf(ValidationEngineException.class)
-                .hasMessageContaining("fasta file validation failed");
-    }
-
-    @Test
-    public void
-    testGenomeFileValidation_InvalidChromosomeListFormat_ERZ496213() {
-        File file = WebinCliTestUtils.getFile("uk/ac/ebi/ena/assembly/genome/ERZ496213/RUG553.fa.chromlist.gz");
-        GenomeAssemblyWebinCli validator = getValidator(file, FileType.CHROMOSOME_LIST);
-
-        assertThatThrownBy(() -> {
-            validator.validateInternal();
-        }).isInstanceOf(ValidationEngineException.class)
-                .hasMessageContaining("chromosome_list file validation failed");
-    }
-
-
-    private GenomeAssemblyWebinCli getValidator(File file, FileType fileType) {
-        SubmissionOptions options = new SubmissionOptions();
-        if (file != null) {
-            SubmissionFiles files = new SubmissionFiles();
-            SubmissionFile SubmissionFile = new SubmissionFile(fileType, file);
-            files.addFile(SubmissionFile);
-            options.submissionFiles = Optional.of(files);
-        }
-        options.assemblyInfoEntry = Optional.of(new AssemblyInfoEntry());
-        options.context = Optional.of(Context.genome);
-        options.isFixMode = true;
-        options.isRemote = true;
-        options.ignoreErrors = true;
-        options.source = Optional.of(getDefaultSourceFeature());
-        GenomeAssemblyWebinCli validator = new GenomeAssemblyWebinCli();
-        validator.setTestMode(true);
-        validator.setStudy(new Study());
-        validator.setSubmitDir(WebinCliTestUtils.createTempDir());
-        validator.setSubmissionOptions(options);
-        validator.setValidationDir(WebinCliTestUtils.createTempDir());
-        return validator;
-    }
 }

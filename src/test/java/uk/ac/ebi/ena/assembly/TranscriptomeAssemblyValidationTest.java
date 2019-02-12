@@ -15,7 +15,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.Locale;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,70 +27,75 @@ import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.entity.Study;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 public class TranscriptomeAssemblyValidationTest {
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
-	@Before public void
-	before()
-	{
-		Locale.setDefault( Locale.UK );
-	}
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
-	private static Sample getDefaultSample() {
-		Sample sample = new Sample();
-		sample.setOrganism( "Quercus robur" );
-		return sample;
-	}
+    @Before
+    public void
+    before() {
+        Locale.setDefault(Locale.UK);
+    }
 
-	private static Study getDefaultStudy() {
-		return new Study();
-	}
+    private static Sample getDefaultSample() {
+        Sample sample = new Sample();
+        sample.setOrganism("Quercus robur");
+        return sample;
+    }
 
-	private static SourceFeature getDefaultSourceFeature()
-	{
-		SourceFeature source= new FeatureFactory().createSourceFeature();
-		source.setScientificName("Micrococcus sp. 5");
-		return source;
-	}
+    private static Study getDefaultStudy() {
+        return new Study();
+    }
 
+    private static SourceFeature getDefaultSourceFeature() {
+        SourceFeature source = new FeatureFactory().createSourceFeature();
+        source.setScientificName("Micrococcus sp. 5");
+        return source;
+    }
 
-	private TranscriptomeAssemblyWebinCli prepareTranscriptomAssemblyWebinCli(File inputDir) {
-		return prepareTranscriptomAssemblyWebinCli(getDefaultStudy(), getDefaultSample(),getDefaultSourceFeature(), inputDir);
-	}
+    private TranscriptomeAssemblyWebinCli prepareTranscriptomAssemblyWebinCli() {
+        URL url = TranscriptomeAssemblyValidationTest.class.getClassLoader().getResource("uk/ac/ebi/ena/transcriptome/valid_fasta.fasta.gz");
+        return prepareTranscriptomAssemblyWebinCli(new File(url.getFile()).getParentFile());
+    }
 
-	private TranscriptomeAssemblyWebinCli prepareTranscriptomAssemblyWebinCli(Study study, Sample sample,SourceFeature source, File inputDir) {
-		TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
-		cli.setTestMode(true);
-		cli.setInputDir( inputDir );
-		cli.setValidationDir( WebinCliTestUtils.createTempDir() );
-		cli.setSubmitDir( WebinCliTestUtils.createTempDir() );
-		cli.setFetchSample(false);
-		cli.setFetchStudy(false);
-		cli.setFetchSource(false);
-		cli.setSample(sample);
-		cli.setSource(source);
-		cli.setStudy(study);
-		return cli;
-	}
+    private TranscriptomeAssemblyWebinCli prepareTranscriptomAssemblyWebinCli(File inputDir) {
+        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
+        cli.setTestMode(true);
+        cli.setInputDir(inputDir);
+        cli.setValidationDir(WebinCliTestUtils.createTempDir());
+        cli.setSubmitDir(WebinCliTestUtils.createTempDir());
+        cli.setFetchSample(false);
+        cli.setFetchStudy(false);
+        cli.setFetchSource(false);
+        cli.setSample(getDefaultSample());
+        cli.setSource(getDefaultSourceFeature());
+        cli.setStudy(getDefaultStudy());
+        return cli;
+    }
+
     @Test
     public void
-    testTranscriptomeFileValidation_ValidFasta() throws Exception
-    {
-    	URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/transcriptome/simple_fasta/transcriptome.manifest" );
-		File manifestFile = new File( url.getFile() );
-		File inputDir = manifestFile.getParentFile();
+    testFasta() {
+        File manifestFile = WebinCliTestUtils.createTempFile(false,
+                "NAME test\n" +
+                        "FASTA valid_fasta.fasta.gz\n" +
+                        "STUDY ERP000003\n" +
+                        "SAMPLE SAMEA3692850\n" +
+                        "ASSEMBLYNAME test\n" +
+                        "PROGRAM test\n" +
+                        "PLATFORM test").toFile();
 
-		TranscriptomeAssemblyWebinCli validator = prepareTranscriptomAssemblyWebinCli(inputDir);
+        TranscriptomeAssemblyWebinCli validator = prepareTranscriptomAssemblyWebinCli();
 
-		try {
-			validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-		}
-		finally {
-			Assert.assertTrue(!validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).isEmpty());
-			validator.validate();
-		}
-		
+        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
+
+        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(1);
+        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size()).isOne();
+
+        validator.validate();
     }
-    
 }
+

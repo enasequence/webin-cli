@@ -47,11 +47,6 @@ public class WebinCliTestUtils {
     }
 
     public static WebinCliParameters
-    createWebinCliParameters( File manifestFile ) {
-        return createWebinCliParameters(manifestFile, manifestFile.getParentFile());
-    }
-
-    public static WebinCliParameters
     createWebinCliParameters( File manifestFile, File inputDir ) {
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setManifestFile(manifestFile);
