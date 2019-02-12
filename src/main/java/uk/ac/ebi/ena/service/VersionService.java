@@ -14,17 +14,16 @@ package uk.ac.ebi.ena.service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
-import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 
-public class VersionService {
+public class VersionService extends AbstractService {
 
     private final static String SYSTEM_ERROR = "VersionServiceSystemError";
 
     public boolean isVersionValid(String version, boolean test ) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliConfig.getServiceMessage(SYSTEM_ERROR)));
+        restTemplate.setErrorHandler(new DefaultErrorHander(getServiceMessage(SYSTEM_ERROR)));
         ResponseEntity<String> response = restTemplate.getForEntity(
-                WebinCliConfig.getWebinRestUri("check_version/cli/{version}", test), String.class, version);
+                getWebinRestUri("check_version/cli/{version}", test), String.class, version);
         String body = response.getBody();
         return "true".equals(body);
     }

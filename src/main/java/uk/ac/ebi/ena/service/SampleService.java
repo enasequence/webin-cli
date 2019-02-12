@@ -18,14 +18,13 @@ import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 
-public class SampleService {
+public class SampleService extends AbstractService {
 
     private static class SampleResponse {
         private long taxId;
@@ -70,7 +69,7 @@ public class SampleService {
     final static String SYSTEM_ERROR = "SampleServiceSystemError";
 
     String getMessage(String messageKey, String sampleId) {
-        return WebinCliConfig.getServiceMessage(messageKey) + " Sample: " + sampleId;
+        return getServiceMessage(messageKey) + " Sample: " + sampleId;
     }
 
     public Sample getSample(String sampleId, String userName, String password, boolean test) {
@@ -80,7 +79,7 @@ public class SampleService {
                 getMessage(SYSTEM_ERROR, sampleId)));
 
         ResponseEntity<SampleResponse> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri("reference/sample/{id}", test),
+                getWebinRestUri("reference/sample/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity((new HttpHeaderBuilder()).basicAuth(userName, password).build()),
                 SampleResponse.class,
@@ -109,7 +108,7 @@ public class SampleService {
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
         ResponseEntity<String> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri("samples/{id}", test),
+                getWebinRestUri("samples/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity(headers),
                 String.class,

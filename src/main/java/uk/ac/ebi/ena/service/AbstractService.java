@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.webin.cli;
+package uk.ac.ebi.ena.service;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
@@ -6,7 +6,7 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import java.io.IOException;
 import java.util.Properties;
 
-public class WebinCliConfig {
+public abstract class AbstractService {
 
     static {
         try {
@@ -21,11 +21,11 @@ public class WebinCliConfig {
     private final static String webinRestUriProd = "https://www.ebi.ac.uk/ena/submit/drop-box/";
     private final static Properties serviceMessages;
 
-    public final static String getServiceMessage(String messageKey) {
+    protected final String getServiceMessage(String messageKey) {
         return serviceMessages.getProperty(messageKey);
     }
 
-    public static String getWebinRestUri(String uri, boolean test) {
+    protected final String getWebinRestUri(String uri, boolean test) {
         return (test) ?
                 webinRestUriTest + uri :
                 webinRestUriProd + uri;

@@ -39,13 +39,12 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
-import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-public class
-SubmitService {
+public class SubmitService extends AbstractService {
+
     private final static String RECEIPT_XML = "receipt.xml";
     private final String userName;
     private final String password;
@@ -64,7 +63,7 @@ SubmitService {
     public void
     doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliConfig.getServiceMessage(SYSTEM_ERROR)));
+        restTemplate.setErrorHandler(new DefaultErrorHander(getServiceMessage(SYSTEM_ERROR)));
         // restTemplate.setInterceptors(Collections.singletonList(new HttpLoggingInterceptor()));
         // restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
 
@@ -88,7 +87,7 @@ SubmitService {
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).multipartFormData().build();
 
         ResponseEntity<String> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri("submit/", test),
+                getWebinRestUri("submit/", test),
                 HttpMethod.POST,
                 new HttpEntity( body, headers),
                 String.class);

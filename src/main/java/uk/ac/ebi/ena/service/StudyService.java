@@ -8,12 +8,11 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 import java.util.List;
 
-public class StudyService {
+public class StudyService extends AbstractService {
 
     private static class StudyResponse {
         private String bioProjectId;
@@ -49,7 +48,7 @@ public class StudyService {
     final static String SYSTEM_ERROR = "StudyServiceSystemError";
 
     String getMessage(String messageKey, String studyId) {
-        return WebinCliConfig.getServiceMessage(messageKey) + " Study: " + studyId;
+        return getServiceMessage(messageKey) + " Study: " + studyId;
     }
 
     public Study
@@ -63,7 +62,7 @@ public class StudyService {
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
         ResponseEntity<StudyResponse> response = restTemplate.exchange(
-                WebinCliConfig.getWebinRestUri("reference/project/{id}", test),
+                getWebinRestUri("reference/project/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity(headers),
                 StudyResponse.class,
