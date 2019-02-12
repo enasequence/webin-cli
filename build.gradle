@@ -12,6 +12,11 @@ apply plugin: 'io.spring.dependency-management'
 
 apply from:   'checkerframework.gradle'
 
+wrapper{
+    gradleVersion = '4.8'
+    distributionType = Wrapper.DistributionType.BIN
+}
+
 bootJar {
     mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
 }
