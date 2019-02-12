@@ -126,7 +126,7 @@ ManifestReader
     }
 
 
-    public final boolean
+    public final void
     readManifest( Path inputDir, File file )
     {
         state = new ManifestReaderState( inputDir, file.getPath() );
@@ -139,7 +139,7 @@ ManifestReader
         } catch( IOException ex )
         {
             error( "MANIFEST_ERROR_READING_MANIFEST_FILE", file.getPath() );
-            return result.isValid();
+            return;
         }
 
         // Parse.
@@ -164,7 +164,7 @@ ManifestReader
             } catch( IOException ex )
             {
                 error( "MANIFEST_ERROR_READING_INFO_FILE", infoFile.getPath() );
-                return result.isValid();
+                return;
             }
 
             String savedManifestFileName = state.fileName;
@@ -195,8 +195,6 @@ ManifestReader
 
         // Process
         processManifest();
-
-        return result.isValid();
     }
 
 
@@ -333,7 +331,7 @@ ManifestReader
     processManifest();
 
 
-    private boolean
+    private void
     validateFileExists( Path inputDir, ManifestFieldValue field )
     {
         String fieldName = field.getName();
@@ -353,23 +351,21 @@ ManifestReader
             }
             else {
                 error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
-                return false;
+                return;
             }
 
             validateFileCompression(field.getValue());
         }
         catch (Throwable ex) {
             error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
-            return false;
         }
-        return true;
     }
 
-    private boolean
+    private void
     validateFileCount()
     {
         if( files == null || files.isEmpty() )
-            return true;
+            return;
 
         Map<String, Long> fileCountMap = result.getFields()
                                                .stream()
@@ -379,7 +375,7 @@ ManifestReader
         if( fileCountMap == null || fileCountMap.isEmpty() )
         {
             error( "MANIFEST_ERROR_NO_DATA_FILES", getExpectedFileTypeList( files ) );
-            return false;
+            return;
         }
 
         next:
@@ -408,12 +404,11 @@ ManifestReader
                 }
             }
 
-            return true; // Valid
+            return; // Valid
         }
 
         error( "MANIFEST_ERROR_INVALID_FILE_GROUP", getExpectedFileTypeList( files ), "" );
 
-        return false;
     }
 
     private void validateFileCompression(String filePath) {
