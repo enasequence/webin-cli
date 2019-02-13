@@ -39,7 +39,7 @@ ManifestReader
         String INFO = "INFO";
     }
 
-    private List<ManifestFieldDefinition> infoFields = new ArrayList<ManifestFieldDefinition>()
+    private final List<ManifestFieldDefinition> infoFields = new ArrayList<ManifestFieldDefinition>()
     {
         {
             add( new ManifestFieldDefinition( INFO, ManifestFieldType.FILE, 0, 1 ) );
@@ -57,8 +57,7 @@ ManifestReader
 
     static class ManifestReaderState
     {
-        public
-        ManifestReaderState( Path inputDir, String fileName )
+        ManifestReaderState(Path inputDir, String fileName)
         {
             this.inputDir = inputDir;
             this.fileName = fileName;
@@ -69,7 +68,7 @@ ManifestReader
         {
             INIT,
             PARSE,
-            VALIDATE;
+            VALIDATE
         }
 
 
@@ -226,7 +225,7 @@ ManifestReader
         if( line.isEmpty() )
             return null;
 
-        String tokens[] = line.split( "\\s+", 2 );
+        String[] tokens = line.split("\\s+", 2);
 
         String fieldName = StringUtils.stripEnd( tokens[ 0 ].trim().toUpperCase(), ": " );
         String fieldValue = ( tokens.length == 2 ) ? tokens[ 1 ].trim() : null;
@@ -265,7 +264,7 @@ ManifestReader
     }
 
 
-    private final void
+    private void
     validateManifest()
     {
 
@@ -414,14 +413,12 @@ ManifestReader
     private void validateFileCompression(String filePath) {
         if (filePath.endsWith(ManifestFileSuffix.GZIP_FILE_SUFFIX)) {
             try (GZIPInputStream gz = new GZIPInputStream(new FileInputStream(filePath))) {
-                gz.close();
             } catch (Exception e) {
                 error("MANIFEST_INVALID_FILE_COMPRESSION", filePath, "gzip");
             }
         }
         else if (filePath.endsWith(ManifestFileSuffix.BZIP2_FILE_SUFFIX)) {
             try( BZip2CompressorInputStream bz2 = new BZip2CompressorInputStream(new FileInputStream(filePath))) {
-                bz2.close();
             }
             catch (Exception e) {
                 error("MANIFEST_INVALID_FILE_COMPRESSION", filePath, "bzip2");
@@ -515,8 +512,8 @@ ManifestReader
     }
 
 
-    public static List<String>
-    readAllLines( File file ) throws FileNotFoundException
+    private static List<String>
+    readAllLines(File file) throws FileNotFoundException
     {
         try( InputStream is = new GZIPInputStream( new FileInputStream( file ) ) )
         {
@@ -613,8 +610,8 @@ ManifestReader
     }
 
 
-    protected final void
-    error( String key, Origin origin, String... params )
+    private void
+    error(String key, Origin origin, String... params)
     {
         ValidationMessage<Origin> validationMessage = ValidationMessage.error( key, (Object[]) params );
         validationMessage.append( origin );
@@ -622,16 +619,16 @@ ManifestReader
     }
 
 
-    protected final Origin
+    private Origin
     createParseOrigin()
     {
-        return new DefaultOrigin( String.format( "File name: " + state.fileName + ", line number: " + state.lineNo ));
+        return new DefaultOrigin("File name: " + state.fileName + ", line number: " + state.lineNo);
     }
 
 
-    protected final Origin
+    private Origin
     createValidateOrigin()
     {
-        return new DefaultOrigin( String.format( "File name: " + state.fileName ) );
+        return new DefaultOrigin("File name: " + state.fileName);
     }
 }

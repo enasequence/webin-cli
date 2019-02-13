@@ -40,7 +40,7 @@ public class IgnoreErrorsService extends AbstractService {
         ResponseEntity<String> response = restTemplate.exchange(
                 getWebinRestUri("cli/ignore_errors/", test),
                 HttpMethod.POST,
-                new HttpEntity(new IgnoreErrorsRequest(context, name), headers),
+                new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
                 String.class);
         return "true".equals(response.getBody());
     }

@@ -6,7 +6,7 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import java.io.IOException;
 import java.util.Properties;
 
-public abstract class AbstractService {
+abstract class AbstractService {
 
     static {
         try {
@@ -21,11 +21,11 @@ public abstract class AbstractService {
     private final static String webinRestUriProd = "https://www.ebi.ac.uk/ena/submit/drop-box/";
     private final static Properties serviceMessages;
 
-    protected final String getServiceMessage(String messageKey) {
+    final String getServiceMessage(String messageKey) {
         return serviceMessages.getProperty(messageKey);
     }
 
-    protected final String getWebinRestUri(String uri, boolean test) {
+    final String getWebinRestUri(String uri, boolean test) {
         return (test) ?
                 webinRestUriTest + uri :
                 webinRestUriProd + uri;

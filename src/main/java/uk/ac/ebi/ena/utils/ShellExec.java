@@ -34,7 +34,7 @@ ShellExec implements VerboseLogger
     class 
     VerboseStreamConsumer extends Thread
     {
-        private Reader ireader;
+        private final Reader ireader;
         private long read_cnt;
         
         
@@ -60,7 +60,6 @@ ShellExec implements VerboseLogger
                 
             } catch( IOException e )
             {
-                ;
             }
         }
         
@@ -103,8 +102,8 @@ ShellExec implements VerboseLogger
     }
     
     
-    private String command;
-    private Map<String, String> vars;
+    private final String command;
+    private final Map<String, String> vars;
 
     
     public int
@@ -135,8 +134,8 @@ ShellExec implements VerboseLogger
     }
 
     
-    protected int
-    exec( String command, Map<String, String> vars, boolean verbose ) throws IOException, InterruptedException
+    private int
+    exec(String command, Map<String, String> vars, boolean verbose) throws IOException, InterruptedException
     {
         ExecutorService es = null;
         try

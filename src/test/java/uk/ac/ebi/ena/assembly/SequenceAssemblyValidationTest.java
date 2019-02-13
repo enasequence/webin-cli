@@ -93,9 +93,7 @@ public class SequenceAssemblyValidationTest {
         File file = WebinCliTestUtils.getFile(tsvFileDir + tsvFile);
         SequenceAssemblyWebinCli validator = getValidator(file, FileType.TSV);
 
-        assertThatThrownBy(() -> {
-            validator.validate();
-        }).isInstanceOf(WebinCliException.class)
+        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("tsv file validation failed");
 
         try {

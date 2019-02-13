@@ -6,7 +6,6 @@ import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class FileSuffixProcessor implements ManifestFieldProcessor {
 
@@ -31,6 +30,6 @@ public class FileSuffixProcessor implements ManifestFieldProcessor {
         return ValidationMessage.error( "MANIFEST_INVALID_FILE_SUFFIX",
                 fieldValue.getName(),
                 fieldValue.getValue(),
-                suffixes.stream().collect( Collectors.joining( ", " ) ) );
+                String.join(", ", suffixes));
     }
 }

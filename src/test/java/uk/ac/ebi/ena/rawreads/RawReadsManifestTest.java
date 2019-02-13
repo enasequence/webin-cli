@@ -11,7 +11,6 @@
 
 package uk.ac.ebi.ena.rawreads;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -287,12 +286,4 @@ RawReadsManifestTest
         Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_INVALID_POSITIVE_INTEGER", Severity.ERROR));
     }
 
-    private File
-    createOutputFolder() throws IOException
-    {
-        File output = File.createTempFile( "test", "test" );
-        Assert.assertTrue( output.delete() );
-        Assert.assertTrue( output.mkdirs() );
-        return output;
-    }
 }

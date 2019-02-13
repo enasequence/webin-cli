@@ -22,7 +22,7 @@ WebinCliException extends RuntimeException
         VALIDATION_ERROR
     }
 
-    private ErrorType errorType;
+    private final ErrorType errorType;
 
     private WebinCliException(ErrorType errorType, String ... messages) {
         super(trim(messages));
@@ -33,7 +33,7 @@ WebinCliException extends RuntimeException
         return errorType;
     }
 
-    public WebinCliException throwAddMessage(String userErrorMessage, String systemErrorMessage) {
+    public void throwAddMessage(String userErrorMessage, String systemErrorMessage) {
         switch (getErrorType()) {
             case SYSTEM_ERROR:
                 throw new WebinCliException(getErrorType(), trim(systemErrorMessage, getMessage()));

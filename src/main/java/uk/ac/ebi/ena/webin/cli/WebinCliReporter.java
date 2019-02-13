@@ -13,7 +13,6 @@ import java.util.HashSet;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
-import uk.ac.ebi.embl.api.validation.ValidationPlanResult;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 
 public class WebinCliReporter {
@@ -21,7 +20,7 @@ public class WebinCliReporter {
     private final static String DEFAULT_REPORT_NAME = "webin-cli.report";
     private static File defaultReport;
 
-    public static HashSet<Severity> writeSeverity = new HashSet<>(Arrays.asList(
+    private static final HashSet<Severity> writeSeverity = new HashSet<>(Arrays.asList(
             Severity.INFO,
             Severity.ERROR));
 
@@ -59,11 +58,6 @@ public class WebinCliReporter {
             for( ValidationMessage<Origin> validationMessage: validationResult.getMessages() ) {
                 writeMessage(s, validationMessage, null /* targetOrigin */);
             }});
-    }
-
-    public static void
-    writeToConsole(ValidationMessage<Origin> validationMessage) {
-        writeMessages(System.out, (s) -> writeMessage(s, validationMessage));
     }
 
     public static void
@@ -106,31 +100,6 @@ public class WebinCliReporter {
 
     // Write to file.
     //
-
-    public static void
-    writeToFile(File reportFile, ValidationPlanResult validationPlanResult, String targetOrigin) {
-        writeMessages(reportFile, (s) -> {
-            for( ValidationMessage<Origin> validationMessage: validationPlanResult.getMessages() ) {
-                writeMessage(s, validationMessage, targetOrigin);
-            }});
-    }
-
-    public static void
-    writeToFile(File reportFile, ValidationPlanResult validationPlanResult) {
-        writeMessages(reportFile, (s) -> {
-            for( ValidationMessage<Origin> validationMessage: validationPlanResult.getMessages() ) {
-                writeMessage(s, validationMessage, null /* targetOrigin */);
-            }});
-    }
-
-    public static void
-    writeToFile(File reportFile, ValidationResult validationResult, String targetOrigin )
-    {
-        writeMessages(reportFile, (s) -> {
-            for( ValidationMessage<Origin> validationMessage: validationResult.getMessages() ) {
-                writeMessage(s, validationMessage, targetOrigin);
-            }});
-    }
 
     public static void
     writeToFile(File reportFile, ValidationResult validationResult )

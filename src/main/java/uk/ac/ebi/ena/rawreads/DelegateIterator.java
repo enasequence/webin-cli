@@ -16,7 +16,7 @@ import java.util.Iterator;
 public abstract class
 DelegateIterator<T1, T2> implements Iterator<T2>
 {
-    private Iterator<T1> iterator;
+    private final Iterator<T1> iterator;
     
     public abstract T2 convert( T1 obj );
     

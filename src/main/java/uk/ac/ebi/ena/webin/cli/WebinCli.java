@@ -69,7 +69,7 @@ public class WebinCli { // implements CommandLineRunner
 
 	public static final String AUTHENTICATION_ERROR = "Invalid submission account user name or password.";
 
-	public static final String INVALID_CONTEXT = "Invalid context: ";
+	private static final String INVALID_CONTEXT = "Invalid context: ";
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
     
@@ -82,18 +82,18 @@ public class WebinCli { // implements CommandLineRunner
 	Params	
 	{
 		@Parameter()
-		private List<String> unrecognisedOptions = new ArrayList<>();
+		private final List<String> unrecognisedOptions = new ArrayList<>();
 
-		@Parameter(names = "help", required = false)
+		@Parameter(names = "help")
 		public boolean help;
 		
-		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription, required = false)
+		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription)
 		public boolean test;
 
-		@Parameter(names = ParameterDescriptor.ignoreErrors, description = ParameterDescriptor.ignoreErrorsFlagDescription, required = false)
+		@Parameter(names = ParameterDescriptor.ignoreErrors, description = ParameterDescriptor.ignoreErrorsFlagDescription)
 		public boolean ignoreErrors;
 
-		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = contextValidator.class)
+		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = ContextValidator.class)
 		public String context;
 		
 		@Parameter(names = { ParameterDescriptor.userName, ParameterDescriptor.userNameSynonym }, description = ParameterDescriptor.userNameFlagDescription, required = true)
@@ -102,28 +102,28 @@ public class WebinCli { // implements CommandLineRunner
 		@Parameter(names = ParameterDescriptor.password, description = ParameterDescriptor.passwordFlagDescription, required = true)
 		public String password;
 		
-		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = manifestFileValidator.class)
+		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = ManifestFileValidator.class)
 		public String manifest;
 		
 		@Parameter(names = { ParameterDescriptor.outputDir, ParameterDescriptor.outputDirSynonym }, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class)
 		public String outputDir;
 		
-		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription, required = false)
+		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription)
 		public boolean validate;
 		
-		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription, required = false)
+		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription)
 		public boolean submit;
 		
-        @Parameter(names = { ParameterDescriptor.centerName, ParameterDescriptor.centerNameSynonym }, description = ParameterDescriptor.centerNameFlagDescription, required = false )
+        @Parameter(names = { ParameterDescriptor.centerName, ParameterDescriptor.centerNameSynonym }, description = ParameterDescriptor.centerNameFlagDescription)
         public String centerName;
         
-        @Parameter(names = ParameterDescriptor.version, description = ParameterDescriptor.versionFlagDescription, required = false )
+        @Parameter(names = ParameterDescriptor.version, description = ParameterDescriptor.versionFlagDescription)
         public boolean version;
 	
-        @Parameter(names = { ParameterDescriptor.inputDir, ParameterDescriptor.inputDirSynonym }, description = ParameterDescriptor.inputDirFlagDescription, required = false, hidden=true )
+        @Parameter(names = { ParameterDescriptor.inputDir, ParameterDescriptor.inputDirSynonym }, description = ParameterDescriptor.inputDirFlagDescription, hidden=true )
         public String inputDir = ".";
         
-        @Parameter(names = ParameterDescriptor.ascp, description = ParameterDescriptor.tryAscpDescription, required = false )
+        @Parameter(names = ParameterDescriptor.ascp, description = ParameterDescriptor.tryAscpDescription)
         public boolean ascp;
 	}
 
@@ -155,8 +155,8 @@ public class WebinCli { // implements CommandLineRunner
         System.exit( __main( args ));
 	}
 
-    public static int
-    __main( String... args )
+    private static int
+    __main(String... args)
     {
         ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
         ValidationResult.setDefaultMessageFormatter( null );
@@ -375,7 +375,7 @@ public class WebinCli { // implements CommandLineRunner
 
 			if( !params.unrecognisedOptions.isEmpty() )  
 			{
-				WebinCliReporter.writeToConsole( Severity.ERROR, "Unrecognised options: " + params.unrecognisedOptions.stream().collect( Collectors.joining(", " ) ) );
+				WebinCliReporter.writeToConsole( Severity.ERROR, "Unrecognised options: " + String.join(", ", params.unrecognisedOptions));
 				printHelp();
 				return null;
 			}
@@ -476,7 +476,7 @@ public class WebinCli { // implements CommandLineRunner
 	}
 
 	
-	public static class contextValidator implements IParameterValidator {
+	private static class ContextValidator implements IParameterValidator {
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
 			try {
@@ -486,8 +486,8 @@ public class WebinCli { // implements CommandLineRunner
 			}
 		}
 	}
-	
-	public static class OutputDirValidator implements IParameterValidator {
+
+	private static class OutputDirValidator implements IParameterValidator {
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
@@ -496,7 +496,7 @@ public class WebinCli { // implements CommandLineRunner
 		}
 	}
 
-	public static class manifestFileValidator implements IParameterValidator {
+	private static class ManifestFileValidator implements IParameterValidator {
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);

@@ -10,6 +10,7 @@ import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class HttpLoggingInterceptor implements ClientHttpRequestInterceptor {
 
@@ -23,13 +24,13 @@ public class HttpLoggingInterceptor implements ClientHttpRequestInterceptor {
         return response;
     }
 
-    private void logRequest(HttpRequest request, byte[] body) throws IOException {
+    private void logRequest(HttpRequest request, byte[] body) {
         if (log.isDebugEnabled()) {
             log.debug("===========================request begin================================================");
             log.debug("URI         : {}", request.getURI());
             log.debug("Method      : {}", request.getMethod());
             log.debug("Headers     : {}", request.getHeaders());
-            log.debug("Request body: {}", new String(body, "UTF-8"));
+            log.debug("Request body: {}", new String(body, StandardCharsets.UTF_8));
             log.debug("==========================request end================================================");
         }
     }

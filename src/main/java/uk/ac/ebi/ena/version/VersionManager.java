@@ -27,7 +27,6 @@ import javax.script.ScriptException;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseAsset;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseInfo;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
@@ -40,11 +39,11 @@ VersionManager
     }
     
     
-    GitHubReleaseInfo info;
+    private GitHubReleaseInfo info;
     
     
-    long
-    download( URL url, Path path ) throws IOException
+    private long
+    download(URL url, Path path) throws IOException
     {
         long downloaded = 0;
         try( InputStream is = new BufferedInputStream( url.openStream() );
@@ -89,7 +88,7 @@ VersionManager
     
     
     private Object
-    invokeMainMethod( ClassLoader cl, String args[] ) throws IOException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException
+    invokeMainMethod(ClassLoader cl, String[] args) throws IOException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException
     {
         Manifest m = new Manifest( cl.getResourceAsStream( "META-INF/MANIFEST.MF" ) );
         String main_class_name = m.getMainAttributes().getValue( Name.MAIN_CLASS );
@@ -101,7 +100,7 @@ VersionManager
     
     
     public int
-    launchLatest( String[] args ) throws IOException, InterruptedException, ScriptException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    launchLatest( String[] args ) throws IOException, ScriptException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         LatestRelease lr = new LatestRelease();
         info = lr.getLatestInfo();
@@ -152,14 +151,14 @@ VersionManager
     
 
     public static void
-    main( String[] args ) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, InterruptedException, ScriptException, URISyntaxException
+    main( String[] args ) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, ScriptException, URISyntaxException
     {
         System.exit( launchLatestVersion( args ) );
     }
 
 
     public static int 
-    launchLatestVersion( String[] args ) throws IOException, InterruptedException, ScriptException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException
+    launchLatestVersion( String[] args ) throws IOException, ScriptException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
         VersionManager vm = new VersionManager();
         return vm.launchLatest( args );

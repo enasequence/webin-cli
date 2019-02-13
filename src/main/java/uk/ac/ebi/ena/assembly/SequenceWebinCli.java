@@ -143,8 +143,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
    abstract Element makeAnalysisType( AssemblyInfoEntry entry );
 
    
-    String
-    createAnalysisXml( List<Element> fileList, AssemblyInfoEntry entry, String centerName, String description ) 
+    private String
+    createAnalysisXml(List<Element> fileList, AssemblyInfoEntry entry, String centerName, String description)
     {
         try 
         {
@@ -198,8 +198,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     }
 
 
-    protected Element
-    createfileElement( Path uploadDir, File file, String file_type )
+    private Element
+    createfileElement(Path uploadDir, File file, String file_type)
     {
         try
         {
@@ -226,8 +226,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     }
     
 
-    protected String
-    extractSubpath( File inputDir, File file )
+    private String
+    extractSubpath(File inputDir, File file)
     {
         return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
@@ -273,10 +273,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     }
     
     
-    protected List<File>
-    getUploadFiles() throws IOException
-    {
-		List<File> uploadFiles = new ArrayList<File>();
+    private List<File>
+    getUploadFiles() {
+		List<File> uploadFiles = new ArrayList<>();
 		uploadFiles.addAll( getFilesToUpload( FileType.CHROMOSOME_LIST ) );
 		uploadFiles.addAll( getFilesToUpload( FileType.UNLOCALISED_LIST ) );
 		uploadFiles.addAll( getFilesToUpload( FileType.FASTA ) );
@@ -288,9 +287,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     }
     
     
-    protected List<Element>
-    getXMLFiles( Path uploadDir ) throws IOException
-    {
+    private List<Element>
+    getXMLFiles(Path uploadDir) {
         List<Element> eList = new ArrayList<>();
 
         getFilesToUpload( FileType.CHROMOSOME_LIST ).forEach( file -> eList.add( createfileElement( uploadDir, file, "chromosome_list" ) ) );
@@ -336,7 +334,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	private List<File> 
 	getFilesToUpload(FileType fileType)
 	{
-		List<File> files=new ArrayList<File>();
+		List<File> files= new ArrayList<>();
 		if( getSubmissionOptions() != null && getSubmissionOptions().submissionFiles.isPresent() )
 		{
 			for( SubmissionFile submissionFile : getSubmissionOptions().submissionFiles.get().getFiles() )

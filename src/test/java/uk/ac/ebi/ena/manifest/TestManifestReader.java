@@ -1,14 +1,9 @@
 package uk.ac.ebi.ena.manifest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class TestManifestReader extends ManifestReader {
-
-    public TestManifestReader() {
-        super(new ArrayList<>());
-    }
 
     public TestManifestReader(List<ManifestFieldDefinition> fields) {
         super(fields);

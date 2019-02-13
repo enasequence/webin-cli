@@ -7,7 +7,7 @@ VerboseLogger
 {
     boolean verbose = true;
     
-    default public void
+    default void
     flushConsole()
     {
         if( verbose )
@@ -15,23 +15,23 @@ VerboseLogger
     }
     
     
-    default public void
-    printfToConsole( String msg, Object... arg1 )
+    default void
+    printfToConsole(String msg, Object... arg1)
     {
         if( verbose )
             WebinCliReporter.printfToConsole( msg, arg1 );
     }
     
 
-    default public void
-    printlnToConsole( String msg )
+    default void
+    printlnToConsole(String msg)
     {
         if( verbose )
             WebinCliReporter.printlnToConsole( msg );
     }
 
     
-    default public void
+    default void
     printlnToConsole()
     {
         if( verbose )

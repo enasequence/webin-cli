@@ -26,9 +26,9 @@ import uk.ac.ebi.ena.utils.FileUtils;
 public abstract class 
 AbstractWebinCli<T extends ManifestReader>
 {
-    protected static final String VALIDATE_DIR = "validate";
-    protected static final String SUBMIT_DIR   = "submit";
-    protected static final String REPORT_FILE_SUFFIX = ".report";
+    private static final String VALIDATE_DIR = "validate";
+    private static final String SUBMIT_DIR   = "submit";
+    private static final String REPORT_FILE_SUFFIX = ".report";
     private static final String SUBMISSION_BUNDLE = ".data";
 
     private String name; 
@@ -48,7 +48,7 @@ AbstractWebinCli<T extends ManifestReader>
 
     protected abstract T createManifestReader();
 
-    protected String description;
+    private String description;
     
     public String 
     getDescription()
@@ -151,7 +151,7 @@ AbstractWebinCli<T extends ManifestReader>
     }
 
     public abstract void validate() throws WebinCliException;
-    public abstract void prepareSubmissionBundle() throws IOException;
+    public abstract void prepareSubmissionBundle();
 
     private String
     getSubmissionBundleFileName()

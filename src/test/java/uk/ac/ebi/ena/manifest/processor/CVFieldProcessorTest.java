@@ -31,11 +31,11 @@ public class CVFieldProcessorTest {
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "test1");
-        Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.INFO) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "te_st1");
-        Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.INFO) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "test2");
@@ -43,15 +43,15 @@ public class CVFieldProcessorTest {
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "TEST2");
-        Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.INFO) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "TE_ST2");
-        Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.INFO) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "TEST3");
-        Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.ERROR) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
         Assert.assertEquals( "TEST3", fieldValue.getValue() );
     }
 }

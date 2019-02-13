@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,15 +30,15 @@ SubmissionBundle implements Serializable
 {
     private static final long serialVersionUID = 1L;
     
-    private String                  version;
-    private List<SubmissionXMLFile> xmlFileList;
-    private File                    submitDirectory;
-    private String                  uploadDirectory;
-    private List<File>              uploadFileList = Collections.emptyList();
-    private List<Long>              uploadFileSize = Collections.emptyList();
+    private final String                  version;
+    private final List<SubmissionXMLFile> xmlFileList;
+    private final File                    submitDirectory;
+    private final String                  uploadDirectory;
+    private final List<File>              uploadFileList;
+    private final List<Long>              uploadFileSize;
     transient private File          manifest_file;
     private String                  manifest_md5;
-    private String                  centerName;
+    private final String                  centerName;
 
 
     public boolean
@@ -68,16 +67,16 @@ SubmissionBundle implements Serializable
         ANALYSIS,
         RUN,
         EXPERIMENT
-    };
-    
-    
+    }
+
+
     public static class 
     SubmissionXMLFile implements Serializable
     {
         private static final long serialVersionUID = 1L;
-        private File                  file;
-        private SubmissionXMLFileType type;
-        private String                md5;
+        private final File                  file;
+        private final SubmissionXMLFileType type;
+        private final String                md5;
         
         
         public 
@@ -124,8 +123,7 @@ SubmissionBundle implements Serializable
                       List<File>        uploadFileList, 
                       List<SubmissionXMLFile> xmlFileList, 
                       String            centerName,
-                      String            manifest_md5 ) throws NoSuchAlgorithmException, IOException
-    {
+                      String            manifest_md5 ) {
         this.version = getVersion();
         this.submitDirectory = submitDirectory;
         this.uploadDirectory = uploadDirectory;

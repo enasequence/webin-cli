@@ -34,9 +34,9 @@ WebinCliContext {
             "RUN",
             RawReadsWebinCli.class);
 
-    private String xmlTitle;
-    private String xmlElement;
-    private Class<? extends AbstractWebinCli> validatorClass;
+    private final String xmlTitle;
+    private final String xmlElement;
+    private final Class<? extends AbstractWebinCli> validatorClass;
 
     WebinCliContext(String xmlTitle,
                     String xmlElement,

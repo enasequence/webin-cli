@@ -14,6 +14,7 @@ package uk.ac.ebi.ena.manifest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class 
@@ -49,9 +50,7 @@ ManifestFieldDefinition
         this.type = type;
         this.minCount = minCount;
         this.maxCount = maxCount;
-        this.processors = Arrays
-                .asList(processors)
-                .stream().filter( processor -> processor != null)
+        this.processors = Arrays.stream(processors).filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

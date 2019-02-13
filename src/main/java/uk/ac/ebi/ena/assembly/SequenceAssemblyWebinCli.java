@@ -54,7 +54,6 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     @Override
     Element makeAnalysisType( AssemblyInfoEntry entry )
     {
-        Element typeE = new Element( WebinCliContext.sequence.getXmlElement() );
-        return typeE;
+        return new Element( WebinCliContext.sequence.getXmlElement() );
     }
 }

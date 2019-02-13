@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -65,8 +63,8 @@ CramReferenceInfo implements VerboseLogger
     private static final String service_link = "https://www.ebi.ac.uk/ena/cram/sequence/%32s/metadata";
     private static final String info_path = null != System.getProperty( USER_HOME_PROPERTY_NAME ) ? System.getProperty( USER_HOME_PROPERTY_NAME )      + REF_INFO_PATH 
                                                                                                   : System.getProperty( JAVA_IO_TMPDIR_PROPERTY_NAME ) + REF_INFO_PATH ;
-    private ScriptEngine engine;
-    private PathPattern  cache_pattern;
+    private final ScriptEngine engine;
+    private final PathPattern  cache_pattern;
     
     
     public 
@@ -111,8 +109,7 @@ CramReferenceInfo implements VerboseLogger
 
     
     private ReferenceInfo 
-    parseNCBIJson( String json ) throws IOException, ScriptException, URISyntaxException 
-    {
+    parseNCBIJson( String json ) throws ScriptException {
         String script = "Java.asJSONCompatible(" + json + ")";
         Object result = this.engine.eval( script );
         
@@ -131,7 +128,6 @@ CramReferenceInfo implements VerboseLogger
             info.length   =  ( (Number) metadata.get( "length" ) ).longValue();
         } catch( NullPointerException npe )
         {
-            ;
         }
         
         @SuppressWarnings( "unchecked" )
@@ -210,7 +206,7 @@ CramReferenceInfo implements VerboseLogger
     public Map<String, Boolean>
     confirmFileReferences( File file ) throws IOException
     {
-        ThreadPoolExecutor es = new ThreadPoolExecutor( 10, 10, 1, TimeUnit.HOURS, new ArrayBlockingQueue<Runnable>( 10 ) );
+        ThreadPoolExecutor es = new ThreadPoolExecutor( 10, 10, 1, TimeUnit.HOURS, new ArrayBlockingQueue<>(10) );
         Map<String, Boolean> result = new ConcurrentHashMap<>(); 
         Log.setGlobalLogLevel( LogLevel.ERROR );
         SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
@@ -220,34 +216,29 @@ CramReferenceInfo implements VerboseLogger
         File indexMaybe = SamFiles.findIndex( file );
         //System.out.println( "proposed index: " + indexMaybe );
         AtomicLong count = new AtomicLong();
-        try( SamReader reader = factory.open( ir ); )
+        try( SamReader reader = factory.open( ir ))
         {
             printfToConsole( "Checking reference existance in the CRAM reference registry for %s\n", file.getPath() );
             es.prestartAllCoreThreads();
             for( SAMSequenceRecord sequenceRecord : reader.getFileHeader().getSequenceDictionary().getSequences() )
             {
-                es.getQueue().put( new Runnable()
-                {
-                    public void 
-                    run()
-                    {
-                        count.incrementAndGet();
-                        String md5 = sequenceRecord.getAttribute( SAMSequenceRecord.MD5_TAG );
-                        result.computeIfAbsent( md5, k -> {
-                            if( findOnDisk( md5 ) )
-                            {
-                                return true;
-                            } else
-                            {
-                                ReferenceInfo info = fetchReferenceMetadata( md5 );
-                                return k.equals( info.getMd5() ) ? putOnDisk( md5 ) : false; 
-                            }
-                        } );
-                    
-                        if( 0 == count.get() % 10 )
-                            printProcessedReferenceNumber( count );
-                    }
-                } );
+                es.getQueue().put(() -> {
+                    count.incrementAndGet();
+                    String md5 = sequenceRecord.getAttribute( SAMSequenceRecord.MD5_TAG );
+                    result.computeIfAbsent( md5, k -> {
+                        if( findOnDisk( md5 ) )
+                        {
+                            return true;
+                        } else
+                        {
+                            ReferenceInfo info = fetchReferenceMetadata( md5 );
+                            return k.equals(info.getMd5()) && putOnDisk(md5);
+                        }
+                    } );
+
+                    if( 0 == count.get() % 10 )
+                        printProcessedReferenceNumber( count );
+                });
             }
             
             es.shutdown();
@@ -273,8 +264,7 @@ CramReferenceInfo implements VerboseLogger
 
     
     public static void
-    main( String args[] ) throws MalformedURLException, IOException, ScriptException, URISyntaxException, InterruptedException
-    {
+    main(String[] args) {
         CramReferenceInfo m = new CramReferenceInfo();
         m.fetchReferenceMetadata( args[ 0 ] /* "a0d9851da00400dec1098a9255ac712e"*/, System.out );
     }

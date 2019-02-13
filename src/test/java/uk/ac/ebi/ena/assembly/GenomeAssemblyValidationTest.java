@@ -93,12 +93,10 @@ public class GenomeAssemblyValidationTest {
         return cli;
     }
 
-    private GenomeAssemblyWebinCli assertThatManifestIsInvalid(File manifestFile, GenomeAssemblyWebinCli genomeAssemblyWebinCli) {
-        GenomeAssemblyWebinCli validator = genomeAssemblyWebinCli;
-
-        assertThatThrownBy(() -> {
-            validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-        }).isInstanceOf(WebinCliException.class)
+    private GenomeAssemblyWebinCli assertThatManifestIsInvalid(File manifestFile, GenomeAssemblyWebinCli validator) {
+        assertThatThrownBy(() ->
+                validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir())))
+                .isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("Invalid manifest file");
 
         return validator;
@@ -248,9 +246,7 @@ public class GenomeAssemblyValidationTest {
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size()).isOne();
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size()).isOne();
 
-        assertThatThrownBy(() -> {
-            validator.validate();
-        }).isInstanceOf(WebinCliException.class)
+        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");
     }
 
@@ -299,9 +295,7 @@ public class GenomeAssemblyValidationTest {
 
         validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
 
-        assertThatThrownBy(() -> {
-            validator.validate();
-        }).isInstanceOf(WebinCliException.class)
+        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("fasta file validation failed");
     }
 
@@ -316,9 +310,7 @@ public class GenomeAssemblyValidationTest {
 
         validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
 
-        assertThatThrownBy(() -> {
-            validator.validate();
-        }).isInstanceOf(WebinCliException.class)
+        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("flatfile file validation failed");
     }
 
@@ -334,9 +326,7 @@ public class GenomeAssemblyValidationTest {
 
         validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
 
-        assertThatThrownBy(() -> {
-            validator.validate();
-        }).isInstanceOf(WebinCliException.class)
+        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("agp file validation failed");
     }
 

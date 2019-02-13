@@ -27,9 +27,8 @@ public class
 BloomWrapper 
 {
     //Bloom bloom;
-    private BloomFilter<String> bloom;
+    private final BloomFilter<String> bloom;
     private final double edup = 0.01;
-    private final long expected_reads; 
     private final AtomicLong adds_no = new AtomicLong();
     private final AtomicLong susp_no = new AtomicLong();
     private final int collect_max; 
@@ -45,7 +44,6 @@ BloomWrapper
     
     BloomWrapper( long expected_reads, int collect_max )
     {
-        this.expected_reads = expected_reads;
         this.collect_max = collect_max;
         this.bloom = BloomFilter.create( Funnels.unencodedCharsFunnel(), expected_reads, edup );
         suspected = new HashSet<>( this.collect_max );
@@ -125,7 +123,7 @@ BloomWrapper
                 break;
         }
         //return result;
-        return result.entrySet().stream().filter( e-> counts.get( e.getKey() ).intValue() > 1 ).collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue() ) );
+        return result.entrySet().stream().filter( e-> counts.get(e.getKey()) > 1 ).collect( Collectors.toMap(e -> e.getKey(), e -> e.getValue() ) );
     }
     
    

@@ -12,8 +12,8 @@ HotSpotRuntimeVersionTest
     testVersionInfo()
     {
         //System.getProperties().list( System.out );
-        
-        Assert.assertTrue( new VersionInfo( 1, 8, 0, 155 ).compareTo( new VersionInfo( 1, 8, 0, 155 ) ) == 0 );
+
+        Assert.assertEquals(0, new VersionInfo(1, 8, 0, 155).compareTo(new VersionInfo(1, 8, 0, 155)));
         Assert.assertTrue( new VersionInfo( 1, 8, 0, 155 ).compareTo( new VersionInfo( 1, 8, 0, 154 ) ) > 0 );
         Assert.assertTrue( new VersionInfo( 1, 8, 0, 154 ).compareTo( new VersionInfo( 1, 8, 0, 155 ) ) < 0 );
 
@@ -40,9 +40,9 @@ HotSpotRuntimeVersionTest
         Assert.assertEquals( Integer.valueOf( 0 ), jrv.getVersion( "11.0.1+13-LTS" ).minor );
         Assert.assertEquals( Integer.valueOf( 1 ), jrv.getVersion( "11.0.1+13-LTS" ).security );
         Assert.assertEquals( Integer.valueOf( "13" ), jrv.getVersion( "11.0.1+13-LTS" ).build );
-       
-        Assert.assertEquals( null, jrv.getVersion( "something wrong" ) );
-        Assert.assertEquals( null, jrv.getVersion( "" ) );
+
+        Assert.assertNull(jrv.getVersion("something wrong"));
+        Assert.assertNull(jrv.getVersion(""));
        
         if( jrv.isHotSpot() )
             Assert.assertTrue( jrv.isComplient() );

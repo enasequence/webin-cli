@@ -32,7 +32,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 public class FtpService implements UploadService, VerboseLogger {
     private final static String SERVER = "webin.ebi.ac.uk";
     private final static int FTP_PORT = 21;
-    private FTPClient ftpClient = new FTPClient() ;
+    private final FTPClient ftpClient = new FTPClient() ;
     private final static String SYSTEM_ERROR_CONNECT = "Failed to connect to the Webin file upload area.";
     private final static String SYSTEM_ERROR_CREATE_DIR = "Failed to create directory in webin.ebi.ac.uk file upload area.";
     private final static String SYSTEM_ERROR_CHANGE_DIR = "Failed to access directory in webin.ebi.ac.uk file upload area.";
@@ -57,8 +57,8 @@ public class FtpService implements UploadService, VerboseLogger {
     }
 
     
-    void   
-    storeFile( Path local, Path remote ) throws IOException
+    private void
+    storeFile(Path local, Path remote) throws IOException
     {
         Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
         try( InputStream fileInputStream = new BufferedInputStream( Files.newInputStream( local ) ) )    
@@ -92,7 +92,7 @@ public class FtpService implements UploadService, VerboseLogger {
                 throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, dir );
             }
             
-            if( !Stream.of( ftpClient.listDirectories() ).anyMatch( f -> dir.equals( f.getName() ) ) )
+            if(Stream.of( ftpClient.listDirectories() ).noneMatch(f -> dir.equals( f.getName() ) ))
             {
                 if( !ftpClient.makeDirectory( dir ) )
                     throw WebinCliException.createSystemError( SYSTEM_ERROR_CREATE_DIR, dir );
@@ -153,14 +153,14 @@ public class FtpService implements UploadService, VerboseLogger {
     {
         try 
         {
-            if( ftpClient != null && ftpClient.isConnected() )
+            if(ftpClient.isConnected())
                 ftpClient.disconnect();
         } catch (IOException e) {}
     }
 
     
     @Override
-    protected void finalize() throws Throwable {
+    protected void finalize() {
         disconnect();
     }
 

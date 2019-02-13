@@ -22,7 +22,7 @@ public class
 ManifestReaderResult 
 {
 
-    private ValidationResult validationResult = new ValidationResult();
+    private final ValidationResult validationResult = new ValidationResult();
     private Collection<ManifestFieldValue> fields = new ArrayList<>();
 
     public ValidationResult 
@@ -44,16 +44,9 @@ ManifestReaderResult
     {
         this.fields = fields;
     }
-    
 
-    public boolean 
-    isValid()
-    {
-        return validationResult.isValid();
-    }
 
-    
-    public ManifestFieldValue 
+    public ManifestFieldValue
     getField( String fieldName ) 
     {
         try

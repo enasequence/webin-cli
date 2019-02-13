@@ -58,27 +58,27 @@ StudyServiceTest {
     public void testGetStudyUsingInvalidId() {
         String studyId = "INVALID";
         StudyService studyService = new StudyService();
-        assertThatThrownBy(() -> {
-            studyService.getStudy(
+        assertThatThrownBy(() ->
+                studyService.getStudy(
                     studyId,
                     WebinCliTestUtils.getWebinUsername(),
                     WebinCliTestUtils.getWebinPassword(),
-                    TEST);
-        }).isInstanceOf(WebinCliException.class)
+                    TEST))
+                .isInstanceOf(WebinCliException.class)
                 .hasMessageContaining(studyService.getMessage(StudyService.VALIDATION_ERROR, studyId));
     }
 
     @Test
     public void testGetStudyUsingInvalidCredentials() {
         String studyId = "INVALID";
-        assertThatThrownBy(() -> {
-            StudyService studyService = new StudyService();
-            studyService.getStudy(
+        StudyService studyService = new StudyService();
+        assertThatThrownBy(() ->
+                studyService.getStudy(
                     studyId,
                     "INVALID",
                     "INVALID",
-                    TEST);
-        }).isInstanceOf(WebinCliException.class)
+                    TEST)
+        ).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining(WebinCli.AUTHENTICATION_ERROR);
     }
 }

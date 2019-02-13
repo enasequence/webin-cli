@@ -7,9 +7,9 @@ import java.util.Base64;
 
 public class HttpHeaderBuilder {
 
-    private HttpHeaders headers = new HttpHeaders();
+    private final HttpHeaders headers = new HttpHeaders();
 
-    public HttpHeaderBuilder set(String headerName, String headerValue) {
+    private HttpHeaderBuilder set(String headerName, String headerValue) {
         headers.set(headerName, headerValue);
         return this;
     }

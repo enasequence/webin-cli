@@ -1,8 +1,6 @@
 package uk.ac.ebi.ena.version;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.script.ScriptException;
@@ -16,8 +14,7 @@ public class
 LatestReleaseTest 
 {
     @Test public void
-    test() throws MalformedURLException, IOException, ScriptException, URISyntaxException
-    {
+    test() throws IOException, ScriptException {
         LatestRelease lr = new LatestRelease();
         GitHubReleaseInfo info = lr.getLatestInfo();
         

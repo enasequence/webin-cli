@@ -8,7 +8,7 @@ import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo.ReferenceInfo;
 public class 
 CramReferenceInfoTest 
 {
-    private static String md5 = "a0d9851da00400dec1098a9255ac712e";
+    private static final String md5 = "a0d9851da00400dec1098a9255ac712e";
     
     @Test public void
     testFound()
@@ -25,6 +25,6 @@ CramReferenceInfoTest
     {
         CramReferenceInfo m = new CramReferenceInfo();
         ReferenceInfo info = m.fetchReferenceMetadata( md5.substring( 1 ), System.out );
-        Assert.assertEquals( null, info.getMd5() );
+        Assert.assertNull(info.getMd5());
     }
 }

@@ -37,10 +37,10 @@ ASCIIFileNameProcessorTest
         Assert.assertNull( processor.process( fieldValue ) );
         
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a|b.cram" );
-        Assert.assertTrue( processor.process( fieldValue ).getSeverity().equals( Severity.ERROR ) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a&b.cram" );
-        Assert.assertTrue( processor.process( fieldValue ).getSeverity().equals( Severity.ERROR ) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
         Assert.assertEquals( "a&b.cram", fieldValue.getValue() );
     }
 }

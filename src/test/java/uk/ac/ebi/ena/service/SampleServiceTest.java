@@ -46,13 +46,13 @@ SampleServiceTest {
     public void testGetSampleUsingInvalidId() {
         String id = "INVALID";
         SampleService sampleService = new SampleService();
-        assertThatThrownBy(() -> {
-            sampleService.getSample(
+        assertThatThrownBy(() ->
+                sampleService.getSample(
                     id,
                     WebinCliTestUtils.getWebinUsername(),
                     WebinCliTestUtils.getWebinPassword(),
-                    TEST);
-        }).isInstanceOf(WebinCliException.class)
+                    TEST))
+                .isInstanceOf(WebinCliException.class)
                 .hasMessageContaining(sampleService.getMessage(SampleService.VALIDATION_ERROR, id));
     }
 

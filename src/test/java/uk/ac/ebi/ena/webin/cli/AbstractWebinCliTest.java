@@ -2,7 +2,6 @@ package uk.ac.ebi.ena.webin.cli;
 
 import org.junit.Test;
 import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
-import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
 import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.rawreads.RawReadsWebinCli;
 
@@ -12,8 +11,7 @@ public class AbstractWebinCliTest {
 
     @Test
     public void
-    testGetAlias() throws Exception
-    {
+    testGetAlias() {
         GenomeAssemblyWebinCli genomeAssemblyWebinCli = new GenomeAssemblyWebinCli();
         genomeAssemblyWebinCli.setName("TEST_NAME");
         assertEquals("webin-genome-TEST_NAME", genomeAssemblyWebinCli.getAlias());

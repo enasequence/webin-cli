@@ -15,12 +15,9 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.FileAttribute;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import uk.ac.ebi.ena.utils.ShellExec;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -100,13 +97,13 @@ ASCPService implements UploadService
         try
         {      
             String file_list = createUploadList( uploadFilesList, inputDir );
-            String[] command = getCommand( Files.write( Files.createTempFile( "FILE", "LIST", new FileAttribute<?>[] {} ), 
+            String[] command = getCommand( Files.write( Files.createTempFile( "FILE", "LIST"),
                                                       file_list.getBytes(), 
                                                       StandardOpenOption.CREATE, StandardOpenOption.SYNC ),
                                          inputDir.toAbsolutePath(),
                                          uploadDir );
             
-            String cmd = Arrays.stream( command ).collect( Collectors.joining( " " ) );
+            String cmd = String.join(" ", command);
             Map<String, String> vars = new HashMap<>();
             vars.put( "ASPERA_SCP_PASS", this.password );
             vars.put( "PATH", System.getenv( "PATH" ) );

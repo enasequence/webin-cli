@@ -30,7 +30,7 @@ public class FileSuffixProcessorTest {
         Assert.assertEquals( "a.bam", fieldValue.getValue() );
 
         fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a.cram");
-        Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.ERROR) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
         Assert.assertEquals( "a.cram", fieldValue.getValue() );
     }
 }

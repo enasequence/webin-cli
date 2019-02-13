@@ -1,7 +1,5 @@
 package uk.ac.ebi.ena.manifest.processor;
 
-import java.io.UnsupportedEncodingException;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,12 +15,11 @@ import static uk.ac.ebi.ena.manifest.processor.ProcessorTestUtils.createFieldVal
 public class
 StudyProcessorTest
 {
-    WebinCliParameters parameters = new WebinCliParameters();
+    private final WebinCliParameters parameters = new WebinCliParameters();
 
     @Before
     public void
-    before() throws UnsupportedEncodingException
-    {
+    before() {
         parameters.setUsername(System.getenv( "webin-cli-username" ));
         parameters.setPassword(System.getenv( "webin-cli-password" ));
         parameters.setTestMode(true);
@@ -41,10 +38,10 @@ StudyProcessorTest
     @Test public void
     testIncorrect()
     {
-        StudyProcessor processor = new StudyProcessor(parameters, (Study study) -> Assert.assertNull(study));
+        StudyProcessor processor = new StudyProcessor(parameters, Assert::assertNull);
 
         ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "STUDY", "ERS000002");
-        Assert.assertTrue( processor.process(fieldValue).getSeverity().equals(Severity.ERROR) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
         Assert.assertEquals( "ERS000002", fieldValue.getValue() );
     }
 }

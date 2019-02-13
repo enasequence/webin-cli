@@ -10,7 +10,7 @@ import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 public class 
 ASCIIFileNameProcessor implements ManifestFieldProcessor 
 {
-    static Pattern pattern = Pattern.compile( "^([\\p{Alnum}]|\\\\|\\]|\\[|#|-|_|\\.|,|\\/|:|@|\\+| |\\(|\\)|'|~|<|%|\\?)+$" );
+    static final Pattern pattern = Pattern.compile( "^([\\p{Alnum}]|\\\\|\\]|\\[|#|-|_|\\.|,|\\/|:|@|\\+| |\\(|\\)|'|~|<|%|\\?)+$" );
 
     @Override
     public ValidationMessage<Origin> 

@@ -11,12 +11,9 @@
 
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.WebinCliTestUtils;
@@ -32,17 +29,6 @@ import static org.junit.Assert.assertEquals;
 public class 
 WebinCliTest
 {
-    String passwd;
-    String usernm;
-    
-    @Before
-    public void
-    before() throws UnsupportedEncodingException
-    {
-        usernm = System.getenv( "webin-cli-username" );
-        passwd = System.getenv( "webin-cli-password" );
-        Assert.assertTrue( "username should not be blank", StringUtils.isNotBlank( usernm ) );
-    }
 
     private String
     getRawReadsInfoFields()
@@ -108,7 +94,6 @@ WebinCliTest
         parameters.test = true;
         parameters.validate = true;
         parameters.submit = true;
-        parameters.test = true;
         parameters.ascp = ascp;
         WebinCli webinCli = new WebinCli();
         webinCli.init( parameters );
@@ -252,8 +237,7 @@ WebinCliTest
 
 
     @Test public void
-    testGetSafeOutputDir() throws Exception
-    {
+    testGetSafeOutputDir() {
         assertEquals("AaZ", WebinCli.getSafeOutputDir("AaZ")[0]);
         assertEquals("A_AA", WebinCli.getSafeOutputDir("A&AA")[0]);
         assertEquals("A.AA", WebinCli.getSafeOutputDir("A.AA")[0]);

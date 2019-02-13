@@ -44,7 +44,7 @@ SubmissionBundleHelper
                 return null;
             }
             
-            ValidationResult result = sb.validate( new ValidationResult( new DefaultOrigin( String.valueOf( submission_bundle_path ) ) ) );
+            ValidationResult result = sb.validate( new ValidationResult( new DefaultOrigin(submission_bundle_path) ) );
 
             WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), result );
 

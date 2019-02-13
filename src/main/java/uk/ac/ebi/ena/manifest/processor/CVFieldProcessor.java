@@ -28,7 +28,7 @@ CVFieldProcessor implements ManifestFieldProcessor
         "Y",
         "N"));
 
-    private ManifestCVList cvList;
+    private final ManifestCVList cvList;
 
     public CVFieldProcessor(String ... values )
     {

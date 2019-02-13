@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.compress.utils.IOUtils;
@@ -62,12 +61,6 @@ public class WebinCliTestUtils {
     createDefaultTempFile(boolean compress)
     {
         return createTempFile(null, null, compress, "TEST");
-    }
-
-    public static Path
-    createDefaultTempFile(String fileName, boolean compress)
-    {
-        return createTempFile(fileName, null, compress, "TEST");
     }
 
     public static Path
@@ -123,12 +116,11 @@ public class WebinCliTestUtils {
     }
 
     public static Path
-    createTempFileFromResource( String resource, Path folder, boolean compress, String...suffix ) throws IOException
-    {
+    createTempFileFromResource( String resource, Path folder, boolean compress, String...suffix ) {
         try {
             URL url = WebinCliTestUtils.class.getClassLoader().getResource( resource );
             File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
-            Path path = Files.createTempFile( folder, "COPY", file.getName() + ( suffix.length > 0 ? Stream.of( suffix ).collect( Collectors.joining( "" ) ) : "" ) );
+            Path path = Files.createTempFile( folder, "COPY", file.getName() + ( suffix.length > 0 ? String.join("", suffix) : "" ) );
             OutputStream os;
             Files.copy( file.toPath(), ( os = compress ? new GZIPOutputStream( Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) )
                     : Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) );
@@ -148,7 +140,7 @@ public class WebinCliTestUtils {
         return String.format( "TEST-NAME %X", System.currentTimeMillis() );
     }
 
-    public static String
+    private static String
     readFile(Path file) {
         try {
             return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);

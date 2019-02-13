@@ -75,16 +75,13 @@ FileUtils
 	    if( dir.exists() )
 	    {
 	        File[] files = dir.listFiles();
-	        for( int i = 0; i < files.length; i++ ) 
-	        {
-	            if( files[ i ].isDirectory() ) 
-	            {
-	            	emptyDirectory( files[ i ] );
-	            } else 
-	            {
-	                files[ i ].delete();
-	            }
-	        }
+			for (File file : files) {
+				if (file.isDirectory()) {
+					emptyDirectory(file);
+				} else {
+					file.delete();
+				}
+			}
 	    }
 	    return dir.listFiles().length == 0;
 	}

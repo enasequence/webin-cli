@@ -23,14 +23,13 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
 import uk.ac.ebi.ena.webin.cli.WebinCliTest;
 
 
 public class 
 FastqScannerTest 
 {
-    static final int expected_reads = 10_000;
+    private static final int expected_reads = 10_000;
     
     
     @Test public void 
@@ -97,12 +96,12 @@ FastqScannerTest
     
     
     
-    public Path
-    saveRandomized( String content, Path folder, boolean gzip, String...suffix ) throws IOException
+    private Path
+    saveRandomized(String content, Path folder, boolean gzip, String... suffix) throws IOException
     {
         Path file = Files.createTempFile( "_content_", "_content_" );
         Files.write( file, content.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-        Path path = Files.createTempFile( folder, "COPY", (String) ( file.getName( file.getNameCount() - 1 ) + ( suffix.length > 0 ? Stream.of( suffix ).collect( Collectors.joining( ".", ".", "" ) ) : "" ) ) );
+        Path path = Files.createTempFile( folder, "COPY", ( file.getName( file.getNameCount() - 1 ) + ( suffix.length > 0 ? Stream.of( suffix ).collect( Collectors.joining( ".", ".", "" ) ) : "" ) ));
         OutputStream os;
         Files.copy( file, ( os = gzip ? new GZIPOutputStream( Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) 
                                       : Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) );
@@ -321,16 +320,14 @@ FastqScannerTest
     }
     
     
-    String
-    toString( ValidationResult result ) throws IOException
-    {
+    private String
+    toString(ValidationResult result) {
         return toString( result.getMessages() );
     }
 
     
-    String
-    toString( Collection<ValidationMessage<Origin>> result ) throws IOException
-    {
+    private String
+    toString(Collection<ValidationMessage<Origin>> result) {
         StringWriter sw = new StringWriter();
         for( ValidationMessage<?> m : result )
         {
@@ -341,22 +338,22 @@ FastqScannerTest
     
     
     
-    Path
-    generateRandomFastq( int number_of_reads,
-                         int min_name_len, 
-                         int max_name_len, 
-                         int read_len ) throws IOException
+    private Path
+    generateRandomFastq(int number_of_reads,
+                        int min_name_len,
+                        int max_name_len,
+                        int read_len) throws IOException
     {
         Path result = Files.createTempFile( "TEMP", ".fastq" );
         
         while( number_of_reads--> 0 )
         {
             StringBuilder read = new StringBuilder();
-           
+
             read.append( "@" )
                 .append( ThreadLocalRandom.current()
                                           .ints( ThreadLocalRandom.current().nextInt( min_name_len, max_name_len ), 55, 95 )
-                                          .mapToObj( e -> String.valueOf( Character.toString( (char)e ) ) )
+                                          .mapToObj( e -> Character.toString((char) e))
                                           .collect( Collectors.joining() ) )
                 .append( '\n' )
                 .append( ThreadLocalRandom.current()
@@ -368,7 +365,7 @@ FastqScannerTest
                 .append( '\n' )
                 .append( ThreadLocalRandom.current()
                         .ints( read_len, 33, 33 + 64 )
-                        .mapToObj( e -> String.valueOf( Character.toString( (char)e ) ) )
+                        .mapToObj( e -> Character.toString((char) e))
                         .collect( Collectors.joining() ) )
                 .append( '\n' );
             Files.write( result, read.toString().getBytes(), StandardOpenOption.SYNC, StandardOpenOption.APPEND );
@@ -387,8 +384,8 @@ FastqScannerTest
         rf.setFilename( path.toString() );
         
         ValidationResult vr = fs.checkFiles( rf );
-        
-        Assert.assertEquals( toString( vr ), false, vr.getMessages( Severity.ERROR ).isEmpty() );
+
+        Assert.assertFalse(toString(vr), vr.getMessages(Severity.ERROR).isEmpty());
     }
 
 }

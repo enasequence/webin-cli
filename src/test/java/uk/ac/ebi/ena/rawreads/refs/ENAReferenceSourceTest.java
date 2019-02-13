@@ -37,7 +37,7 @@ ENAReferenceSourceTest
                                          "03e7a85b8170cdbe9c069bd4ccd30b9a",
                                          "75cf94b19ae9b525eb9f3b4cb7f2c609",
                                          "0bdd9cff24d3747dd10598123096f572" )
-                                    .collect( Collectors.summarizingLong( md5 -> { return getRef( rs, md5 ).length; } ) )
+                                    .collect( Collectors.summarizingLong( md5 -> getRef( rs, md5 ).length) )
                                     .getSum(); 
 
         long stored_length = Files.walk( cache )

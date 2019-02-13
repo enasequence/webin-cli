@@ -337,8 +337,8 @@ RawReadsManifest extends ManifestReader {
         if( null == platform && ( null == instrument || instrument.equals( UNSPECIFIED_INSTRUMENT ) ) )
         {
             error( "MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT",
-                    CV_PLATFORM.keyList().stream().collect( Collectors.joining( ", " ) ),
-                    CV_INSTRUMENT.keyList().stream().collect( Collectors.joining( ", " ) ) );
+                    String.join(", ", CV_PLATFORM.keyList()),
+                    String.join(", ", CV_INSTRUMENT.keyList()));
         }
 
         if( instrument != null )
@@ -356,7 +356,7 @@ RawReadsManifest extends ManifestReader {
             if( 1 == platformList.length )
             {
                 platform = CV_PLATFORM.getKey( platformList[ 0 ] );
-            } else if( !Stream.of( platformList ).anyMatch( e -> e.equals( platform ) ) )
+            } else if(Stream.of( platformList ).noneMatch(e -> e.equals( platform ) ))
             {
                 error( "MANIFEST_INVALID_PLATFORM_FOR_INSTRUMENT",
                         StringUtils.isBlank( platform ) ? "is not defined" : platform + " is not supported",

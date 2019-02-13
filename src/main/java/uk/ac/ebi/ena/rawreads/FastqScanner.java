@@ -40,7 +40,6 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
-import uk.ac.ebi.ena.frankenstein.loader.common.eater.DataEaterException;
 import uk.ac.ebi.ena.frankenstein.loader.common.eater.NullDataEater;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
 import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
@@ -50,17 +49,16 @@ import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater.READ_TYPE;
 import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaSpot;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 FastqScanner implements VerboseLogger
 {
-    protected static final int MAX_LABEL_SET_SIZE = 10;
+    private static final int MAX_LABEL_SET_SIZE = 10;
     private static final int PAIRING_THRESHOLD = 30;
     
     private final int expected_size;
-    private Set<String> labelset = new HashSet<>();
-    private AtomicBoolean paired = new AtomicBoolean();
+    private final Set<String> labelset = new HashSet<>();
+    private final AtomicBoolean paired = new AtomicBoolean();
     
     
     public
@@ -70,11 +68,11 @@ FastqScanner implements VerboseLogger
     }
 
     
-    InputStream 
-    openFileInputStream( Path path )
+    private InputStream
+    openFileInputStream(Path path)
     {
         final int marksize = 256;
-        BufferedInputStream is = null;
+        BufferedInputStream is;
         try 
         {
             is = new BufferedInputStream( Files.newInputStream( path ) );
@@ -112,13 +110,13 @@ FastqScanner implements VerboseLogger
             switch( rf.getQualityScoringSystem() )
             {
             default:
-                throw WebinCliException.createSystemError( "Scoring system: " + String.valueOf( rf.getQualityScoringSystem() ) );
+                throw WebinCliException.createSystemError( "Scoring system: " + rf.getQualityScoringSystem());
    
             case phred:
                 switch( rf.getAsciiOffset() )
                 {
                 default:
-                    throw WebinCliException.createSystemError( "ASCII offset: " + String.valueOf( rf.getAsciiOffset() ) );
+                    throw WebinCliException.createSystemError( "ASCII offset: " + rf.getAsciiOffset());
                     
                 case FROM33:
                     qn = QualityNormalizer.X;
@@ -145,16 +143,16 @@ FastqScanner implements VerboseLogger
           Set<String>labels, 
           BloomWrapper pairing,
           BloomWrapper duplications,
-          AtomicLong count ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException, Throwable
+          AtomicLong count ) throws Throwable
     {
-        try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ); )
+        try( InputStream is = openFileInputStream( Paths.get( rf.getFilename() ) ))
         {
             //String stream_name = rf.getFilename();
             final QualityNormalizer normalizer = getQualityNormalizer( rf );
             
             AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
             {
-                DataSpotParams params = DataSpot.defaultParams();
+                final DataSpotParams params = DataSpot.defaultParams();
                 
                 @Override protected DataSpot 
                 newFeedable()
@@ -168,8 +166,7 @@ FastqScanner implements VerboseLogger
             df.setEater( new NullDataEater<DataSpot>() 
             {
                 @Override public void
-                eat( DataSpot spot ) throws DataEaterException
-                {
+                eat( DataSpot spot ) {
                     int slash_idx = spot.bname.lastIndexOf( '/' );
                     String name = slash_idx == -1 ? spot.bname 
                                                   : spot.bname.substring( 0, slash_idx );
@@ -218,7 +215,7 @@ FastqScanner implements VerboseLogger
                      String stream_name, 
                      Set<String> labelset,
                      BloomWrapper pairing,
-                     BloomWrapper duplications ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException, Throwable
+                     BloomWrapper duplications ) throws Throwable
     {
         ValidationResult vr = new ValidationResult();
         AtomicLong count = new AtomicLong();
@@ -253,8 +250,8 @@ FastqScanner implements VerboseLogger
     }
     
     
-    ValidationMessage<Origin> 
-    fMsg( Severity severity, String msg, Origin... origin )
+    private ValidationMessage<Origin>
+    fMsg(Severity severity, String msg, Origin... origin)
     {
         ValidationMessage<Origin> result = new ValidationMessage<>( severity, ValidationMessage.NO_KEY );
         result.setMessage( msg );
@@ -265,7 +262,7 @@ FastqScanner implements VerboseLogger
     
     
     public ValidationResult
-    checkFiles( RawReadsFile... rfs ) throws SecurityException, NoSuchMethodException, DataFeederException, IOException, InterruptedException, Throwable
+    checkFiles( RawReadsFile... rfs ) throws Throwable
     {
         ValidationResult vr = new ValidationResult();
 
@@ -321,10 +318,8 @@ FastqScanner implements VerboseLogger
         //extra check for suspected reads
         if( duplications.hasPossibleDuplicates() )
         {
-    
-            Map<String, Set<String>> result = new LinkedHashMap<>();
             ValidationResult dvr = new ValidationResult();
-            result = findAllduplications( duplications, 100, rfs );
+            Map<String, Set<String>> result = findAllduplications( duplications, 100, rfs );
                 
             dvr.append( result.entrySet().stream().map( ( e ) -> fMsg( Severity.ERROR, 
                                                                        String.format( "Multiple (%d) occurance of read name \"%s\" at: %s\n",
@@ -341,8 +336,8 @@ FastqScanner implements VerboseLogger
     }
 
     
-    public Map<String, Set<String>>
-    findAllduplications( BloomWrapper duplications, int limit, RawReadsFile...rfs )
+    private Map<String, Set<String>>
+    findAllduplications(BloomWrapper duplications, int limit, RawReadsFile... rfs)
     {
         Map<String, Integer> counts = new HashMap<>( limit );
         Map<String, Set<String>> results = new LinkedHashMap<>( limit );
@@ -351,8 +346,7 @@ FastqScanner implements VerboseLogger
             printlnToConsole( "Performing additional checks for file " + rf.getFilename() );
 
             long index = 1;
-            Map<String, Long> first_seen = new LinkedHashMap<>( limit );
-            
+
             IlluminaIterativeEater wrapper = new IlluminaIterativeEater();
             wrapper.setFiles( new File[] { new File( rf.getFilename() ) } );  
             wrapper.setNormalizers( new QualityNormalizer[] { QualityNormalizer.SANGER } );
@@ -372,7 +366,6 @@ FastqScanner implements VerboseLogger
                 {
                     counts.put( read_name, counts.getOrDefault( read_name, 0 ) + 1 );
                     Set<String> dlist = results.getOrDefault( read_name, new LinkedHashSet<>() );
-                    first_seen.putIfAbsent( read_name, index );
                     dlist.add( String.format( "%s, read %s", rf.getFilename(), index ) );
                     results.put( read_name, dlist );
                 }
@@ -382,7 +375,7 @@ FastqScanner implements VerboseLogger
         
         return results.entrySet()
                       .stream()
-                      .filter( e-> counts.get( e.getKey() ).intValue() > 1 )
+                      .filter( e-> counts.get(e.getKey()) > 1 )
                       .limit( limit )
                       .collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue(), ( v1, v2 ) -> v1, LinkedHashMap::new ) );
     }

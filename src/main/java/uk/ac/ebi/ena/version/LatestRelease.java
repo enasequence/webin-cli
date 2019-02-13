@@ -3,8 +3,6 @@ package uk.ac.ebi.ena.version;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -23,7 +21,7 @@ import org.apache.log4j.Logger;
 public class 
 LatestRelease 
 {
-    private static Logger log = Logger.getLogger( LatestRelease.class );
+    private static final Logger log = Logger.getLogger( LatestRelease.class );
     
     static class 
     GitHubReleaseInfo
@@ -52,7 +50,7 @@ LatestRelease
     }
     
 
-    private ScriptEngine engine;
+    private final ScriptEngine engine;
     
     
     public
@@ -111,7 +109,7 @@ LatestRelease
     {
         try
         {
-            return ( (Boolean)map.get( field_name ) ).booleanValue();
+            return (Boolean) map.get(field_name);
         } catch( NullPointerException npe )
         {
             log.info( npe );
@@ -124,7 +122,7 @@ LatestRelease
     parseAssets( List<Map<String, Object>> assets )
     {
         //[url, id, node_id, name, label, uploader, content_type, state, size, download_count, created_at, updated_at, browser_download_url]
-        List<GitHubReleaseAsset> result_list = new ArrayList<GitHubReleaseAsset>();
+        List<GitHubReleaseAsset> result_list = new ArrayList<>();
         for( Map<String, Object> asset : assets )
         {
             GitHubReleaseAsset result = new GitHubReleaseAsset();
@@ -143,8 +141,8 @@ LatestRelease
     
     
     @SuppressWarnings( "unchecked" )
-    public GitHubReleaseInfo 
-    parseGitHubJson( String json ) throws ScriptException
+    private GitHubReleaseInfo
+    parseGitHubJson(String json) throws ScriptException
     {
         String script = "Java.asJSONCompatible(" + json + ")";
         Object result = this.engine.eval( script );
@@ -161,16 +159,14 @@ LatestRelease
         info.created_at = parseTimestamp( content, "created_at" );
         info.published_at = parseTimestamp( content, "published_at" );
         List<Map<String,Object>> assets = (List<Map<String, Object>>)content.get( "assets" );
-        List<GitHubReleaseAsset> asset_list = parseAssets( assets );
-        info.assets = asset_list;
+        info.assets = parseAssets( assets );
         return info;
     }
 
 
     
     public GitHubReleaseInfo
-    getLatestInfo() throws MalformedURLException, IOException, ScriptException, URISyntaxException
-    {
+    getLatestInfo() throws IOException, ScriptException {
         String s = fetchData( new URL( "https://api.github.com/repos/enasequence/webin-cli/releases/latest" ) );
         return parseGitHubJson( s );
     }

@@ -89,7 +89,7 @@ public class SubmitService extends AbstractService {
         ResponseEntity<String> response = restTemplate.exchange(
                 getWebinRestUri("submit/", test),
                 HttpMethod.POST,
-                new HttpEntity( body, headers),
+                new HttpEntity<>( body, headers),
                 String.class);
 
         processReceipt(response.getBody(), xmlFileList);

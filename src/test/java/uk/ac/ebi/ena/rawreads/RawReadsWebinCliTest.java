@@ -14,11 +14,8 @@ package uk.ac.ebi.ena.rawreads;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -28,9 +25,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.GZIPOutputStream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,7 +38,6 @@ import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
 import net.sf.cram.ref.ENAReferenceSource;
 import net.sf.cram.ref.ENAReferenceSource.LoggerWrapper;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.WebinCliTestUtils;
@@ -80,8 +73,7 @@ RawReadsWebinCliTest
     
  
     @Test public void
-    parseManifest() throws IOException, ValidationEngineException
-    {
+    parseManifest() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
         Path fastq_file = WebinCliTestUtils.createTempFile("fastq.gz", true, "@1.1\nACGT\n@\n!@#$\n");
 
@@ -101,8 +93,7 @@ RawReadsWebinCliTest
     
     
     @Test( expected = WebinCliException.class ) public void
-    manifestTwoBAMs() throws IOException, ValidationEngineException
-    {
+    manifestTwoBAMs() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -122,8 +113,7 @@ RawReadsWebinCliTest
     
     
     @Test( expected = WebinCliException.class ) public void
-    manifestTwoCRAMs() throws IOException, ValidationEngineException
-    {
+    manifestTwoCRAMs() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -143,8 +133,7 @@ RawReadsWebinCliTest
 
     
     @Test( expected = WebinCliException.class ) public void
-    manifestMixingFormats() throws IOException, ValidationEngineException
-    {
+    manifestMixingFormats() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -164,8 +153,7 @@ RawReadsWebinCliTest
     
     
     @Test( expected = WebinCliException.class ) public void
-    manifestNoFiles() throws IOException, ValidationEngineException
-    {
+    manifestNoFiles() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -185,8 +173,7 @@ RawReadsWebinCliTest
     
     
     @Test( expected = WebinCliException.class ) public void
-    manifestDoesFileNotExist() throws IOException, ValidationEngineException
-    {
+    manifestDoesFileNotExist() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -205,8 +192,7 @@ RawReadsWebinCliTest
 
     
     @Test( expected = WebinCliException.class ) public void
-    manifestFileIsDirectory() throws IOException, ValidationEngineException
-    {
+    manifestFileIsDirectory() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -225,8 +211,7 @@ RawReadsWebinCliTest
 
     
     @Test( expected = WebinCliException.class ) public void
-    manifestNoPath() throws IOException, ValidationEngineException
-    {
+    manifestNoPath() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -245,8 +230,7 @@ RawReadsWebinCliTest
 
     
     @Test( expected = WebinCliException.class ) public void
-    manifestNonASCIIPath() throws IOException, ValidationEngineException
-    {
+    manifestNonASCIIPath() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/rawreads/MG23S_431.fastq.gz" );
@@ -269,8 +253,7 @@ RawReadsWebinCliTest
 
     
     @Test( expected = WebinCliException.class ) public void
-    manifestFastqNoScoring() throws IOException, ValidationEngineException
-    {
+    manifestFastqNoScoring() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -289,8 +272,7 @@ RawReadsWebinCliTest
     
     
     @Test( expected = WebinCliException.class ) public void
-    manifestBAMScoring() throws IOException, ValidationEngineException
-    {
+    manifestBAMScoring() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -308,8 +290,7 @@ RawReadsWebinCliTest
 
     
     @Test( expected = WebinCliException.class ) public void
-    manifestBAMCompression() throws IOException, ValidationEngineException
-    {
+    manifestBAMCompression() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -329,8 +310,7 @@ RawReadsWebinCliTest
    
     
     @Test( expected = WebinCliException.class ) public void
-    manifestCRAMScoring() throws IOException, ValidationEngineException
-    {
+    manifestCRAMScoring() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
 
         WebinCliParameters parameters = new WebinCliParameters();
@@ -475,11 +455,8 @@ RawReadsWebinCliTest
             
         } catch( WebinCliException wce )
         {
-            Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
-                @Override public boolean accept( File dir, String name ) 
-                { 
-                    return name.contains( file.getName() ); 
-                } } ).length );
+            Assert.assertEquals("Result file should exist", 1, rr.getValidationDir().list(
+                    (dir, name) -> name.contains(file.getName())).length);
         }
     }
 
@@ -658,11 +635,8 @@ RawReadsWebinCliTest
             
         } catch( WebinCliException wce )
         {
-            Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
-                @Override public boolean accept( File dir, String name ) 
-                { 
-                    return name.contains( file.getName() ); 
-                } } ).length );
+            Assert.assertEquals("Result file should exist", 1, rr.getValidationDir().list(
+                    (dir, name) -> name.contains(file.getName())).length);
         }
     }
 
@@ -689,11 +663,8 @@ RawReadsWebinCliTest
             
         } catch( WebinCliException wce )
         {
-            Assert.assertTrue( "Result file should exist", 1 == rr.getValidationDir().list( new FilenameFilter() { 
-                @Override public boolean accept( File dir, String name ) 
-                { 
-                    return name.contains( file.getName() ); 
-                } } ).length );
+            Assert.assertEquals("Result file should exist", 1, rr.getValidationDir().list(
+                    (dir, name) -> name.contains(file.getName())).length);
         }
     }
     
@@ -719,7 +690,7 @@ RawReadsWebinCliTest
     
     
     @Ignore @Test( timeout = 200_000 ) public void
-    openSamExamples() throws MalformedURLException, UnsupportedEncodingException 
+    openSamExamples() throws UnsupportedEncodingException
     {
         final SamReaderFactory factory =
                 SamReaderFactory.makeDefault().enable( SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS ).validationStringency( ValidationStringency.LENIENT );
@@ -766,7 +737,7 @@ RawReadsWebinCliTest
 
 
     @Test( timeout = 200_000 ) public void
-    openSamSmall() throws MalformedURLException, UnsupportedEncodingException
+    openSamSmall() throws UnsupportedEncodingException
     {
         final SamReaderFactory factory =
                 SamReaderFactory.makeDefault().enable( SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS ).validationStringency( ValidationStringency.LENIENT );

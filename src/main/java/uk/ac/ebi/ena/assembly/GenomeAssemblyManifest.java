@@ -78,9 +78,9 @@ GenomeAssemblyManifest extends ManifestReader
         BINNED_METAGENOME,
         MAG,
         SAG
-	};
+	}
 
-	private static String getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD ord) {
+    private static String getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD ord) {
 		return CV_ASSEMBLY_TYPE[ ord.ordinal()];
 	}
 
@@ -223,11 +223,9 @@ GenomeAssemblyManifest extends ManifestReader
 		if( getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD.PRIMARY_METAGENOME).equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) ) ||
 			getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD.BINNED_METAGENOME).equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) ) )
 		{
-		    if( submissionFiles.getFiles()
+		    if(submissionFiles.getFiles()
 					.stream()
-					.filter( file -> FileType.FASTA != file.getFileType() )
-					.findAny()
-					.isPresent() ) {
+					.anyMatch(file -> FileType.FASTA != file.getFileType() )) {
 				error("MANIFEST_ERROR_INVALID_FILE_GROUP",
 						getExpectedFileTypeList(new HashSet<List<ManifestFileCount>>() {
 							{

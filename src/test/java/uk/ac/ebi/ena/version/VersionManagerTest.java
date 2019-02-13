@@ -16,7 +16,7 @@ public class
 VersionManagerTest 
 {
     @Test public void
-    test() throws IOException, InterruptedException, ScriptException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    test() throws IOException, ScriptException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         VersionManager vm = new VersionManager();
         Assert.assertEquals( WebinCli.SUCCESS, vm.launchLatest( new String[] { "-version" } ) );

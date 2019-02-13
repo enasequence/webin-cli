@@ -1,7 +1,5 @@
 package uk.ac.ebi.ena.manifest.processor;
 
-import java.io.UnsupportedEncodingException;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,16 +15,15 @@ import static uk.ac.ebi.ena.manifest.processor.ProcessorTestUtils.createFieldVal
 public class
 SampleProcessorTest
 {
-    WebinCliParameters parameters = new WebinCliParameters();
+    private final WebinCliParameters parameters = new WebinCliParameters();
 
     @Before public void
-    before() throws UnsupportedEncodingException
-    {
+    before() {
         parameters.setUsername( System.getenv( "webin-cli-username" ) );
         parameters.setPassword( System.getenv( "webin-cli-password" ) );
         parameters.setTestMode( true );
-        
-        Assert.assertTrue( "webin-cli-username is null", null != parameters.getUsername() );
+
+        Assert.assertNotNull("webin-cli-username is null", parameters.getUsername());
     }
 
     
@@ -44,9 +41,9 @@ SampleProcessorTest
     @Test public void 
     testIncorrect()
     {
-        SampleProcessor processor = new SampleProcessor( parameters, (Sample sample) -> Assert.assertNull( sample ) );
+        SampleProcessor processor = new SampleProcessor( parameters, Assert::assertNull);
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "SRP000392" );
-        Assert.assertTrue( processor.process( fieldValue ).getSeverity().equals( Severity.ERROR ) );
+        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
         Assert.assertEquals( "SRP000392", fieldValue.getValue() );
     }
 }

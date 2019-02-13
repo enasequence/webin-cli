@@ -30,12 +30,12 @@ import java.util.List;
 
 public class ManifestReaderTest {
 
-    Path inputDir = Paths.get( "." );
+    private final Path inputDir = Paths.get( "." );
 
     private final static ManifestCVList CV_FIELD_1 = new ManifestCVList( "VALUE1" );
 
     static class ManifestReaderOneMetaFieldMin0Max1 extends TestManifestReader {
-        public ManifestReaderOneMetaFieldMin0Max1() {
+        ManifestReaderOneMetaFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 0, 1, new CVFieldProcessor(CV_FIELD_1 )));
             }});
@@ -43,7 +43,7 @@ public class ManifestReaderTest {
     }
 
     static class ManifestReaderTwoMetaFieldMin1Max1 extends TestManifestReader {
-        public ManifestReaderTwoMetaFieldMin1Max1() {
+        ManifestReaderTwoMetaFieldMin1Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 1, 1, new CVFieldProcessor(CV_FIELD_1 )));
                 add(new ManifestFieldDefinition("META_FIELD_2", ManifestFieldType.META, 1, 1));
@@ -52,7 +52,7 @@ public class ManifestReaderTest {
     }
 
     static class ManifestReaderOneFileFieldMin0Max1 extends TestManifestReader {
-        public ManifestReaderOneFileFieldMin0Max1() {
+        ManifestReaderOneFileFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1,
                         new FileSuffixProcessor( Arrays.asList(".txt"))));
@@ -61,7 +61,7 @@ public class ManifestReaderTest {
     }
 
     static class ManifestReaderFiles extends TestManifestReader {
-        public ManifestReaderFiles() {
+        ManifestReaderFiles() {
             super(new ArrayList<ManifestFieldDefinition>() {{
                 add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1));
                 add(new ManifestFieldDefinition("FILE_FIELD_2", ManifestFieldType.FILE, 0, 2));

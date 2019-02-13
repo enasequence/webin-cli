@@ -11,10 +11,8 @@
 
 package uk.ac.ebi.ena.rawreads;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,13 +23,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -55,13 +49,6 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
-import uk.ac.ebi.ena.frankenstein.loader.common.eater.DataEaterException;
-import uk.ac.ebi.ena.frankenstein.loader.common.eater.NullDataEater;
-import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
-import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
-import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
-import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.ChecksumMethod;
@@ -94,7 +81,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
     private String studyId;
     private String sampleId;
 
-    private boolean valid;
     //TODO value should be estimated via validation
     private boolean is_paired;
 
@@ -128,46 +114,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         setDescription( getManifestReader().getDescription() );
     }
 
-    DataFeederException 
-    read( InputStream is, String stream_name, final QualityNormalizer normalizer, AtomicLong reads_cnt, Set<String> names, Set<String>labels ) throws SecurityException, DataFeederException, NoSuchMethodException, IOException, InterruptedException
-    {
-        AbstractDataFeeder<DataSpot> df = new AbstractDataFeeder<DataSpot>( is, DataSpot.class ) 
-        {
-            DataSpotParams params = DataSpot.defaultParams();
-            
-            @Override protected DataSpot 
-            newFeedable()
-            {
-                return new DataSpot( normalizer, "", params );
-            }
-        };
-        
-        df.setName( stream_name );
-        
-        df.setEater( new NullDataEater<DataSpot>() 
-        {
-            @Override public void
-            eat( DataSpot spot ) throws DataEaterException
-            {
-                int slash_idx = spot.bname.lastIndexOf( '/' );
-                String name = slash_idx == -1 ? spot.bname 
-                                              : spot.bname.substring( 0, slash_idx );
-                String label = slash_idx == -1 ? stream_name
-                                               : spot.bname.substring( slash_idx + 1 );
-                
-                if( reads_cnt.incrementAndGet() <= getManifestReader().getPairingHorizon() )
-                    names.add( name );
-                
-                if( labels.size() < getManifestReader().getPairingHorizon() )
-                    labels.add( label );
-            }  
-        } );
-        
-        df.start();
-        df.join();
-        return df.isOk() ? df.getFieldFeedCount() > 0 ? null : new DataFeederException( 0, "Empty file" ) : (DataFeederException)df.getStoredException().getCause(); 
-    }
-    
 
     @Override public void
     validate() throws WebinCliException
@@ -187,15 +133,15 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         {
             if( Filetype.fastq.equals( rf.getFiletype() ) )
             {
-                valid &= readFastqFile( files, paired );
+                valid = readFastqFile(files, paired);
                 
             } else if( Filetype.bam.equals( rf.getFiletype() ) )
             {
-                valid &= readBamFile( files, paired );
+                valid = readBamFile(files, paired);
                 
             } else if( Filetype.cram.equals( rf.getFiletype() ) )
             {
-                valid &= readCramFile( files, paired );
+                valid = readCramFile(files, paired);
 
             } else
             {
@@ -203,9 +149,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
             }
             
             break;
-        }  
+        }
 
-        this.valid = valid;
         is_paired = paired.get();
         
         if( !valid )
@@ -232,52 +177,20 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                                                                                                                                                                  .filter( e -> !e.getValue() )
                                                                                                                                                                  .map( e -> e.getKey() )
                                                                                                                                                                  .collect( Collectors.toList() ) );
-                    valid &= false;
+                    valid = false;
                 }
             
             } catch( IOException ioe )
             {
                 WebinCliReporter.writeToFile( reportFile, Severity.ERROR, ioe.getMessage() );
-                valid &= false;
+                valid = false;
             }
         }
 
         return valid && readBamFile( files, paired );
     }
-    
-    
-    InputStream 
-    openFileInputStream( Path path )
-    {
-        final int marksize = 256;
-        BufferedInputStream is = null;
-        try 
-        {
-            is = new BufferedInputStream( Files.newInputStream( path ) );
-            is.mark( marksize );
-            try
-            {
-                return new BufferedInputStream( new GZIPInputStream( is ) );
-            } catch( IOException gzip )
-            {
-                is.reset();
-                try
-                {
-                    is.mark( marksize );
-                    return new BufferedInputStream( new BZip2CompressorInputStream( is ) );
-                } catch( IOException bzip )
-                {
-                    is.reset();
-                    return is;
-                }
-            }
-        } catch( IOException ioe )
-        {
-            throw WebinCliException.createSystemError( ioe.getMessage() );
-        }
-    }
 
-    
+
     private boolean
     readFastqFile( List<RawReadsFile> files, AtomicBoolean paired )
     {
@@ -285,7 +198,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         {
             if( files.size() > 2 )
             {
-                valid = false;
                 String msg = "Unable to validate unusual amount of files: " + files;
                 reportToFileList( files, msg );
                 throw WebinCliException.createValidationError( msg );
@@ -332,7 +244,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                 ENAReferenceSource reference_source = new ENAReferenceSource();
                 reference_source.setLoggerWrapper( new ENAReferenceSource.LoggerWrapper() 
                 {
-                    private File rFile = reportFile;
+                    private final File rFile = reportFile;
                     @Override public void 
                     error( Object... messageParts )
                     {
@@ -392,7 +304,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                                                                                                                 new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
                         
                         WebinCliReporter.writeToFile( reportFile, validationMessage );
-                        valid &= false;
+                        valid = false;
                     }
                     
                     paired.compareAndSet( false, record.getReadPairedFlag() );
@@ -412,13 +324,13 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
                 if( 0 == reads_cnt )
                 {
                     WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "File contains no valid reads" );
-                    valid &= false;
+                    valid = false;
                 }
                 
             } catch( SAMFormatException | CRAMException e )
             {
                 WebinCliReporter.writeToFile( reportFile, Severity.ERROR, e.getMessage() );
-                valid &= false;
+                valid = false;
                 
             } catch( IOException e )
             {
@@ -496,8 +408,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
     </RUN_SET>
 */
 
-    String
-    createExperimentXml( String experiment_ref, String centerName, boolean is_paired, String design_description )
+    private String
+    createExperimentXml(String experiment_ref, String centerName, boolean is_paired, String design_description)
     {
         String instrument_model = getManifestReader().getInstrument();
         design_description = StringUtils.isBlank( design_description ) ? "unspecified" : design_description;

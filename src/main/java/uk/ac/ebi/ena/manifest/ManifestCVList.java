@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class ManifestCVList
 {
-    private Properties p = new Properties();
+    private final Properties p = new Properties();
 
     public ManifestCVList( File resource )
     {
