@@ -314,7 +314,12 @@ ManifestReader
             {
                 ValidationMessage<Origin> m = v.process( fieldValue );
                 if( null != m )
+                {
                     validationResult.append( m );
+                    
+                    if( Severity.ERROR.equals( m.getSeverity() ) )
+                        fieldValue.setValidFieldValueOrFileSuffix( false );
+                }
             }
 
             result.getValidationResult().append( validationResult );

@@ -36,8 +36,7 @@ SubmissionBundle implements Serializable
     private final String                  uploadDirectory;
     private final List<File>              uploadFileList;
     private final List<Long>              uploadFileSize;
-    transient private File          manifest_file;
-    private String                  manifest_md5;
+    private String                        manifest_md5;
     private final String                  centerName;
 
 
@@ -203,20 +202,6 @@ SubmissionBundle implements Serializable
         if( null != current && !current.equals( this.version ) )
             result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Program version has changed" ) );
 
-        if( null != this.manifest_file )
-        {
-            try
-            {
-                String current_md5 = FileUtils.calculateDigest( "MD5", this.manifest_file );
-                if( null != current_md5 && !current_md5.equals( this.manifest_md5 ) )
-                    result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Manifest has changed" ) );
-                
-            } catch( IOException | NoSuchAlgorithmException e )
-            {
-                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Unable to confirm manifest checksum" ) );
-            }
-        }
-        
         for( SubmissionXMLFile file : getXMLFileList() )
         {
             try
