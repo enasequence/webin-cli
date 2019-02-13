@@ -381,13 +381,13 @@ ManifestReader
         for (List<ManifestFileCount> expectedFileCountList : files) {
             for (ManifestFileCount expectedFileCount : expectedFileCountList) {
                 if (fileCountMap.get(expectedFileCount.getFileType()) == null) {
-                    if (expectedFileCount.getMinCount() != null && expectedFileCount.getMinCount() > 0) {
+                    if (expectedFileCount.getMinCount() > 0) {
                         continue next; // Invalid because min is > 0.
                     }
                 } else {
                     long manifestFileCount = fileCountMap.get(expectedFileCount.getFileType());
                     if ((expectedFileCount.getMaxCount() != null && expectedFileCount.getMaxCount() < manifestFileCount) ||
-                        (expectedFileCount.getMinCount() != null && expectedFileCount.getMinCount() > manifestFileCount)) {
+                        (expectedFileCount.getMinCount() > manifestFileCount)) {
                         continue next; // Invalid because larger than max or smaller than min.
                     }
                 }
@@ -542,19 +542,20 @@ ManifestReader
                                        {
                                            String fileType = expectedFileCount.getFileType();
                                            str.append( fileSeparator );
-                                           if( expectedFileCount.getMinCount() == expectedFileCount.getMaxCount() )
+                                           if( expectedFileCount.getMaxCount() == null ||
+                                               expectedFileCount.getMinCount() == expectedFileCount.getMaxCount() )
                                            {
-                                               str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
+                                               str.append( expectedFileCount.getMinCount());
                                            } else
                                            {
                                                if ( expectedFileCount.getMaxCount() != null ) {
-                                                   str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
+                                                   str.append( expectedFileCount.getMinCount());
                                                    str.append( ".." );
                                                    str.append( expectedFileCount.getMaxCount());
                                                }
                                                else {
                                                    str.append( ">= " );
-                                                   str.append( expectedFileCount.getMinCount() != null ? expectedFileCount.getMinCount() : 0);
+                                                   str.append( expectedFileCount.getMinCount());
                                                }
                                            }
                                            str.append( " \"" );

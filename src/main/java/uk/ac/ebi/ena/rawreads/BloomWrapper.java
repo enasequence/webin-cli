@@ -58,11 +58,10 @@ BloomWrapper
         if( bloom.mightContain( read_name ) )
         {
             susp_no.incrementAndGet();
-            if( suspected.size() >= collect_max )
+            if( suspected.size() < collect_max )
             {
-                //throw new RuntimeException( String.format( "Current BLOOM filter capacity %d cannot accomodate more than %d positive/false positive records. Please increase BLOOM filter capacity", expected_reads, collect_max ) );
-            } else
                 suspected.add( read_name );
+            }
         } else
         {
             bloom.put( read_name );
