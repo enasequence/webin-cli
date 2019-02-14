@@ -66,11 +66,6 @@ public class WebinCliReporter {
     }
 
     public static void
-    writeToConsole(Severity severity, String message, Origin origin) {
-        writeMessages(System.out, (s) -> writeMessage(s, createValidationMessage(severity, message, origin)));
-    }
-    
-    public static void
     flushConsole() {
         System.out.flush();
     }

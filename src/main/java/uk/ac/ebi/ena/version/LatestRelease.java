@@ -1,5 +1,8 @@
 package uk.ac.ebi.ena.version;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,13 +18,10 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.apache.log4j.Logger;
-
-
 public class 
 LatestRelease 
 {
-    private static final Logger log = Logger.getLogger( LatestRelease.class );
+    private static final Logger log = LoggerFactory.getLogger(LatestRelease.class);
     
     static class 
     GitHubReleaseInfo
@@ -82,9 +82,9 @@ LatestRelease
         try
         {
             return Timestamp.from( Instant.parse( (String)map.get( field_name ) ) );
-        } catch( IllegalArgumentException iae )
+        } catch( IllegalArgumentException e )
         {
-            log.info( iae );
+            log.info( e.getMessage(), e );
         }
         return null;
     }
@@ -96,9 +96,9 @@ LatestRelease
         try
         {
             return ( (Number)map.get( field_name ) ).longValue();
-        } catch( NullPointerException npe )
+        } catch( NullPointerException e )
         {
-            log.info( npe );
+            log.info( e.getMessage(), e );
         }
         return null;
     }
@@ -110,9 +110,9 @@ LatestRelease
         try
         {
             return (Boolean) map.get(field_name);
-        } catch( NullPointerException npe )
+        } catch( NullPointerException e )
         {
-            log.info( npe );
+            log.info( e.getMessage(), e );
         }
         return null;
     }

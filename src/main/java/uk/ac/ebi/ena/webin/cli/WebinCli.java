@@ -72,8 +72,7 @@ public class WebinCli { // implements CommandLineRunner
 	private static final String INVALID_CONTEXT = "Invalid context: ";
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
-    
-	
+
 	private Params params;
 	private WebinCliContext context;
     private AbstractWebinCli<?> validator;

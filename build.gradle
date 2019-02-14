@@ -83,15 +83,10 @@ dependencies {
     implementation( group: 'uk.ac.ebi', name: 'ena-fastq-validator', version: '1.1.1' )
     implementation( group: 'uk.ac.ebi.ena', name: 'ena-cram-processing-tools', version: '1.1.0' )
     implementation( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
-
     implementation('org.springframework.boot:spring-boot-starter')
     implementation('org.springframework.boot:spring-boot-starter-web') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
-
-
-
-
     // implementation("org.projectlombok:lombok:1.18.4")
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     testImplementation('org.assertj:assertj-core:3.11.1')
