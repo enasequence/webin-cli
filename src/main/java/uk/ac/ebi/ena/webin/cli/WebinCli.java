@@ -475,8 +475,8 @@ public class WebinCli { // implements CommandLineRunner
 		WebinCliReporter.writeToConsole( "Exit codes: " + returnCodeMap.toString() );
 	}
 
-	
-	private static class ContextValidator implements IParameterValidator {
+
+	public static class ContextValidator implements IParameterValidator {
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
 			try {
@@ -487,7 +487,7 @@ public class WebinCli { // implements CommandLineRunner
 		}
 	}
 
-	private static class OutputDirValidator implements IParameterValidator {
+	public static class OutputDirValidator implements IParameterValidator {
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
@@ -496,7 +496,7 @@ public class WebinCli { // implements CommandLineRunner
 		}
 	}
 
-	private static class ManifestFileValidator implements IParameterValidator {
+	public static class ManifestFileValidator implements IParameterValidator {
 		@Override
 		public void validate(String name, String value)	throws ParameterException {
 			File file = new File(value);
