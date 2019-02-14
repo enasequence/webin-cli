@@ -180,7 +180,7 @@ GenomeAssemblyXmlTest
     {
     	SubmissionOptions submissionOptions =  new SubmissionOptions();
     	SubmissionFiles submissionFiles = new SubmissionFiles();
-        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
+        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
     	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
     	submissionFiles.addFile(submissionFile);
     	submissionOptions.submissionFiles = Optional.of(submissionFiles);
@@ -231,9 +231,9 @@ GenomeAssemblyXmlTest
     testAnalysisXML_Manifest_WithFastaFile()
     {
         String name = "test_genome";
-        Path fastaFile = WebinCliTestUtils.createTempFile("flatfile.fasta.gz", true, ">123\nACGT");
+        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
         Path inputDir = fastaFile.getParent();
-        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
                 "NAME\t" + name + "\n" +
                         "SAMPLE\ttest_sample\n" +
                         GenomeAssemblyManifest.Fields.DESCRIPTION + " a description\n" +
@@ -244,7 +244,7 @@ GenomeAssemblyXmlTest
                         "FASTA\t" + fastaFile.getFileName() + "\n"
         );
 
-        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
+        WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
 
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         cli.setSource(getDefaultSourceFeature());

@@ -75,7 +75,7 @@ RawReadsWebinCliTest
     @Test public void
     parseManifest() throws IOException {
         RawReadsWebinCli rr = new RawReadsWebinCli();
-        Path fastq_file = WebinCliTestUtils.createTempFile("fastq.gz", true, "@1.1\nACGT\n@\n!@#$\n");
+        Path fastq_file = WebinCliTestUtils.createGzippedTempFile("fastq.gz", "@1.1\nACGT\n@\n!@#$\n");
 
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setInputDir( fastq_file.getParent().toFile() );
@@ -469,7 +469,7 @@ RawReadsWebinCliTest
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( WebinCliTestUtils.createDefaultTempFile(false),
+        parameters.setManifestFile( Files.write( WebinCliTestUtils.createEmptyTempFile(),
                                                  ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );

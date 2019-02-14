@@ -87,7 +87,7 @@ WebinCliTest
         parameters.context = context.toString();
         parameters.inputDir = inputDir.toString();
         parameters.outputDir  = WebinCliTestUtils.createTempDir().getPath();
-        parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+        parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
                 manifestContents).toAbsolutePath().toString();
         parameters.userName = System.getenv( "webin-cli-username" );
         parameters.password = System.getenv( "webin-cli-password" );
@@ -105,7 +105,7 @@ WebinCliTest
     {
         Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/rawreads/18045_1#93.cram", input_dir, false );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getRawReadsInfoFields());
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getRawReadsInfoFields());
 
         testWebinCli( WebinCliContext.reads,
                       input_dir,
@@ -147,7 +147,7 @@ WebinCliTest
         
         Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
         Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/assembly/valid_flatfileAgp.txt", input_dir, true, ".agp.gz" );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getGenomeManifestInfoFields());
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getGenomeManifestInfoFields());
 
         testWebinCli( WebinCliContext.genome,
                       input_dir,
@@ -182,7 +182,7 @@ WebinCliTest
         Path input_dir = WebinCliTestUtils.createTempDir().toPath();
         
         Path tabfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/template/tsvfile/ERT000003-EST.tsv.gz", input_dir, false );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getSequenceManifestFields());
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getSequenceManifestFields());
 
         testWebinCli( WebinCliContext.sequence,
                       input_dir,
@@ -212,7 +212,7 @@ WebinCliTest
         Path input_dir = WebinCliTestUtils.createTempDir().toPath();
 
         Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/transcriptome/valid_fasta.fasta.gz", input_dir, false );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, false, getTranscriptomeManifestFields());
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getTranscriptomeManifestFields());
 
         testWebinCli( WebinCliContext.transcriptome,
                       input_dir,

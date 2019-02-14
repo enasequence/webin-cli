@@ -17,7 +17,7 @@ public class WebinCliReporterTest {
     public void
     testWriteToReport_ErrorString_WithAndWithoutOrigin() throws Exception
     {
-        Path reportFile = WebinCliTestUtils.createTempFile("test1");
+        Path reportFile = WebinCliTestUtils.createEmptyTempFile("test1");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), Severity.ERROR, "MESSAGE1" );
 
@@ -29,7 +29,7 @@ public class WebinCliReporterTest {
 
         Origin origin = new DefaultOrigin("ORIGIN2");
 
-        reportFile = WebinCliTestUtils.createTempFile("test2");
+        reportFile = WebinCliTestUtils.createEmptyTempFile("test2");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), Severity.ERROR, "MESSAGE2", origin );
 
@@ -42,7 +42,7 @@ public class WebinCliReporterTest {
     public void
     testWriteToReport_InfoString_WithAndWithoutOrigin() throws Exception
     {
-        Path reportFile = WebinCliTestUtils.createTempFile("test");
+        Path reportFile = WebinCliTestUtils.createEmptyTempFile("test");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), Severity.INFO, "MESSAGE" );
 
@@ -54,7 +54,7 @@ public class WebinCliReporterTest {
 
         Origin origin = new DefaultOrigin("ORIGIN2");
 
-        reportFile = WebinCliTestUtils.createTempFile("test2");
+        reportFile = WebinCliTestUtils.createEmptyTempFile("test2");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), Severity.INFO, "MESSAGE2", origin );
 
@@ -69,7 +69,7 @@ public class WebinCliReporterTest {
     public void
     testWriteToReport_ErrorValidationMessage_WithAndWithoutOrigin() throws Exception
     {
-        Path reportFile = WebinCliTestUtils.createTempFile("test1");
+        Path reportFile = WebinCliTestUtils.createEmptyTempFile("test1");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), WebinCliReporter.createValidationMessage(Severity.ERROR, "MESSAGE1"));
 
@@ -81,7 +81,7 @@ public class WebinCliReporterTest {
 
         Origin origin = new DefaultOrigin("ORIGIN2");
 
-        reportFile = WebinCliTestUtils.createTempFile("test2");
+        reportFile = WebinCliTestUtils.createEmptyTempFile("test2");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), WebinCliReporter.createValidationMessage(Severity.ERROR, "MESSAGE2", origin));
 
@@ -94,7 +94,7 @@ public class WebinCliReporterTest {
     public void
     testWriteToReport_InfoValidationMessage_WithAndWithoutOrigin() throws Exception
     {
-        Path reportFile = WebinCliTestUtils.createTempFile("test1");
+        Path reportFile = WebinCliTestUtils.createEmptyTempFile("test1");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), WebinCliReporter.createValidationMessage(Severity.INFO, "MESSAGE1"));
 
@@ -106,7 +106,7 @@ public class WebinCliReporterTest {
 
         Origin origin = new DefaultOrigin("ORIGIN2");
 
-        reportFile = WebinCliTestUtils.createTempFile("test2");
+        reportFile = WebinCliTestUtils.createEmptyTempFile("test2");
 
         WebinCliReporter.writeToFile(reportFile.toFile(), WebinCliReporter.createValidationMessage(Severity.INFO, "MESSAGE2", origin));
 

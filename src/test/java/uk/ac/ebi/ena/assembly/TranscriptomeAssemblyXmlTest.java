@@ -41,7 +41,7 @@ TranscriptomeAssemblyXmlTest {
     public void
     testAnalysisXML_AssemblyInfo_WithFastaFile() {
     	
-    	Path fastaFile = WebinCliTestUtils.createTempFile(false, ">123\nACGT");
+    	Path fastaFile = WebinCliTestUtils.createTempFile(">123\nACGT");
     	SubmissionOptions submissionOptions =  new SubmissionOptions();
     	SubmissionFiles submissionFiles = new SubmissionFiles();
     	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
@@ -90,11 +90,11 @@ TranscriptomeAssemblyXmlTest {
     public void
     testAnalysisXML_Manifest_WithFlatFile() {
         String name       = "test_transcriptome";
-        Path flatFile     = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        Path flatFile     = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", "ID   ;");
         Path inputDir     = flatFile.getParent();
         String descr      = "some-descr";
-        Path manifestFile = WebinCliTestUtils.createTempFile( "manifest.txt", inputDir, false,
-                                                              "NAME\t" + name + "\n"
+        Path manifestFile = WebinCliTestUtils.createTempFile( "manifest.txt", inputDir,
+                "NAME\t" + name + "\n"
                                                             + "DESCRIPTION " + descr   + "\n"
                                                             + "SAMPLE\ttest_sample\n"
                                                             + "STUDY\ttest_study\n"
@@ -103,7 +103,7 @@ TranscriptomeAssemblyXmlTest {
                                                             + "TPA\ttrue\n"
                                                             + "FLATFILE\t" + flatFile.getFileName() + "\n" );
 
-        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
+        WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
 
         TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
 

@@ -43,7 +43,7 @@ SequenceAssemblyXmlTest
     testAnalysisXML_AssemblyInfo_WithFlatFile()
     {
     	
-        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        Path flatFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", "ID   ;");
        	SubmissionOptions submissionOptions =  new SubmissionOptions();
        	SubmissionFiles submissionFiles = new SubmissionFiles();
        	SubmissionFile submissionFile = new SubmissionFile(FileType.FLATFILE,flatFile.toFile());
@@ -84,16 +84,16 @@ SequenceAssemblyXmlTest
     testAnalysisXML_Manifest_WithFlatFile()
     {
         String name = "test_sequence";
-        Path flatFile = WebinCliTestUtils.createTempFile("flatfile.dat.gz", true, "ID   ;");
+        Path flatFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", "ID   ;");
         Path inputDir = flatFile.getParent();
-        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir, false,
+        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
                 "NAME\t" + name + "\n" +
                         "STUDY\ttest_study\n" +
                         "FLATFILE\t" + flatFile.getFileName() + "\n" +
                         SequenceAssemblyManifest.Fields.DESCRIPTION + " d e s c r i p t i o n"
         );
 
-        WebinCliParameters parameters = WebinCliTestUtils.createWebinCliParameters(manifestFile, inputDir);
+        WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
 
         SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
 

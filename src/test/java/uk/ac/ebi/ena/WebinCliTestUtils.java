@@ -40,53 +40,61 @@ public class WebinCliTestUtils {
         }
     }
 
-    public static WebinCliParameters
-    createWebinCliParameters( Path manifestFile, Path inputDir ) {
-        return createWebinCliParameters(manifestFile.toFile(), inputDir.toFile());
-    }
-
-    public static WebinCliParameters
-    createWebinCliParameters( File manifestFile, File inputDir ) {
-        WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setManifestFile(manifestFile);
-        parameters.setInputDir(inputDir);
-        parameters.setOutputDir(WebinCliTestUtils.createTempDir());
-        parameters.setUsername(System.getenv( "webin-cli-username" ));
-        parameters.setPassword(System.getenv( "webin-cli-password" ));
-        parameters.setTestMode(true);
-        return parameters;
-    }
 
     public static Path
-    createDefaultTempFile(boolean compress)
+    createEmptyTempFile()
     {
-        return createTempFile(null, null, compress, "TEST");
+        return createTempFile(null, null, false,null);
     }
 
     public static Path
-    createDefaultTempFile(String fileName, Path folder, boolean compress)
+    createEmptyTempFile(String fileName)
     {
-        return createTempFile(fileName, folder, compress, "TEST");
+        return createTempFile(fileName, null, false,null);
     }
 
     public static Path
-    createTempFile(String fileName)
-    {
-        return createTempFile(fileName, false, null);
+    createEmptyTempFile(String fileName, Path folder) {
+        return createTempFile(fileName, folder, false, null);
+    }
+
+
+    public static Path
+    createTempFile(String contents) {
+        return createTempFile(null, null, false,contents);
     }
 
     public static Path
-    createTempFile(boolean compress, String contents) {
-        return createTempFile(null, null, compress, contents);
+    createTempFile(String fileName, String contents) {
+        return createTempFile(fileName, null, false, contents);
     }
 
     public static Path
-    createTempFile(String fileName, boolean compress, String contents)
-    {
-        return createTempFile(fileName, null, compress, contents);
+    createTempFile(String fileName, Path folder, String contents) {
+        return createTempFile(fileName, folder, false, contents);
+    }
+
+
+    public static Path
+    createEmptyGzippedTempFile(String fileName, Path folder) {
+        return createTempFile(fileName, folder, true, " ");
+    }
+
+
+    public static Path
+    createGzippedTempFile(String fileName, String contents) {
+        return createTempFile(fileName,null,true, contents);
     }
 
     public static Path
+    createGzippedTempFile(String fileName, Path folder, String contents) {
+        return createTempFile(fileName,folder,true, contents);
+    }
+
+
+
+
+    private static Path
     createTempFile(String fileName, Path folder, boolean compress, String contents)
     {
         try {
@@ -114,6 +122,7 @@ public class WebinCliTestUtils {
             throw new RuntimeException(ex);
         }
     }
+
 
     public static Path
     createTempFileFromResource( String resource, Path folder, boolean compress, String...suffix ) {

@@ -12,17 +12,16 @@
 package uk.ac.ebi.ena.assembly;
 
 import java.io.File;
-import java.net.URL;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
-import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.ena.WebinCliTestUtils;
-import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -31,13 +30,131 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class GenomeAssemblyValidationTest {
 
-    private final static String DEFAULT_MANIFEST_META_FIELDS =
-            "STUDY 123\n" +
-                    "SAMPLE 123\n" +
-                    "COVERAGE 1 \n" +
-                    "PROGRAM program\n" +
-                    "PLATFORM Illumina\n" +
+    private File defaultInputDir = new File(this.getClass().getClassLoader().getResource(
+            "uk/ac/ebi/ena/assembly/valid_fasta.fasta.gz").getFile()).getParentFile();
+    private File tempInputDir = WebinCliTestUtils.createTempDir();
+    private File validationDir = WebinCliTestUtils.createTempDir();
+    private File submitDir = WebinCliTestUtils.createTempDir();
+
+    private class ManifestBuilder {
+        private String manifest;
+        private final File inputDir;
+
+        ManifestBuilder(File inputDir) {
+            manifest =
+                    "STUDY test\n" +
+                    "SAMPLE test\n" +
+                    "COVERAGE 1\n" +
+                    "PROGRAM test\n" +
+                    "PLATFORM test\n" +
                     "NAME test\n";
+            this.inputDir = inputDir;
+        }
+
+        ManifestBuilder field(String field, String value) {
+            manifest += field + "\t" + value + "\n";
+            return this;
+        }
+
+        ManifestBuilder file(FileType fileType, String fileName) {
+            return field(fileType.name(), fileName);
+        }
+
+        ManifestBuilder fasta(String fileName) {
+            return file(FileType.FASTA, fileName);
+        }
+
+        ManifestBuilder flatfile(String fileName) {
+            return file(FileType.FLATFILE, fileName);
+        }
+
+        ManifestBuilder agp(String fileName) {
+            return file(FileType.AGP, fileName);
+        }
+
+        ManifestBuilder chromosomeList(String fileName) {
+            return file(FileType.CHROMOSOME_LIST, fileName);
+        }
+
+        ManifestBuilder unlocalisedList(String fileName) {
+            return file(FileType.UNLOCALISED_LIST, fileName);
+        }
+
+        ManifestBuilder gzipTempFile(FileType fileType, String fileName) {
+            return file(fileType, WebinCliTestUtils.createEmptyGzippedTempFile(
+                    fileName, inputDir.toPath()).getFileName().toString());
+        }
+
+        ManifestBuilder gzipTempFasta(String fileName) {
+            return gzipTempFile(FileType.FASTA, fileName);
+        }
+
+        ManifestBuilder gzipTempFlatfile(String fileName) {
+            return gzipTempFile(FileType.FLATFILE, fileName);
+        }
+
+        ManifestBuilder gzipTempAgp(String fileName) {
+            return gzipTempFile(FileType.AGP, fileName);
+        }
+
+        ManifestBuilder gzipTempChromosomeList(String fileName) {
+            return gzipTempFile(FileType.CHROMOSOME_LIST, fileName);
+        }
+
+        ManifestBuilder gzipTempUnlocalisedList(String fileName) {
+            return gzipTempFile(FileType.UNLOCALISED_LIST, fileName);
+        }
+
+        ManifestBuilder gzipTempFasta() {
+            return gzipTempFile(FileType.FASTA, ".fasta.gz");
+        }
+
+        ManifestBuilder gzipTempFlatfile() {
+            return gzipTempFile(FileType.FLATFILE, ".dat.gz");
+        }
+
+        ManifestBuilder gzipTempAgp() {
+            return gzipTempFile(FileType.AGP, ".agp.gz");
+        }
+
+        ManifestBuilder gzipTempChromosomeList() {
+            return gzipTempFile(FileType.CHROMOSOME_LIST, ".txt.gz");
+        }
+
+        ManifestBuilder gzipTempUnlocalisedList() {
+            return gzipTempFile(FileType.UNLOCALISED_LIST, ".txt.gz");
+        }
+
+        ManifestBuilder gzipTempFiles(
+                boolean fasta,
+                boolean flatfile,
+                boolean agp,
+                boolean chromosomeList,
+                boolean unlocalisedList) {
+            if (fasta) gzipTempFile(FileType.FASTA, ".fasta.gz");
+            if (flatfile) gzipTempFile(FileType.FLATFILE, ".dat.gz");
+            if (agp) gzipTempFile(FileType.AGP, ".agp.gz");
+            if (chromosomeList) gzipTempFile(FileType.CHROMOSOME_LIST, ".txt.gz");
+            if (unlocalisedList) gzipTempFile(FileType.UNLOCALISED_LIST, ".txt.gz");
+            return this;
+        }
+
+        ManifestBuilder assemblyType(String value) {
+            return field("ASSEMBLY_TYPE", value);
+        }
+
+        Path build() {
+            // System.out.println("Manifest:\n" + manifest);
+            return WebinCliTestUtils.createTempFile(manifest);
+        }
+
+        @Override
+        public String toString() {
+            return "ManifestBuilder{" +
+                    "manifest='" + manifest + '\'' +
+                    '}';
+        }
+    }
 
     @Before
     public void
@@ -45,368 +162,324 @@ public class GenomeAssemblyValidationTest {
         Locale.setDefault(Locale.UK);
     }
 
-    private static Study getDefaultStudy() {
-        return new Study();
-    }
-
-    private static Sample getDefaultSample() {
-        Sample sample = new Sample();
-        sample.setOrganism("Quercus robur");
-        return sample;
-    }
-
-    private static SourceFeature getDefaultSourceFeature() {
-        SourceFeature source = new FeatureFactory().createSourceFeature();
-        source.setScientificName("Micrococcus sp. 5");
-        return source;
-    }
-
-    private static Sample getHumanSample() {
-        Sample sample = new Sample();
-        sample.setOrganism("Homo sapiens");
-        return sample;
-    }
-
-    private static SourceFeature getHumanSourceFeature() {
-        SourceFeature source = new FeatureFactory().createSourceFeature();
-        source.setScientificName("Homo sapiens");
-        return source;
-    }
-
-    private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli() {
-        URL url = GenomeAssemblyValidationTest.class.getClassLoader().getResource("uk/ac/ebi/ena/assembly/valid_fasta.fasta.gz");
-        return prepareGenomeAssemblyWebinCli(new File(url.getFile()).getParentFile());
-    }
-
-    private GenomeAssemblyWebinCli prepareGenomeAssemblyWebinCli(File inputDir) {
+    private GenomeAssemblyWebinCli createValidator(File inputDir) {
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         cli.setTestMode(true);
         cli.setInputDir(inputDir);
-        cli.setValidationDir(WebinCliTestUtils.createTempDir());
-        cli.setSubmitDir(WebinCliTestUtils.createTempDir());
+        cli.setValidationDir(validationDir);
+        cli.setSubmitDir(submitDir);
         cli.setFetchSample(false);
         cli.setFetchStudy(false);
         cli.setFetchSource(false);
-        cli.setSample(getDefaultSample());
-        cli.setSource(getDefaultSourceFeature());
-        cli.setStudy(getDefaultStudy());
+        cli.setSample(AssemblyTestUtils.getDefaultSample());
+        cli.setSource(AssemblyTestUtils.getDefaultSourceFeature());
+        cli.setStudy(new Study());
         return cli;
     }
 
-    private GenomeAssemblyWebinCli assertThatManifestIsInvalid(File manifestFile, GenomeAssemblyWebinCli validator) {
-        assertThatThrownBy(() ->
-                validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir())))
-                .isInstanceOf(WebinCliException.class)
-                .hasMessageContaining("Invalid manifest file");
-
+    private GenomeAssemblyWebinCli initValidator(Path manifestFile, GenomeAssemblyWebinCli validator) {
+        validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
         return validator;
     }
 
-    private void assertThatManifestErrorIs(GenomeAssemblyWebinCli validator, String messageKey) {
-        assertThat(validator.getManifestReader().getValidationResult().getMessages().size()).isOne();
-        validator.getManifestReader().getValidationResult().getMessages().forEach(e ->
-                assertThat(e.getMessageKey()).isEqualTo(messageKey));
+    private GenomeAssemblyWebinCli initValidatorThrows(Path manifestFile, GenomeAssemblyWebinCli validator) {
+        assertThatThrownBy(() ->
+                validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir())))
+                .isInstanceOf(WebinCliException.class);
+        return validator;
+    }
+
+    private void assertValidatorError(GenomeAssemblyWebinCli validator, String messageKey) {
+        assertThat(validator.getManifestReader().getValidationResult().getMessages()
+                .stream()
+                .filter(e -> e.getMessageKey().equals(messageKey))
+                .count()).isGreaterThanOrEqualTo(1);
     }
 
     @Test
     public void
-    testFasta() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "FASTA\tvalid_fasta.fasta.gz").toFile();
+    testFileGroup() {
+        for (boolean fasta : new boolean[]{false, true}) {
+            for (boolean flatfile : new boolean[]{false, true}) {
+                for (boolean agp : new boolean[]{false, true}) {
+                    for (boolean chromosomeList : new boolean[]{false, true}) {
+                        for (boolean unlocalisedList : new boolean[]{false, true}) {
+                            Path manifestFile = new ManifestBuilder(tempInputDir).gzipTempFiles(
+                                    fasta,
+                                    flatfile,
+                                    agp,
+                                    chromosomeList,
+                                    unlocalisedList).build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
+                            int cnt = (fasta ? 1 : 0) +
+                                    (flatfile ? 1 : 0) +
+                                    (agp ? 1 : 0) +
+                                    (chromosomeList ? 1 : 0) +
+                                    (unlocalisedList ? 1 : 0);
 
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
+                            if ((cnt == 1 && fasta) ||
+                                    (cnt == 1 && flatfile) ||
+                                    (cnt == 2 && fasta && flatfile) ||
+                                    (cnt == 2 && fasta && agp) ||
+                                    (cnt == 2 && flatfile && agp) ||
+                                    (cnt == 3 && fasta && flatfile && agp) ||
+                                    (cnt == 2 && fasta && chromosomeList) ||
+                                    (cnt == 2 && flatfile && chromosomeList) ||
+                                    (cnt == 3 && fasta && flatfile && chromosomeList) ||
+                                    (cnt == 3 && fasta && agp && chromosomeList) ||
+                                    (cnt == 3 && flatfile && agp && chromosomeList) ||
+                                    (cnt == 4 && fasta && flatfile && agp && chromosomeList) ||
+                                    (cnt == 3 && fasta && chromosomeList && unlocalisedList) ||
+                                    (cnt == 3 && flatfile && chromosomeList && unlocalisedList) ||
+                                    (cnt == 4 && fasta && flatfile && chromosomeList && unlocalisedList) ||
+                                    (cnt == 4 && fasta && agp && chromosomeList && unlocalisedList) ||
+                                    (cnt == 4 && flatfile && agp && chromosomeList && unlocalisedList) ||
+                                    (cnt == 5 && fasta && flatfile && agp && chromosomeList && unlocalisedList)) {
 
+                                GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(tempInputDir));
+                                SubmissionFiles submissionFiles = validator.getSubmissionOptions().submissionFiles.get();
+                                assertThat(submissionFiles.getFiles(FileType.FASTA).size()).isEqualTo(fasta ? 1 : 0);
+                                assertThat(submissionFiles.getFiles(FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
+                                assertThat(submissionFiles.getFiles(FileType.AGP).size()).isEqualTo(agp ? 1 : 0);
+                                assertThat(submissionFiles.getFiles(FileType.CHROMOSOME_LIST).size()).isEqualTo(chromosomeList ? 1 : 0);
+                                assertThat(submissionFiles.getFiles(FileType.UNLOCALISED_LIST).size()).isEqualTo(unlocalisedList ? 1 : 0);
+                            } else if (cnt == 0) {
+                                GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
+                                assertValidatorError(validator, "MANIFEST_ERROR_NO_DATA_FILES");
+                            } else {
+                                GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
+                                assertValidatorError(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void
+    testFileGroupBinnedMetagenome() {
+        testFileGroupFastaOnly("binned metagenome");
+        testFileGroupFastaOnly("primary metagenome");
+    }
+
+    @Test
+    public void
+    testFileGroupPrimaryMetagenome() {
+        testFileGroupFastaOnly("primary metagenome");
+    }
+
+    private void
+    testFileGroupFastaOnly(String assemblyType) {
+        for (boolean fasta : new boolean[]{false, true}) {
+            for (boolean flatfile : new boolean[]{false, true}) {
+                for (boolean agp : new boolean[]{false, true}) {
+                    for (boolean chromosomeList : new boolean[]{false, true}) {
+                        for (boolean unlocalisedList : new boolean[]{false, true}) {
+                            Path manifestFile = new ManifestBuilder(tempInputDir).assemblyType(assemblyType)
+                                    .gzipTempFiles(
+                                            fasta,
+                                            flatfile,
+                                            agp,
+                                            chromosomeList,
+                                            unlocalisedList).build();
+
+                            int cnt = (fasta ? 1 : 0) +
+                                    (flatfile ? 1 : 0) +
+                                    (agp ? 1 : 0) +
+                                    (chromosomeList ? 1 : 0) +
+                                    (unlocalisedList ? 1 : 0);
+
+                            if (cnt == 1 && fasta) {
+                                GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(tempInputDir));
+                                SubmissionFiles submissionFiles = validator.getSubmissionOptions().submissionFiles.get();
+                                assertThat(submissionFiles.getFiles().size()).isOne();
+                            } else if (cnt == 0) {
+                                GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
+                                assertValidatorError(validator, "MANIFEST_ERROR_NO_DATA_FILES");
+                            } else {
+                                GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
+                                assertValidatorError(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void
+    testFileSuffix() {
+        Path manifests[] = new Path[]{
+                // Invalid suffix before .gz
+                new ManifestBuilder(tempInputDir).gzipTempFasta(".INVALID.gz").build(),
+                new ManifestBuilder(tempInputDir).gzipTempAgp(".INVALID.gz").gzipTempFasta().build(),
+                // No .gz
+                new ManifestBuilder(tempInputDir).gzipTempFasta(".fasta").build(),
+                new ManifestBuilder(tempInputDir).gzipTempFlatfile(".txt").build(),
+                new ManifestBuilder(tempInputDir).gzipTempAgp(".agp").gzipTempFasta().build(),
+                new ManifestBuilder(tempInputDir).gzipTempChromosomeList(".txt").gzipTempFasta().build(),
+                new ManifestBuilder(tempInputDir).gzipTempUnlocalisedList(".txt").gzipTempChromosomeList().gzipTempFasta().build(),};
+        Arrays.stream(manifests).forEach(manifest -> {
+            GenomeAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
+            assertValidatorError(validator, "MANIFEST_INVALID_FILE_SUFFIX");
+        });
+    }
+
+    @Test
+    public void
+    testFileNoMoreThanOne() {
+        Path manifests[] = new Path[]{
+                new ManifestBuilder(tempInputDir).gzipTempFasta().gzipTempFasta().build(),
+                new ManifestBuilder(tempInputDir).gzipTempFlatfile().gzipTempFlatfile().build(),
+                new ManifestBuilder(tempInputDir).gzipTempAgp().gzipTempAgp().build(),
+                new ManifestBuilder(tempInputDir).gzipTempChromosomeList().gzipTempChromosomeList().build(),
+                new ManifestBuilder(tempInputDir).gzipTempUnlocalisedList().gzipTempUnlocalisedList().build()};
+        Arrays.stream(manifests).forEach(manifest -> {
+            GenomeAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
+            assertValidatorError(validator, "MANIFEST_TOO_MANY_FIELDS");
+        });
+    }
+
+
+    @Test
+    public void
+    testValidFasta() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .fasta("valid_fasta.fasta.gz").build();
+
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(1);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size()).isOne();
-
         validator.validate();
     }
 
     @Test
     public void
-    testFlatFile() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "FLATFILE\tvalid_flatfile.txt.gz").toFile();
+    testValidFlatFile() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .flatfile("valid_flatfile.txt.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(1);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isOne();
-
         validator.validate();
     }
 
     @Test
     public void
-    testFastaAndAgp() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tvalid_agp.agp.gz\n" +
-                        "FASTA\tvalid_fasta.fasta.gz").toFile();
+    testValidFastaAndAgp() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .fasta("valid_fasta.fasta.gz")
+                .agp("valid_agp.agp.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(2);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size()).isOne();
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size()).isOne();
-
         validator.validate();
     }
 
     @Test
     public void
-    testFlatFileAndAgp() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tvalid_agp.agp.gz\n" +
-                        "FLATFILE\tvalid_flatfile.txt.gz").toFile();
+    testValidFlatFileAndAgp() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .flatfile("valid_flatfile.txt.gz")
+                .agp("valid_agp.agp.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(2);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isOne();
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size()).isOne();
-
         validator.validate();
     }
 
     @Test
     public void
-    testFastaAndAgpAndChromosomeList() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "CHROMOSOME_LIST\tvalid_chromosome_list.txt.gz\n" +
-                        "AGP\tvalid_agp.agp.gz\n" +
-                        "FASTA\tvalid_fasta.fasta.gz").toFile();
+    testValidFastaAndAgpAndChromosomeList() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .fasta("valid_fasta.fasta.gz")
+                .agp("valid_agp.agp.gz")
+                .chromosomeList("valid_chromosome_list.txt.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-        validator.setSample(getHumanSample());
-        validator.setSource(getHumanSourceFeature());
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
+        validator.setSample(AssemblyTestUtils.getHumanSample());
+        validator.setSource(AssemblyTestUtils.getHumanSourceFeature());
+        initValidator(manifestFile, validator);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(3);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size()).isOne();
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size()).isOne();
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size()).isOne();
-
         validator.validate();
     }
 
     @Test
     public void
-    testFlatFileAndAgpAndChromosomeList() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "CHROMOSOME_LIST\tvalid_chromosome_list.txt.gz\n" +
-                        "AGP\tvalid_agp.agp.gz\n" +
-                        "FLATFILE\tvalid_flatfile.txt.gz").toFile();
+    testValidFlatFileAndAgpAndChromosomeList() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .flatfile("valid_flatfile.txt.gz")
+                .agp("valid_agp.agp.gz")
+                .chromosomeList("valid_chromosome_list.txt.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-        validator.setSample(getHumanSample());
-        validator.setSource(getHumanSourceFeature());
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
+        validator.setSample(AssemblyTestUtils.getHumanSample());
+        validator.setSource(AssemblyTestUtils.getHumanSourceFeature());
+        initValidator(manifestFile, validator);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(3);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isOne();
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size()).isOne();
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size()).isOne();
-
         validator.validate();
     }
 
     @Test
     public void
-    testFastaAndAgpAndSequencelessChromosomeList() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tvalid_agp.agp.gz\n" +
-                        "FLATFILE\tvalid_flatfile.txt.gz\n" +
-                        "CHROMOSOME_LIST\tinvalid_chromosome_list_sequenceless.txt.gz\n").toFile();
+    testInvalidFasta() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .fasta("invalid_fasta.fasta.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-        validator.setSample(getHumanSample());
-        validator.setSource(getHumanSourceFeature());
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(3);
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isOne();
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.AGP).size()).isOne();
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size()).isOne();
-
-        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");
-    }
-
-    @Test
-    public void
-    testInvalidSuffix_Fasta() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "FASTA\tinvalid_fasta.fasta").toFile();
-
-        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-        assertThatManifestErrorIs(validator, "MANIFEST_INVALID_FILE_SUFFIX");
-    }
-
-    @Test
-    public void
-    testInvalidSuffix_FlatFile() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "FLATFILE\tinvalid_flatfile.txt").toFile();
-
-        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-        assertThatManifestErrorIs(validator, "MANIFEST_INVALID_FILE_SUFFIX");
-    }
-
-    @Test
-    public void
-    testInvalidFileSuffix_Agp() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "AGP\tinvalid_agp.agp\n" +
-                        "FASTA\tvalid_fasta.fasta.gz").toFile();
-
-        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-        assertThatManifestErrorIs(validator, "MANIFEST_INVALID_FILE_SUFFIX");
-    }
-
-    @Test
-    public void
-    testInvalidFile_Fasta() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "FASTA\tinvalid_fasta.fasta.gz").toFile();
-
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
         assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("fasta file validation failed");
     }
 
     @Test
     public void
-    testInvalidFile_FlatFile() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "FLATFILE\tinvalid_flatfile.txt.gz").toFile();
+    testInvalidFlatFile() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .flatfile("invalid_flatfile.txt.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
         assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("flatfile file validation failed");
     }
 
     @Test
     public void
-    testInvalidFile_Agp() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "FASTA\tvalid_fasta.fasta.gz\n" +
-                        "AGP\tinvalid_agp.agp.gz").toFile();
+    testInvalidAgp() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .fasta("valid_fasta.fasta.gz")
+                .agp("invalid_agp.agp.gz").build();
 
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
         assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("agp file validation failed");
     }
 
-
     @Test
     public void
-    testInvalidFileGroup_FastaAndUnlocalisedList() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "UNLOCALISED_LIST\tvalid_unlocalised_list.txt.gz\n" +
-                        "FASTA\tvalid_fasta.fasta.gz").toFile();
+    testInvalidSequencelessChromosomeList() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .fasta("valid_fasta.fasta.gz")
+                .chromosomeList("invalid_chromosome_list_sequenceless.txt.gz").build();
 
-        assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
+        GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
+        validator.setSample(AssemblyTestUtils.getHumanSample());
+        validator.setSource(AssemblyTestUtils.getHumanSourceFeature());
+        initValidator(manifestFile, validator);
+        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
+                .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");
     }
-
-    @Test
-    public void
-    testInvalidFileGroup_FlatFileAndUnlocalisedList() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "UNLOCALISED_LIST\tvalid_unlocalised_list.txt.gz\n" +
-                        "FLATFILE\tvalid_flatfile.txt.gz").toFile();
-
-        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-        assertThatManifestErrorIs(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
-    }
-
-    @Test
-    public void
-    testBinnedMetagenome_Fasta() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "ASSEMBLY_TYPE binned metagenome\n" +
-                        "FASTA\tvalid_fasta.fasta.gz").toFile();
-
-        GenomeAssemblyWebinCli validator = prepareGenomeAssemblyWebinCli();
-
-        validator.init(WebinCliTestUtils.createWebinCliParameters(manifestFile, validator.getInputDir()));
-
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(1);
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size()).isOne();
-
-        validator.validate();
-    }
-
-    @Test
-    public void
-    testBinnedMetagenome_InvalidNoFasta() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "ASSEMBLY_TYPE binned metagenome\n").toFile();
-
-        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-        assertThatManifestErrorIs(validator, "MANIFEST_ERROR_NO_DATA_FILES");
-    }
-
-    @Test
-    public void
-    testBinnedMetagenome_InvalidExtraFasta() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "ASSEMBLY_TYPE binned metagenome\n" +
-                        "FASTA valid_fasta.fasta.gz\n" +
-                        "FASTA valid_fasta.fasta.gz").toFile();
-
-        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-        assertThatManifestErrorIs(validator, "MANIFEST_TOO_MANY_FIELDS");
-    }
-
-    @Test
-    public void
-    testBinnedMetagenome_InvalidExtraAgp() {
-        File manifestFile = WebinCliTestUtils.createTempFile(false,
-                DEFAULT_MANIFEST_META_FIELDS +
-                        "ASSEMBLY_TYPE binned metagenome\n" +
-                        "FASTA valid_fasta.fasta.gz\n" +
-                        "AGP valid_agp.agp.gz").toFile();
-
-        GenomeAssemblyWebinCli validator = assertThatManifestIsInvalid(manifestFile, prepareGenomeAssemblyWebinCli());
-        assertThatManifestErrorIs(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
-    }
-
 }

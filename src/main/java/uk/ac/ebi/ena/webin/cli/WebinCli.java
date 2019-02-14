@@ -82,7 +82,7 @@ public class WebinCli { // implements CommandLineRunner
 	Params	
 	{
 		@Parameter()
-		private final List<String> unrecognisedOptions = new ArrayList<>();
+		private List<String> unrecognisedOptions = new ArrayList<>();
 
 		@Parameter(names = "help")
 		public boolean help;
