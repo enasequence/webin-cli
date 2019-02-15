@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties.Build;
+
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -35,13 +37,13 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.service.SubmitService;
+import uk.ac.ebi.ena.service.VersionService;
+import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
 import uk.ac.ebi.ena.version.HotSpotRuntimeVersion;
-import uk.ac.ebi.ena.service.VersionService;
 import uk.ac.ebi.ena.version.VersionManager;
 
 // @SpringBootApplication
@@ -353,7 +355,12 @@ public class WebinCli { // implements CommandLineRunner
         {
             AssemblyInfoEntry aie = new AssemblyInfoEntry();
             aie.setName( "NAME" );
-            SubmitService submitService = new SubmitService( params, bundle.getSubmitDirectory().getPath() );
+            SubmitService submitService = new SubmitService.Builder()
+                                                           .setSubmitDir( bundle.getSubmitDirectory().getPath() )
+                                                           .setUserName( params.userName )
+                                                           .setPassword( params.password )
+                                                           .setTest( params.test )
+                                                           .build();
             submitService.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
 
         } catch( WebinCliException e ) 
@@ -513,8 +520,9 @@ public class WebinCli { // implements CommandLineRunner
 		if( null == version || version.isEmpty() )
 		    return;
 		
-		VersionService versionService = new VersionService();
-		if( !versionService.isVersionValid( version, test ) )
+		if( !new VersionService.Builder()
+		                       .setTest( test )
+		                       .build().isVersionValid( version ) )
 			throw WebinCliException.createUserError( INVALID_VERSION.replaceAll( "__VERSION__", version ) );
 	}
 

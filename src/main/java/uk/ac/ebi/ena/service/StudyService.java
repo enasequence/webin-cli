@@ -14,6 +14,24 @@ import java.util.List;
 
 public class StudyService extends AbstractService {
 
+    protected 
+    StudyService( AbstractBuilder<StudyService> builder )
+    {
+        super( builder );
+    }
+
+    
+    public static class 
+    Builder extends AbstractBuilder<StudyService>
+    {
+        @Override public StudyService
+        build()
+        {
+            return new StudyService( this );
+        }
+    };
+    
+
     private static class StudyResponse {
         public String bioProjectId;
         public List<String> locusTags;
@@ -26,8 +44,16 @@ public class StudyService extends AbstractService {
     String getMessage(String messageKey, String studyId) {
         return getServiceMessage(messageKey) + " Study: " + studyId;
     }
-
+    
+    
     public Study
+    getStudy( String studyId )
+    {
+        return getStudy( studyId, getUserName(), getPassword(), getTest() );
+    }
+    
+
+    private Study
     getStudy(String studyId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -40,7 +66,7 @@ public class StudyService extends AbstractService {
         ResponseEntity<StudyResponse> response = restTemplate.exchange(
                 getWebinRestUri("reference/project/{id}", test),
                 HttpMethod.GET,
-                new HttpEntity(headers),
+                new HttpEntity<>(headers),
                 StudyResponse.class,
                 studyId.trim());
 

@@ -22,17 +22,13 @@ VersionServiceTest {
 
     @Test
     public void testValidVersion() {
-        VersionService versionService = new VersionService();
-        assertThat(
-                versionService.isVersionValid("3.0.0", TEST)
-        ).isTrue();
+        VersionService versionService = new VersionService.Builder().setTest( TEST ).build();
+        assertThat( versionService.isVersionValid( "3.0.0" ) ).isTrue();
     }
 
     @Test
     public void testInvalidVersion() {
-        VersionService versionService = new VersionService();
-        assertThat(
-                versionService.isVersionValid("1.0.0", TEST)
-        ).isFalse();
+        VersionService versionService = new VersionService.Builder().setTest( TEST ).build();
+        assertThat( versionService.isVersionValid( "1.0.0" ) ).isFalse();
     }
 }

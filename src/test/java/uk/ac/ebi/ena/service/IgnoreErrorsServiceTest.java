@@ -17,19 +17,19 @@ import uk.ac.ebi.ena.WebinCliTestUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class
-IgnoreErrorsServiceTest {
-
+IgnoreErrorsServiceTest 
+{
     private static final boolean TEST = true;
 
-    @Test
-    public void testGetIgnoreErrorsFalse() {
-        IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService();
-        assertThat(
-                ignoreErrorsService.getIgnoreErrors(
-                    WebinCliTestUtils.getWebinUsername(),
-                    WebinCliTestUtils.getWebinPassword(),
-                    "UNKNOWN",
-                    "UNKNOWN", TEST)
+    @Test public void 
+    testGetIgnoreErrorsFalse() 
+    {
+        assertThat( new IgnoreErrorsService.Builder()
+                                           .setUserName( WebinCliTestUtils.getWebinUsername() )
+                                           .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                           .setTest( TEST )
+                                           .build()
+                                           .getIgnoreErrors( "UNKNOWN", "UNKNOWN" )
         ).isFalse();
     }
 }

@@ -46,19 +46,37 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 public class SubmitService extends AbstractService {
 
     private final static String RECEIPT_XML = "receipt.xml";
-    private final String userName;
-    private final String password;
-    private final boolean test;
     private final String submitDir;
 
     final static String SYSTEM_ERROR = "SubmissionServiceSystemError";
 
-    public SubmitService(WebinCli.Params params, String submitDir) {
-        this.test = params.test;
-        this.userName = params.userName;
-        this.password = params.password;
-        this.submitDir = submitDir;
+    public static class 
+    Builder extends AbstractBuilder<SubmitService>
+    {
+        private String submitDir;
+        
+        public Builder 
+        setSubmitDir( String submitDir )
+        {
+            this.submitDir = submitDir;
+            return this;
+        }
+        
+        @Override public SubmitService
+        build()
+        {
+            return new SubmitService( this );
+        }
     }
+    
+    
+    protected
+    SubmitService( Builder builder )
+    {
+        super( builder );
+        this.submitDir = builder.submitDir;
+    }
+    
 
     public void
     doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool) {
@@ -84,10 +102,10 @@ public class SubmitService extends AbstractService {
             body.add("ENA_SUBMISSION_TOOL", submissionTool);
         }
 
-        HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).multipartFormData().build();
+        HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
 
         ResponseEntity<String> response = restTemplate.exchange(
-                getWebinRestUri("submit/", test),
+                getWebinRestUri( "submit/", getTest() ),
                 HttpMethod.POST,
                 new HttpEntity<>( body, headers),
                 String.class);

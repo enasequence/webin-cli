@@ -16,7 +16,7 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.service.SampleService;
+import uk.ac.ebi.ena.service.SourceFeatureService;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
@@ -39,8 +39,11 @@ SourceFeatureProcessor implements ManifestFieldProcessor
 
         try
         {
-            SampleService sampleService = new SampleService();
-            SourceFeature source = sampleService.getSourceFeature(value, parameters.getUsername(), parameters.getPassword(), parameters.isTestMode());
+            SourceFeatureService sourceFeatureService = new SourceFeatureService.Builder()
+                                                                                .setCredentials( parameters.getUsername(), parameters.getPassword() )
+                                                                                .setTest( parameters.isTestMode() )
+                                                                                .build();
+            SourceFeature source = sourceFeatureService.getSourceFeature( value );
             callback.notify(source);
             return null;
         } catch( WebinCliException e )

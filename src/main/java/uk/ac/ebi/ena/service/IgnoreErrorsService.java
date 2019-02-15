@@ -11,13 +11,35 @@
 
 package uk.ac.ebi.ena.service;
 
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 
-public class IgnoreErrorsService extends AbstractService {
+public class 
+IgnoreErrorsService extends AbstractService {
 
+    protected
+    IgnoreErrorsService( AbstractBuilder<IgnoreErrorsService> builder )
+    {
+        super( builder );
+    }
+
+
+    public static class 
+    Builder extends AbstractBuilder<IgnoreErrorsService> 
+    {
+        @Override public IgnoreErrorsService
+        build()
+        {
+            return new IgnoreErrorsService( this );
+        }
+    }
+    
     private static class IgnoreErrorsRequest {
         public final String context;
         public final String name;
@@ -30,7 +52,15 @@ public class IgnoreErrorsService extends AbstractService {
 
     final static String SYSTEM_ERROR = "IgnoreErrorsServiceSystemError";
 
-    public boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
+    
+    public boolean 
+    getIgnoreErrors( String context, String name )
+    {
+        return getIgnoreErrors( getUserName(), getPassword(), context, name, getTest() );
+    }
+    
+    
+    private boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(getServiceMessage(SYSTEM_ERROR)));
