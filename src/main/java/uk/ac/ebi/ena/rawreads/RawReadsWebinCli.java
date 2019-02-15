@@ -558,6 +558,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     private void logProcessedReadNumber(long count )
     {
         String msg = String.format( "\rProcessed %16d read(s)", count );
-        log.info(msg);
+        System.out.print( msg );
+        System.out.flush();
     }
 }

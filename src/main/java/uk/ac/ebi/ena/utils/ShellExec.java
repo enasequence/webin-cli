@@ -68,7 +68,8 @@ ShellExec
         protected void 
         printFlush( char ch )
         {
-            log.info( String.format( "%c", (char)ch ) );
+            System.out.print( String.format( "%c", (char)ch ) );
+            System.out.flush();
         }
         
         
