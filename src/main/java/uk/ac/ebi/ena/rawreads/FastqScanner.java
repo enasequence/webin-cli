@@ -34,6 +34,8 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
@@ -51,7 +53,7 @@ import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaSpot;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class 
-FastqScanner implements VerboseLogger
+FastqScanner
 {
     private static final int MAX_LABEL_SET_SIZE = 10;
     private static final int PAIRING_THRESHOLD = 30;
@@ -59,8 +61,9 @@ FastqScanner implements VerboseLogger
     private final int expected_size;
     private final Set<String> labelset = new HashSet<>();
     private final AtomicBoolean paired = new AtomicBoolean();
-    
-    
+
+    private static final Logger log = LoggerFactory.getLogger(FastqScanner.class);
+
     public
     FastqScanner( int expected_size )
     {
@@ -181,17 +184,18 @@ FastqScanner implements VerboseLogger
                     duplications.add( spot.bname );
                     
                     if( 0 == count.get() % 1000 )
-                        printProcessedReadNumber( count.get() );
+                        logProcessedReadNumber( count.get() );
                 }  
             } );
 
-            printlnToConsole( "Processing file " + rf.getFilename() );
-            flushConsole();
+
+            log.info("Processing file " + rf.getFilename());
             df.start();
             df.join();
-            printProcessedReadNumber( count.get() );
-            //printlnToConsole();
-            printfToConsole( ", result: %s\n", null == df.getStoredException() ? "OK" : String.valueOf( df.getStoredException() ) );
+            logProcessedReadNumber( count.get() );
+
+            log.info(String.format( ", result: %s\n", null == df.getStoredException() ? "OK" : String.valueOf( df.getStoredException() )));
+
             if( !df.isOk() && !( df.getStoredException() instanceof DataFeederException ) && !( df.getStoredException() instanceof InvocationTargetException ) )
                 throw df.getStoredException();
             
@@ -293,16 +297,16 @@ FastqScanner implements VerboseLogger
             double pairing_level = (double)pairing.getPossibleDuplicateCount() / ( (double)( pairing.getAddsNumber() - pairing.getPossibleDuplicateCount() ) );
             pairing_level = 100 * ( 1 < pairing_level ? 1/ pairing_level : pairing_level );
             String msg = String.format( "Pairing percentage: %.2f%%", pairing_level );
-            vr.append( fMsg( Severity.INFO, msg ) ); 
-            printlnToConsole( msg );
-            
+            vr.append( fMsg( Severity.INFO, msg ) );
+            log.info( msg );
+
             //TODO: estimate bloom false positives impact
             if( (double)PAIRING_THRESHOLD > pairing_level )
             {
                 //terminal error
                 msg = String.format( "Detected paired fastq submission with less than %d%% of paired reads", PAIRING_THRESHOLD );
                 vr.append( fMsg( Severity.ERROR, msg ) );
-                printlnToConsole( msg );
+                log.info( msg );
             }
 
         } else if( labelset.size() > 2 )
@@ -311,8 +315,8 @@ FastqScanner implements VerboseLogger
                                       + "This was not the case for the submitted Fastq files: %s. Unable to determine pairing from set: %s",
                                         rfs,
                                         labelset.stream().limit( 10 ).collect( Collectors.joining( ",", "", 10 < labelset.size() ? "..." : "" ) ) ); 
-            vr.append( fMsg( Severity.ERROR, msg ) ); 
-            printlnToConsole( msg );
+            vr.append( fMsg( Severity.ERROR, msg ) );
+            log.info( msg );
         }   
         
         //extra check for suspected reads
@@ -343,7 +347,8 @@ FastqScanner implements VerboseLogger
         Map<String, Set<String>> results = new LinkedHashMap<>( limit );
         for( RawReadsFile rf: rfs )
         {
-            printlnToConsole( "Performing additional checks for file " + rf.getFilename() );
+            String msg = "Performing additional checks for file " + rf.getFilename();
+            log.info( msg );
 
             long index = 1;
 
@@ -378,5 +383,11 @@ FastqScanner implements VerboseLogger
                       .filter( e-> counts.get(e.getKey()) > 1 )
                       .limit( limit )
                       .collect( Collectors.toMap( e -> e.getKey(), e -> e.getValue(), ( v1, v2 ) -> v1, LinkedHashMap::new ) );
+    }
+
+    private void logProcessedReadNumber(long count )
+    {
+        String msg = String.format( "\rProcessed %16d read(s)", count );
+        log.info( msg );
     }
 }

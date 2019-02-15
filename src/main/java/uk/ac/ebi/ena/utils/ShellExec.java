@@ -23,14 +23,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.ena.rawreads.VerboseLogger;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class 
-ShellExec implements VerboseLogger
+ShellExec
 {
+    private static final Logger log = LoggerFactory.getLogger(ShellExec.class);
+
     class 
     VerboseStreamConsumer extends Thread
     {
@@ -67,8 +68,7 @@ ShellExec implements VerboseLogger
         protected void 
         printFlush( char ch )
         {
-            ShellExec.this.printfToConsole( "%c", (char)ch );
-            ShellExec.this.flushConsole();
+            log.info( String.format( "%c", (char)ch ) );
         }
         
         
@@ -145,8 +145,7 @@ ShellExec implements VerboseLogger
 
             if( verbose )
             {
-                WebinCliReporter.writeToConsole( Severity.INFO, String.format( "Invoking: %s\n", command ) );
-                WebinCliReporter.flushConsole();
+                log.info( String.format( "Invoking: %s\n", command ) );
             }
             
             ProcessBuilder pb = System.getProperty( "os.name" ).toLowerCase().contains( "win" ) ? new ProcessBuilder( "cmd", "/c", command )

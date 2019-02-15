@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
 
 import javax.script.ScriptException;
 
-import uk.ac.ebi.embl.api.validation.Severity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseAsset;
 import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseInfo;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 
 public class 
 VersionManager 
@@ -40,6 +40,8 @@ VersionManager
     
     
     private GitHubReleaseInfo info;
+
+    private static final Logger log = LoggerFactory.getLogger(VersionManager.class);
     
     
     private long
@@ -92,7 +94,7 @@ VersionManager
     {
         Manifest m = new Manifest( cl.getResourceAsStream( "META-INF/MANIFEST.MF" ) );
         String main_class_name = m.getMainAttributes().getValue( Name.MAIN_CLASS );
-        
+
         Class<?> klass = cl.loadClass( main_class_name );
         Method main = klass.getMethod( "__main", java.lang.String[].class );
         return main.invoke( klass, new Object[] { args } );
@@ -120,7 +122,7 @@ VersionManager
         if( !file.exists() || ra.size != file.length() )
         {
             Path tmp_file = Files.createTempFile( "webin-cli", "download" );
-            WebinCliReporter.writeToConsole( Severity.INFO, String.format( "Downloading latest version of Webin-CLI as %s", file.toPath() ) );
+            log.info( String.format( "Downloading latest version of Webin-CLI as %s", file.toPath() ) );
             long downloaded = download( new URL( info.assets.get( 0 ).browser_download_url ), tmp_file );
         
             if( ra.size != downloaded )
@@ -144,7 +146,7 @@ VersionManager
 
         try( URLClassLoader cl = new URLClassLoader( new URL[] { file.toURI().toURL() }, null ) )
         {
-            WebinCliReporter.writeToConsole( Severity.INFO, "Using latest Webin-CLI version: " + file.getPath() );
+            log.info( "Using latest Webin-CLI version: " + file.getPath() );
             return (int) invokeMainMethod( cl, args );
         }
     }

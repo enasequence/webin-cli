@@ -51,10 +51,11 @@ import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.util.Log;
 import htsjdk.samtools.util.Log.LogLevel;
 import net.sf.cram.ref.PathPattern;
-import uk.ac.ebi.ena.rawreads.VerboseLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class 
-CramReferenceInfo implements VerboseLogger
+CramReferenceInfo
 {
     private static final String REF_INFO_PATH = "/.webin-cli/cram-ref-info/%2s/%2s/%s";
     private static final String JAVA_IO_TMPDIR_PROPERTY_NAME = "java.io.tmpdir";
@@ -65,8 +66,9 @@ CramReferenceInfo implements VerboseLogger
                                                                                                   : System.getProperty( JAVA_IO_TMPDIR_PROPERTY_NAME ) + REF_INFO_PATH ;
     private final ScriptEngine engine;
     private final PathPattern  cache_pattern;
-    
-    
+
+    private static final Logger log = LoggerFactory.getLogger(CramReferenceInfo.class);
+
     public 
     CramReferenceInfo()
     {
@@ -218,7 +220,9 @@ CramReferenceInfo implements VerboseLogger
         AtomicLong count = new AtomicLong();
         try( SamReader reader = factory.open( ir ))
         {
-            printfToConsole( "Checking reference existance in the CRAM reference registry for %s\n", file.getPath() );
+            String msg = String.format("Checking reference existence in the CRAM reference registry for %s\n", file.getPath() );
+            log.info(msg);
+
             es.prestartAllCoreThreads();
             for( SAMSequenceRecord sequenceRecord : reader.getFileHeader().getSequenceDictionary().getSequences() )
             {
@@ -245,7 +249,6 @@ CramReferenceInfo implements VerboseLogger
             es.awaitTermination( 1, TimeUnit.HOURS );
             
             printProcessedReferenceNumber( count );
-            printfToConsole( "\n" );
 
         } catch( InterruptedException e )
         {
@@ -258,8 +261,8 @@ CramReferenceInfo implements VerboseLogger
     private void 
     printProcessedReferenceNumber( AtomicLong count )
     {
-        printfToConsole( "\rChecked %16d references(s)", count.get() );
-        flushConsole();
+        String msg = String.format( "\rChecked %16d references(s)", count.get() );
+        log.info(msg);
     }
 
     

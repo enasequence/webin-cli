@@ -23,7 +23,7 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
+import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 
 public class 
 SubmissionBundle implements Serializable
@@ -200,21 +200,21 @@ SubmissionBundle implements Serializable
 
         String current = getVersion();
         if( null != current && !current.equals( this.version ) )
-            result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Program version has changed" ) );
+            result.append( ValidationMessageReporter.createValidationMessage( Severity.INFO, "Program version has changed" ) );
 
         for( SubmissionXMLFile file : getXMLFileList() )
         {
             try
             {
                 if( !file.getMd5().equalsIgnoreCase( FileUtils.calculateDigest( "MD5", file.getFile() ) ) ) {
-                    result.append(WebinCliReporter.createValidationMessage(Severity.INFO, "Generated xml file has changed: " + file.getFile()));
+                    result.append(ValidationMessageReporter.createValidationMessage(Severity.INFO, "Generated xml file has changed: " + file.getFile()));
                 }
             } catch( FileNotFoundException e )
             {
-                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Generated xml file not found: " + file.getFile() ) );
+                result.append( ValidationMessageReporter.createValidationMessage( Severity.INFO, "Generated xml file not found: " + file.getFile() ) );
             } catch( NoSuchAlgorithmException | IOException e )
             {
-                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Error reading generated xml file: " + file.getFile() + " " + e.getMessage() ) );
+                result.append( ValidationMessageReporter.createValidationMessage( Severity.INFO, "Error reading generated xml file: " + file.getFile() + " " + e.getMessage() ) );
             }            
         }
 
@@ -226,12 +226,12 @@ SubmissionBundle implements Serializable
            
             if( !file.exists() || file.isDirectory() )
             {
-                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Error reading file: " + file.getPath() ) );
+                result.append( ValidationMessageReporter.createValidationMessage( Severity.INFO, "Error reading file: " + file.getPath() ) );
                 continue;
             }
             
             if( file.length() != file_sz )
-                result.append( WebinCliReporter.createValidationMessage( Severity.INFO, "Error confirming length for: " + file.getPath() + ", expected: " + file_sz + " got: " + file.length() ) );
+                result.append( ValidationMessageReporter.createValidationMessage( Severity.INFO, "Error confirming length for: " + file.getPath() + ", expected: " + file_sz + " got: " + file.length() ) );
         
         }
         return result;

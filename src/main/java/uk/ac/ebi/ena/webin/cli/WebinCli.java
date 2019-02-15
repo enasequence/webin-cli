@@ -24,13 +24,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
@@ -73,9 +78,13 @@ public class WebinCli { // implements CommandLineRunner
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
 
+	private final static String LOG_FILE_NAME= "webin-cli.report";
+
 	private Params params;
 	private WebinCliContext context;
     private AbstractWebinCli<?> validator;
+
+	private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
 
 	public static class
 	Params	
@@ -173,7 +182,7 @@ public class WebinCli { // implements CommandLineRunner
                 
                 if( found.contains( ParameterDescriptor.version ) )
                 {
-                    WebinCliReporter.writeToConsole( getFormattedProgramVersion() );
+                    log.info( getFormattedProgramVersion() );
                     return SUCCESS;
                 }
 
@@ -187,7 +196,7 @@ public class WebinCli { // implements CommandLineRunner
             
             if( !params.validate && !params.submit ) 
             {
-                WebinCliReporter.writeToConsole( Severity.ERROR, "Either -validate or -submit option must be provided.");
+                log.error("Either -validate or -submit option must be provided.");
                 printHelp();
                 return USER_ERROR;
             }
@@ -202,11 +211,8 @@ public class WebinCli { // implements CommandLineRunner
             
         } catch( WebinCliException e ) 
         {
-            WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
-            
-            if( null != WebinCliReporter.getDefaultReport() )
-                WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
-            
+            log.error( e.getMessage() );
+
             switch( e.getErrorType() )
             {
                 default:
@@ -221,8 +227,8 @@ public class WebinCli { // implements CommandLineRunner
             
         } catch( ValidationEngineException e ) 
         {
-            WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
-            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, e.getMessage() );
+            log.error( e.getMessage() );
+
             if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
                 return SYSTEM_ERROR;
             else
@@ -232,8 +238,7 @@ public class WebinCli { // implements CommandLineRunner
         {
             StringWriter sw = new StringWriter();
             e.printStackTrace( new PrintWriter( sw ) );
-            WebinCliReporter.writeToConsole( Severity.ERROR, sw.toString() );
-            WebinCliReporter.writeToFile( WebinCliReporter.getDefaultReport(), Severity.ERROR, sw.toString() );
+            log.error( sw.toString() );
             return SYSTEM_ERROR;
         }
     }
@@ -270,14 +275,36 @@ public class WebinCli { // implements CommandLineRunner
         parameters.setCenterName( params.centerName );
         parameters.setTestMode( params.test );
 
-		WebinCliReporter.setDefaultReportDir(createOutputDir(parameters, "."));
+        initFileLogger(parameters);
 
 		this.validator = context.getValidatorClass().newInstance();
 		this.validator.setTestMode( params.test );
 		this.validator.setIgnoreErrorsMode( params.ignoreErrors );
 		this.validator.init( parameters );
     }
-    
+
+    void initFileLogger(WebinCliParameters parameters) {
+
+		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+		PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+		encoder.setContext(loggerContext);
+		encoder.setPattern("%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n");
+		encoder.start();
+
+		FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
+		fileAppender.setContext(loggerContext);
+		fileAppender.setName("FILE");
+		String logFile = new File(createOutputDir(parameters, "."), LOG_FILE_NAME).getAbsolutePath();
+		fileAppender.setFile(logFile);
+		fileAppender.setEncoder(encoder);
+		fileAppender.start();
+
+		log.info("Creating report file: " + logFile);
+
+		ch.qos.logback.classic.Logger logger =
+				(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		logger.addAppender(fileAppender);
+	}
 
 	void 
 	execute()
@@ -308,7 +335,7 @@ public class WebinCli { // implements CommandLineRunner
 	   {
            validator.validate();
            validator.prepareSubmissionBundle();
-           WebinCliReporter.writeToConsole( Severity.INFO, VALIDATE_SUCCESS );
+           log.info( VALIDATE_SUCCESS );
            
 	   } catch( WebinCliException e ) 
 	   {
@@ -339,7 +366,7 @@ public class WebinCli { // implements CommandLineRunner
         {
             ftpService.connect( params.userName, params.password );
             ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
-			WebinCliReporter.writeToConsole( Severity.INFO, UPLOAD_SUCCESS );
+			log.info( UPLOAD_SUCCESS );
 
         } catch( WebinCliException e ) 
         {
@@ -374,7 +401,7 @@ public class WebinCli { // implements CommandLineRunner
 
 			if( !params.unrecognisedOptions.isEmpty() )  
 			{
-				WebinCliReporter.writeToConsole( Severity.ERROR, "Unrecognised options: " + String.join(", ", params.unrecognisedOptions));
+				log.error( "Unrecognised options: " + String.join(", ", params.unrecognisedOptions));
 				printHelp();
 				return null;
 			}
@@ -383,75 +410,75 @@ public class WebinCli { // implements CommandLineRunner
 	        
 		} catch( Exception e )
 		{
-			WebinCliReporter.writeToConsole( Severity.ERROR, e.getMessage() );
+			log.error( e.getMessage() );
 			return null;
 		}
 	}
 
-	
     private static void 
 	printUsage() 
 	{
-	    WebinCliReporter.writeToConsole( new StringBuilder().append( "Program options: " )
-	                                                .append( '\n' )
-	                                                .append( '\t' )
-	                                                .append( "\n" + ParameterDescriptor.context )
-	                                                .append( ParameterDescriptor.contextFlagDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.userName )
-	                                                //.append( "\n" + ParameterDescriptor.userNameSynonym )
-	                                                .append( ParameterDescriptor.userNameFlagDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.password )
-	                                                .append( ParameterDescriptor.passwordFlagDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.manifest )
-	                                                .append( ParameterDescriptor.manifestFlagDescription )
-	                                                .append( '\n' )
-	                                                
-                                                    .append( "\n" + ParameterDescriptor.inputDir )
-                                                    //.append( "\n" + ParameterDescriptor.inputDirSynonym )
-                                                    .append( ParameterDescriptor.inputDirFlagDescription )
-                                                    .append( '\n' )
-	                                                
-                                                    .append( "\n" + ParameterDescriptor.outputDir )
-	                                                //.append( "\n" + ParameterDescriptor.outputDirSynonym 
-                                                    .append( ParameterDescriptor.outputDirFlagDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.validate )
-	                                                .append( ParameterDescriptor.validateFlagDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.submit )
-	                                                .append( ParameterDescriptor.submitFlagDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.centerName )
-	                                                //.append( "\n" + ParameterDescriptor.centerNameSynonym ) 
-	                                                .append( ParameterDescriptor.centerNameFlagDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.ascp)
-	                                                .append( ParameterDescriptor.tryAscpDescription )
-	                                                .append( '\n' )
-	                                                
-	                                                .append( "\n" + ParameterDescriptor.version )
-	                                                .append( ParameterDescriptor.versionFlagDescription )
-	                                                .append( '\n' )
+	    log.info( new StringBuilder()
+				.append( "Program options: " )
+				.append( '\n' )
+				.append( '\t' )
+				.append( "\n" + ParameterDescriptor.context )
+				.append( ParameterDescriptor.contextFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.userName )
+				//.append( "\n" + ParameterDescriptor.userNameSynonym )
+				.append( ParameterDescriptor.userNameFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.password )
+				.append( ParameterDescriptor.passwordFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.manifest )
+				.append( ParameterDescriptor.manifestFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.inputDir )
+				//.append( "\n" + ParameterDescriptor.inputDirSynonym )
+				.append( ParameterDescriptor.inputDirFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.outputDir )
+				//.append( "\n" + ParameterDescriptor.outputDirSynonym
+				.append( ParameterDescriptor.outputDirFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.validate )
+				.append( ParameterDescriptor.validateFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.submit )
+				.append( ParameterDescriptor.submitFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.centerName )
+				//.append( "\n" + ParameterDescriptor.centerNameSynonym )
+				.append( ParameterDescriptor.centerNameFlagDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.ascp)
+				.append( ParameterDescriptor.tryAscpDescription )
+				.append( '\n' )
+
+				.append( "\n" + ParameterDescriptor.version )
+				.append( ParameterDescriptor.versionFlagDescription )
+				.append( '\n' )
 /*	                                                
-                                                    .append( "\n" + ParameterDescriptor.latest )
-                                                    .append( ParameterDescriptor.latestFlagDescription )
-                                                    .append( '\n' )
+				.append( "\n" + ParameterDescriptor.latest )
+				.append( ParameterDescriptor.latestFlagDescription )
+				.append( '\n' )
 */
-                                                    .append( "\n" + ParameterDescriptor.help )
-													.append( ParameterDescriptor.helpFlagDescription )
-													.append( '\n' )
-													.append( '\t' )
-	                                                .append( '\n' ).toString() );
+				.append( "\n" + ParameterDescriptor.help )
+				.append( ParameterDescriptor.helpFlagDescription )
+				.append( '\n' )
+				.append( '\t' )
+				.append( '\n' ).toString() );
 		writeReturnCodes();
 	}
 
@@ -459,7 +486,7 @@ public class WebinCli { // implements CommandLineRunner
     private static void 
 	printHelp() 
 	{
-		WebinCliReporter.writeToConsole( Severity.INFO, "Please use " + ParameterDescriptor.help + " to see all command line options." );
+		log.info( "Please use " + ParameterDescriptor.help + " to see all command line options." );
 	}
 
 	
@@ -471,7 +498,7 @@ public class WebinCli { // implements CommandLineRunner
 		returnCodeMap.put( SYSTEM_ERROR, "INTERNAL ERROR" );
 		returnCodeMap.put( USER_ERROR, "USER ERROR" );
 		returnCodeMap.put( VALIDATION_ERROR, "VALIDATION ERROR" );
-		WebinCliReporter.writeToConsole( "Exit codes: " + returnCodeMap.toString() );
+		log.info( "Exit codes: " + returnCodeMap.toString() );
 	}
 
 
