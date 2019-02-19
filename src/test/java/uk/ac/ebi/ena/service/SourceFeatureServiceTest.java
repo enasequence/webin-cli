@@ -11,15 +11,14 @@
 
 package uk.ac.ebi.ena.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.ena.WebinCliTestUtils;
-import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class
 SourceFeatureServiceTest {

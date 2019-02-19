@@ -12,19 +12,21 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties.Build;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
@@ -37,6 +39,9 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.service.LatestReleaseService;
+import uk.ac.ebi.ena.service.LatestReleaseService.GitHubReleaseAsset;
+import uk.ac.ebi.ena.service.LatestReleaseService.GitHubReleaseInfo;
 import uk.ac.ebi.ena.service.SubmitService;
 import uk.ac.ebi.ena.service.VersionService;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -44,7 +49,6 @@ import uk.ac.ebi.ena.upload.ASCPService;
 import uk.ac.ebi.ena.upload.FtpService;
 import uk.ac.ebi.ena.upload.UploadService;
 import uk.ac.ebi.ena.version.HotSpotRuntimeVersion;
-import uk.ac.ebi.ena.version.VersionManager;
 
 // @SpringBootApplication
 public class WebinCli { // implements CommandLineRunner
@@ -145,19 +149,12 @@ public class WebinCli { // implements CommandLineRunner
     public static void 
     main( String... args )
     {
-        /*
-		new SpringApplicationBuilder(WebinCli.class)
-				.bannerMode(Banner.Mode.OFF)
-				.web(WebApplicationType.NONE)
-				.logStartupInfo(false)
-				.run(args);
-        */
-
-        System.exit( __main( args ));
+        System.exit( __main( args ) );
 	}
 
+    
     private static int
-    __main(String... args)
+    __main( String... args )
     {
         ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
         ValidationResult.setDefaultMessageFormatter( null );
@@ -165,6 +162,8 @@ public class WebinCli { // implements CommandLineRunner
         try 
         {
             checkRuntimeVersion();
+            checkLatestVersion();
+            
             if( args != null && args.length > 0 )
             {
                 List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
@@ -178,9 +177,6 @@ public class WebinCli { // implements CommandLineRunner
                     WebinCliReporter.writeToConsole( getFormattedProgramVersion() );
                     return SUCCESS;
                 }
-
-                if( found.contains( ParameterDescriptor.latest ) )
-                    return VersionManager.launchLatestVersion( found.stream().filter( e -> !e.equals( ParameterDescriptor.latest ) ).toArray( sz -> new String[ sz ] ) );
             }
 
             Params params = parseParameters( args );
@@ -526,6 +522,38 @@ public class WebinCli { // implements CommandLineRunner
 			throw WebinCliException.createUserError( INVALID_VERSION.replaceAll( "__VERSION__", version ) );
 	}
 
+	
+	private static void
+	checkLatestVersion()
+	{
+	    Path lock = Paths.get( ".latest-version-check" );
+	    try
+	    {
+    	    if( !Files.exists( lock ) || Files.getLastModifiedTime( lock ).toMillis() + 24 * 60 * 60 * 1000 > System.currentTimeMillis() )
+    	    {
+    	        Files.write( lock, String.valueOf( System.currentTimeMillis() ).getBytes(), 
+    	                     StandardOpenOption.SYNC, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING );
+    	        LatestReleaseService lr = new LatestReleaseService.Builder().build();
+                GitHubReleaseInfo info = lr.getLatestInfo();
+                if( 1 != info.assets.size() )
+                    return; //throw WebinCliException.createSystemError( "Unable to fetch information about latest release" );
+                
+                GitHubReleaseAsset ra = info.assets.get( 0 );
+                
+                if( !"uploaded".equals( ra.state ) )
+                    return; //throw WebinCliException.createSystemError( "Unable to fetch information about latest release" );
+            
+                String version = WebinCli.class.getPackage().getImplementationVersion();
+                
+                if( null == version || ra.created_at.after( new Timestamp( System.currentTimeMillis() ) ) )
+                    WebinCliReporter.writeToConsole( "New version of WebinCli is available: " + ra.name );
+    	    }
+	    } catch( IOException ioe )
+	    {
+	       // log.info( "Unable" );
+	    }
+	}
+	
 
 	// Directory creation.
 	static File

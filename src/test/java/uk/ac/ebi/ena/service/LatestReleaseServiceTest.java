@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.version;
+package uk.ac.ebi.ena.service;
 
 import java.io.IOException;
 import java.net.URL;
@@ -8,14 +8,15 @@ import javax.script.ScriptException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.version.LatestRelease.GitHubReleaseInfo;
+import uk.ac.ebi.ena.service.LatestReleaseService.GitHubReleaseInfo;
 
 public class 
-LatestReleaseTest 
+LatestReleaseServiceTest 
 {
     @Test public void
     test() throws IOException, ScriptException {
-        LatestRelease lr = new LatestRelease();
+        LatestReleaseService lr = new LatestReleaseService.Builder().build();
+
         GitHubReleaseInfo info = lr.getLatestInfo();
         
         Assert.assertFalse( info.assets.isEmpty() );

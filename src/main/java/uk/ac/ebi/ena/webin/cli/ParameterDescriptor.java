@@ -27,6 +27,7 @@ public interface ParameterDescriptor {
     String ascp       = "-ascp";
     String help       = "-help";
     String latest     = "-latest";
+    String recursive  = "--recursive--";
 
     //synonyms
     String userNameSynonym   = "-username";

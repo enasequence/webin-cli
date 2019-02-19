@@ -1,13 +1,2 @@
-.project
-.classpath
-.settings
-build/
-gradle/
-out/
-webin-cli.iml
-webin-cli.log
-reads/
-reports/
-.idea/
-/bin/
-/.gradle/
+.latest-version-check 
+/build/

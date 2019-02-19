@@ -17,9 +17,6 @@ wrapper{
     distributionType = Wrapper.DistributionType.BIN
 }
 
-bootJar {
-    mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
-}
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.version_base = '1.6.0'
@@ -28,6 +25,20 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 // ext.webinCliCodacyProjectToken =
+
+
+bootJar {
+
+    mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
+    excludeDevtools = true
+   	manifest {
+        attributes 'Implementation-Title': 'webin-cli',
+                   'Implementation-Version': version_base,
+                   'Built-By': System.getProperty('user.name'),
+                   'Built-Date': new Date()
+    }
+}
+
 
 repositories {
     mavenLocal()
