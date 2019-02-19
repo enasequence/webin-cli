@@ -96,8 +96,7 @@ WebinCliTest
         parameters.submit = true;
         parameters.ascp = ascp;
         WebinCli webinCli = new WebinCli();
-        webinCli.init( parameters );
-        webinCli.execute();
+        webinCli.execute( webinCli.init( parameters ) );
     }
     
     @Test public void

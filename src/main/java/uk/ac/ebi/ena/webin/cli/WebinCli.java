@@ -32,7 +32,9 @@ import java.util.stream.Collectors;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.OutputStreamAppender;
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -89,7 +91,6 @@ public class WebinCli { // implements CommandLineRunner
 
 	private Params params;
 	private WebinCliContext context;
-    private AbstractWebinCli<?> validator;
 
 	private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
 
@@ -203,8 +204,8 @@ public class WebinCli { // implements CommandLineRunner
             checkVersion( params.test );
 
             WebinCli webinCli = new WebinCli();
-            webinCli.init( params );
-            webinCli.execute();
+            WebinCliParameters parameters = webinCli.init( params );
+            webinCli.execute( parameters );
             
             return SUCCESS;
             
@@ -254,7 +255,7 @@ public class WebinCli { // implements CommandLineRunner
     }
 
 
-    void 
+	WebinCliParameters
     init( Params params ) throws Exception
     {
         this.params = params;
@@ -274,29 +275,26 @@ public class WebinCli { // implements CommandLineRunner
         parameters.setCenterName( params.centerName );
         parameters.setTestMode( params.test );
 
-        initFileLogger(parameters);
-
-		this.validator = context.getValidatorClass().newInstance();
-		this.validator.setTestMode( params.test );
-		this.validator.setIgnoreErrorsMode( params.ignoreErrors );
-		this.validator.init( parameters );
+        return parameters;
     }
 
-    void initFileLogger(WebinCliParameters parameters) {
-
+	private void initTimedAppender(String name, OutputStreamAppender appender) {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 		PatternLayoutEncoder encoder = new PatternLayoutEncoder();
 		encoder.setContext(loggerContext);
 		encoder.setPattern("%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n");
 		encoder.start();
+		appender.setName(name);
+		appender.setContext(loggerContext);
+		appender.setEncoder(encoder);
+		appender.start();
+	}
 
+	private void initTimedFileLogger(WebinCliParameters parameters) {
 		FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
-		fileAppender.setContext(loggerContext);
-		fileAppender.setName("FILE");
 		String logFile = new File(createOutputDir(parameters, "."), LOG_FILE_NAME).getAbsolutePath();
 		fileAppender.setFile(logFile);
-		fileAppender.setEncoder(encoder);
-		fileAppender.start();
+		initTimedAppender("FILE", fileAppender);
 
 		log.info("Creating report file: " + logFile);
 
@@ -305,8 +303,18 @@ public class WebinCli { // implements CommandLineRunner
 		logger.addAppender(fileAppender);
 	}
 
-	void 
-	execute()
+	private void initTimedConsoleLogger() {
+		ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
+		initTimedAppender("CONSOLE", consoleAppender);
+
+		ch.qos.logback.classic.Logger logger =
+				(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		logger.detachAppender("CONSOLE");
+		logger.addAppender(consoleAppender);
+	}
+
+	void
+	execute(WebinCliParameters parameters) throws Exception
 	{
 		try {
 			context = WebinCliContext.valueOf( params.context );
@@ -314,21 +322,26 @@ public class WebinCli { // implements CommandLineRunner
 			throw WebinCliException.createUserError(INVALID_CONTEXT, params.context);
 		}
 
-		SubmissionBundle sb = validator.getSubmissionBundle();
+		initTimedConsoleLogger();
+		initTimedFileLogger(parameters);
 
-		if (params.validate || sb == null) {
-			doValidation();
-			sb = validator.getSubmissionBundle();
+		AbstractWebinCli<?> validator = context.getValidatorClass().newInstance();
+		validator.setTestMode( params.test );
+		validator.setIgnoreErrorsMode( params.ignoreErrors );
+		validator.init( parameters );
+
+		if (params.validate || validator.getSubmissionBundle() == null) {
+			doValidation(validator);
 		}
 
 		if (params.submit) {
-			doSubmit( sb );
+			doSubmit(validator);
 		}
 	}
 
 	
-	private void 
-	doValidation() 
+	private void
+	doValidation(AbstractWebinCli<?> validator)
 	{
 	   try 
 	   {
@@ -357,8 +370,10 @@ public class WebinCli { // implements CommandLineRunner
 	 
 	
 	private void 
-    doSubmit( SubmissionBundle bundle )
+    doSubmit( AbstractWebinCli<?> validator )
     {
+		SubmissionBundle bundle = validator.getSubmissionBundle();
+
         UploadService ftpService = params.ascp && new ASCPService().isAvaliable() ? new ASCPService() : new FtpService();
         
         try 
