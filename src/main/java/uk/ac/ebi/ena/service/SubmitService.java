@@ -26,7 +26,8 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -35,11 +36,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.embl.api.validation.Severity;
+
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
@@ -47,7 +47,7 @@ public class SubmitService extends AbstractService {
 
     private final static String RECEIPT_XML = "receipt.xml";
     private final String submitDir;
-
+    private static final Logger log = LoggerFactory.getLogger(SubmitService.class);
     final static String SYSTEM_ERROR = "SubmissionServiceSystemError";
 
     public static class 
@@ -135,12 +135,10 @@ public class SubmitService extends AbstractService {
                     String accession = rootNode.getChild(xmlFileType).getAttributeValue("accession");
                     if (accession != null && !accession.isEmpty()) {
                         String msg = WebinCli.SUBMIT_SUCCESS + " The following " + xmlFileType.toLowerCase() + " accession was assigned to the submission: " + accession;
-                        WebinCliReporter.writeToConsole(Severity.INFO, msg);
-                        WebinCliReporter.writeToFile(WebinCliReporter.getDefaultReport(), Severity.INFO, msg);
+                        log.info(msg);
                     } else {
                         String msg = WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the " + xmlFileType.toLowerCase() + " XML submission. Please contact the helpdesk.";
-                        WebinCliReporter.writeToConsole(Severity.INFO, msg);
-                        WebinCliReporter.writeToFile(WebinCliReporter.getDefaultReport(), Severity.INFO, msg);
+                        log.info(msg);
                     }
                 }
             } else {

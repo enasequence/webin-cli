@@ -22,6 +22,7 @@ import uk.ac.ebi.ena.manifest.ManifestReader;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 
 public abstract class 
 AbstractWebinCli<T extends ManifestReader>
@@ -49,7 +50,7 @@ AbstractWebinCli<T extends ManifestReader>
     protected abstract T createManifestReader();
 
     private String description;
-    
+
     public String 
     getDescription()
     {
@@ -76,7 +77,7 @@ AbstractWebinCli<T extends ManifestReader>
         File reportFile = getReportFile(manifestFile.getName() );
 
         reportFile.delete();
-        
+
         try
         {
             readManifest( getParameters().getInputDir().toPath(), manifestFile );
@@ -102,8 +103,7 @@ AbstractWebinCli<T extends ManifestReader>
         {
             setName();
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
-                WebinCliReporter.writeToConsole( manifestReader.getValidationResult() );
-                WebinCliReporter.writeToFile( reportFile, manifestReader.getValidationResult() );
+                ValidationMessageLogger.log(manifestReader.getValidationResult());
             }
         }
 

@@ -25,11 +25,12 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
-import uk.ac.ebi.ena.rawreads.VerboseLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-public class FtpService implements UploadService, VerboseLogger {
+public class FtpService implements UploadService {
     private final static String SERVER = "webin.ebi.ac.uk";
     private final static int FTP_PORT = 21;
     private final FTPClient ftpClient = new FTPClient() ;
@@ -38,6 +39,8 @@ public class FtpService implements UploadService, VerboseLogger {
     private final static String SYSTEM_ERROR_CHANGE_DIR = "Failed to access directory in webin.ebi.ac.uk file upload area.";
     private final static String SYSTEM_ERROR_UPLOAD_FILE = "Failed to upload files to webin.ebi.ac.uk file upload area.";
     private final static String SYSTEM_ERROR_OTHER = "A server error occurred when uploading files to webin.ebi.ac.uk file upload area.";
+
+    private static final Logger log = LoggerFactory.getLogger(FtpService.class);
 
     /* (non-Javadoc)
      * @see uk.ac.ebi.ena.upload.UploadService#connectToFtp(java.lang.String, java.lang.String)
@@ -63,7 +66,8 @@ public class FtpService implements UploadService, VerboseLogger {
         Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
         try( InputStream fileInputStream = new BufferedInputStream( Files.newInputStream( local ) ) )    
         {
-            printfToConsole( "Uploading file: %s\n", local );
+            log.info( String.format( "Uploading file: %s\n", local ) );
+
             int level = changeToSubdir( subdir );       
             if( !ftpClient.storeFile( remote.getFileName().toString(), fileInputStream ) )
                 throw WebinCliException.createSystemError( SYSTEM_ERROR_UPLOAD_FILE, "Unable to transfer " + remote.getFileName().toString() );

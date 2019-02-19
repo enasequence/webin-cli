@@ -44,6 +44,8 @@ import htsjdk.samtools.cram.CRAMException;
 import htsjdk.samtools.util.Log;
 import htsjdk.samtools.util.Log.LogLevel;
 import net.sf.cram.ref.ENAReferenceSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
@@ -64,10 +66,10 @@ import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliReporter;
+import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 
 public class 
-RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLogger
+RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
 {   
     static 
     {
@@ -83,6 +85,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
 
     //TODO value should be estimated via validation
     private boolean is_paired;
+
+    private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCli.class);
 
     @Override
     public WebinCliContext getContext() {
@@ -160,30 +164,31 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
     
     private boolean
     readCramFile( List<RawReadsFile> files, AtomicBoolean paired )
-    { 
+    {
         boolean valid = true;
         CramReferenceInfo cri = new CramReferenceInfo();
         for( RawReadsFile rf : files )
         {
-            File reportFile = getReportFile( rf.getFilename() );
-            try
+            try (ValidationMessageReporter reporter = new ValidationMessageReporter( getReportFile( rf.getFilename() )))
             {
+                try {
+                    Map<String, Boolean> ref_set = cri.confirmFileReferences( new File( rf.getFilename() ) );
+                    if( !ref_set.isEmpty() && ref_set.containsValue( Boolean.FALSE ) )
+                    {
+                        reporter.write(Severity.ERROR, "Unable to find reference sequence(s) from the CRAM reference registry: " +
+                                ref_set.entrySet()
+                                        .stream()
+                                        .filter(e -> !e.getValue())
+                                        .map(e -> e.getKey())
+                                        .collect(Collectors.toList()));
+                        valid = false;
+                    }
 
-                Map<String, Boolean> ref_set = cri.confirmFileReferences( new File( rf.getFilename() ) );
-                if( !ref_set.isEmpty() && ref_set.containsValue( Boolean.FALSE ) )
+                } catch( IOException ioe )
                 {
-                    WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "Unable to find reference sequence(s) from the CRAM reference registry: " + ref_set.entrySet()
-                                                                                                                                                                 .stream()
-                                                                                                                                                                 .filter( e -> !e.getValue() )
-                                                                                                                                                                 .map( e -> e.getKey() )
-                                                                                                                                                                 .collect( Collectors.toList() ) );
+                    reporter.write( Severity.ERROR, ioe.getMessage() );
                     valid = false;
                 }
-            
-            } catch( IOException ioe )
-            {
-                WebinCliReporter.writeToFile( reportFile, Severity.ERROR, ioe.getMessage() );
-                valid = false;
             }
         }
 
@@ -207,7 +212,11 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
             FastqScanner fs = new FastqScanner( getManifestReader().getPairingHorizon() );            
             ValidationResult vr = fs.checkFiles( files.toArray( new RawReadsFile[ files.size() ] ) );
             paired.set( fs.getPaired() );
-            files.forEach( rf -> WebinCliReporter.writeToFile( getReportFile( rf.getFilename() ), vr ) );
+            files.forEach(rf -> {
+                try (ValidationMessageReporter reporter = new ValidationMessageReporter( getReportFile( rf.getFilename() ))) {
+                    reporter.write(vr);
+                }
+            });
             return vr.isValid();
             
         } catch( Throwable e )
@@ -222,8 +231,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
     {
         for( RawReadsFile rf : files )
         {
-            File reportFile = getReportFile(rf.getFilename() );
-            WebinCliReporter.writeToFile( reportFile, Severity.ERROR, msg );
+            try (ValidationMessageReporter reporter = new ValidationMessageReporter( getReportFile( rf.getFilename() ))) {
+                reporter.write( Severity.ERROR, msg );
+            }
         }
     }
 
@@ -234,107 +244,100 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         boolean valid = true;
         for( RawReadsFile rf : files )
         {
-            File reportFile = getReportFile(rf.getFilename() );
             long read_no = 0;
             long reads_cnt = 0;
-            
-            try
-            {
-                printfToConsole( "Processing file %s\n", rf.getFilename() );
-                ENAReferenceSource reference_source = new ENAReferenceSource();
-                reference_source.setLoggerWrapper( new ENAReferenceSource.LoggerWrapper() 
-                {
-                    private final File rFile = reportFile;
-                    @Override public void 
-                    error( Object... messageParts )
-                    {
-                        WebinCliReporter.writeToFile( rFile, Severity.ERROR, null == messageParts ? "null" : String.valueOf( Arrays.asList( messageParts ) ) );
+
+            try (ValidationMessageReporter reporter = new ValidationMessageReporter( getReportFile( rf.getFilename() ))) {
+                try {
+                    String msg = String.format("Processing file %s\n", rf.getFilename());
+                    log.info(msg);
+                    ENAReferenceSource reference_source = new ENAReferenceSource();
+                    reference_source.setLoggerWrapper(new ENAReferenceSource.LoggerWrapper() {
+                        @Override
+                        public void
+                        error(Object... messageParts) {
+                            reporter.write(Severity.ERROR, null == messageParts ? "null" : String.valueOf(Arrays.asList(messageParts)));
+                        }
+
+                        @Override
+                        public void
+                        warn(Object... messageParts) {
+                            reporter.write(Severity.WARNING, null == messageParts ? "null" : String.valueOf(Arrays.asList(messageParts)));
+                        }
+
+                        @Override
+                        public void
+                        info(Object... messageParts) {
+                            reporter.write(Severity.INFO, null == messageParts ? "null" : String.valueOf(Arrays.asList(messageParts)));
+                        }
+                    });
+
+                    reporter.write(Severity.INFO, "REF_PATH  " + reference_source.getRefPathList());
+                    reporter.write(Severity.INFO, "REF_CACHE " + reference_source.getRefCacheList());
+
+
+                    File file = new File(rf.getFilename());
+                    Log.setGlobalLogLevel(LogLevel.ERROR);
+                    SamReaderFactory.setDefaultValidationStringency(ValidationStringency.SILENT);
+                    SamReaderFactory factory = SamReaderFactory.make();
+                    factory.enable(SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX);
+                    factory.validationStringency(ValidationStringency.SILENT);
+                    factory.referenceSource(reference_source);
+                    factory.samRecordFactory(DefaultSAMRecordFactory.getInstance());
+                    SamInputResource ir = SamInputResource.of(file);
+                    File indexMaybe = SamFiles.findIndex(file);
+                    reporter.write(Severity.INFO, "proposed index: " + indexMaybe);
+
+                    if (null != indexMaybe)
+                        ir.index(indexMaybe);
+
+                    SamReader reader = factory.open(ir);
+
+                    for (SAMRecord record : reader) {
+                        read_no++;
+                        //do not load supplementary reads
+                        if (record.isSecondaryOrSupplementary())
+                            continue;
+
+                        if (record.getDuplicateReadFlag())
+                            continue;
+
+                        if (record.getReadString().equals(BAM_STAR) && record.getBaseQualityString().equals(BAM_STAR))
+                            continue;
+
+                        if (record.getReadBases().length != record.getBaseQualities().length) {
+                            ValidationMessage<Origin> validationMessage = ValidationMessageReporter.createValidationMessage(Severity.ERROR, "Mismatch between length of read bases and qualities",
+                                    new DefaultOrigin(String.format("%s:%d", rf.getFilename(), read_no)));
+
+                            reporter.write(validationMessage);
+                            valid = false;
+                        }
+
+                        paired.compareAndSet(false, record.getReadPairedFlag());
+                        reads_cnt++;
+                        if (0 == reads_cnt % 1000)
+                            logProcessedReadNumber(reads_cnt);
                     }
 
-                    @Override public void 
-                    warn( Object... messageParts )
-                    {
-                        WebinCliReporter.writeToFile( rFile, Severity.WARNING, null == messageParts ? "null" : String.valueOf( Arrays.asList( messageParts ) ) );
-                    }  
+                    logProcessedReadNumber(reads_cnt);
 
-                    @Override public void 
-                    info( Object... messageParts )
-                    {
-                        WebinCliReporter.writeToFile( rFile, Severity.INFO, null == messageParts ? "null" : String.valueOf( Arrays.asList( messageParts ) ) );
-                    }  
-                } );
-                
-                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "REF_PATH  " + reference_source.getRefPathList() );
-                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "REF_CACHE " + reference_source.getRefCacheList() );
+                    reader.close();
 
+                    reporter.write(Severity.INFO, "Valid reads count: " + reads_cnt);
+                    reporter.write(Severity.INFO, "LibraryLayout: " + (paired.get() ? "PAIRED" : "SINGLE"));
 
-                File file = new File( rf.getFilename() );
-                Log.setGlobalLogLevel( LogLevel.ERROR );
-                SamReaderFactory.setDefaultValidationStringency( ValidationStringency.SILENT );
-                SamReaderFactory factory = SamReaderFactory.make();
-                factory.enable( SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX );
-                factory.validationStringency( ValidationStringency.SILENT );
-                factory.referenceSource( reference_source );
-                factory.samRecordFactory( DefaultSAMRecordFactory.getInstance() );
-                SamInputResource ir = SamInputResource.of( file );
-                File indexMaybe = SamFiles.findIndex( file );
-                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "proposed index: " + indexMaybe );
-                
-                if( null != indexMaybe )
-                    ir.index( indexMaybe );
-                
-                SamReader reader = factory.open( ir );
-                
-                for( SAMRecord record : reader )
-                {
-                    read_no ++;
-                    //do not load supplementary reads
-                    if( record.isSecondaryOrSupplementary() )
-                        continue;
-                    
-                    if( record.getDuplicateReadFlag() )
-                        continue;
-                    
-                    if( record.getReadString().equals( BAM_STAR ) && record.getBaseQualityString().equals( BAM_STAR ) )
-                        continue;
-                    
-                    if( record.getReadBases().length != record.getBaseQualities().length )
-                    {
-                        ValidationMessage<Origin> validationMessage = WebinCliReporter.createValidationMessage( Severity.ERROR, "Mismatch between length of read bases and qualities",
-                                                                                                                new DefaultOrigin( String.format( "%s:%d", rf.getFilename(), read_no ) ) );
-                        
-                        WebinCliReporter.writeToFile( reportFile, validationMessage );
+                    if (0 == reads_cnt) {
+                        reporter.write(Severity.ERROR, "File contains no valid reads");
                         valid = false;
                     }
-                    
-                    paired.compareAndSet( false, record.getReadPairedFlag() );
-                    reads_cnt ++;
-                    if( 0 == reads_cnt % 1000 )
-                        printProcessedReadNumber( reads_cnt );
-                }
 
-                printProcessedReadNumber( reads_cnt );
-                printlnToConsole();
-                
-                reader.close();
-                
-                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "Valid reads count: " + reads_cnt );
-                WebinCliReporter.writeToFile( reportFile, Severity.INFO, "LibraryLayout: " + ( paired.get() ? "PAIRED" : "SINGLE" ) );
-                
-                if( 0 == reads_cnt )
-                {
-                    WebinCliReporter.writeToFile( reportFile, Severity.ERROR, "File contains no valid reads" );
+                } catch (SAMFormatException | CRAMException e) {
+                    reporter.write(Severity.ERROR, e.getMessage());
                     valid = false;
+
+                } catch (IOException e) {
+                    throw WebinCliException.createSystemError(e.getMessage());
                 }
-                
-            } catch( SAMFormatException | CRAMException e )
-            {
-                WebinCliReporter.writeToFile( reportFile, Severity.ERROR, e.getMessage() );
-                valid = false;
-                
-            } catch( IOException e )
-            {
-                throw WebinCliException.createSystemError( e.getMessage() );
             }
         }
         return valid;
@@ -552,5 +555,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest> implements VerboseLo
         }
     }
 
-
+    private void logProcessedReadNumber(long count )
+    {
+        String msg = String.format( "\rProcessed %16d read(s)", count );
+        System.out.print( msg );
+        System.out.flush();
+    }
 }
