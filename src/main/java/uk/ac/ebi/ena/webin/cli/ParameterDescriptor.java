@@ -26,8 +26,6 @@ public interface ParameterDescriptor {
     String inputDir   = "-inputDir";
     String ascp       = "-ascp";
     String help       = "-help";
-    String latest     = "-latest";
-    String recursive  = "--recursive--";
 
     //synonyms
     String userNameSynonym   = "-username";
@@ -76,7 +74,4 @@ public interface ParameterDescriptor {
            OPTION_LINE + "The path to the installed \"ascp\" program must be in the PATH variable.";
    String helpFlagDescription =
            OPTION_LINE + "Use the -help option to see all command line options.";
-   String latestFlagDescription =
-           OPTION_LINE + "Always use latest version of Webi-CLI. Download from GitHub and store in classpath floder if necessary.";
-
 }

@@ -253,6 +253,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             getSubmissionOptions().ignoreErrors = getIgnoreErrorsMode();
         }
 
+        // TODO: ignoreError should be false by default
+        getSubmissionOptions().ignoreErrors = true;
+
         try
         {
             validateInternal();
