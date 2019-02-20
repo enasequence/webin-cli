@@ -23,6 +23,7 @@ import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
+import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 
 public abstract class 
 AbstractWebinCli<T extends ManifestReader>
@@ -104,6 +105,9 @@ AbstractWebinCli<T extends ManifestReader>
             setName();
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
                 ValidationMessageLogger.log(manifestReader.getValidationResult());
+                try (ValidationMessageReporter reporter = new ValidationMessageReporter(reportFile)) {
+                    reporter.write(manifestReader.getValidationResult());
+                }
             }
         }
 
