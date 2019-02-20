@@ -414,6 +414,23 @@ public class GenomeAssemblyValidationTest {
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size()).isOne();
         validator.validate();
     }
+    
+    @Test
+    public void
+    testValidFlatfileAndChromosomeList() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir)
+                .chromosomeList("BPM_ChromosomeList.txt.gz")
+                .flatfile("BPM_mitogenome.txt.gz").build();
+
+        GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
+        validator.setSample(AssemblyTestUtils.getHumanSample());
+        validator.setSource(AssemblyTestUtils.getHumanSourceFeature());
+        initValidator(manifestFile, validator);
+        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(2);
+        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isOne();
+        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.CHROMOSOME_LIST).size()).isOne();
+        assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
+        .hasMessageContaining("flatfile file validation failed");    }
 
     @Test
     public void
