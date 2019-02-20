@@ -29,19 +29,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.ConsoleAppender;
-import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.OutputStreamAppender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.OutputStreamAppender;
+import net.sf.cram.ref.PathPattern;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
@@ -88,6 +89,9 @@ public class WebinCli { // implements CommandLineRunner
 	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
 
 	private final static String LOG_FILE_NAME= "webin-cli.report";
+    private static final String JAVA_IO_TMPDIR_PROPERTY_NAME = "java.io.tmpdir";
+    private static final String USER_HOME_PROPERTY_NAME = "user.home";
+
 
 	private Params params;
 	private WebinCliContext context;
@@ -105,9 +109,6 @@ public class WebinCli { // implements CommandLineRunner
 		
 		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription)
 		public boolean test;
-
-		@Parameter(names = ParameterDescriptor.ignoreErrors, description = ParameterDescriptor.ignoreErrorsFlagDescription)
-		public boolean ignoreErrors;
 
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = ContextValidator.class)
 		public String context;
@@ -173,7 +174,7 @@ public class WebinCli { // implements CommandLineRunner
         try 
         {
             checkRuntimeVersion();
-            checkLatestVersion();
+            // checkLatestVersion();
             
             if( args != null && args.length > 0 )
             {
@@ -278,30 +279,35 @@ public class WebinCli { // implements CommandLineRunner
         return parameters;
     }
 
-	private void initTimedAppender(String name, OutputStreamAppender appender) {
+	
+	private void 
+	initTimedAppender( String name, OutputStreamAppender<ILoggingEvent> appender ) 
+	{
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 		PatternLayoutEncoder encoder = new PatternLayoutEncoder();
 		encoder.setContext(loggerContext);
-		encoder.setPattern("%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n");
+		encoder.setPattern( "%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n" );
 		encoder.start();
-		appender.setName(name);
-		appender.setContext(loggerContext);
-		appender.setEncoder(encoder);
+		appender.setName( name );
+		appender.setContext( loggerContext );
+		appender.setEncoder( encoder );
 		appender.start();
 	}
 
-	private void initTimedFileLogger(WebinCliParameters parameters) {
+	
+	private void 
+	initTimedFileLogger( WebinCliParameters parameters )
+	{
 		FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
-		String logFile = new File(createOutputDir(parameters, "."), LOG_FILE_NAME).getAbsolutePath();
-		fileAppender.setFile(logFile);
-		fileAppender.setAppend(false);
-		initTimedAppender("FILE", fileAppender);
+		String logFile = new File( createOutputDir( parameters, "." ), LOG_FILE_NAME ).getAbsolutePath();
+		fileAppender.setFile( logFile );
+		fileAppender.setAppend( false );
+		initTimedAppender( "FILE", fileAppender );
 
-		log.info("Creating report file: " + logFile);
+		log.info( "Creating report file: " + logFile );
 
-		ch.qos.logback.classic.Logger logger =
-				(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		logger.addAppender(fileAppender);
+		ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger( Logger.ROOT_LOGGER_NAME );
+		logger.addAppender( fileAppender );
 	}
 
 	/*
@@ -330,7 +336,6 @@ public class WebinCli { // implements CommandLineRunner
 
 		AbstractWebinCli<?> validator = context.getValidatorClass().newInstance();
 		validator.setTestMode( params.test );
-		validator.setIgnoreErrorsMode( params.ignoreErrors );
 		validator.init( parameters );
 
 		if (params.validate || validator.getSubmissionBundle() == null) {
@@ -572,7 +577,11 @@ public class WebinCli { // implements CommandLineRunner
 	private static void
 	checkLatestVersion()
 	{
-	    Path lock = Paths.get( ".latest-version-check" );
+	    String root = System.getProperty( USER_HOME_PROPERTY_NAME );
+	    root = null != root ? root : System.getProperty( JAVA_IO_TMPDIR_PROPERTY_NAME );
+	    root = null != root ? root : ".";
+	    Path lock = Paths.get( root, ".latest-version-check" );
+
 	    try
 	    {
 	        long current = System.currentTimeMillis();
@@ -602,7 +611,7 @@ public class WebinCli { // implements CommandLineRunner
                 if( null == version || ra.created_at.after( new Timestamp( current ) ) )
                     log.info( "New version of WebinCli is available: " + ra.name );
     	    }
-	    } catch( IOException ioe )
+	    } catch( WebinCliException | IOException ioe )
 	    {
 	       log.debug( ioe.getMessage() );
 	    }

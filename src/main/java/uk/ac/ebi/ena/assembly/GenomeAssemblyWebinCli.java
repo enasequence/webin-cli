@@ -67,7 +67,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 
 		if( getSource()!=null )
 			getSubmissionOptions().source = Optional.of( getSource() );
-		getSubmissionOptions().ignoreErrors = false;
 	}
 
 	
