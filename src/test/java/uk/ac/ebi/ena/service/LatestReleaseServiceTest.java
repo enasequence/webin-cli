@@ -6,6 +6,7 @@ import java.net.URL;
 import javax.script.ScriptException;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.service.LatestReleaseService.GitHubReleaseInfo;
@@ -13,8 +14,9 @@ import uk.ac.ebi.ena.service.LatestReleaseService.GitHubReleaseInfo;
 public class 
 LatestReleaseServiceTest 
 {
+    @Ignore
     @Test public void
-    test() throws IOException, ScriptException {
+    test() throws IOException {
         LatestReleaseService lr = new LatestReleaseService.Builder().build();
 
         GitHubReleaseInfo info = lr.getLatestInfo();
