@@ -37,7 +37,6 @@ AbstractWebinCli<T extends ManifestReader>
     private WebinCliParameters parameters = new WebinCliParameters();
 
     private boolean testMode;
-    private boolean ignoreErrorsMode;
 
     private T manifestReader;
 
@@ -248,14 +247,6 @@ AbstractWebinCli<T extends ManifestReader>
     setTestMode( boolean test_mode )
     {
         this.testMode = test_mode;
-    }
-
-    public boolean getIgnoreErrorsMode() {
-        return ignoreErrorsMode;
-    }
-
-    public void setIgnoreErrorsMode(boolean ignoreErrorsMode) {
-        this.ignoreErrorsMode = ignoreErrorsMode;
     }
 
     public boolean isFetchSource() 

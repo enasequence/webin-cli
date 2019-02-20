@@ -20,7 +20,6 @@ public interface ParameterDescriptor {
     String submit     = "-submit";
     String manifest   = "-manifest";
     String test       = "-test";
-    String ignoreErrors = "-ignoreErrors";
     String centerName = "-centerName";
     String version    = "-version";
     String inputDir   = "-inputDir";
@@ -65,7 +64,6 @@ public interface ParameterDescriptor {
             OPTION_LINE + "http://ena-docs.readthedocs.io/en/latest/cli.html";
 
    String testFlagDescription = "\tUse the test submission system.";
-   String ignoreErrorsFlagDescription = "\tIt may be possible to ignore some validation errors. This option must be activated for specific submissions by the help desk.";
    String centerNameFlagDescription = OPTION_LINE + "Mandatory center name for broker accounts.";
    String versionFlagDescription = OPTION_LINE + "Prints the version number of the program and exits.";
    String inputDirFlagDescription = OPTION_LINE + "Input directory for files declared in the manifest file.";

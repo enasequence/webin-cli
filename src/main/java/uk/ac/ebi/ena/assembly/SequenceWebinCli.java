@@ -29,6 +29,8 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
@@ -58,6 +60,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     private Sample sample;
 	private SourceFeature source;
 	protected AssemblyInfoEntry assembly_info;
+
+    private static final Logger log = LoggerFactory.getLogger(SequenceWebinCli.class);
 
 	protected abstract void validateInternal() throws ValidationEngineException;
 
@@ -242,19 +246,20 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
             throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
 
-        IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
-                                                                         .setCredentials( getParameters().getUsername(),
-                                                                                          getParameters().getPassword() )
-                                                                         .setTest( getTestMode() )
-                                                                         .build();
-        if ( getIgnoreErrorsMode() 
-          && ignoreErrorsService.getIgnoreErrors( getContext().name(), getName() ) ) 
-        {
-            getSubmissionOptions().ignoreErrors = getIgnoreErrorsMode();
-        }
 
-        // TODO: ignoreError should be false by default
-        getSubmissionOptions().ignoreErrors = true;
+        getSubmissionOptions().ignoreErrors = false;
+        try {
+            IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
+                    .setCredentials(getParameters().getUsername(),
+                            getParameters().getPassword())
+                    .setTest(getTestMode())
+                    .build();
+
+            getSubmissionOptions().ignoreErrors = ignoreErrorsService.getIgnoreErrors(getContext().name(), getName());
+        }
+        catch (RuntimeException ex) {
+            log.warn("A server error occurred when retrieving ignore error information.");
+        }
 
         try
         {

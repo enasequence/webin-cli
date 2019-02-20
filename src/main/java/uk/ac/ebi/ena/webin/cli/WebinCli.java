@@ -106,9 +106,6 @@ public class WebinCli { // implements CommandLineRunner
 		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription)
 		public boolean test;
 
-		@Parameter(names = ParameterDescriptor.ignoreErrors, description = ParameterDescriptor.ignoreErrorsFlagDescription)
-		public boolean ignoreErrors;
-
 		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = ContextValidator.class)
 		public String context;
 		
@@ -173,7 +170,7 @@ public class WebinCli { // implements CommandLineRunner
         try 
         {
             checkRuntimeVersion();
-            checkLatestVersion();
+            // checkLatestVersion();
             
             if( args != null && args.length > 0 )
             {
@@ -330,7 +327,6 @@ public class WebinCli { // implements CommandLineRunner
 
 		AbstractWebinCli<?> validator = context.getValidatorClass().newInstance();
 		validator.setTestMode( params.test );
-		validator.setIgnoreErrorsMode( params.ignoreErrors );
 		validator.init( parameters );
 
 		if (params.validate || validator.getSubmissionBundle() == null) {

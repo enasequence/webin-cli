@@ -46,7 +46,6 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     validateInternal() throws ValidationEngineException 
     {
 	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-        getSubmissionOptions().ignoreErrors = getIgnoreErrorsMode();
 	    new SubmissionValidator(getSubmissionOptions()).validate();
     }
 
