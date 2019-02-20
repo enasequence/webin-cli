@@ -256,7 +256,7 @@ public class WebinCli { // implements CommandLineRunner
 
 
 	WebinCliParameters
-    init( Params params ) throws Exception
+    init( Params params )
     {
         this.params = params;
         this.context = WebinCliContext.valueOf( params.context );
@@ -294,6 +294,7 @@ public class WebinCli { // implements CommandLineRunner
 		FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
 		String logFile = new File(createOutputDir(parameters, "."), LOG_FILE_NAME).getAbsolutePath();
 		fileAppender.setFile(logFile);
+		fileAppender.setAppend(false);
 		initTimedAppender("FILE", fileAppender);
 
 		log.info("Creating report file: " + logFile);
@@ -303,6 +304,7 @@ public class WebinCli { // implements CommandLineRunner
 		logger.addAppender(fileAppender);
 	}
 
+	/*
 	private void initTimedConsoleLogger() {
 		ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
 		initTimedAppender("CONSOLE", consoleAppender);
@@ -312,6 +314,7 @@ public class WebinCli { // implements CommandLineRunner
 		logger.detachAppender("CONSOLE");
 		logger.addAppender(consoleAppender);
 	}
+	*/
 
 	void
 	execute(WebinCliParameters parameters) throws Exception
@@ -322,7 +325,7 @@ public class WebinCli { // implements CommandLineRunner
 			throw WebinCliException.createUserError(INVALID_CONTEXT, params.context);
 		}
 
-		initTimedConsoleLogger();
+		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
 
 		AbstractWebinCli<?> validator = context.getValidatorClass().newInstance();
