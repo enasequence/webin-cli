@@ -5,6 +5,7 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'maven'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: "jacoco"
@@ -144,3 +145,24 @@ codacy {
     // Codacy project token https://support.codacy.com/hc/en-us/articles/207279819-Coverage
     // projectToken = webinCliCodacyProjectToken
 }
+
+
+task writePom {
+    doLast {
+        pom {
+            project {
+                inceptionYear '2019'
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }.writeTo( "pom.xml" )
+    }
+}   
+
+
+compileJava.dependsOn( writePom )
