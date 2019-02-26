@@ -11,7 +11,7 @@ apply plugin: 'idea'
 apply plugin: "jacoco"
 apply plugin: 'io.spring.dependency-management'
 
-apply from:   'checkerframework.gradle'
+//apply from:   'checkerframework.gradle'
 
 wrapper{
     gradleVersion = '4.8'
@@ -24,6 +24,7 @@ ext.version_base = '1.7.0'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
+def private_token=project.ext.properties.gitlab_private_token
 
 // ext.webinCliCodacyProjectToken =
 
@@ -40,12 +41,6 @@ bootJar {
     }
 }
 
-
-repositories {
-    mavenLocal()
-    maven { url "http://ena-dev:8081/artifactory/all" }
-}
-
 configurations.all {
 	
 	if( !hasProperty( 'artifactoryUsername' ) )
@@ -57,6 +52,11 @@ configurations.all {
 		project.ext.properties.artifactoryPassword = ''
 	else
 	 	project.ext.properties.artifactoryPassword = artifactoryPassword;
+
+	if( !hasProperty( 'gitlab_private_token' ) )
+		project.ext.properties.gitlab_private_token = ''
+	else
+		project.ext.properties.gitlab_private_token = gitlab_private_token;
 }
 
 
@@ -75,6 +75,16 @@ test {
     } else {
     	environment 'webin-cli-username', webinCliUsername
     }
+}
+
+
+repositories {
+    //mavenLocal()
+    //maven { url "https://gitlab.ebi.ac.uk/api/v4/projects/811/packages/maven" } //webin-cli
+    //maven { url "https://gitlab.ebi.ac.uk/api/v4/projects/959/packages/maven" } //ena-cram-processing-tools
+    maven { url "https://gitlab.ebi.ac.uk/api/v4/groups/enasequence/-/packages/maven" } // needs personal token
+    /*maven { url "http://ena-dev:8081/artifactory/all" }*/
+    mavenCentral()
 }
 
 
@@ -129,6 +139,16 @@ publishing {
         }
     }
     repositories {
+	    maven { url "https://gitlab.ebi.ac.uk/api/v4/projects/811/packages/maven"
+	            credentials(HttpHeaderCredentials) {
+	    	        name = "Private-Token"
+	        	    value = private_token
+	        	}
+	        	authentication {
+	            	header( HttpHeaderAuthentication )
+	        	}
+	    }
+/*	    
         maven {
             credentials {
                 username project.ext.properties.artifactoryUsername
@@ -136,6 +156,7 @@ publishing {
             }
             url "http://ena-dev:8081/artifactory/libs-release-local"
         }
+*/
     }
 }
 
