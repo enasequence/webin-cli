@@ -79,11 +79,11 @@ test {
 
 
 repositories {
-    //mavenLocal()
+    mavenLocal()
     //maven { url "https://gitlab.ebi.ac.uk/api/v4/projects/811/packages/maven" } //webin-cli
     //maven { url "https://gitlab.ebi.ac.uk/api/v4/projects/959/packages/maven" } //ena-cram-processing-tools
     maven { url "https://gitlab.ebi.ac.uk/api/v4/groups/enasequence/-/packages/maven" } // needs personal token
-    /*maven { url "http://ena-dev:8081/artifactory/all" }*/
+    //maven { url "http://ena-dev:8081/artifactory/all" }
     mavenCentral()
 }
 
@@ -98,9 +98,9 @@ task printWebinTestCredentials {
 dependencies {
     implementation("commons-net:commons-net:3.4")
     implementation group: 'com.beust', name: 'jcommander', version: '1.72'
-    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: 'submissioninterface-1.1.12')
-    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: 'submissioninterface-1.1.12')
-    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: 'submissioninterface-1.1.12')
+    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: 'submissioninterface-1.1.18')
+    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: 'submissioninterface-1.1.18')
+    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: 'submissioninterface-1.1.18')
     implementation("org.jdom:jdom:2.0.2")
     implementation( group: 'uk.ac.ebi', name: 'ena-fastq-validator', version: '1.1.1' )
     implementation( group: 'uk.ac.ebi.ena', name: 'ena-cram-processing-tools', version: '1.1.0' )
