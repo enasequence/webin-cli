@@ -2,7 +2,7 @@
 # This is the Gradle build system for JVM applications
 # https://gradle.org/
 # https://github.com/gradle/gradle
-image: gradle
+image: gradle:5.2.1-jdk8
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
@@ -15,7 +15,7 @@ before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 build:
   stage: build
-  script: ./gradlew --build-cache assemble
+  script: gradle --build-cache assemble
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
@@ -30,7 +30,7 @@ test:
     - wget http://download.asperasoft.com/download/sw/cli/3.9.1/ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
     - sh ./ibm-aspera-cli-3.9.1.1401.be67d47-linux-64-release.sh
     - export PATH=/home/gradle/.aspera/cli/bin:$PATH
-    - ./gradlew test --info
+    - gradle test --info
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull
