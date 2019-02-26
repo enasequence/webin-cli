@@ -14,7 +14,7 @@ apply plugin: 'io.spring.dependency-management'
 //apply from:   'checkerframework.gradle'
 
 wrapper{
-    gradleVersion = '4.8'
+    gradleVersion = '5.2.1'
     distributionType = Wrapper.DistributionType.BIN
 }
 
