@@ -12,17 +12,13 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.FileTime;
-import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,15 +38,12 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
-import net.sf.cram.ref.PathPattern;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.service.LatestReleaseService;
-import uk.ac.ebi.ena.service.LatestReleaseService.GitHubReleaseAsset;
-import uk.ac.ebi.ena.service.LatestReleaseService.GitHubReleaseInfo;
+import uk.ac.ebi.ena.entity.Version;
 import uk.ac.ebi.ena.service.SubmitService;
 import uk.ac.ebi.ena.service.VersionService;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
@@ -86,11 +79,8 @@ public class WebinCli { // implements CommandLineRunner
 
 	private static final String INVALID_CONTEXT = "Invalid context: ";
 	public static final String MISSING_CONTEXT = "Missing context or unique name.";
-	private final static String INVALID_VERSION = "Your current application version webin-cli __VERSION__.jar is out of date, please download the latest version from https://github.com/enasequence/webin-cli/releases.";
 
 	private final static String LOG_FILE_NAME= "webin-cli.report";
-    private static final String JAVA_IO_TMPDIR_PROPERTY_NAME = "java.io.tmpdir";
-    private static final String USER_HOME_PROPERTY_NAME = "user.home";
 
 
 	private Params params;
@@ -310,18 +300,6 @@ public class WebinCli { // implements CommandLineRunner
 		logger.addAppender( fileAppender );
 	}
 
-	/*
-	private void initTimedConsoleLogger() {
-		ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
-		initTimedAppender("CONSOLE", consoleAppender);
-
-		ch.qos.logback.classic.Logger logger =
-				(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		logger.detachAppender("CONSOLE");
-		logger.addAppender(consoleAppender);
-	}
-	*/
-
 	void
 	execute(WebinCliParameters parameters) throws Exception
 	{
@@ -454,7 +432,6 @@ public class WebinCli { // implements CommandLineRunner
 				.append( '\n' )
 
 				.append( "\n" + ParameterDescriptor.userName )
-				//.append( "\n" + ParameterDescriptor.userNameSynonym )
 				.append( ParameterDescriptor.userNameFlagDescription )
 				.append( '\n' )
 
@@ -467,12 +444,10 @@ public class WebinCli { // implements CommandLineRunner
 				.append( '\n' )
 
 				.append( "\n" + ParameterDescriptor.inputDir )
-				//.append( "\n" + ParameterDescriptor.inputDirSynonym )
 				.append( ParameterDescriptor.inputDirFlagDescription )
 				.append( '\n' )
 
 				.append( "\n" + ParameterDescriptor.outputDir )
-				//.append( "\n" + ParameterDescriptor.outputDirSynonym
 				.append( ParameterDescriptor.outputDirFlagDescription )
 				.append( '\n' )
 
@@ -485,7 +460,6 @@ public class WebinCli { // implements CommandLineRunner
 				.append( '\n' )
 
 				.append( "\n" + ParameterDescriptor.centerName )
-				//.append( "\n" + ParameterDescriptor.centerNameSynonym )
 				.append( ParameterDescriptor.centerNameFlagDescription )
 				.append( '\n' )
 
@@ -496,11 +470,7 @@ public class WebinCli { // implements CommandLineRunner
 				.append( "\n" + ParameterDescriptor.version )
 				.append( ParameterDescriptor.versionFlagDescription )
 				.append( '\n' )
-/*	                                                
-				.append( "\n" + ParameterDescriptor.latest )
-				.append( ParameterDescriptor.latestFlagDescription )
-				.append( '\n' )
-*/
+
 				.append( "\n" + ParameterDescriptor.help )
 				.append( ParameterDescriptor.helpFlagDescription )
 				.append( '\n' )
@@ -562,61 +532,44 @@ public class WebinCli { // implements CommandLineRunner
 	private static void 
 	checkVersion( boolean test ) 
 	{
-		String version = WebinCli.class.getPackage().getImplementationVersion();
+		String currentVersion = WebinCli.class.getPackage().getImplementationVersion();
 		
-		if( null == version || version.isEmpty() )
+		if( null == currentVersion || currentVersion.isEmpty() )
 		    return;
-		
-		if( !new VersionService.Builder()
-		                       .setTest( test )
-		                       .build().isVersionValid( version ) )
-			throw WebinCliException.createUserError( INVALID_VERSION.replaceAll( "__VERSION__", version ) );
-	}
 
-	
-	private static void
-	checkLatestVersion()
-	{
-	    String root = System.getProperty( USER_HOME_PROPERTY_NAME );
-	    root = null != root ? root : System.getProperty( JAVA_IO_TMPDIR_PROPERTY_NAME );
-	    root = null != root ? root : ".";
-	    Path lock = Paths.get( root, ".latest-version-check" );
+		Version version = new VersionService.Builder()
+				.setTest( test )
+				.build().getVersion( currentVersion );
 
-	    try
-	    {
-	        long current = System.currentTimeMillis();
-    	    if( !Files.exists( lock ) || Files.getLastModifiedTime( lock ).toMillis() + 24 * 60 * 60 * 1000 > current )
-    	    {
-    	        Files.write( lock, String.valueOf( current ).getBytes(), 
-    	                     StandardOpenOption.SYNC, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING );
-    	        Files.setLastModifiedTime( lock, FileTime.fromMillis( current ) );
-    	        
-    	        LatestReleaseService lr = new LatestReleaseService.Builder().build();
-                GitHubReleaseInfo info = lr.getLatestInfo();
-                if( 1 != info.assets.size() )
-                {
-                    log.debug( "Unable to fetch information about latest release" );
-                    return;
-                }
-                
-                GitHubReleaseAsset ra = info.assets.get( 0 );
-                
-                if( !"uploaded".equals( ra.state ) )
-                {
-                    log.debug( "Unable to fetch information about latest release"  );
-                    return;
-                }
-                String version = WebinCli.class.getPackage().getImplementationVersion();
-                
-                if( null == version || ra.created_at.after( new Timestamp( current ) ) )
-                    log.info( "New version of WebinCli is available: " + ra.name );
-    	    }
-	    } catch( WebinCliException | IOException ioe )
-	    {
-	       log.debug( ioe.getMessage() );
-	    }
+		String downloadMessage =
+				". Please download the latest version " +
+						version.latestVersion +
+						" from https://github.com/enasequence/webin-cli/releases";
+
+		log.info("The application version is " + currentVersion);
+
+		if (!version.valid) {
+			throw WebinCliException.createUserError(
+					"Your application version is no longer supported. The minimum supported version is " +
+							version.minVersion +
+							downloadMessage);
+		}
+
+		if (version.expire) {
+			log.warn("Your application version will not be supported after " +
+					new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate) +
+					". The minimum supported version will be " + version.nextMinVersion +
+					downloadMessage);
+		}
+		else if (version.update) {
+			log.info("A new application version is available" +
+					downloadMessage);
+		}
+
+		if (version.comment != null) {
+			log.info(version.comment);
+		}
 	}
-	
 
 	// Directory creation.
 	static File
