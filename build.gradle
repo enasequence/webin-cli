@@ -110,21 +110,20 @@ configurations.all {
     }
 }
 
-task sourceJar(type: Jar) { 
-	from sourceSets.main.allJava 
-	
-}
-
-
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifact sourceJar { classifier "sources" }
+            artifact sourceJar
         }
     }
     repositories {
