@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.ena.entity.Version;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 
 VersionService extends AbstractService
@@ -34,8 +35,6 @@ VersionService extends AbstractService
         super( builder );
     }
 
-    private final static String SYSTEM_ERROR = "VersionServiceSystemError";
-
     public Version getVersion(String version )
     {
         return getVersion( version, getTest() );
@@ -43,7 +42,7 @@ VersionService extends AbstractService
 
     private Version getVersion(String version, boolean test ) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(getServiceMessage(SYSTEM_ERROR)));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.Service.VERSION_SERVICE_SYSTEM_ERROR.format()));
         return restTemplate.getForObject(
                 getWebinRestUri("/cli/{version}", test), Version.class, version);
     }

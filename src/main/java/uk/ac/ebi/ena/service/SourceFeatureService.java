@@ -24,6 +24,7 @@ import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 
 SourceFeatureService extends AbstractService
@@ -44,16 +45,6 @@ SourceFeatureService extends AbstractService
         }
     };
 
-    final static String VALIDATION_ERROR = "SampleServiceValidationError";
-    final static String SYSTEM_ERROR = "SampleServiceSystemError";
-
-    String 
-    getMessage( String messageKey, String sampleId ) 
-    {
-        return getServiceMessage(messageKey) + " Sample: " + sampleId;
-    }
-
-
     public SourceFeature 
     getSourceFeature( String sampleId )
     {
@@ -66,8 +57,8 @@ SourceFeatureService extends AbstractService
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                getMessage(VALIDATION_ERROR, sampleId),
-                getMessage(SYSTEM_ERROR, sampleId)));
+                WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
+                WebinCliMessage.Service.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
@@ -135,7 +126,8 @@ SourceFeatureService extends AbstractService
 
             return sourceFeature;
         } catch (Exception ex) {
-            throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, sampleId));
+            throw WebinCliException.createUserError(
+                    WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
         }
     }
 }

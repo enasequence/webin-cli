@@ -42,13 +42,13 @@ import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class SubmitService extends AbstractService {
 
     private final static String RECEIPT_XML = "receipt.xml";
     private final String submitDir;
     private static final Logger log = LoggerFactory.getLogger(SubmitService.class);
-    final static String SYSTEM_ERROR = "SubmissionServiceSystemError";
 
     public static class 
     Builder extends AbstractBuilder<SubmitService>
@@ -81,7 +81,7 @@ public class SubmitService extends AbstractService {
     public void
     doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(getServiceMessage(SYSTEM_ERROR)));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.Service.SUBMISSION_SERVICE_SYSTEM_ERROR.format()));
         // restTemplate.setInterceptors(Collections.singletonList(new HttpLoggingInterceptor()));
         // restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
 
