@@ -22,7 +22,6 @@ import org.junit.Assert;
 
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class WebinCliTestUtils {
 
