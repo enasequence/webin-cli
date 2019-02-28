@@ -3,6 +3,8 @@ package uk.ac.ebi.ena.webin.cli;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
+
+import java.lang.reflect.Field;
 import java.text.MessageFormat;
 
 public interface WebinCliMessage {
@@ -11,6 +13,7 @@ public interface WebinCliMessage {
     //
 
     enum Service implements WebinCliMessage {
+
         SUBMISSION_SERVICE_SYSTEM_ERROR("A server error occurred when attempting to submit."),
         IGNORE_ERRORS_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving ignore error information."),
         VERSION_SERVICE_SYSTEM_ERROR("A server error occurred when checking application version."),
@@ -19,19 +22,9 @@ public interface WebinCliMessage {
         STUDY_SERVICE_VALIDATION_ERROR("Unknown study {0} or the study cannot be referenced by your submission account. Studies must be submitted before they can be referenced in the submission."),
         STUDY_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving study {0} information.");
 
-        final String text;
+        public final String text; // Message must be stored in a public field called text.
         Service(String text) {
             this.text = text;
-        }
-
-        @Override
-        public String format(Object... arguments) {
-            return WebinCliMessage.format(text, arguments);
-        }
-
-        @Override
-        public String key() {
-            return this.name();
         }
     }
 
@@ -56,32 +49,14 @@ public interface WebinCliMessage {
         MISSING_PLATFORM_AND_INSTRUMENT_ERROR("Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),
         INVALID_PLATFORM_FOR_INSTRUMENT_ERROR("Platform {0} for instrument {1}. Valid platforms are: {2}.");
 
-        final String text;
+        public final String text;  // Message must be stored in a public field called text.
         Manifest(String text) {
             this.text = text;
         }
-
-        @Override
-        public String format(Object... arguments) {
-            return WebinCliMessage.format(text, arguments);
-        }
-
-        @Override
-        public String key() {
-            return this.name();
-        }
     }
 
-    // Static methods.
+    // Interface methods.
     //
-
-    static String format(String text, Object ... arguments) {
-        try {
-            return MessageFormat.format(text, arguments);
-        } catch (RuntimeException ex) {
-            return MessageFormat.format(text, arguments);
-        }
-    }
 
     static ValidationMessage<Origin> error(WebinCliMessage message, Object ... arguments) {
         return WebinCliMessage.message(Severity.ERROR, message,null, arguments);
@@ -111,6 +86,26 @@ public interface WebinCliMessage {
         return validationMessage;
     }
 
-    String format(Object... arguments);
-    String key();
+    default String key() {
+        if (this instanceof Enum) {
+            return ((Enum) this).name();
+        }
+        return null;
+    }
+
+    default String format(Object ... arguments) {
+        String text;
+        try {
+            Field field = this.getClass().getField("text");
+            text = (String) field.get(this);
+        }
+        catch (NoSuchFieldException | IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
+        try {
+            return MessageFormat.format(text, arguments);
+        } catch (RuntimeException ex) {
+            return text;
+        }
+    }
 }
