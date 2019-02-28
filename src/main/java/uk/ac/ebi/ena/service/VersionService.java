@@ -11,48 +11,39 @@
 
 package uk.ac.ebi.ena.service;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import uk.ac.ebi.ena.entity.Version;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 
 VersionService extends AbstractService
 {
     public static class 
-    Builder extends AbstractBuilder<VersionService>
-    {
+    Builder extends AbstractBuilder<VersionService> {
         public VersionService
         build()
         {
           return new VersionService( this );
         }
     }
-      
-    
+
     protected 
     VersionService( Builder builder )
     {
         super( builder );
     }
 
-
-    private final static String SYSTEM_ERROR = "VersionServiceSystemError";
-
-    
-    public Boolean 
-    isVersionValid( String version )
+    public Version getVersion(String version )
     {
-        return isVersionValid( version, getTest() );
+        return getVersion( version, getTest() );
     }
-    
-    
-    private boolean isVersionValid(String version, boolean test ) {
+
+    private Version getVersion(String version, boolean test ) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(getServiceMessage(SYSTEM_ERROR)));
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                getWebinRestUri("check_version/cli/{version}", test), String.class, version);
-        String body = response.getBody();
-        return "true".equals(body);
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.Service.VERSION_SERVICE_SYSTEM_ERROR.format()));
+        return restTemplate.getForObject(
+                getWebinRestUri("/cli/{version}", test), Version.class, version);
     }
- }
+}

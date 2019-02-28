@@ -48,6 +48,7 @@ import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public abstract class 
 SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
@@ -197,7 +198,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             
         } catch( IOException e ) 
         {
-            throw WebinCliException.createSystemError( e.getMessage() );
+            throw WebinCliException.systemError( e.getMessage() );
         }
     }
 
@@ -241,10 +242,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     validate() throws WebinCliException
     {
         if( !FileUtils.emptyDirectory( getValidationDir() ) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + getValidationDir() );
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
         
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 
 
         getSubmissionOptions().ignoreErrors = false;
@@ -258,7 +259,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             getSubmissionOptions().ignoreErrors = ignoreErrorsService.getIgnoreErrors(getContext().name(), getName());
         }
         catch (RuntimeException ex) {
-            log.warn("A server error occurred when retrieving ignore error information.");
+            log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
         }
 
         try
@@ -272,10 +273,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                 throw new RuntimeException();
             
             case SYSTEM_ERROR:
-                throw WebinCliException.createSystemError( ve.getMessage() );
+                throw WebinCliException.systemError( ve.getMessage() );
 
             case VALIDATION_ERROR:
-                throw WebinCliException.createValidationError( ve.getMessage() );
+                throw WebinCliException.validationError( ve.getMessage() );
             }
         }
     }
@@ -334,7 +335,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                                                        FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );   
         } catch( IOException | NoSuchAlgorithmException e )
         {
-            throw WebinCliException.createSystemError( e.getMessage() );
+            throw WebinCliException.systemError( e.getMessage() );
         }        
     }
 

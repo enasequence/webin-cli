@@ -11,7 +11,9 @@
 
 package uk.ac.ebi.ena.service;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+import uk.ac.ebi.ena.entity.Version;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,15 +22,31 @@ VersionServiceTest {
 
     private static final boolean TEST = true;
 
+    private static Version validVersion;
+    private static Version invalidVersion;
+
+    @BeforeClass
+    public static void setup() {
+        VersionService versionService = new VersionService.Builder().setTest( TEST ).build();
+        validVersion = versionService.getVersion( "10.0.0" );
+        invalidVersion = versionService.getVersion( "1.0.0" );
+    }
+
     @Test
     public void testValidVersion() {
-        VersionService versionService = new VersionService.Builder().setTest( TEST ).build();
-        assertThat( versionService.isVersionValid( "3.0.0" ) ).isTrue();
+        assertThat( validVersion.valid ).isTrue();
+        assertThat( validVersion.expire ).isNotNull();
+        assertThat( validVersion.update ).isNotNull();
+        assertThat( validVersion.minVersion ).matches("\\d+\\.\\d+\\.\\d+");
+        assertThat( validVersion.latestVersion ).matches("\\d+\\.\\d+\\.\\d+");
     }
 
     @Test
     public void testInvalidVersion() {
-        VersionService versionService = new VersionService.Builder().setTest( TEST ).build();
-        assertThat( versionService.isVersionValid( "1.0.0" ) ).isFalse();
+        assertThat( invalidVersion.valid ).isFalse();
+        assertThat( invalidVersion.expire ).isNotNull();
+        assertThat( invalidVersion.update ).isNotNull();
+        assertThat( invalidVersion.minVersion ).matches("\\d+\\.\\d+\\.\\d+");
+        assertThat( invalidVersion.latestVersion ).matches("\\d+\\.\\d+\\.\\d+");
     }
 }

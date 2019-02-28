@@ -9,6 +9,7 @@ import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 
 SampleService extends AbstractService 
@@ -18,17 +19,15 @@ SampleService extends AbstractService
     {
         super( builder );
     }
-    
-    public static class 
-    Builder extends AbstractBuilder<SampleService> 
-    {
-        @Override public SampleService
-        build()
-        {
-            return new SampleService( this );
+
+    public static class
+    Builder extends AbstractBuilder<SampleService> {
+        @Override
+        public SampleService
+        build() {
+            return new SampleService(this);
         }
     }
-
 
     private static class SampleResponse {
         public long taxId;
@@ -37,14 +36,6 @@ SampleService extends AbstractService
         public boolean canBeReferenced;
     }
 
-    final static String VALIDATION_ERROR = "SampleServiceValidationError";
-    final static String SYSTEM_ERROR = "SampleServiceSystemError";
-
-    String getMessage(String messageKey, String sampleId) {
-        return getServiceMessage(messageKey) + " Sample: " + sampleId;
-    }
-
-    
     public Sample 
     getSample( String sampleId )
     {
@@ -55,8 +46,8 @@ SampleService extends AbstractService
     private Sample getSample(String sampleId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                getMessage(VALIDATION_ERROR, sampleId),
-                getMessage(SYSTEM_ERROR, sampleId)));
+                WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
+                WebinCliMessage.Service.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
 
         ResponseEntity<SampleResponse> response = restTemplate.exchange(
                 getWebinRestUri("reference/sample/{id}", test),
@@ -67,7 +58,7 @@ SampleService extends AbstractService
 
         SampleResponse sampleResponse = response.getBody();
         if (sampleResponse == null || !sampleResponse.canBeReferenced) {
-            throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, sampleId));
+            throw WebinCliException.userError(WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
         }
         Sample sample = new Sample();
         sample.setBiosampleId(sampleResponse.bioSampleId);

@@ -58,14 +58,11 @@ import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.entity.Study;
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 
 public class 
@@ -123,10 +120,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     validate() throws WebinCliException
     {
         if( !FileUtils.emptyDirectory(getValidationDir()) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + getValidationDir());
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
 
         if( !FileUtils.emptyDirectory(getSubmitDir()) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir());
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
@@ -149,7 +146,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
 
             } else
             {
-                throw WebinCliException.createSystemError( "Filetype " + rf.getFiletype() + " is unknown" );
+                throw WebinCliException.systemError( "Filetype " + rf.getFiletype() + " is unknown" );
             }
             
             break;
@@ -158,7 +155,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         is_paired = paired.get();
         
         if( !valid )
-            throw WebinCliException.createValidationError();
+            throw WebinCliException.validationError("");
     }
 
     
@@ -205,7 +202,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             {
                 String msg = "Unable to validate unusual amount of files: " + files;
                 reportToFileList( files, msg );
-                throw WebinCliException.createValidationError( msg );
+                throw WebinCliException.validationError( msg );
             }
             
             
@@ -221,7 +218,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             
         } catch( Throwable e )
         {
-            throw WebinCliException.createSystemError( "Unable to validate file(s): " + files + ", " + e.getMessage() );
+            throw WebinCliException.systemError( "Unable to validate file(s): " + files + ", " + e.getMessage() );
         }
     }
     
@@ -336,7 +333,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     valid = false;
 
                 } catch (IOException e) {
-                    throw WebinCliException.createSystemError(e.getMessage());
+                    throw WebinCliException.systemError(e.getMessage());
                 }
             }
         }
@@ -389,7 +386,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                                                        FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );
         } catch( NoSuchAlgorithmException | IOException e )
         {
-            throw WebinCliException.createSystemError( e.getMessage() );
+            throw WebinCliException.systemError( e.getMessage() );
         }
     }
 
@@ -509,7 +506,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             
         } catch( IOException e ) 
         {
-            throw WebinCliException.createSystemError( e.getMessage() );
+            throw WebinCliException.systemError( e.getMessage() );
         }
     }
     
@@ -551,7 +548,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             
         } catch( IOException e ) 
         {
-            throw WebinCliException.createSystemError( e.getMessage() );
+            throw WebinCliException.systemError( e.getMessage() );
         }
     }
 

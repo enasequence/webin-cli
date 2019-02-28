@@ -16,6 +16,7 @@ import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.manifest.ManifestCVList;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class
 CVFieldProcessor implements ManifestFieldProcessor
@@ -45,15 +46,16 @@ CVFieldProcessor implements ManifestFieldProcessor
     {
         String value = fieldValue.getValue();
 
-        if( !cvList.contains( value ) )
-            return ValidationMessage.error( "MANIFEST_INVALID_FIELD_VALUE", fieldValue.getName(), value, cvList.keyList() );
+        if( !cvList.contains( value ) ) {
+            return WebinCliMessage.error(WebinCliMessage.Manifest.INVALID_FIELD_VALUE_ERROR, fieldValue.getName(), value, cvList.keyList());
+        }
 
         String corrected = cvList.getKey( value );
 
         if( !value.equals( corrected ) )
         {
             fieldValue.setValue( corrected );
-            return ValidationMessage.info( "MANIFEST_FIELD_VALUE_WAS_CORRECTED", fieldValue.getName(), value, corrected );
+            return WebinCliMessage.info(WebinCliMessage.Manifest.FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected );
         }
 
         return null;

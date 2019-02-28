@@ -30,6 +30,7 @@ import uk.ac.ebi.ena.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsManifest.Fields;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 
 RawReadsManifestTest
@@ -243,7 +244,7 @@ RawReadsManifestTest
 
         Assert.assertNull( rm.getPlatform() );
         Assert.assertEquals( "unspecified", rm.getInstrument() );
-        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT", Severity.ERROR));
+        Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR.key(), Severity.ERROR));
     }
 
     @Test public void
@@ -262,7 +263,7 @@ RawReadsManifestTest
 
         Assert.assertNull( rm.getPlatform() );
         Assert.assertEquals( "unspecified", rm.getInstrument() );
-        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT", Severity.ERROR));
+        Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR.key(), Severity.ERROR));
     }
 
 
@@ -283,7 +284,7 @@ RawReadsManifestTest
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
         rm.readManifest( Paths.get( "." ), man.toFile() );
-        Assert.assertEquals(1, rm.getValidationResult().count("MANIFEST_INVALID_POSITIVE_INTEGER", Severity.ERROR));
+        Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.INVALID_POSITIVE_INTEGER_ERROR.key(), Severity.ERROR));
     }
 
 }

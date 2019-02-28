@@ -19,11 +19,13 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -189,11 +191,8 @@ public class GenomeAssemblyValidationTest {
         return validator;
     }
 
-    private void assertValidatorError(GenomeAssemblyWebinCli validator, String messageKey) {
-        assertThat(validator.getManifestReader().getValidationResult().getMessages()
-                .stream()
-                .filter(e -> e.getMessageKey().equals(messageKey))
-                .count()).isGreaterThanOrEqualTo(1);
+    private void assertValidatorError(GenomeAssemblyWebinCli validator, WebinCliMessage message) {
+        assertThat(validator.getManifestReader().getValidationResult().count(message.key(), Severity.ERROR)).isGreaterThanOrEqualTo(1);
     }
 
     @Test
@@ -245,10 +244,10 @@ public class GenomeAssemblyValidationTest {
                                 assertThat(submissionFiles.getFiles(FileType.UNLOCALISED_LIST).size()).isEqualTo(unlocalisedList ? 1 : 0);
                             } else if (cnt == 0) {
                                 GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                                assertValidatorError(validator, "MANIFEST_ERROR_NO_DATA_FILES");
+                                assertValidatorError(validator, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
                             } else {
                                 GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                                assertValidatorError(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
+                                assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR);
                             }
                         }
                     }
@@ -297,10 +296,10 @@ public class GenomeAssemblyValidationTest {
                                 assertThat(submissionFiles.getFiles().size()).isOne();
                             } else if (cnt == 0) {
                                 GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                                assertValidatorError(validator, "MANIFEST_ERROR_NO_DATA_FILES");
+                                assertValidatorError(validator, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
                             } else {
                                 GenomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                                assertValidatorError(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
+                                assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR);
                             }
                         }
                     }
@@ -324,7 +323,7 @@ public class GenomeAssemblyValidationTest {
                 new ManifestBuilder(tempInputDir).gzipTempUnlocalisedList(".txt").gzipTempChromosomeList().gzipTempFasta().build(),};
         Arrays.stream(manifests).forEach(manifest -> {
             GenomeAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
-            assertValidatorError(validator, "MANIFEST_INVALID_FILE_SUFFIX");
+            assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_SUFFIX_ERROR);
         });
     }
 
@@ -339,7 +338,7 @@ public class GenomeAssemblyValidationTest {
                 new ManifestBuilder(tempInputDir).gzipTempUnlocalisedList().gzipTempUnlocalisedList().build()};
         Arrays.stream(manifests).forEach(manifest -> {
             GenomeAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
-            assertValidatorError(validator, "MANIFEST_TOO_MANY_FIELDS");
+            assertValidatorError(validator, WebinCliMessage.Manifest.TOO_MANY_FIELDS_ERROR);
         });
     }
 

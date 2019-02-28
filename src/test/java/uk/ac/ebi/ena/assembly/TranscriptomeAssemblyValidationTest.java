@@ -19,11 +19,13 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -143,11 +145,8 @@ public class TranscriptomeAssemblyValidationTest {
         return validator;
     }
 
-    private void assertValidatorError(TranscriptomeAssemblyWebinCli validator, String messageKey) {
-        assertThat(validator.getManifestReader().getValidationResult().getMessages()
-                .stream()
-                .filter(e -> e.getMessageKey().equals(messageKey))
-                .count()).isGreaterThanOrEqualTo(1);
+    private void assertValidatorError(TranscriptomeAssemblyWebinCli validator, WebinCliMessage message) {
+        assertThat(validator.getManifestReader().getValidationResult().count(message.key(), Severity.ERROR)).isGreaterThanOrEqualTo(1);
     }
 
     @Test
@@ -169,10 +168,10 @@ public class TranscriptomeAssemblyValidationTest {
                     assertThat(submissionFiles.getFiles(FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
                 } else if (cnt == 0) {
                     TranscriptomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                    assertValidatorError(validator, "MANIFEST_ERROR_NO_DATA_FILES");
+                    assertValidatorError(validator, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
                 } else {
                     TranscriptomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                    assertValidatorError(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
+                    assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR);
                 }
             }
         }
@@ -189,7 +188,7 @@ public class TranscriptomeAssemblyValidationTest {
                 new ManifestBuilder(tempInputDir).gzipTempFlatfile(".txt").build()};
         Arrays.stream(manifests).forEach(manifest -> {
             TranscriptomeAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
-            assertValidatorError(validator, "MANIFEST_INVALID_FILE_SUFFIX");
+            assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_SUFFIX_ERROR);
         });
     }
 
@@ -201,7 +200,7 @@ public class TranscriptomeAssemblyValidationTest {
                 new ManifestBuilder(tempInputDir).gzipTempFlatfile().gzipTempFlatfile().build()};
         Arrays.stream(manifests).forEach(manifest -> {
             TranscriptomeAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
-            assertValidatorError(validator, "MANIFEST_TOO_MANY_FIELDS");
+            assertValidatorError(validator, WebinCliMessage.Manifest.TOO_MANY_FIELDS_ERROR);
         });
     }
 

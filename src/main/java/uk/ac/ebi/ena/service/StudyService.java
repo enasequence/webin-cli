@@ -9,6 +9,7 @@ import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import java.util.List;
 
@@ -38,14 +39,6 @@ public class StudyService extends AbstractService {
         public boolean canBeReferenced;
     }
 
-    final static String VALIDATION_ERROR = "StudyServiceValidationError";
-    final static String SYSTEM_ERROR = "StudyServiceSystemError";
-
-    String getMessage(String messageKey, String studyId) {
-        return getServiceMessage(messageKey) + " Study: " + studyId;
-    }
-    
-    
     public Study
     getStudy( String studyId )
     {
@@ -58,8 +51,8 @@ public class StudyService extends AbstractService {
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                getMessage(VALIDATION_ERROR, studyId),
-                getMessage(SYSTEM_ERROR, studyId)));
+                WebinCliMessage.Service.STUDY_SERVICE_VALIDATION_ERROR.format(studyId),
+                WebinCliMessage.Service.STUDY_SERVICE_SYSTEM_ERROR.format(studyId)));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
@@ -72,7 +65,8 @@ public class StudyService extends AbstractService {
 
         StudyResponse studyResponse = response.getBody();
         if (studyResponse == null || !studyResponse.canBeReferenced) {
-            throw WebinCliException.createUserError(getMessage(VALIDATION_ERROR, studyId));
+            throw WebinCliException.userError(
+                    WebinCliMessage.Service.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
         }
         Study study = new Study();
         study.setProjectId(studyResponse.bioProjectId);

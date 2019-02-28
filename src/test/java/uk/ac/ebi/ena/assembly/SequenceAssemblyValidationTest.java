@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.submission.Context;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
@@ -38,6 +39,7 @@ import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class SequenceAssemblyValidationTest {
 
@@ -216,13 +218,9 @@ public class SequenceAssemblyValidationTest {
         return validator;
     }
 
-    private void assertValidatorError(SequenceAssemblyWebinCli validator, String messageKey) {
-        AssertionsForClassTypes.assertThat(validator.getManifestReader().getValidationResult().getMessages()
-                .stream()
-                .filter(e -> e.getMessageKey().equals(messageKey))
-                .count()).isGreaterThanOrEqualTo(1);
+    private void assertValidatorError(SequenceAssemblyWebinCli validator, WebinCliMessage message) {
+        AssertionsForClassTypes.assertThat(validator.getManifestReader().getValidationResult().count(message.key(), Severity.ERROR)).isGreaterThanOrEqualTo(1);
     }
-
 
     @Test
     public void
@@ -303,10 +301,10 @@ public class SequenceAssemblyValidationTest {
                     AssertionsForClassTypes.assertThat(submissionFiles.getFiles(FileType.TSV).size()).isEqualTo(tab ? 1 : 0);
                 } else if (cnt == 0) {
                     SequenceAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                    assertValidatorError(validator, "MANIFEST_ERROR_NO_DATA_FILES");
+                    assertValidatorError(validator, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
                 } else {
                     SequenceAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
-                    assertValidatorError(validator, "MANIFEST_ERROR_INVALID_FILE_GROUP");
+                    assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR);
                 }
             }
         }
@@ -323,7 +321,7 @@ public class SequenceAssemblyValidationTest {
                 new ManifestBuilder(tempInputDir).gzipTempTab(".tsv").build()};
         Arrays.stream(manifests).forEach(manifest -> {
             SequenceAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
-            assertValidatorError(validator, "MANIFEST_INVALID_FILE_SUFFIX");
+            assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_SUFFIX_ERROR);
         });
     }
 
@@ -335,7 +333,7 @@ public class SequenceAssemblyValidationTest {
                 new ManifestBuilder(tempInputDir).gzipTempTab().gzipTempTab().build()};
         Arrays.stream(manifests).forEach(manifest -> {
             SequenceAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
-            assertValidatorError(validator, "MANIFEST_TOO_MANY_FIELDS");
+            assertValidatorError(validator, WebinCliMessage.Manifest.TOO_MANY_FIELDS_ERROR);
         });
     }
 }

@@ -25,6 +25,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import static uk.ac.ebi.ena.manifest.ManifestReader.Fields.INFO;
 import static uk.ac.ebi.ena.manifest.ManifestReader.ManifestReaderState.State.PARSE;
@@ -45,14 +46,6 @@ ManifestReader
             add( new ManifestFieldDefinition( INFO, ManifestFieldType.FILE, 0, 1 ) );
         }
     };
-
-    private static final String MESSAGE_BUNDLE = "uk.ac.ebi.ena.manifest.ManifestReaderMessages";
-
-
-    static
-    {
-        ValidationMessageManager.addBundle( MESSAGE_BUNDLE );
-    }
 
 
     static class ManifestReaderState
@@ -137,7 +130,7 @@ ManifestReader
             manifestLines = Files.readAllLines( file.toPath() );
         } catch( IOException ex )
         {
-            error( "MANIFEST_ERROR_READING_MANIFEST_FILE", file.getPath() );
+            error( WebinCliMessage.Manifest.READING_MANIFEST_FILE_ERROR, file.getPath() );
             return;
         }
 
@@ -162,7 +155,7 @@ ManifestReader
                 infoLines = readAllLines( infoFile );
             } catch( IOException ex )
             {
-                error( "MANIFEST_ERROR_READING_INFO_FILE", infoFile.getPath() );
+                error( WebinCliMessage.Manifest.READING_INFO_FILE_ERROR, infoFile.getPath() );
                 return;
             }
 
@@ -257,7 +250,7 @@ ManifestReader
 
         } catch( NoSuchElementException ex )
         {
-            error( "MANIFEST_UNKNOWN_FIELD", fieldName );
+            error( WebinCliMessage.Manifest.UNKNOWN_FIELD_ERROR, fieldName );
         }
 
         return null;
@@ -280,7 +273,7 @@ ManifestReader
                             .filter( field -> field.getName().equals( minCountField.getName() ) )
                             .count() < 1 )
                   {
-                      error( "MANIFEST_MISSING_MANDATORY_FIELD", minCountField.getName() );
+                      error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, minCountField.getName() );
                   }
               } );
 
@@ -296,7 +289,7 @@ ManifestReader
 
                     if( matchingFields.size() > maxCountField.getMaxCount() )
                     {
-                        error( "MANIFEST_TOO_MANY_FIELDS",
+                        error( WebinCliMessage.Manifest.TOO_MANY_FIELDS_ERROR,
                                 maxCountField.getName(),
                                 String.valueOf( maxCountField.getMaxCount() ) );
                     }
@@ -354,14 +347,14 @@ ManifestReader
                 field.setValue(inputDir.resolve(Paths.get(fieldValue)).toString());
             }
             else {
-                error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
+                error(WebinCliMessage.Manifest.INVALID_FILE_FIELD_ERROR, field.getOrigin(), fieldName, fieldValue);
                 return;
             }
 
             validateFileCompression(field.getValue());
         }
         catch (Throwable ex) {
-            error("MANIFEST_INVALID_FILE_FIELD", field.getOrigin(), fieldName, fieldValue);
+            error(WebinCliMessage.Manifest.INVALID_FILE_FIELD_ERROR, field.getOrigin(), fieldName, fieldValue);
         }
     }
 
@@ -378,7 +371,7 @@ ManifestReader
 
         if( fileCountMap == null || fileCountMap.isEmpty() )
         {
-            error( "MANIFEST_ERROR_NO_DATA_FILES", getExpectedFileTypeList( files ) );
+            error( WebinCliMessage.Manifest.NO_DATA_FILES_ERROR, getExpectedFileTypeList( files ) );
             return;
         }
 
@@ -411,7 +404,7 @@ ManifestReader
             return; // Valid
         }
 
-        error( "MANIFEST_ERROR_INVALID_FILE_GROUP", getExpectedFileTypeList( files ), "" );
+        error( WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR, getExpectedFileTypeList( files ), "" );
 
     }
 
@@ -419,14 +412,14 @@ ManifestReader
         if (filePath.endsWith(ManifestFileSuffix.GZIP_FILE_SUFFIX)) {
             try (GZIPInputStream gz = new GZIPInputStream(new FileInputStream(filePath))) {
             } catch (Exception e) {
-                error("MANIFEST_INVALID_FILE_COMPRESSION", filePath, "gzip");
+                error(WebinCliMessage.Manifest.INVALID_FILE_COMPRESSION_ERROR, filePath, "gzip");
             }
         }
         else if (filePath.endsWith(ManifestFileSuffix.BZIP2_FILE_SUFFIX)) {
             try( BZip2CompressorInputStream bz2 = new BZip2CompressorInputStream(new FileInputStream(filePath))) {
             }
             catch (Exception e) {
-                error("MANIFEST_INVALID_FILE_COMPRESSION", filePath, "bzip2");
+                error(WebinCliMessage.Manifest.INVALID_FILE_COMPRESSION_ERROR, filePath, "bzip2");
             }
         }
     }
@@ -445,14 +438,14 @@ ManifestReader
         {
             int value = Integer.valueOf( fieldValue );
             if( value <= 0 ) {
-                error("MANIFEST_INVALID_POSITIVE_INTEGER", field.getOrigin(), field.getName(), fieldValue);
+                error(WebinCliMessage.Manifest.INVALID_POSITIVE_INTEGER_ERROR, field.getOrigin(), field.getName(), fieldValue);
                 return null;
             }
             return value;
         }
         catch( NumberFormatException nfe )
         {
-            error("MANIFEST_INVALID_POSITIVE_INTEGER", field.getOrigin(), field.getName(), fieldValue);
+            error(WebinCliMessage.Manifest.INVALID_POSITIVE_INTEGER_ERROR, field.getOrigin(), field.getName(), fieldValue);
         }
 
         return null;
@@ -472,14 +465,14 @@ ManifestReader
         {
             float value = Float.valueOf( fieldValue );
             if( value <= 0 ) {
-                error("MANIFEST_INVALID_POSITIVE_FLOAT", field.getOrigin(), field.getName(), fieldValue);
+                error(WebinCliMessage.Manifest.INVALID_POSITIVE_FLOAT_ERROR, field.getOrigin(), field.getName(), fieldValue);
                 return null;
             }
             return value;
         }
         catch( NumberFormatException nfe )
         {
-            error("MANIFEST_INVALID_POSITIVE_FLOAT", field.getOrigin(), field.getName(), fieldValue);
+            error(WebinCliMessage.Manifest.INVALID_POSITIVE_FLOAT_ERROR, field.getOrigin(), field.getName(), fieldValue);
         }
 
         return null;
@@ -598,12 +591,10 @@ ManifestReader
     }
 
     protected final void
-    error( String key, String... params )
+    error(WebinCliMessage message, Object... arguments )
     {
         Origin origin = null;
-
-        switch( state.state )
-        {
+        switch (state.state) {
             case PARSE:
                 origin = createParseOrigin();
                 break;
@@ -611,19 +602,15 @@ ManifestReader
                 origin = createValidateOrigin();
                 break;
         }
-
-        error( key, origin, params);
+        error(message, origin, arguments);
     }
 
 
     private void
-    error(String key, Origin origin, String... params)
+    error(WebinCliMessage message, Origin origin, Object... arguments)
     {
-        ValidationMessage<Origin> validationMessage = ValidationMessage.error( key, (Object[]) params );
-        validationMessage.append( origin );
-        result.getValidationResult().append( validationMessage );
+        result.getValidationResult().append(WebinCliMessage.error(message, origin, arguments));
     }
-
 
     private Origin
     createParseOrigin()

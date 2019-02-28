@@ -19,6 +19,7 @@ import org.junit.Test;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class
 SourceFeatureServiceTest {
@@ -52,7 +53,7 @@ SourceFeatureServiceTest {
         assertThatThrownBy(() -> {
             sampleService.getSourceFeature( id );
         }).isInstanceOf(WebinCliException.class)
-            .hasMessageContaining(sampleService.getMessage(SampleService.VALIDATION_ERROR, id));
+                .hasMessageContaining(WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(id));
     }
 
     private void testGetSourceFeatureUsingValidId(String id) {

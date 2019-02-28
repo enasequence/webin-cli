@@ -4,6 +4,7 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class FileSuffixProcessor implements ManifestFieldProcessor {
                 return null;
         }
 
-        return ValidationMessage.error( "MANIFEST_INVALID_FILE_SUFFIX",
+        return WebinCliMessage.error(WebinCliMessage.Manifest.INVALID_FILE_SUFFIX_ERROR,
                 fieldValue.getName(),
                 fieldValue.getValue(),
                 String.join(", ", suffixes));

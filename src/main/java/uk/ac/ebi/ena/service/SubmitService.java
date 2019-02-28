@@ -40,15 +40,14 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class SubmitService extends AbstractService {
 
     private final static String RECEIPT_XML = "receipt.xml";
     private final String submitDir;
     private static final Logger log = LoggerFactory.getLogger(SubmitService.class);
-    final static String SYSTEM_ERROR = "SubmissionServiceSystemError";
 
     public static class 
     Builder extends AbstractBuilder<SubmitService>
@@ -81,7 +80,7 @@ public class SubmitService extends AbstractService {
     public void
     doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(getServiceMessage(SYSTEM_ERROR)));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.Service.SUBMISSION_SERVICE_SYSTEM_ERROR.format()));
         // restTemplate.setInterceptors(Collections.singletonList(new HttpLoggingInterceptor()));
         // restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
 
@@ -134,10 +133,12 @@ public class SubmitService extends AbstractService {
                     String xmlFileType = String.valueOf(xmlFile.getType());
                     String accession = rootNode.getChild(xmlFileType).getAttributeValue("accession");
                     if (accession != null && !accession.isEmpty()) {
-                        String msg = WebinCli.SUBMIT_SUCCESS + " The following " + xmlFileType.toLowerCase() + " accession was assigned to the submission: " + accession;
+                        String msg = WebinCliMessage.Cli.SUBMIT_SUCCESS.format() +
+                                " The following " + xmlFileType.toLowerCase() + " accession was assigned to the submission: " + accession;
                         log.info(msg);
                     } else {
-                        String msg = WebinCli.SUBMIT_SUCCESS + " No accession was assigned to the " + xmlFileType.toLowerCase() + " XML submission. Please contact the helpdesk.";
+                        String msg = WebinCliMessage.Cli.SUBMIT_SUCCESS.format() +
+                                " No accession was assigned to the " + xmlFileType.toLowerCase() + " XML submission. Please contact the helpdesk.";
                         log.info(msg);
                     }
                 }
@@ -154,10 +155,10 @@ public class SubmitService extends AbstractService {
                 }
             }
             if (errorsSb.length() != 0) {
-                throw WebinCliException.createSystemError(errorsSb.toString());
+                throw WebinCliException.systemError(errorsSb.toString());
             }
         } catch (IOException | JDOMException e) {
-            throw WebinCliException.createSystemError(e.getMessage());
+            throw WebinCliException.systemError(e.getMessage());
         }
     }
 }

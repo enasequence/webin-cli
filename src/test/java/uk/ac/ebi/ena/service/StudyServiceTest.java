@@ -17,6 +17,7 @@ import uk.ac.ebi.ena.WebinCliTestUtils;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -65,7 +66,7 @@ StudyServiceTest {
         assertThatThrownBy( () ->
                 studyService.getStudy( studyId ) )
                 .isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(studyService.getMessage(StudyService.VALIDATION_ERROR, studyId));
+                .hasMessageContaining(WebinCliMessage.Service.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
     }
 
     @Test
@@ -80,6 +81,6 @@ StudyServiceTest {
         assertThatThrownBy(() ->
                 studyService.getStudy( studyId )
         ).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(WebinCli.AUTHENTICATION_ERROR);
+                .hasMessageContaining(WebinCliMessage.Cli.AUTHENTICATION_ERROR.format());
     }
 }

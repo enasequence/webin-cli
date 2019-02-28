@@ -6,6 +6,7 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 
 ASCIIFileNameProcessor implements ManifestFieldProcessor 
@@ -19,6 +20,6 @@ ASCIIFileNameProcessor implements ManifestFieldProcessor
         if( pattern.matcher( fieldValue.getValue() ).matches() )
             return null;
 
-        return ValidationMessage.error( "MANIFEST_INVALID_FILE_NAME", fieldValue.getName(), fieldValue.getValue(), pattern.pattern() );
+        return WebinCliMessage.error(WebinCliMessage.Manifest.INVALID_FILE_NAME_ERROR, fieldValue.getName(), fieldValue.getValue(), pattern.pattern() );
     }
 }

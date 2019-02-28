@@ -88,7 +88,7 @@ AbstractWebinCli<T extends ManifestReader>
                 this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), SUBMIT_DIR );
             } else 
             {
-                throw WebinCliException.createSystemError( "Missing submission name" );
+                throw WebinCliException.systemError( "Missing submission name" );
             }
             
         } catch( WebinCliException e )
@@ -97,7 +97,7 @@ AbstractWebinCli<T extends ManifestReader>
             
         } catch( Throwable t )
         {
-            throw WebinCliException.createSystemError( "Failed to initialise validator" );
+            throw WebinCliException.systemError( "Failed to initialise validator" );
             
         } finally 
         {
@@ -111,7 +111,7 @@ AbstractWebinCli<T extends ManifestReader>
         }
 
         if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
-            throw WebinCliException.createUserError( "Invalid manifest file. Please see the error report: " + reportFile.getPath() );
+            throw WebinCliException.userError( WebinCliMessage.Manifest.INVALID_MANIFEST_FILE_ERROR.format(reportFile.getPath()) );
         }
     }
 

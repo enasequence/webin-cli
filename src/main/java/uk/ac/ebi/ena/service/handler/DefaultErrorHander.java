@@ -2,8 +2,8 @@ package uk.ac.ebi.ena.service.handler;
 
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import java.io.IOException;
 
@@ -29,9 +29,9 @@ public class DefaultErrorHander implements ResponseErrorHandler {
         switch (httpResponse.getStatusCode()) {
             case UNAUTHORIZED:
             case FORBIDDEN:
-                throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
+                throw WebinCliException.userError(WebinCliMessage.Cli.AUTHENTICATION_ERROR.format());
             default:
-                throw WebinCliException.createSystemError(systemError);
+                throw WebinCliException.systemError(systemError);
         }
     }
 }

@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.embl.api.validation.ValidationMessageManager;
 import uk.ac.ebi.ena.manifest.ManifestCVList;
 import uk.ac.ebi.ena.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.manifest.ManifestFieldType;
@@ -39,6 +38,7 @@ import uk.ac.ebi.ena.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class
 RawReadsManifest extends ManifestReader {
@@ -170,14 +170,6 @@ RawReadsManifest extends ManifestReader {
                 }});
         }});
     }
-
-    private static final String MESSAGE_BUNDLE = "uk.ac.ebi.ena.rawreads.RawReadsManifestMessages";
-
-    static
-    {
-        ValidationMessageManager.addBundle( MESSAGE_BUNDLE );
-    }
-
 
     @Override public String
     getName()
@@ -336,7 +328,7 @@ RawReadsManifest extends ManifestReader {
 
         if( null == platform && ( null == instrument || instrument.equals( UNSPECIFIED_INSTRUMENT ) ) )
         {
-            error( "MANIFEST_MISSING_PLATFORM_AND_INSTRUMENT",
+            error(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR,
                     String.join(", ", CV_PLATFORM.keyList()),
                     String.join(", ", CV_INSTRUMENT.keyList()));
         }
@@ -348,7 +340,7 @@ RawReadsManifest extends ManifestReader {
             String platforms = CV_INSTRUMENT.getValue( instrument );
             if( StringUtils.isBlank( platforms ) )
             {
-                throw WebinCliException.createSystemError( "Missing platform for instrument: " + instrument );
+                error(WebinCliMessage.Manifest.MISSING_PLATFORM_FOR_INSTRUMENT_ERROR, instrument);
             }
 
             String[] platformList = platforms.split( "[;,]" );
@@ -358,7 +350,7 @@ RawReadsManifest extends ManifestReader {
                 platform = CV_PLATFORM.getKey( platformList[ 0 ] );
             } else if(Stream.of( platformList ).noneMatch(e -> e.equals( platform ) ))
             {
-                error( "MANIFEST_INVALID_PLATFORM_FOR_INSTRUMENT",
+                error( WebinCliMessage.Manifest.INVALID_PLATFORM_FOR_INSTRUMENT_ERROR,
                         StringUtils.isBlank( platform ) ? "is not defined" : platform + " is not supported",
                         instrument,
                         CV_INSTRUMENT.getValue( instrument ) );
