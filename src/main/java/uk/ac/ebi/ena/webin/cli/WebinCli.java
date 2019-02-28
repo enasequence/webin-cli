@@ -43,14 +43,14 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.entity.Version;
-import uk.ac.ebi.ena.service.SubmitService;
-import uk.ac.ebi.ena.service.VersionService;
-import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.upload.ASCPService;
-import uk.ac.ebi.ena.upload.FtpService;
-import uk.ac.ebi.ena.upload.UploadService;
-import uk.ac.ebi.ena.version.HotSpotRuntimeVersion;
+import uk.ac.ebi.ena.webin.cli.entity.Version;
+import uk.ac.ebi.ena.webin.cli.service.SubmitService;
+import uk.ac.ebi.ena.webin.cli.service.VersionService;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
+import uk.ac.ebi.ena.webin.cli.upload.FtpService;
+import uk.ac.ebi.ena.webin.cli.upload.UploadService;
+import uk.ac.ebi.ena.webin.cli.version.HotSpotRuntimeVersion;
 
 // @SpringBootApplication
 public class WebinCli { // implements CommandLineRunner

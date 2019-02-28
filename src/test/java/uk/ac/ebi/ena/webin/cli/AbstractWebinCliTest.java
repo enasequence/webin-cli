@@ -1,9 +1,9 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import org.junit.Test;
-import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
-import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
-import uk.ac.ebi.ena.rawreads.RawReadsWebinCli;
+import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyWebinCli;
+import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyWebinCli;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
 
 import static org.junit.Assert.assertEquals;
 

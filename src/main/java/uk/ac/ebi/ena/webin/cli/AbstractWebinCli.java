@@ -18,10 +18,10 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.ena.manifest.ManifestReader;
-import uk.ac.ebi.ena.submit.SubmissionBundle;
-import uk.ac.ebi.ena.submit.SubmissionBundleHelper;
-import uk.ac.ebi.ena.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 

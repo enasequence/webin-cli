@@ -11,10 +11,10 @@
 
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.assembly.GenomeAssemblyWebinCli;
-import uk.ac.ebi.ena.assembly.SequenceAssemblyWebinCli;
-import uk.ac.ebi.ena.assembly.TranscriptomeAssemblyWebinCli;
-import uk.ac.ebi.ena.rawreads.RawReadsWebinCli;
+import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyWebinCli;
+import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyWebinCli;
+import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyWebinCli;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
 
 public enum
 WebinCliContext {
