@@ -65,7 +65,7 @@ public class StudyService extends AbstractService {
 
         StudyResponse studyResponse = response.getBody();
         if (studyResponse == null || !studyResponse.canBeReferenced) {
-            throw WebinCliException.createUserError(
+            throw WebinCliException.userError(
                     WebinCliMessage.Service.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
         }
         Study study = new Study();

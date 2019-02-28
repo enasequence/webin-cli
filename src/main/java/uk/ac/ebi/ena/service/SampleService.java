@@ -58,8 +58,7 @@ SampleService extends AbstractService
 
         SampleResponse sampleResponse = response.getBody();
         if (sampleResponse == null || !sampleResponse.canBeReferenced) {
-            throw WebinCliException.createUserError(
-                    WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
+            throw WebinCliException.userError(WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
         }
         Sample sample = new Sample();
         sample.setBiosampleId(sampleResponse.bioSampleId);

@@ -98,7 +98,7 @@ FastqScanner
             }
         } catch( IOException ioe )
         {
-            throw WebinCliException.createSystemError( ioe.getMessage() );
+            throw WebinCliException.systemError( ioe.getMessage() );
         }
     }
     
@@ -113,13 +113,13 @@ FastqScanner
             switch( rf.getQualityScoringSystem() )
             {
             default:
-                throw WebinCliException.createSystemError( "Scoring system: " + rf.getQualityScoringSystem());
+                throw WebinCliException.systemError( "Scoring system: " + rf.getQualityScoringSystem());
    
             case phred:
                 switch( rf.getAsciiOffset() )
                 {
                 default:
-                    throw WebinCliException.createSystemError( "ASCII offset: " + rf.getAsciiOffset());
+                    throw WebinCliException.systemError( "ASCII offset: " + rf.getAsciiOffset());
                     
                 case FROM33:
                     qn = QualityNormalizer.X;

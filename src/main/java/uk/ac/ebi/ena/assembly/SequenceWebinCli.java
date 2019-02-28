@@ -197,7 +197,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             
         } catch( IOException e ) 
         {
-            throw WebinCliException.createSystemError( e.getMessage() );
+            throw WebinCliException.systemError( e.getMessage() );
         }
     }
 
@@ -241,10 +241,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     validate() throws WebinCliException
     {
         if( !FileUtils.emptyDirectory( getValidationDir() ) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + getValidationDir() );
+            throw WebinCliException.systemError( "Unable to empty directory " + getValidationDir() );
         
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
-            throw WebinCliException.createSystemError( "Unable to empty directory " + getSubmitDir() );
+            throw WebinCliException.systemError( "Unable to empty directory " + getSubmitDir() );
 
 
         getSubmissionOptions().ignoreErrors = false;
@@ -272,10 +272,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                 throw new RuntimeException();
             
             case SYSTEM_ERROR:
-                throw WebinCliException.createSystemError( ve.getMessage() );
+                throw WebinCliException.systemError( ve.getMessage() );
 
             case VALIDATION_ERROR:
-                throw WebinCliException.createValidationError( ve.getMessage() );
+                throw WebinCliException.validationError( ve.getMessage() );
             }
         }
     }
@@ -334,7 +334,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                                                        FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );   
         } catch( IOException | NoSuchAlgorithmException e )
         {
-            throw WebinCliException.createSystemError( e.getMessage() );
+            throw WebinCliException.systemError( e.getMessage() );
         }        
     }
 

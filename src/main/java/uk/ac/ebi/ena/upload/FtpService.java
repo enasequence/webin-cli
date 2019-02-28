@@ -27,35 +27,27 @@ import org.apache.commons.net.ftp.FTPFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class FtpService implements UploadService {
     private final static String SERVER = "webin.ebi.ac.uk";
     private final static int FTP_PORT = 21;
     private final FTPClient ftpClient = new FTPClient() ;
-    private final static String SYSTEM_ERROR_CONNECT = "Failed to connect to the Webin file upload area.";
-    private final static String SYSTEM_ERROR_CREATE_DIR = "Failed to create directory in webin.ebi.ac.uk file upload area.";
-    private final static String SYSTEM_ERROR_CHANGE_DIR = "Failed to access directory in webin.ebi.ac.uk file upload area.";
-    private final static String SYSTEM_ERROR_UPLOAD_FILE = "Failed to upload files to webin.ebi.ac.uk file upload area.";
-    private final static String SYSTEM_ERROR_OTHER = "A server error occurred when uploading files to webin.ebi.ac.uk file upload area.";
 
     private static final Logger log = LoggerFactory.getLogger(FtpService.class);
 
-    /* (non-Javadoc)
-     * @see uk.ac.ebi.ena.upload.UploadService#connectToFtp(java.lang.String, java.lang.String)
-     */
     @Override public void connect(String userName, String password) {
         try {
             ftpClient.connect(SERVER, FTP_PORT);
         } catch (IOException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_CONNECT);
+            throw WebinCliException.systemError(WebinCliMessage.Ftp.CONNECT_ERROR.format());
         }
         try {
             if (!ftpClient.login(userName, password))
-                throw WebinCliException.createUserError(WebinCli.AUTHENTICATION_ERROR);
+                throw WebinCliException.userError(WebinCliMessage.Cli.AUTHENTICATION_ERROR.format());
         } catch (IOException e) {
-            throw WebinCliException.createSystemError(SYSTEM_ERROR_CONNECT);
+            throw WebinCliException.systemError(WebinCliMessage.Ftp.CONNECT_ERROR.format());
         }
     }
 
@@ -70,12 +62,12 @@ public class FtpService implements UploadService {
 
             int level = changeToSubdir( subdir );       
             if( !ftpClient.storeFile( remote.getFileName().toString(), fileInputStream ) )
-                throw WebinCliException.createSystemError( SYSTEM_ERROR_UPLOAD_FILE, "Unable to transfer " + remote.getFileName().toString() );
+                throw WebinCliException.systemError( WebinCliMessage.Ftp.UPLOAD_ERROR.format(), "Unable to transfer " + remote.getFileName().toString() );
             
             for( int l = 0; l < level; ++l )
             {
                 if( !ftpClient.changeToParentDirectory() )
-                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, "Unable to change to parent directory" );
+                    throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(), "Unable to change to parent directory" );
             }
         }
     }
@@ -93,17 +85,17 @@ public class FtpService implements UploadService {
 
             if( dir.equals( ".." ) )
             {
-                throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, dir );
+                throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(), dir );
             }
             
             if(Stream.of( ftpClient.listDirectories() ).noneMatch(f -> dir.equals( f.getName() ) ))
             {
                 if( !ftpClient.makeDirectory( dir ) )
-                    throw WebinCliException.createSystemError( SYSTEM_ERROR_CREATE_DIR, dir );
+                    throw WebinCliException.systemError( WebinCliMessage.Ftp.CREATE_DIR_ERROR.format(), dir );
             }
             
             if( !ftpClient.changeWorkingDirectory( dir ) )
-                throw WebinCliException.createSystemError( SYSTEM_ERROR_CHANGE_DIR, dir );
+                throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(), dir );
 
             level ++;
         }
@@ -112,19 +104,16 @@ public class FtpService implements UploadService {
     
     
     //TODO verbose possible issues with file/folder permissions
-    /* (non-Javadoc)
-     * @see uk.ac.ebi.ena.upload.UploadService#ftpDirectory(java.util.List, java.lang.String, java.nio.file.Path)
-     */
-    @Override public void 
+    @Override public void
     ftpDirectory( List<File> uploadFilesList, String uploadDir, Path inputDir ) 
     {
         if( null == uploadDir || uploadDir.isEmpty() )
-            throw WebinCliException.createUserError( WebinCli.MISSING_CONTEXT );
+            throw WebinCliException.userError( WebinCliMessage.Cli.MISSING_CONTEXT_ERROR.format());
         try 
         {
             ftpClient.enterLocalPassiveMode();
             if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) )
-                throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER );
+                throw WebinCliException.systemError( WebinCliMessage.Ftp.SERVER_ERROR.format() );
            
             changeToSubdir( Paths.get( uploadDir ) );
             
@@ -144,14 +133,10 @@ public class FtpService implements UploadService {
             }
         } catch( IOException e ) 
         {
-            throw WebinCliException.createSystemError( SYSTEM_ERROR_OTHER, e.getMessage() );
+            throw WebinCliException.systemError( WebinCliMessage.Ftp.SERVER_ERROR.format(), e.getMessage() );
         }
     }
-    
-    
-     /* (non-Javadoc)
-     * @see uk.ac.ebi.ena.upload.UploadService#disconnectFtp()
-     */
+
     @Override public void 
     disconnect() 
     {

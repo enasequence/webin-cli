@@ -55,7 +55,7 @@ CVFieldProcessor implements ManifestFieldProcessor
         if( !value.equals( corrected ) )
         {
             fieldValue.setValue( corrected );
-            return WebinCliMessage.info(WebinCliMessage.Manifest.FIELD_VALUE_CORRECTED_INFO, fieldValue.getName(), value, corrected );
+            return WebinCliMessage.info(WebinCliMessage.Manifest.FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected );
         }
 
         return null;

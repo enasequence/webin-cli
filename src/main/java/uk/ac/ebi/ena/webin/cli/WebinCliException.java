@@ -11,56 +11,59 @@
 
 package uk.ac.ebi.ena.webin.cli;
 
-public class 
+public class
 WebinCliException extends RuntimeException
 {
     private static final long serialVersionUID = 1L;
 
     public enum ErrorType {
-        USER_ERROR,
-        SYSTEM_ERROR,
-        VALIDATION_ERROR
+        USER_ERROR("user error"),
+        SYSTEM_ERROR("system error"),
+        VALIDATION_ERROR("validation error");
+
+        public final String text;
+        ErrorType(String text) {
+            this.text = text;
+        }
     }
 
     private final ErrorType errorType;
 
-    private WebinCliException(ErrorType errorType, String ... messages) {
-        super(trim(messages));
+    private WebinCliException(ErrorType errorType, String message, String ... messages) {
+        super(join(message, messages));
         this.errorType = errorType;
+    }
+
+    private WebinCliException(WebinCliException ex, String message, String ... messages) {
+        super(join(ex.getMessage(), join(message, messages)), ex);
+        this.errorType = ex.errorType;
     }
 
     public ErrorType getErrorType() {
         return errorType;
     }
 
-    public void throwAddMessage(String userErrorMessage, String systemErrorMessage) {
-        switch (getErrorType()) {
-            case SYSTEM_ERROR:
-                throw new WebinCliException(getErrorType(), trim(systemErrorMessage, getMessage()));
-            default:
-                throw new WebinCliException(getErrorType(), trim(userErrorMessage, getMessage()));
+    public static WebinCliException userError(String message, String ... messages) {
+        return new WebinCliException(ErrorType.USER_ERROR, message, messages);
+    }
+
+    public static WebinCliException systemError(String message, String ... messages) {
+        return new WebinCliException(ErrorType.SYSTEM_ERROR, message, messages);
+    }
+
+    public static WebinCliException validationError(String message, String ... messages) {
+        return new WebinCliException(ErrorType.VALIDATION_ERROR, message, messages);
+    }
+
+    public static WebinCliException error(WebinCliException ex, String message, String ... messages) {
+        return new WebinCliException(ex, message, messages);
+    }
+
+    private static String join(String message, String ... messages) {
+        String str = message;
+        for (String msg : messages) {
+            str += " " + msg;
         }
-    }
-
-    public static WebinCliException createUserError(String ... messages) {
-        return new WebinCliException(ErrorType.USER_ERROR, messages);
-    }
-
-    public static WebinCliException createSystemError(String ... messages) {
-        return new WebinCliException(ErrorType.SYSTEM_ERROR, messages);
-    }
-
-    public static WebinCliException createValidationError(String ... messages) {
-        return new WebinCliException(ErrorType.VALIDATION_ERROR, messages);
-    }
-
-    private static String trim(String ... messages) {
-        String msg = "";
-        for (String message : messages) {
-            if (message != null) {
-                msg += " " + message;
-            }
-        }
-        return msg.trim().replaceAll(" +", " ");
+        return str.trim().replaceAll(" +", " ");
     }
 }

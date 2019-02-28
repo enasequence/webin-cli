@@ -81,6 +81,6 @@ StudyServiceTest {
         assertThatThrownBy(() ->
                 studyService.getStudy( studyId )
         ).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(WebinCli.AUTHENTICATION_ERROR);
+                .hasMessageContaining(WebinCliMessage.Cli.AUTHENTICATION_ERROR.format());
     }
 }

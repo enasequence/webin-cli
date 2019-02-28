@@ -5,6 +5,8 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 
+import java.lang.reflect.Modifier;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class WebinCliMessageTest {
@@ -61,5 +63,14 @@ public class WebinCliMessageTest {
         // validationMessage.writeMessage(writer);
         // assertThat(writer.toString()).isEqualTo("INFO: " + WebinCliMessage.Service.SAMPLE_SERVICE_SYSTEM_ERROR.text + " [TEST]\n");
     }
-}
 
+    @Test
+    public void testEnum() throws NoSuchFieldException {
+        for (Class cls : WebinCliMessage.class.getClasses()){
+            assertThat(cls.isEnum()).isTrue();
+            assertThat(WebinCliMessage.class).isAssignableFrom(cls);
+            assertThat(cls.getField("text").getType().equals(String.class));
+            assertThat(Modifier.isPublic(cls.getField("text").getModifiers())).isTrue();
+        }
+    }
+}

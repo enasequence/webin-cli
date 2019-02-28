@@ -126,7 +126,7 @@ SourceFeatureService extends AbstractService
 
             return sourceFeature;
         } catch (Exception ex) {
-            throw WebinCliException.createUserError(
+            throw WebinCliException.userError(
                     WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
         }
     }

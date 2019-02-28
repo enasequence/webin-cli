@@ -79,7 +79,7 @@ SubmissionBundleHelper
             os.flush();
         } catch( IOException e )
         {
-            throw WebinCliException.createSystemError( "Unable to write file: " + submission_bundle_path );
+            throw WebinCliException.systemError( "Unable to write file: " + submission_bundle_path );
         }
     }
     

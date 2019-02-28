@@ -59,29 +59,7 @@ public class WebinCli { // implements CommandLineRunner
 	public final static int USER_ERROR = 2;
 	public final static int VALIDATION_ERROR = 3;
 
-	private static final String VALIDATE_SUCCESS = "The submission has been validated successfully. ";
-
-	private static final String VALIDATE_USER_ERROR = "Submission validation failed because of a user error. " +
-			"Please check the report directory for the errors: ";
-	private static final String VALIDATE_SYSTEM_ERROR = "Submission validation failed because of a system error. ";
-
-	private static final String UPLOAD_SUCCESS = "The files have been uploaded to webin.ebi.ac.uk. ";
-
-	private static final String UPLOAD_USER_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a user error. ";
-	private static final String UPLOAD_SYSTEM_ERROR = "Failed to upload files to webin.ebi.ac.uk because of a system error. ";
-
-	public static final String SUBMIT_SUCCESS = "The submission has been completed successfully. ";
-
-	private static final String SUBMIT_USER_ERROR = "The submission has failed because of a user error. ";
-	private static final String SUBMIT_SYSTEM_ERROR = "The submission has failed because of a system error. ";
-
-	public static final String AUTHENTICATION_ERROR = "Invalid submission account user name or password.";
-
-	private static final String INVALID_CONTEXT = "Invalid context: ";
-	public static final String MISSING_CONTEXT = "Missing context or unique name.";
-
 	private final static String LOG_FILE_NAME= "webin-cli.report";
-
 
 	private Params params;
 	private WebinCliContext context;
@@ -240,7 +218,7 @@ public class WebinCli { // implements CommandLineRunner
     {
         HotSpotRuntimeVersion jrv = new HotSpotRuntimeVersion();
         if( jrv.isHotSpot() && !jrv.isComplient() )
-            throw WebinCliException.createSystemError( String.format( "Your current HotSpot(TM) JVM %s is out of date and not supported, please download the latest version from https://java.com. Minimal HotSpot(TM) JVM supported is: %s",
+            throw WebinCliException.systemError( String.format( "Your current HotSpot(TM) JVM %s is out of date and not supported, please download the latest version from https://java.com. Minimal HotSpot(TM) JVM supported is: %s",
                                                                       String.valueOf( jrv.getCurrentVersion() ),
                                                                       String.valueOf( jrv.getMinVersion() ) ) );
     }
@@ -306,7 +284,7 @@ public class WebinCli { // implements CommandLineRunner
 		try {
 			context = WebinCliContext.valueOf( params.context );
 		} catch (IllegalArgumentException e) {
-			throw WebinCliException.createUserError(INVALID_CONTEXT, params.context);
+			throw WebinCliException.userError(WebinCliMessage.Cli.INVALID_CONTEXT_ERROR.format(params.context));
 		}
 
 		// initTimedConsoleLogger();
@@ -333,24 +311,24 @@ public class WebinCli { // implements CommandLineRunner
 	   {
            validator.validate();
            validator.prepareSubmissionBundle();
-           log.info( VALIDATE_SUCCESS );
+           log.info( WebinCliMessage.Cli.VALIDATE_SUCCESS.format() );
            
 	   } catch( WebinCliException e ) 
 	   {
 	      switch( e.getErrorType() ) 
 	      { 
 	          case USER_ERROR:
-	               throw WebinCliException.createUserError( VALIDATE_USER_ERROR, e.getMessage() );
+	               throw WebinCliException.userError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(), e.getMessage() );
 	               
 	          case VALIDATION_ERROR:
-	               throw WebinCliException.createValidationError( VALIDATE_USER_ERROR, e.getMessage() );
+	               throw WebinCliException.validationError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(), e.getMessage() );
 	               
 	          case SYSTEM_ERROR:
-	               throw WebinCliException.createSystemError( VALIDATE_SYSTEM_ERROR, e.getMessage() );
+	               throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(), e.getMessage() );
 	      }
 	   } catch( Throwable e ) 
 	   {
-	      throw WebinCliException.createSystemError( VALIDATE_SYSTEM_ERROR, e.getMessage() );
+	      throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(), e.getMessage() );
 	   }
 	}
 	 
@@ -366,12 +344,12 @@ public class WebinCli { // implements CommandLineRunner
         {
             ftpService.connect( params.userName, params.password );
             ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
-			log.info( UPLOAD_SUCCESS );
+			log.info( WebinCliMessage.Cli.UPLOAD_SUCCESS.format() );
 
         } catch( WebinCliException e ) 
         {
-            e.throwAddMessage( UPLOAD_USER_ERROR, UPLOAD_SYSTEM_ERROR );
-        } finally 
+        	throw WebinCliException.error(e, WebinCliMessage.Cli.UPLOAD_ERROR.format(e.getErrorType().text));
+        } finally
         {
             ftpService.disconnect();
         }
@@ -390,7 +368,7 @@ public class WebinCli { // implements CommandLineRunner
 
         } catch( WebinCliException e ) 
         {
-            e.throwAddMessage( SUBMIT_USER_ERROR, SUBMIT_SYSTEM_ERROR );
+			throw WebinCliException.error(e, WebinCliMessage.Cli.SUBMIT_ERROR.format(e.getErrorType().text));
         }
     }
 	
@@ -505,7 +483,7 @@ public class WebinCli { // implements CommandLineRunner
 			try {
 				WebinCliContext.valueOf(value);
 			} catch (IllegalArgumentException e) {
-				throw new ParameterException(INVALID_CONTEXT + value);
+				throw new ParameterException(WebinCliMessage.Cli.INVALID_CONTEXT_ERROR.format(value));
 			}
 		}
 	}
@@ -549,7 +527,7 @@ public class WebinCli { // implements CommandLineRunner
 		log.info("The application version is " + currentVersion);
 
 		if (!version.valid) {
-			throw WebinCliException.createUserError(
+			throw WebinCliException.userError(
 					"Your application version is no longer supported. The minimum supported version is " +
 							version.minVersion +
 							downloadMessage);
@@ -576,7 +554,7 @@ public class WebinCli { // implements CommandLineRunner
 	getReportFile( File dir, String filename, String suffix )
 	{
 		if( dir == null || !dir.isDirectory() )
-			throw WebinCliException.createSystemError( "Invalid report directory: " + filename );
+			throw WebinCliException.systemError( "Invalid report directory: " + filename );
 
 		return new File( dir, Paths.get( filename ).getFileName().toString() + suffix );
 	}
@@ -587,7 +565,7 @@ public class WebinCli { // implements CommandLineRunner
 	{
 		if (parameters.getOutputDir() == null) 
 		{
-			throw WebinCliException.createSystemError( "Missing output directory" );
+			throw WebinCliException.systemError( "Missing output directory" );
 		}
 
 		String[] safeDirs = getSafeOutputDir(dirs);
@@ -601,14 +579,14 @@ public class WebinCli { // implements CommandLineRunner
 		}catch( InvalidPathException ex ) 
 		{
 
-			throw WebinCliException.createSystemError( "Unable to create directory: " + ex.getInput() );
+			throw WebinCliException.systemError( "Unable to create directory: " + ex.getInput() );
 		}
 
 		File dir = p.toFile();
 
 		if( !dir.exists() && !dir.mkdirs() )
 		{
-			throw WebinCliException.createSystemError( "Unable to create directory: " + dir.getPath() );
+			throw WebinCliException.systemError( "Unable to create directory: " + dir.getPath() );
 		}
 
 		return dir;

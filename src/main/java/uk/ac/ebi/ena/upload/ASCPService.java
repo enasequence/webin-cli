@@ -109,11 +109,11 @@ ASCPService implements UploadService
             vars.put( "PATH", System.getenv( "PATH" ) );
             int exitVal = new ShellExec( cmd, vars ).exec( true );
             if( 0 != exitVal )
-                throw WebinCliException.createSystemError( "Unable to upload files using ASPERA" );
+                throw WebinCliException.systemError( "Unable to upload files using ASPERA" );
             
         } catch( Throwable t )
         {
-            throw WebinCliException.createSystemError( "Unable to upload files using ASPERA " + t.getMessage() );
+            throw WebinCliException.systemError( "Unable to upload files using ASPERA " + t.getMessage() );
         }
     }
 

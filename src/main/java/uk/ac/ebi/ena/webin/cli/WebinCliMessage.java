@@ -12,6 +12,38 @@ public interface WebinCliMessage {
     // Messages.
     //
 
+    enum Cli implements WebinCliMessage {
+
+        VALIDATE_SUCCESS("The submission has been validated successfully."),
+        UPLOAD_SUCCESS("Files have been uploaded to webin.ebi.ac.uk. "),
+        SUBMIT_SUCCESS("The submission has been completed successfully. "),
+        VALIDATE_USER_ERROR("Submission validation failed because of a user error. Please check the report directory for the errors: "),
+        VALIDATE_SYSTEM_ERROR("Submission validation failed because of a system error. "),
+        UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk because of a {0}. "),
+        SUBMIT_ERROR("The submission has failed because of a {0}. "),
+        AUTHENTICATION_ERROR("Invalid submission account user name or password."),
+        INVALID_CONTEXT_ERROR("Invalid context: {0}."),
+        MISSING_CONTEXT_ERROR("Missing context or unique name.");
+
+        public final String text; // Message must be stored in a public field called text.
+        Cli(String text) {
+            this.text = text;
+        }
+    }
+
+    enum Ftp implements WebinCliMessage {
+       CONNECT_ERROR("Failed to connect to the Webin file upload area."),
+       CREATE_DIR_ERROR("Failed to create directory in webin.ebi.ac.uk file upload area."),
+       CHANGE_DIR_ERROR("Failed to access directory in webin.ebi.ac.uk file upload area."),
+       UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk file upload area."),
+       SERVER_ERROR("A server error occurred when uploading files to webin.ebi.ac.uk file upload area.");
+
+        public final String text; // Message must be stored in a public field called text.
+        Ftp(String text) {
+            this.text = text;
+        }
+    }
+
     enum Service implements WebinCliMessage {
 
         SUBMISSION_SERVICE_SYSTEM_ERROR("A server error occurred when attempting to submit."),
@@ -43,7 +75,7 @@ public interface WebinCliMessage {
         NO_DATA_FILES_ERROR("No data files have been specified. Expected data files are: {0}."),
         INVALID_FILE_GROUP_ERROR("An invalid set of files has been specified{1}. Expected data files are: {0}."),
         INVALID_FILE_COMPRESSION_ERROR("Failed to uncompress file: \"{0}\". The file must be compressed with {1}."),
-        FIELD_VALUE_CORRECTED_INFO("Field \"{0}\" value \"{1}\" was corrected to \"{2}\"."),
+        FIELD_VALUE_CORRECTED("Field \"{0}\" value \"{1}\" was corrected to \"{2}\"."),
         STUDY_LOOKUP_ERROR("Failed to lookup study \"{0}\". {1}"),
         SAMPLE_LOOKUP_ERROR("Failed to lookup sample \"{0}\". {1}"),
         MISSING_PLATFORM_AND_INSTRUMENT_ERROR("Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),
