@@ -24,6 +24,7 @@ import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class
 GenomeAssemblyManifest extends ManifestReader
@@ -188,7 +189,7 @@ GenomeAssemblyManifest extends ManifestReader
 		name = StringUtils.isBlank( getResult().getValue( Fields.NAME ) ) ? getResult().getValue(Fields.ASSEMBLYNAME ) : getResult().getValue( Fields.NAME );
 		if( StringUtils.isBlank( name ) ) 
 		{
-			error( "MANIFEST_MISSING_MANDATORY_FIELD", Fields.NAME + " or " + Fields.ASSEMBLYNAME );
+			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Fields.NAME + " or " + Fields.ASSEMBLYNAME );
 		}
 		
 		if( name != null )
@@ -226,7 +227,7 @@ GenomeAssemblyManifest extends ManifestReader
 		    if(submissionFiles.getFiles()
 					.stream()
 					.anyMatch(file -> FileType.FASTA != file.getFileType() )) {
-				error("MANIFEST_ERROR_INVALID_FILE_GROUP",
+				error(WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR,
 						getExpectedFileTypeList(new HashSet<List<ManifestFileCount>>() {
 							{
 								// FASTA ONLY

@@ -1,1 +1,1 @@
-ERROR:Value"666"isnotintherequiredsetofSedimentationcoefficient,Permittedvaluesare5S,5.8S,12S,16S,18S,23S,26S,28S[Sequence:1]
+ERROR:Value"666"isnotintherequiredsetofSedimentationcoefficien,Permittedvaluesare5S,5.8S,12S,16S,18S,23S,26S,28S[Sequence:1]

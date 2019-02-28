@@ -18,6 +18,7 @@ import uk.ac.ebi.ena.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.service.SourceFeatureService;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class
@@ -48,7 +49,7 @@ SourceFeatureProcessor implements ManifestFieldProcessor
             return null;
         } catch( WebinCliException e )
         {
-            return ValidationMessage.error( "MANIFEST_SAMPLE_SERVER_ERROR", value, e.getMessage() );
+            return WebinCliMessage.error(WebinCliMessage.Manifest.SAMPLE_LOOKUP_ERROR, value, e.getMessage() );
         }
     }
 }

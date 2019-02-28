@@ -18,6 +18,7 @@ import uk.ac.ebi.ena.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.entity.Study;
 import uk.ac.ebi.ena.service.StudyService;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 
 public class
@@ -49,7 +50,7 @@ StudyProcessor implements ManifestFieldProcessor
             return null;
         } catch( WebinCliException e )
         {
-            return ValidationMessage.error( "MANIFEST_STUDY_SERVER_ERROR", value, e.getMessage() );
+            return WebinCliMessage.error(WebinCliMessage.Manifest.STUDY_LOOKUP_ERROR, value, e.getMessage() );
         }
     }
 }

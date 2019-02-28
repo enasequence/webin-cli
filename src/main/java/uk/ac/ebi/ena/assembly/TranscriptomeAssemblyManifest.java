@@ -15,6 +15,8 @@ import uk.ac.ebi.ena.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -114,7 +116,7 @@ TranscriptomeAssemblyManifest extends ManifestReader
 		
 		if( StringUtils.isBlank( name ) ) 
 		{
-			error( "MANIFEST_MISSING_MANDATORY_FIELD", Fields.NAME + " or " + Fields.ASSEMBLYNAME );
+			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Fields.NAME + " or " + Fields.ASSEMBLYNAME );
 		}
 
 		description = getResult().getValue( Fields.DESCRIPTION );
