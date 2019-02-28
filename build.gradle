@@ -12,7 +12,7 @@ apply plugin: "jacoco"
 apply plugin: 'io.spring.dependency-management'
 
 wrapper{
-    gradleVersion = '4.8'
+    gradleVersion = '5.2.1'
     distributionType = Wrapper.DistributionType.BIN
 }
 

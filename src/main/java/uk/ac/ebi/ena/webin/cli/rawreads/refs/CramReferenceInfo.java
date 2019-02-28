@@ -249,6 +249,7 @@ CramReferenceInfo
             es.awaitTermination( 1, TimeUnit.HOURS );
             
             printProcessedReferenceNumber( count );
+            log.info( "" );
 
         } catch( InterruptedException e )
         {
@@ -262,7 +263,8 @@ CramReferenceInfo
     printProcessedReferenceNumber( AtomicLong count )
     {
         String msg = String.format( "\rChecked %16d references(s)", count.get() );
-        log.info(msg);
+        System.out.print( msg );
+        System.out.flush();
     }
 
     
