@@ -12,6 +12,7 @@ import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 
 public class 
@@ -44,7 +45,7 @@ SubmissionBundleHelper
             
             if( null != manifest_md5 && !manifest_md5.equals( sb.getManifestMd5() ) )
             {
-                log.info("Submission requires re-validation as manifest file has changed.");
+                log.info(WebinCliMessage.Bundle.REVALIDATE_SUBMISSION.format());
                 return null;
             }
 
@@ -53,8 +54,7 @@ SubmissionBundleHelper
 
             if( result.count(Severity.INFO) > 0 ) 
             {
-                // Submission bundle was invalid.
-                log.info("Submission requires re-validation.");
+                log.info(WebinCliMessage.Bundle.REVALIDATE_SUBMISSION.format());
                 return null;
             }
             
@@ -63,7 +63,7 @@ SubmissionBundleHelper
         } catch( ClassNotFoundException | IOException e )
         {
             // Submission bundle could not be read.
-            log.info("Submission has not been validated previously.");
+            log.info(WebinCliMessage.Bundle.VALIDATE_SUBMISSION.format());
             return null;
         }
 
@@ -79,7 +79,7 @@ SubmissionBundleHelper
             os.flush();
         } catch( IOException e )
         {
-            throw WebinCliException.systemError( "Unable to write file: " + submission_bundle_path );
+            throw WebinCliException.systemError(WebinCliMessage.Bundle.FILE_ERROR.format(submission_bundle_path ));
         }
     }
     

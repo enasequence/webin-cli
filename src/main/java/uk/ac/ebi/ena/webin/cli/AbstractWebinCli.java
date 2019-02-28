@@ -111,7 +111,7 @@ AbstractWebinCli<T extends ManifestReader>
         }
 
         if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
-            throw WebinCliException.userError( "Invalid manifest file. Please see the error report: " + reportFile.getPath() );
+            throw WebinCliException.userError( WebinCliMessage.Manifest.INVALID_MANIFEST_FILE_ERROR.format(reportFile.getPath()) );
         }
     }
 

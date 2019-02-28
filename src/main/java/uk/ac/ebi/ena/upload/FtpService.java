@@ -62,12 +62,12 @@ public class FtpService implements UploadService {
 
             int level = changeToSubdir( subdir );       
             if( !ftpClient.storeFile( remote.getFileName().toString(), fileInputStream ) )
-                throw WebinCliException.systemError( WebinCliMessage.Ftp.UPLOAD_ERROR.format(), "Unable to transfer " + remote.getFileName().toString() );
+                throw WebinCliException.systemError( WebinCliMessage.Ftp.UPLOAD_ERROR.format(remote.getFileName().toString()) );
             
             for( int l = 0; l < level; ++l )
             {
                 if( !ftpClient.changeToParentDirectory() )
-                    throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(), "Unable to change to parent directory" );
+                    throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format("parent") );
             }
         }
     }
@@ -80,22 +80,23 @@ public class FtpService implements UploadService {
         for( int l = 0; l < subdir.getNameCount(); ++l )
         {
             String dir = subdir.subpath( l, l + 1 ).getFileName().toString();
+
             if( dir.equals( "." ) )
                 continue;
 
             if( dir.equals( ".." ) )
             {
-                throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(), dir );
+                throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(dir) );
             }
             
             if(Stream.of( ftpClient.listDirectories() ).noneMatch(f -> dir.equals( f.getName() ) ))
             {
                 if( !ftpClient.makeDirectory( dir ) )
-                    throw WebinCliException.systemError( WebinCliMessage.Ftp.CREATE_DIR_ERROR.format(), dir );
+                    throw WebinCliException.systemError( WebinCliMessage.Ftp.CREATE_DIR_ERROR.format(dir) );
             }
             
             if( !ftpClient.changeWorkingDirectory( dir ) )
-                throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(), dir );
+                throw WebinCliException.systemError( WebinCliMessage.Ftp.CHANGE_DIR_ERROR.format(dir) );
 
             level ++;
         }
@@ -108,7 +109,7 @@ public class FtpService implements UploadService {
     ftpDirectory( List<File> uploadFilesList, String uploadDir, Path inputDir ) 
     {
         if( null == uploadDir || uploadDir.isEmpty() )
-            throw WebinCliException.userError( WebinCliMessage.Cli.MISSING_CONTEXT_ERROR.format());
+            throw WebinCliException.userError( WebinCliMessage.Ftp.UPLOAD_DIR_ERROR.format());
         try 
         {
             ftpClient.enterLocalPassiveMode();
@@ -117,10 +118,10 @@ public class FtpService implements UploadService {
            
             changeToSubdir( Paths.get( uploadDir ) );
             
-            FTPFile[] fileTodeleteA = ftpClient.listFiles();
-            if( fileTodeleteA != null && fileTodeleteA.length > 0 ) 
+            FTPFile[] deleteFilesList = ftpClient.listFiles();
+            if( deleteFilesList != null && deleteFilesList.length > 0 )
             {
-                for( FTPFile ftpFile: fileTodeleteA )
+                for( FTPFile ftpFile: deleteFilesList )
                     ftpClient.deleteFile( ftpFile.getName() );
             }
             

@@ -23,23 +23,45 @@ public interface WebinCliMessage {
         SUBMIT_ERROR("The submission has failed because of a {0}. "),
         AUTHENTICATION_ERROR("Invalid submission account user name or password."),
         INVALID_CONTEXT_ERROR("Invalid context: {0}."),
-        MISSING_CONTEXT_ERROR("Missing context or unique name.");
+        EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}" );
 
-        public final String text; // Message must be stored in a public field called text.
+        public final String text;
         Cli(String text) {
             this.text = text;
         }
     }
 
-    enum Ftp implements WebinCliMessage {
-       CONNECT_ERROR("Failed to connect to the Webin file upload area."),
-       CREATE_DIR_ERROR("Failed to create directory in webin.ebi.ac.uk file upload area."),
-       CHANGE_DIR_ERROR("Failed to access directory in webin.ebi.ac.uk file upload area."),
-       UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk file upload area."),
-       SERVER_ERROR("A server error occurred when uploading files to webin.ebi.ac.uk file upload area.");
+    enum Bundle implements WebinCliMessage {
 
-        public final String text; // Message must be stored in a public field called text.
+        REVALIDATE_SUBMISSION("Submission requires re-validation."),
+        VALIDATE_SUBMISSION("Submission has not been validated previously."),
+        FILE_ERROR("Unable to create submission bundle file: {0}");
+
+        public final String text;
+        Bundle(String text) {
+            this.text = text;
+        }
+    }
+
+    enum Ftp implements WebinCliMessage {
+       UPLOAD_DIR_ERROR("Missing upload directory. Failed to upload files to webin.ebi.ac.uk using FTP."),
+       CONNECT_ERROR("Failed to connect to webin.ebi.ac.uk using FTP."),
+       CREATE_DIR_ERROR("Failed to create directory \"{0}\" in webin.ebi.ac.uk using FTP."),
+       CHANGE_DIR_ERROR("Failed to access directory \"{0}\" in webin.ebi.ac.uk using FTP."),
+       UPLOAD_ERROR("Failed to upload \"{0}\" file to webin.ebi.ac.uk using FTP."),
+       SERVER_ERROR("Failed to upload files to webin.ebi.ac.uk using FTP.");
+
+        public final String text;
         Ftp(String text) {
+            this.text = text;
+        }
+    }
+
+    enum Aspera implements WebinCliMessage {
+        UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk using Aspera.");
+
+        public final String text;
+        Aspera(String text) {
             this.text = text;
         }
     }
@@ -54,7 +76,7 @@ public interface WebinCliMessage {
         STUDY_SERVICE_VALIDATION_ERROR("Unknown study {0} or the study cannot be referenced by your submission account. Studies must be submitted before they can be referenced in the submission."),
         STUDY_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving study {0} information.");
 
-        public final String text; // Message must be stored in a public field called text.
+        public final String text;
         Service(String text) {
             this.text = text;
         }
@@ -63,6 +85,7 @@ public interface WebinCliMessage {
     enum Manifest implements WebinCliMessage {
         READING_MANIFEST_FILE_ERROR("Could not read manifest file: \"{0}\"."),
         READING_INFO_FILE_ERROR("Could not read info file: \"{0}\"."),
+        INVALID_MANIFEST_FILE_ERROR("Invalid manifest file. Please see the error report file \"{0}\"." ),
         UNKNOWN_FIELD_ERROR("Unknown field: {0}."),
         INVALID_FIELD_VALUE_ERROR("Invalid {0} field value: \"{1}\". Valid values are: {2}."),
         INVALID_FILE_FIELD_ERROR("Invalid {0} file name. Could not read file: \"{1}\"."),
@@ -79,9 +102,10 @@ public interface WebinCliMessage {
         STUDY_LOOKUP_ERROR("Failed to lookup study \"{0}\". {1}"),
         SAMPLE_LOOKUP_ERROR("Failed to lookup sample \"{0}\". {1}"),
         MISSING_PLATFORM_AND_INSTRUMENT_ERROR("Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),
-        INVALID_PLATFORM_FOR_INSTRUMENT_ERROR("Platform {0} for instrument {1}. Valid platforms are: {2}.");
+        INVALID_PLATFORM_FOR_INSTRUMENT_ERROR("Platform {0} for instrument {1}. Valid platforms are: {2}."),
+        MISSING_PLATFORM_FOR_INSTRUMENT_ERROR("Missing platform for instrument: {0}.");
 
-        public final String text;  // Message must be stored in a public field called text.
+        public final String text;
         Manifest(String text) {
             this.text = text;
         }

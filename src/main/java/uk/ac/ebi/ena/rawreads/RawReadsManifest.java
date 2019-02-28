@@ -340,7 +340,7 @@ RawReadsManifest extends ManifestReader {
             String platforms = CV_INSTRUMENT.getValue( instrument );
             if( StringUtils.isBlank( platforms ) )
             {
-                throw WebinCliException.systemError( "Missing platform for instrument: " + instrument );
+                error(WebinCliMessage.Manifest.MISSING_PLATFORM_FOR_INSTRUMENT_ERROR, instrument);
             }
 
             String[] platformList = platforms.split( "[;,]" );

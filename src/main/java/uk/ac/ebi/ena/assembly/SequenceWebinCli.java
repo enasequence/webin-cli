@@ -48,6 +48,7 @@ import uk.ac.ebi.ena.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public abstract class 
 SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
@@ -241,10 +242,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     validate() throws WebinCliException
     {
         if( !FileUtils.emptyDirectory( getValidationDir() ) )
-            throw WebinCliException.systemError( "Unable to empty directory " + getValidationDir() );
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
         
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
-            throw WebinCliException.systemError( "Unable to empty directory " + getSubmitDir() );
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 
 
         getSubmissionOptions().ignoreErrors = false;
@@ -258,7 +259,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             getSubmissionOptions().ignoreErrors = ignoreErrorsService.getIgnoreErrors(getContext().name(), getName());
         }
         catch (RuntimeException ex) {
-            log.warn("A server error occurred when retrieving ignore error information.");
+            log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
         }
 
         try

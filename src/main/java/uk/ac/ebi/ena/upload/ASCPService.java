@@ -21,6 +21,7 @@ import java.util.Map;
 
 import uk.ac.ebi.ena.utils.ShellExec;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 
 public class 
@@ -30,7 +31,6 @@ ASCPService implements UploadService
     private String userName;
     private String password;
 
-    
     @Override public boolean
     isAvaliable()
     {
@@ -53,7 +53,6 @@ ASCPService implements UploadService
     {
         this.password = password;
         this.userName = userName;
-        
     }
 
     
@@ -109,11 +108,11 @@ ASCPService implements UploadService
             vars.put( "PATH", System.getenv( "PATH" ) );
             int exitVal = new ShellExec( cmd, vars ).exec( true );
             if( 0 != exitVal )
-                throw WebinCliException.systemError( "Unable to upload files using ASPERA" );
+                throw WebinCliException.systemError(WebinCliMessage.Aspera.UPLOAD_ERROR.format());
             
-        } catch( Throwable t )
+        } catch( Exception e )
         {
-            throw WebinCliException.systemError( "Unable to upload files using ASPERA " + t.getMessage() );
+            throw WebinCliException.systemError(WebinCliMessage.Aspera.UPLOAD_ERROR.format(), e.getMessage());
         }
     }
 

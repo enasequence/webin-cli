@@ -58,14 +58,11 @@ import uk.ac.ebi.ena.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.rawreads.refs.CramReferenceInfo;
 import uk.ac.ebi.ena.entity.Sample;
 import uk.ac.ebi.ena.entity.Study;
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.submit.SubmissionBundle;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 
 public class 
@@ -123,10 +120,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     validate() throws WebinCliException
     {
         if( !FileUtils.emptyDirectory(getValidationDir()) )
-            throw WebinCliException.systemError( "Unable to empty directory " + getValidationDir());
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
 
         if( !FileUtils.emptyDirectory(getSubmitDir()) )
-            throw WebinCliException.systemError( "Unable to empty directory " + getSubmitDir());
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
