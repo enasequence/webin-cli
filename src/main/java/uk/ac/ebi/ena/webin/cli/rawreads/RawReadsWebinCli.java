@@ -129,26 +129,17 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         AtomicBoolean paired = new AtomicBoolean();
         
         List<RawReadsFile> files = getManifestReader().getFiles();
-        
-        for( RawReadsFile rf : files )
-        {
-            if( Filetype.fastq.equals( rf.getFiletype() ) )
-            {
-                valid = readFastqFile(files, paired);
-                
-            } else if( Filetype.bam.equals( rf.getFiletype() ) )
-            {
-                valid = readBamFile(files, paired);
-                
-            } else if( Filetype.cram.equals( rf.getFiletype() ) )
-            {
-                valid = readCramFile(files, paired);
 
-            } else
-            {
-                throw WebinCliException.systemError( "Filetype " + rf.getFiletype() + " is unknown" );
+        for (RawReadsFile rf : files) {
+            if (Filetype.fastq.equals(rf.getFiletype())) {
+                valid = readFastqFile(files, paired);
+            } else if (Filetype.bam.equals(rf.getFiletype())) {
+                valid = readBamFile(files, paired);
+            } else if (Filetype.cram.equals(rf.getFiletype())) {
+                valid = readCramFile(files, paired);
+            } else {
+                throw WebinCliException.systemError(WebinCliMessage.Cli.UNSUPPORTED_FILETYPE_ERROR.format(rf.getFiletype().name()));
             }
-            
             break;
         }
 
@@ -215,7 +206,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 }
             });
             return vr.isValid();
-            
+
         } catch( Throwable e )
         {
             throw WebinCliException.systemError( "Unable to validate file(s): " + files + ", " + e.getMessage() );

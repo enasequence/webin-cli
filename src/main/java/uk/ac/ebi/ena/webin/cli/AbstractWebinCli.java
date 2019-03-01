@@ -86,21 +86,14 @@ AbstractWebinCli<T extends ManifestReader>
                 setName();
                 this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), VALIDATE_DIR );
                 this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), SUBMIT_DIR );
-            } else 
-            {
-                throw WebinCliException.systemError( "Missing submission name" );
+            } else {
+                throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
             }
-            
-        } catch( WebinCliException e )
-        {
+        } catch (WebinCliException e) {
             throw e;
-            
-        } catch( Throwable t )
-        {
-            throw WebinCliException.systemError( "Failed to initialise validator" );
-            
-        } finally 
-        {
+        } catch (Exception t) {
+            throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format(t.getMessage()));
+        } finally {
             setName();
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
                 ValidationMessageLogger.log(manifestReader.getValidationResult());

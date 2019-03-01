@@ -19,10 +19,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -519,29 +516,22 @@ public class WebinCli { // implements CommandLineRunner
 				.setTest( test )
 				.build().getVersion( currentVersion );
 
-		String downloadMessage =
-				". Please download the latest version " +
-						version.latestVersion +
-						" from https://github.com/enasequence/webin-cli/releases";
-
-		log.info("The application version is " + currentVersion);
+		log.info(WebinCliMessage.Cli.CURRENT_VERSION.format(currentVersion));
 
 		if (!version.valid) {
-			throw WebinCliException.userError(
-					"Your application version is no longer supported. The minimum supported version is " +
-							version.minVersion +
-							downloadMessage);
+			throw WebinCliException.userError(WebinCliMessage.Cli.UNSUPPORTED_VERSION.format(
+					version.minVersion,
+					version.latestVersion));
 		}
 
 		if (version.expire) {
-			log.warn("Your application version will not be supported after " +
-					new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate) +
-					". The minimum supported version will be " + version.nextMinVersion +
-					downloadMessage);
+			log.info(WebinCliMessage.Cli.EXPIRYING_VERSION.format(
+					new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate),
+					version.nextMinVersion,
+					version.latestVersion));
 		}
 		else if (version.update) {
-			log.info("A new application version is available" +
-					downloadMessage);
+			log.info(WebinCliMessage.Cli.NEW_VERSION.format(version.latestVersion));
 		}
 
 		if (version.comment != null) {
@@ -554,7 +544,7 @@ public class WebinCli { // implements CommandLineRunner
 	getReportFile( File dir, String filename, String suffix )
 	{
 		if( dir == null || !dir.isDirectory() )
-			throw WebinCliException.systemError( "Invalid report directory: " + filename );
+			throw WebinCliException.systemError( WebinCliMessage.Cli.INVALID_REPORT_DIR_ERROR.format(filename ));
 
 		return new File( dir, Paths.get( filename ).getFileName().toString() + suffix );
 	}
@@ -563,30 +553,24 @@ public class WebinCli { // implements CommandLineRunner
 	public static File
 	createOutputDir( WebinCliParameters parameters, String... dirs ) throws WebinCliException
 	{
-		if (parameters.getOutputDir() == null) 
-		{
-			throw WebinCliException.systemError( "Missing output directory" );
+		if (parameters.getOutputDir() == null) {
+			throw WebinCliException.systemError( WebinCliMessage.Cli.MISSING_OUTPUT_DIR_ERROR.format());
 		}
 
 		String[] safeDirs = getSafeOutputDir(dirs);
 
 		Path p;
 
-		try
-		{
+		try {
 			p = Paths.get(parameters.getOutputDir().getPath(), safeDirs);
-			
-		}catch( InvalidPathException ex ) 
-		{
-
-			throw WebinCliException.systemError( "Unable to create directory: " + ex.getInput() );
+		} catch (InvalidPathException ex) {
+			throw WebinCliException.systemError( WebinCliMessage.Cli.CREATE_DIR_ERROR.format(ex.getInput()));
 		}
 
 		File dir = p.toFile();
 
-		if( !dir.exists() && !dir.mkdirs() )
-		{
-			throw WebinCliException.systemError( "Unable to create directory: " + dir.getPath() );
+		if (!dir.exists() && !dir.mkdirs()) {
+			throw WebinCliException.systemError( WebinCliMessage.Cli.CREATE_DIR_ERROR.format(dir.getPath()));
 		}
 
 		return dir;
