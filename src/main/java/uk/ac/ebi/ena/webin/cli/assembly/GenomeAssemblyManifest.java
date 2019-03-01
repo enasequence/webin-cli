@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,7 +9,6 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
@@ -35,7 +36,6 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class
 GenomeAssemblyManifest extends ManifestReader

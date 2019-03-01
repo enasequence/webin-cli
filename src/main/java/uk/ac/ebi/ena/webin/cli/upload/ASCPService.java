@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,7 +9,6 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli.upload;
 
 import java.io.File;
@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.ebi.ena.webin.cli.utils.ShellExec;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.utils.ShellExec;
 
 
 public class 
@@ -32,7 +32,7 @@ ASCPService implements UploadService
     private String password;
 
     @Override public boolean
-    isAvaliable()
+    isAvailable()
     {
         try
         {            
@@ -89,9 +89,9 @@ ASCPService implements UploadService
     
     
     @Override public void
-    ftpDirectory( List<File> uploadFilesList,
-                  String uploadDir,
-                  Path inputDir )
+    upload(List<File> uploadFilesList,
+           String uploadDir,
+           Path inputDir )
     {
         try
         {      

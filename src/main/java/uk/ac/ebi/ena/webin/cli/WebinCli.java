@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,7 +9,6 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
@@ -35,6 +35,7 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
+
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
@@ -335,12 +336,12 @@ public class WebinCli { // implements CommandLineRunner
     {
 		SubmissionBundle bundle = validator.getSubmissionBundle();
 
-        UploadService ftpService = params.ascp && new ASCPService().isAvaliable() ? new ASCPService() : new FtpService();
+        UploadService ftpService = params.ascp && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
         
         try 
         {
             ftpService.connect( params.userName, params.password );
-            ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
+            ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
 			log.info( WebinCliMessage.Cli.UPLOAD_SUCCESS.format() );
 
         } catch( WebinCliException e ) 

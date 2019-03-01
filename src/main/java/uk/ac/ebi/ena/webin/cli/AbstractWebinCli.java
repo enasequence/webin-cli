@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,7 +9,6 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
@@ -18,12 +18,12 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang.StringUtils;
 
+import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
-import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 
 public abstract class 
 AbstractWebinCli<T extends ManifestReader>
