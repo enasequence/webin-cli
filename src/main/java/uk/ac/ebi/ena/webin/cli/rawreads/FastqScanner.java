@@ -33,23 +33,23 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.frankenstein.loader.common.QualityNormalizer;
-import uk.ac.ebi.ena.frankenstein.loader.common.eater.NullDataEater;
-import uk.ac.ebi.ena.frankenstein.loader.common.feeder.AbstractDataFeeder;
-import uk.ac.ebi.ena.frankenstein.loader.common.feeder.DataFeederException;
-import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot;
-import uk.ac.ebi.ena.frankenstein.loader.fastq.DataSpot.DataSpotParams;
-import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater;
-import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaIterativeEater.READ_TYPE;
-import uk.ac.ebi.ena.frankenstein.loader.fastq.IlluminaSpot;
+import uk.ac.ebi.ena.readtools.loader.common.QualityNormalizer;
+import uk.ac.ebi.ena.readtools.loader.common.eater.NullDataEater;
+import uk.ac.ebi.ena.readtools.loader.common.feeder.AbstractDataFeeder;
+import uk.ac.ebi.ena.readtools.loader.common.feeder.DataFeederException;
+import uk.ac.ebi.ena.readtools.loader.fastq.DataSpot;
+import uk.ac.ebi.ena.readtools.loader.fastq.DataSpot.DataSpotParams;
+import uk.ac.ebi.ena.readtools.loader.fastq.IlluminaIterativeEater;
+import uk.ac.ebi.ena.readtools.loader.fastq.IlluminaIterativeEater.READ_TYPE;
+import uk.ac.ebi.ena.readtools.loader.fastq.IlluminaSpot;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class 
