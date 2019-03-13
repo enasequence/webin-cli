@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,7 +8,6 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli.rawreads;
 
 import java.io.File;
@@ -22,6 +21,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
@@ -37,7 +37,6 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.QualityScoringSystem;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class
 RawReadsManifest extends ManifestReader {

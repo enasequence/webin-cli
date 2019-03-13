@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,15 +8,14 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli;
+
+import java.lang.reflect.Field;
+import java.text.MessageFormat;
 
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
-
-import java.lang.reflect.Field;
-import java.text.MessageFormat;
 
 public interface WebinCliMessage {
 
@@ -27,8 +26,17 @@ public interface WebinCliMessage {
         VALIDATE_SUCCESS("The submission has been validated successfully."),
         UPLOAD_SUCCESS("Files have been uploaded to webin.ebi.ac.uk. "),
         SUBMIT_SUCCESS("The submission has been completed successfully. "),
+        CURRENT_VERSION("Your application version is {0}"),
+        NEW_VERSION("A new application version is available. Please download the latest version {0} from https://github.com/enasequence/webin-cli/releases"),
+        UNSUPPORTED_VERSION("Your application version is no longer supported. The minimum supported version is {0}. Please download the latest version {1} from https://github.com/enasequence/webin-cli/releases"),
+        EXPIRYING_VERSION("Your application version will not be supported after {0}. The minimum supported version will be {1}. Please download the latest version {2} from https://github.com/enasequence/webin-cli/releases"),
         VALIDATE_USER_ERROR("Submission validation failed because of a user error. Please check the report directory for the errors: "),
         VALIDATE_SYSTEM_ERROR("Submission validation failed because of a system error. "),
+        INIT_ERROR("Failed to initialise validator. {0}"),
+        INVALID_REPORT_DIR_ERROR("invalid report directory: {0}"),
+        MISSING_OUTPUT_DIR_ERROR("Missing output directory."),
+        CREATE_DIR_ERROR("Unable to create directory: {0}"),
+        UNSUPPORTED_FILETYPE_ERROR("Unsupported file type: {0}"),
         UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk because of a {0}. "),
         SUBMIT_ERROR("The submission has failed because of a {0}. "),
         AUTHENTICATION_ERROR("Invalid submission account user name or password."),

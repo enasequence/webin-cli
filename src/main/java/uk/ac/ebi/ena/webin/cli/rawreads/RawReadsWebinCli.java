@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,7 +8,6 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli.rawreads;
 
 import java.io.File;
@@ -31,6 +30,8 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import htsjdk.samtools.DefaultSAMRecordFactory;
 import htsjdk.samtools.SAMFormatException;
@@ -44,26 +45,25 @@ import htsjdk.samtools.cram.CRAMException;
 import htsjdk.samtools.util.Log;
 import htsjdk.samtools.util.Log.LogLevel;
 import net.sf.cram.ref.ENAReferenceSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.entity.Sample;
+import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.rawreads.refs.CramReferenceInfo;
-import uk.ac.ebi.ena.webin.cli.entity.Sample;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
-import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 
 public class 
 RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
@@ -129,26 +129,17 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         AtomicBoolean paired = new AtomicBoolean();
         
         List<RawReadsFile> files = getManifestReader().getFiles();
-        
-        for( RawReadsFile rf : files )
-        {
-            if( Filetype.fastq.equals( rf.getFiletype() ) )
-            {
-                valid = readFastqFile(files, paired);
-                
-            } else if( Filetype.bam.equals( rf.getFiletype() ) )
-            {
-                valid = readBamFile(files, paired);
-                
-            } else if( Filetype.cram.equals( rf.getFiletype() ) )
-            {
-                valid = readCramFile(files, paired);
 
-            } else
-            {
-                throw WebinCliException.systemError( "Filetype " + rf.getFiletype() + " is unknown" );
+        for (RawReadsFile rf : files) {
+            if (Filetype.fastq.equals(rf.getFiletype())) {
+                valid = readFastqFile(files, paired);
+            } else if (Filetype.bam.equals(rf.getFiletype())) {
+                valid = readBamFile(files, paired);
+            } else if (Filetype.cram.equals(rf.getFiletype())) {
+                valid = readCramFile(files, paired);
+            } else {
+                throw WebinCliException.systemError(WebinCliMessage.Cli.UNSUPPORTED_FILETYPE_ERROR.format(rf.getFiletype().name()));
             }
-            
             break;
         }
 
@@ -215,7 +206,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                 }
             });
             return vr.isValid();
-            
+
         } catch( Throwable e )
         {
             throw WebinCliException.systemError( "Unable to validate file(s): " + files + ", " + e.getMessage() );

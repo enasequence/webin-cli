@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -8,7 +8,6 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
@@ -19,10 +18,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -38,6 +34,7 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
+
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
@@ -338,12 +335,12 @@ public class WebinCli { // implements CommandLineRunner
     {
 		SubmissionBundle bundle = validator.getSubmissionBundle();
 
-        UploadService ftpService = params.ascp && new ASCPService().isAvaliable() ? new ASCPService() : new FtpService();
+        UploadService ftpService = params.ascp && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
         
         try 
         {
             ftpService.connect( params.userName, params.password );
-            ftpService.ftpDirectory( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
+            ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
 			log.info( WebinCliMessage.Cli.UPLOAD_SUCCESS.format() );
 
         } catch( WebinCliException e ) 
@@ -519,29 +516,22 @@ public class WebinCli { // implements CommandLineRunner
 				.setTest( test )
 				.build().getVersion( currentVersion );
 
-		String downloadMessage =
-				". Please download the latest version " +
-						version.latestVersion +
-						" from https://github.com/enasequence/webin-cli/releases";
-
-		log.info("The application version is " + currentVersion);
+		log.info(WebinCliMessage.Cli.CURRENT_VERSION.format(currentVersion));
 
 		if (!version.valid) {
-			throw WebinCliException.userError(
-					"Your application version is no longer supported. The minimum supported version is " +
-							version.minVersion +
-							downloadMessage);
+			throw WebinCliException.userError(WebinCliMessage.Cli.UNSUPPORTED_VERSION.format(
+					version.minVersion,
+					version.latestVersion));
 		}
 
 		if (version.expire) {
-			log.warn("Your application version will not be supported after " +
-					new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate) +
-					". The minimum supported version will be " + version.nextMinVersion +
-					downloadMessage);
+			log.info(WebinCliMessage.Cli.EXPIRYING_VERSION.format(
+					new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate),
+					version.nextMinVersion,
+					version.latestVersion));
 		}
 		else if (version.update) {
-			log.info("A new application version is available" +
-					downloadMessage);
+			log.info(WebinCliMessage.Cli.NEW_VERSION.format(version.latestVersion));
 		}
 
 		if (version.comment != null) {
@@ -554,7 +544,7 @@ public class WebinCli { // implements CommandLineRunner
 	getReportFile( File dir, String filename, String suffix )
 	{
 		if( dir == null || !dir.isDirectory() )
-			throw WebinCliException.systemError( "Invalid report directory: " + filename );
+			throw WebinCliException.systemError( WebinCliMessage.Cli.INVALID_REPORT_DIR_ERROR.format(filename ));
 
 		return new File( dir, Paths.get( filename ).getFileName().toString() + suffix );
 	}
@@ -563,30 +553,24 @@ public class WebinCli { // implements CommandLineRunner
 	public static File
 	createOutputDir( WebinCliParameters parameters, String... dirs ) throws WebinCliException
 	{
-		if (parameters.getOutputDir() == null) 
-		{
-			throw WebinCliException.systemError( "Missing output directory" );
+		if (parameters.getOutputDir() == null) {
+			throw WebinCliException.systemError( WebinCliMessage.Cli.MISSING_OUTPUT_DIR_ERROR.format());
 		}
 
 		String[] safeDirs = getSafeOutputDir(dirs);
 
 		Path p;
 
-		try
-		{
+		try {
 			p = Paths.get(parameters.getOutputDir().getPath(), safeDirs);
-			
-		}catch( InvalidPathException ex ) 
-		{
-
-			throw WebinCliException.systemError( "Unable to create directory: " + ex.getInput() );
+		} catch (InvalidPathException ex) {
+			throw WebinCliException.systemError( WebinCliMessage.Cli.CREATE_DIR_ERROR.format(ex.getInput()));
 		}
 
 		File dir = p.toFile();
 
-		if( !dir.exists() && !dir.mkdirs() )
-		{
-			throw WebinCliException.systemError( "Unable to create directory: " + dir.getPath() );
+		if (!dir.exists() && !dir.mkdirs()) {
+			throw WebinCliException.systemError( WebinCliMessage.Cli.CREATE_DIR_ERROR.format(dir.getPath()));
 		}
 
 		return dir;
