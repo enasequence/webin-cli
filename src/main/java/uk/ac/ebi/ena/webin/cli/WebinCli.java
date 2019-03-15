@@ -177,7 +177,7 @@ public class WebinCli { // implements CommandLineRunner
             
         } catch( WebinCliException e ) 
         {
-            log.error( e.getMessage() );
+            log.error( e.getMessage(), e );
 
             switch( e.getErrorType() )
             {
@@ -193,7 +193,7 @@ public class WebinCli { // implements CommandLineRunner
             
         } catch( ValidationEngineException e ) 
         {
-            log.error( e.getMessage() );
+            log.error( e.getMessage(), e );
 
             if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
                 return SYSTEM_ERROR;
@@ -202,9 +202,7 @@ public class WebinCli { // implements CommandLineRunner
             
         } catch( Throwable e ) 
         {
-            StringWriter sw = new StringWriter();
-            e.printStackTrace( new PrintWriter( sw ) );
-            log.error( sw.toString() );
+            log.error( e.getMessage(), e );
             return SYSTEM_ERROR;
         }
     }
