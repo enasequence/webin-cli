@@ -313,17 +313,17 @@ public class WebinCli { // implements CommandLineRunner
 	      switch( e.getErrorType() ) 
 	      { 
 	          case USER_ERROR:
-	               throw WebinCliException.userError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(), e.getMessage() );
+	               throw WebinCliException.userError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(e.getMessage(), validator.getValidationDir()));
 	               
 	          case VALIDATION_ERROR:
-	               throw WebinCliException.validationError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(), e.getMessage() );
+	               throw WebinCliException.validationError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(e.getMessage(), validator.getValidationDir()));
 	               
 	          case SYSTEM_ERROR:
-	               throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(), e.getMessage() );
+	               throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(e.getMessage(), validator.getValidationDir()));
 	      }
 	   } catch( Throwable e ) 
 	   {
-	      throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(), e.getMessage() );
+	      throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(e.getMessage(), validator.getValidationDir()));
 	   }
 	}
 	 
