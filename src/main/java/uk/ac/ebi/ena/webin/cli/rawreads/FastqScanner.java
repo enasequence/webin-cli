@@ -95,9 +95,9 @@ FastqScanner
                     return is;
                 }
             }
-        } catch( IOException ioe )
+        } catch( IOException ex )
         {
-            throw WebinCliException.systemError( ioe.getMessage() );
+            throw WebinCliException.systemError( ex );
         }
     }
     

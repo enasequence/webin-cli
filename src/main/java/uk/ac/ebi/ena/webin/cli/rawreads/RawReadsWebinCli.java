@@ -207,9 +207,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             });
             return vr.isValid();
 
-        } catch( Throwable e )
+        } catch( Throwable ex )
         {
-            throw WebinCliException.systemError( "Unable to validate file(s): " + files + ", " + e.getMessage() );
+            throw WebinCliException.systemError( ex, "Unable to validate file(s): " + files );
         }
     }
     
@@ -323,8 +323,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                     reporter.write(Severity.ERROR, e.getMessage());
                     valid = false;
 
-                } catch (IOException e) {
-                    throw WebinCliException.systemError(e.getMessage());
+                } catch (IOException ex) {
+                    throw WebinCliException.systemError(ex);
                 }
             }
         }
@@ -375,9 +375,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                                                                       new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() ) ) ),
                                                        getParameters().getCenterName(),
                                                        FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );
-        } catch( NoSuchAlgorithmException | IOException e )
+        } catch( NoSuchAlgorithmException | IOException ex )
         {
-            throw WebinCliException.systemError( e.getMessage() );
+            throw WebinCliException.systemError( ex );
         }
     }
 
@@ -495,9 +495,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             xmlOutput.output( doc, stringWriter );
             return stringWriter.toString();
             
-        } catch( IOException e ) 
+        } catch( IOException ex )
         {
-            throw WebinCliException.systemError( e.getMessage() );
+            throw WebinCliException.systemError( ex );
         }
     }
     
@@ -537,9 +537,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             xmlOutput.output( doc, stringWriter );
             return stringWriter.toString();
             
-        } catch( IOException e ) 
+        } catch( IOException ex )
         {
-            throw WebinCliException.systemError( e.getMessage() );
+            throw WebinCliException.systemError( ex );
         }
     }
 

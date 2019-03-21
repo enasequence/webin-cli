@@ -109,9 +109,9 @@ ASCPService implements UploadService
             if( 0 != exitVal )
                 throw WebinCliException.systemError(WebinCliMessage.Aspera.UPLOAD_ERROR.format());
             
-        } catch( Exception e )
+        } catch( Exception ex )
         {
-            throw WebinCliException.systemError(WebinCliMessage.Aspera.UPLOAD_ERROR.format(), e.getMessage());
+            throw WebinCliException.systemError(WebinCliMessage.Aspera.UPLOAD_ERROR.format(), ex.getMessage());
         }
     }
 

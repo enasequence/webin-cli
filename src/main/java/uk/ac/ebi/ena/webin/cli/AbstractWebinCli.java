@@ -88,10 +88,10 @@ AbstractWebinCli<T extends ManifestReader>
             } else {
                 throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
             }
-        } catch (WebinCliException e) {
-            throw e;
-        } catch (Exception t) {
-            throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format(t.getMessage()));
+        } catch (WebinCliException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw WebinCliException.systemError(ex, WebinCliMessage.Cli.INIT_ERROR.format(ex.getMessage()));
         } finally {
             setName();
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {

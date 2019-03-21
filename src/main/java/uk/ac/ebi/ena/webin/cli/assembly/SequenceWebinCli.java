@@ -195,9 +195,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             xmlOutput.output( doc, stringWriter );
             return stringWriter.toString();
             
-        } catch( IOException e ) 
+        } catch( IOException ex )
         {
-            throw WebinCliException.systemError( e.getMessage() );
+            throw WebinCliException.systemError( ex );
         }
     }
 
@@ -264,18 +264,15 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         try
         {
             validateInternal();
-        } catch( ValidationEngineException ve )
+        } catch( ValidationEngineException ex )
         {
-            switch( ve.getErrorType() )
+            switch( ex.getErrorType() )
             {
-            default:
-                throw new RuntimeException();
-            
-            case SYSTEM_ERROR:
-                throw WebinCliException.systemError( ve.getMessage() );
+                case VALIDATION_ERROR:
+                    throw WebinCliException.validationError( ex );
 
-            case VALIDATION_ERROR:
-                throw WebinCliException.validationError( ve.getMessage() );
+                default:
+                    throw WebinCliException.systemError( ex );
             }
         }
     }
@@ -332,9 +329,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                                                        Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) ), 
                                                        getParameters().getCenterName(),
                                                        FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );   
-        } catch( IOException | NoSuchAlgorithmException e )
+        } catch( IOException | NoSuchAlgorithmException ex )
         {
-            throw WebinCliException.systemError( e.getMessage() );
+            throw WebinCliException.systemError( ex );
         }        
     }
 

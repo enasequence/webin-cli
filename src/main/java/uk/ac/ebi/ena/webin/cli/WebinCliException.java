@@ -28,6 +28,11 @@ WebinCliException extends RuntimeException
 
     private final ErrorType errorType;
 
+    private WebinCliException(ErrorType errorType, Throwable ex, String message, String ... messages) {
+        super(join(message, messages), ex);
+        this.errorType = errorType;
+    }
+
     private WebinCliException(ErrorType errorType, String message, String ... messages) {
         super(join(message, messages));
         this.errorType = errorType;
@@ -40,6 +45,30 @@ WebinCliException extends RuntimeException
 
     public ErrorType getErrorType() {
         return errorType;
+    }
+
+    public static WebinCliException userError(Throwable ex) {
+        return userError(ex, ex.getMessage());
+    }
+
+    public static WebinCliException systemError(Throwable ex) {
+        return systemError(ex, ex.getMessage());
+    }
+
+    public static WebinCliException validationError(Throwable ex) {
+        return validationError(ex, ex.getMessage());
+    }
+
+    public static WebinCliException userError(Throwable ex, String message, String ... messages) {
+        return new WebinCliException(ErrorType.USER_ERROR, ex, message, messages);
+    }
+
+    public static WebinCliException systemError(Throwable ex, String message, String ... messages) {
+        return new WebinCliException(ErrorType.SYSTEM_ERROR, ex, message, messages);
+    }
+
+    public static WebinCliException validationError(Throwable ex, String message, String ... messages) {
+        return new WebinCliException(ErrorType.VALIDATION_ERROR, ex, message, messages);
     }
 
     public static WebinCliException userError(String message, String ... messages) {

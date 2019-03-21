@@ -73,8 +73,6 @@ FT   source          1..1710
 FT                   /organism="Oryza sativa Indica Group"
 FT                   /mol_type="genomic DNA"
 FT                   /db_xref="taxon:39946"
-FT   gene            212..1543
-FT                   /locus_tag="SPLC1_0001"
 XX
 SQ   Sequence 1710 BP; 377 A; 483 C; 483 G; 367 T; 0 other;
      gggactctcc aacggctccc cgaggagctc gagaggacga ttaagtcatc ctcgagggac        60
@@ -182,8 +180,6 @@ FT   source          1..1710
 FT                   /organism="Oryza sativa Indica Group"
 FT                   /mol_type="genomic DNA"
 FT                   /db_xref="taxon:39946"
-FT   gene            212..1543
-FT                   /locus_tag="SPLC1_0001"
 XX
 SQ   Sequence 1710 BP; 377 A; 483 C; 483 G; 367 T; 0 other;
      gggactctcc aacggctccc cgaggagctc gagaggacga ttaagtcatc ctcgagggac        60

@@ -156,8 +156,8 @@ public class SubmitService extends AbstractService {
             if (errorsSb.length() != 0) {
                 throw WebinCliException.systemError(errorsSb.toString());
             }
-        } catch (IOException | JDOMException e) {
-            throw WebinCliException.systemError(e.getMessage());
+        } catch (IOException | JDOMException ex) {
+            throw WebinCliException.systemError(ex);
         }
     }
 }

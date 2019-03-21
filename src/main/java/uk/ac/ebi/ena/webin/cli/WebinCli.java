@@ -306,22 +306,22 @@ public class WebinCli { // implements CommandLineRunner
            validator.prepareSubmissionBundle();
            log.info( WebinCliMessage.Cli.VALIDATE_SUCCESS.format() );
            
-	   } catch( WebinCliException e ) 
+	   } catch( WebinCliException ex )
 	   {
-	      switch( e.getErrorType() ) 
+	      switch( ex.getErrorType() )
 	      { 
 	          case USER_ERROR:
-	               throw WebinCliException.userError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(e.getMessage(), validator.getValidationDir()));
+	               throw WebinCliException.userError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	               
 	          case VALIDATION_ERROR:
-	               throw WebinCliException.validationError( WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(e.getMessage(), validator.getValidationDir()));
+	               throw WebinCliException.validationError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	               
 	          case SYSTEM_ERROR:
-	               throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(e.getMessage(), validator.getValidationDir()));
+	               throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	      }
-	   } catch( Throwable e ) 
+	   } catch( Throwable ex )
 	   {
-	      throw WebinCliException.systemError( WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(e.getMessage(), validator.getValidationDir()));
+	      throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	   }
 	}
 	 

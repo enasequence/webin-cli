@@ -88,9 +88,9 @@ SubmissionBundleHelper
         {
             os.writeObject( sb );
             os.flush();
-        } catch( IOException e )
+        } catch( IOException ex )
         {
-            throw WebinCliException.systemError(WebinCliMessage.Bundle.FILE_ERROR.format(submission_bundle_path ));
+            throw WebinCliException.systemError(ex, WebinCliMessage.Bundle.FILE_ERROR.format(submission_bundle_path ));
         }
     }
     
