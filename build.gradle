@@ -18,7 +18,7 @@ wrapper{
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-ext.version_base = '1.8.0'
+ext.version_base = '1.8.1'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -105,9 +105,9 @@ task printWebinTestCredentials {
 dependencies {
     implementation("commons-net:commons-net:3.4")
     implementation(group: 'com.beust', name: 'jcommander', version: '1.72')
-    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.3.9')
-    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.3.9')
-    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: '1.3.9')
+    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-ff', version: '1.3.11')
+    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-core', version: '1.3.11')
+    implementation(group: 'uk.ac.ebi.ena.sequence', name: 'embl-api-validator', version: '1.3.11')
     implementation("org.jdom:jdom:2.0.2")
 
 
