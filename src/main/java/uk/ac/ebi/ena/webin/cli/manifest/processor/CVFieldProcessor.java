@@ -17,6 +17,8 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
+import java.util.List;
+
 public class
 CVFieldProcessor implements ManifestFieldProcessor
 {
@@ -58,5 +60,9 @@ CVFieldProcessor implements ManifestFieldProcessor
         }
 
         return null;
+    }
+
+    public List<String> getValues() {
+        return cvList.keyList();
     }
 }

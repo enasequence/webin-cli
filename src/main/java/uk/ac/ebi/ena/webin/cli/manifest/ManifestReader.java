@@ -102,7 +102,10 @@ ManifestReader
     public abstract String getName();
     public abstract String getDescription();
 
-    
+    public List<ManifestFieldDefinition> getFields() {
+        return fields;
+    }
+
     public final ManifestReaderResult
     getResult()
     {

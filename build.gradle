@@ -112,7 +112,8 @@ dependencies {
 
 
     // implementation(group: 'com.opencsv', name: 'opencsv', version: '4.5')
-    // implementation(group: 'org.apache.poi', name: 'poi', version: '4.0.1')
+    implementation(group: 'org.apache.poi', name: 'poi', version: '4.0.1')
+    implementation(group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.1')
 
 
     implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.0.0' )
