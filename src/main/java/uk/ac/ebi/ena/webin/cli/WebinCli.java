@@ -45,7 +45,6 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
-import uk.ac.ebi.ena.webin.cli.version.HotSpotRuntimeVersion;
 
 // @SpringBootApplication
 public class WebinCli { // implements CommandLineRunner
@@ -136,9 +135,6 @@ public class WebinCli { // implements CommandLineRunner
 
         try 
         {
-            checkRuntimeVersion();
-            // checkLatestVersion();
-            
             if( args != null && args.length > 0 )
             {
                 List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
@@ -203,17 +199,6 @@ public class WebinCli { // implements CommandLineRunner
             log.error( e.getMessage(), e );
             return SYSTEM_ERROR;
         }
-    }
-    
-    
-    private static void 
-    checkRuntimeVersion()
-    {
-        HotSpotRuntimeVersion jrv = new HotSpotRuntimeVersion();
-        if( jrv.isHotSpot() && !jrv.isComplient() )
-            throw WebinCliException.systemError( String.format( "Your current HotSpot(TM) JVM %s is out of date and not supported, please download the latest version from https://java.com. Minimal HotSpot(TM) JVM supported is: %s",
-                                                                      String.valueOf( jrv.getCurrentVersion() ),
-                                                                      String.valueOf( jrv.getMinVersion() ) ) );
     }
 
 
