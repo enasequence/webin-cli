@@ -19,6 +19,6 @@ public class ProcessorTestUtils {
     static ManifestFieldValue
     createFieldValue(ManifestFieldType type, String name, String value) {
         return new ManifestFieldValue(new ManifestFieldDefinition(
-                name, type, 0, 1), value, null);
+                name, "", type, 0, 1, 0), value, null);
     }
 }

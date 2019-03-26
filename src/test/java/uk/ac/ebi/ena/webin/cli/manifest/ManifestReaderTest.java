@@ -38,7 +38,7 @@ public class ManifestReaderTest {
     static class ManifestReaderOneMetaFieldMin0Max1 extends TestManifestReader {
         ManifestReaderOneMetaFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 0, 1, new CVFieldProcessor(CV_FIELD_1 )));
+                add(new ManifestFieldDefinition("META_FIELD_1", "DESCRIPTION_1", ManifestFieldType.META, 0, 1, 0, new CVFieldProcessor(CV_FIELD_1 )));
             }});
         }
     }
@@ -46,8 +46,8 @@ public class ManifestReaderTest {
     static class ManifestReaderTwoMetaFieldMin1Max1 extends TestManifestReader {
         ManifestReaderTwoMetaFieldMin1Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("META_FIELD_1", ManifestFieldType.META, 1, 1, new CVFieldProcessor(CV_FIELD_1 )));
-                add(new ManifestFieldDefinition("META_FIELD_2", ManifestFieldType.META, 1, 1));
+                add(new ManifestFieldDefinition("META_FIELD_1", "DESCRIPTION_1", ManifestFieldType.META, 1, 1, 0, new CVFieldProcessor(CV_FIELD_1 )));
+                add(new ManifestFieldDefinition("META_FIELD_2", "DESCRIPTION_2", ManifestFieldType.META, 1, 1, 0));
             }});
         }
     }
@@ -55,7 +55,7 @@ public class ManifestReaderTest {
     static class ManifestReaderOneFileFieldMin0Max1 extends TestManifestReader {
         ManifestReaderOneFileFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1,
+                add(new ManifestFieldDefinition("FILE_FIELD_1", "DESCRIPTION_1", ManifestFieldType.FILE, 0, 1, 0,
                         new FileSuffixProcessor( Arrays.asList(".txt"))));
             }});
         }
@@ -64,10 +64,10 @@ public class ManifestReaderTest {
     static class ManifestReaderFiles extends TestManifestReader {
         ManifestReaderFiles() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("FILE_FIELD_1", ManifestFieldType.FILE, 0, 1));
-                add(new ManifestFieldDefinition("FILE_FIELD_2", ManifestFieldType.FILE, 0, 2));
-                add(new ManifestFieldDefinition("FILE_FIELD_3", ManifestFieldType.FILE, 0, 1));
-                add(new ManifestFieldDefinition("FILE_FIELD_4", ManifestFieldType.FILE, 0, 2));
+                add(new ManifestFieldDefinition("FILE_FIELD_1", "DESCRIPTION_1", ManifestFieldType.FILE, 0, 1, 0));
+                add(new ManifestFieldDefinition("FILE_FIELD_2", "DESCRIPTION_2", ManifestFieldType.FILE, 0, 2, 0));
+                add(new ManifestFieldDefinition("FILE_FIELD_3", "DESCRIPTION_3", ManifestFieldType.FILE, 0, 1, 0));
+                add(new ManifestFieldDefinition("FILE_FIELD_4", "DESCRIPTION_4", ManifestFieldType.FILE, 0, 2, 0));
             }},
             new HashSet<List<ManifestFileCount>>() {{
                 add(new ArrayList<ManifestFileCount>() {{

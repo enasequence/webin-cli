@@ -49,17 +49,17 @@ RawReadsManifestTest
         Path inputDir = Paths.get( "." );
 
         RawReadsFile file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new ManifestFieldDefinition(Fields.FASTQ, ManifestFieldType.FILE, 0, 2), "file.fastq", null));
+                new ManifestFieldDefinition(Fields.FASTQ, "DESCRIPTION", ManifestFieldType.FILE, 0, 2, 0), "file.fastq", null));
         Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
 
         file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new ManifestFieldDefinition(Fields.BAM, ManifestFieldType.FILE, 0, 1), "file.bam", null));
+                new ManifestFieldDefinition(Fields.BAM, "DESCRIPTION", ManifestFieldType.FILE, 0, 1, 0), "file.bam", null));
         Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
 
         file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new ManifestFieldDefinition(Fields.CRAM, ManifestFieldType.FILE, 0, 1), "file.cram", null));
+                new ManifestFieldDefinition(Fields.CRAM, "DESCRIPTION", ManifestFieldType.FILE, 0, 1, 0), "file.cram", null));
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }

@@ -41,42 +41,61 @@ import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.QualityScoringSystem;
 public class
 RawReadsManifest extends ManifestReader {
 
-    public interface
-    Fields {
+    public interface Fields {
         String NAME = "NAME";
         String STUDY = "STUDY";
         String SAMPLE = "SAMPLE";
         String PLATFORM = "PLATFORM";
         String INSTRUMENT = "INSTRUMENT";
-        String INSERT_SIZE = "INSERT_SIZE";
+        String DESCRIPTION = "DESCRIPTION";
         String LIBRARY_SOURCE = "LIBRARY_SOURCE";
         String LIBRARY_SELECTION = "LIBRARY_SELECTION";
         String LIBRARY_STRATEGY = "LIBRARY_STRATEGY";
         String LIBRARY_CONSTRUCTION_PROTOCOL = "LIBRARY_CONSTRUCTION_PROTOCOL";
         String LIBRARY_NAME = "LIBRARY_NAME";
+        String INSERT_SIZE = "INSERT_SIZE";
         String QUALITY_SCORE = "QUALITY_SCORE";
         String __HORIZON = "__HORIZON";
         String FASTQ = "FASTQ";
         String BAM = "BAM";
         String CRAM = "CRAM";
-        String DESCRIPTION = "DESCRIPTION";
     }
 
-    
+    public interface Descriptions {
+        String NAME = "Unique sequencing experiment name";
+        String STUDY = "Study accession or name";
+        String SAMPLE = "Sample accession or name";
+        String PLATFORM = "Sequencing platform";
+        String INSTRUMENT = "Sequencing instrument";
+        String DESCRIPTION = "Experiment description";
+        String LIBRARY_SOURCE = "Source material";
+        String LIBRARY_SELECTION = "Method used to select or enrich the source material";
+        String LIBRARY_STRATEGY = "Sequencing technique";
+        String LIBRARY_CONSTRUCTION_PROTOCOL = "Protocol used to construct the sequencing library";
+        String LIBRARY_NAME = "Library name";
+        String INSERT_SIZE = "Insert size for paired reads";
+        String QUALITY_SCORE = "";
+        String __HORIZON = "";
+        String FASTQ = "Fastq file";
+        String BAM = "BAM file";
+        String CRAM = "CRAM file";
+    }
+
+
     private final static String QUALITY_SCORE_PHRED_33 = "PHRED_33";
     private final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
     private final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
     private final static String UNSPECIFIED_INSTRUMENT = "unspecified";
 
-    public final static ManifestCVList CV_INSTRUMENT = new ManifestCVList( new File("uk/ac/ebi/ena/webin/cli/rawreads/instrument.properties") );
-    public final static ManifestCVList CV_PLATFORM = new ManifestCVList( new File("uk/ac/ebi/ena/webin/cli/rawreads/platform.properties") );
-    public final static ManifestCVList CV_SELECTION = new ManifestCVList( new File("uk/ac/ebi/ena/webin/cli/rawreads/selection.properties") );
-    public final static ManifestCVList CV_SOURCE = new ManifestCVList( new File("uk/ac/ebi/ena/webin/cli/rawreads/source.properties") );
-    public final static ManifestCVList CV_STRATEGY = new ManifestCVList( new File("uk/ac/ebi/ena/webin/cli/rawreads/strategy.properties") );
+    public final static ManifestCVList CV_INSTRUMENT = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/instrument.properties"));
+    public final static ManifestCVList CV_PLATFORM = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/platform.properties"));
+    public final static ManifestCVList CV_SELECTION = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/selection.properties"));
+    public final static ManifestCVList CV_SOURCE = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/source.properties"));
+    public final static ManifestCVList CV_STRATEGY = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/strategy.properties"));
     public final static ManifestCVList CV_QUALITY_SCORE = new ManifestCVList(
-        QUALITY_SCORE_PHRED_33,
-        QUALITY_SCORE_PHRED_64,
-        QUALITY_SCORE_LOGODDS
+            QUALITY_SCORE_PHRED_33,
+            QUALITY_SCORE_PHRED_64,
+            QUALITY_SCORE_LOGODDS
     );
 
     private String name = null;
@@ -96,77 +115,64 @@ RawReadsManifest extends ManifestReader {
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
 
-    
-    public
-    RawReadsManifest() 
-    {
-        this( null, null );
+
+    public RawReadsManifest() {
+        this(null, null);
     }
 
-    
-    @SuppressWarnings( "serial" ) public
-    RawReadsManifest( SampleProcessor sampleProcessor, StudyProcessor studyProcessor )
-    {
+
+    @SuppressWarnings("serial")
+    public RawReadsManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor) {
         super(
-            // Fields.
-            new ArrayList<ManifestFieldDefinition>()
-            {
-                {
-                        add( new ManifestFieldDefinition( Fields.NAME, ManifestFieldType.META, 1, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.DESCRIPTION,  ManifestFieldType.META, 0, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor ) );
-                        add( new ManifestFieldDefinition( Fields.SAMPLE, ManifestFieldType.META, 1, 1, sampleProcessor ) );
-
-                        add( new ManifestFieldDefinition( Fields.INSTRUMENT, ManifestFieldType.META, 0, 1,
-                                                          new CVFieldProcessor( CV_INSTRUMENT) ) );
-
-                        add( new ManifestFieldDefinition( Fields.PLATFORM, ManifestFieldType.META, 0, 1,
-                                                          new CVFieldProcessor( CV_PLATFORM) ) );
-
-                        add( new ManifestFieldDefinition( Fields.INSERT_SIZE, ManifestFieldType.META, 0, 1 ) );
-
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1,
-                                                          new CVFieldProcessor( CV_SOURCE) ) );
-
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1,
-                                                          new CVFieldProcessor( CV_SELECTION) ) );
-
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1,
-                                                          new CVFieldProcessor( CV_STRATEGY) ) );
-
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.LIBRARY_NAME, ManifestFieldType.META, 0, 1 ) );
-                        add( new ManifestFieldDefinition( Fields.QUALITY_SCORE, ManifestFieldType.META, 0, 1,
-                                                          new CVFieldProcessor( CV_QUALITY_SCORE) ) );
-
-                        add( new ManifestFieldDefinition( Fields.__HORIZON, ManifestFieldType.META, 0, 1 ) );
-
-                        add( new ManifestFieldDefinition( Fields.FASTQ, ManifestFieldType.FILE, 0, 2,
-                                                          new ASCIIFileNameProcessor(), 
-                                                          new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
-                        
-                        add( new ManifestFieldDefinition( Fields.BAM, ManifestFieldType.FILE, 0, 1,
-                                                          new ASCIIFileNameProcessor(), 
-                                                          new FileSuffixProcessor( ManifestFileSuffix.BAM_FILE_SUFFIX ) ) );
-                        
-                        add( new ManifestFieldDefinition( Fields.CRAM, ManifestFieldType.FILE, 0, 1,
-                                                          new ASCIIFileNameProcessor(), 
-                                                          new FileSuffixProcessor( ManifestFileSuffix.CRAM_FILE_SUFFIX ) ) );
+                // Fields.
+                new ArrayList<ManifestFieldDefinition>() {
+                    {
+                        add(new ManifestFieldDefinition(Fields.NAME, Descriptions.NAME, ManifestFieldType.META, 1, 1,1));
+                        add(new ManifestFieldDefinition(Fields.DESCRIPTION, Descriptions.DESCRIPTION, ManifestFieldType.META, 0, 1, 1));
+                        add(new ManifestFieldDefinition(Fields.STUDY, Descriptions.STUDY, ManifestFieldType.META, 1, 1, 1,
+                                studyProcessor));
+                        add(new ManifestFieldDefinition(Fields.SAMPLE, Descriptions.SAMPLE, ManifestFieldType.META, 1, 1, 1,
+                                sampleProcessor));
+                        add(new ManifestFieldDefinition(Fields.INSTRUMENT, Descriptions.INSTRUMENT, ManifestFieldType.META, 0, 1, 1,
+                                new CVFieldProcessor(CV_INSTRUMENT)));
+                        add(new ManifestFieldDefinition(Fields.PLATFORM, Descriptions.PLATFORM, ManifestFieldType.META, 0, 1, 1,
+                                new CVFieldProcessor(CV_PLATFORM)));
+                        add(new ManifestFieldDefinition(Fields.INSERT_SIZE, Descriptions.INSERT_SIZE, ManifestFieldType.META, 0, 1, 1));
+                        add(new ManifestFieldDefinition(Fields.LIBRARY_SOURCE, Descriptions.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1, 1,
+                                new CVFieldProcessor(CV_SOURCE)));
+                        add(new ManifestFieldDefinition(Fields.LIBRARY_SELECTION, Descriptions.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1, 1,
+                                new CVFieldProcessor(CV_SELECTION)));
+                        add(new ManifestFieldDefinition(Fields.LIBRARY_STRATEGY, Descriptions.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1, 1,
+                                new CVFieldProcessor(CV_STRATEGY)));
+                        add(new ManifestFieldDefinition(Fields.LIBRARY_CONSTRUCTION_PROTOCOL, Descriptions.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1, 1));
+                        add(new ManifestFieldDefinition(Fields.LIBRARY_NAME, Descriptions.LIBRARY_NAME, ManifestFieldType.META, 0, 1, 1));
+                        add(new ManifestFieldDefinition(Fields.QUALITY_SCORE, Descriptions.QUALITY_SCORE, ManifestFieldType.META, 0, 1, 0,
+                                new CVFieldProcessor(CV_QUALITY_SCORE)));
+                        add(new ManifestFieldDefinition(Fields.__HORIZON, Descriptions.__HORIZON, ManifestFieldType.META, 0, 1, 0));
+                        add(new ManifestFieldDefinition(Fields.FASTQ, Descriptions.FASTQ, ManifestFieldType.FILE, 0, 2, 2,
+                                new ASCIIFileNameProcessor(),
+                                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                        add(new ManifestFieldDefinition(Fields.BAM, Descriptions.BAM, ManifestFieldType.FILE, 0, 1, 1,
+                                new ASCIIFileNameProcessor(),
+                                new FileSuffixProcessor(ManifestFileSuffix.BAM_FILE_SUFFIX)));
+                        add(new ManifestFieldDefinition(Fields.CRAM, Descriptions.CRAM, ManifestFieldType.FILE, 0, 1, 1,
+                                new ASCIIFileNameProcessor(),
+                                new FileSuffixProcessor(ManifestFileSuffix.CRAM_FILE_SUFFIX)));
                     }
-            },
+                },
 
-            // File groups.
-            new HashSet<List<ManifestFileCount>>() {{
-                add(new ArrayList<ManifestFileCount>() {{
-                    add(new ManifestFileCount(Fields.FASTQ, 1, 2));
+                // File groups.
+                new HashSet<List<ManifestFileCount>>() {{
+                    add(new ArrayList<ManifestFileCount>() {{
+                        add(new ManifestFileCount(Fields.FASTQ, 1, 2));
+                    }});
+                    add(new ArrayList<ManifestFileCount>() {{
+                        add(new ManifestFileCount(Fields.CRAM, 1, 1));
+                    }});
+                    add(new ArrayList<ManifestFileCount>() {{
+                        add(new ManifestFileCount(Fields.BAM, 1, 1));
+                    }});
                 }});
-                add(new ArrayList<ManifestFileCount>() {{
-                    add(new ManifestFileCount(Fields.CRAM, 1, 1));
-                }});
-                add(new ArrayList<ManifestFileCount>() {{
-                    add(new ManifestFileCount(Fields.BAM, 1, 1));
-                }});
-        }});
     }
 
     @Override public String

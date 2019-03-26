@@ -42,7 +42,7 @@ public class SpreadsheetWriter {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
         try {
-            addSheet(workbook, spreadsheetContext);
+            addSheets(workbook, spreadsheetContext);
         } catch (Exception ex) {
             throw WebinCliException.systemError(ex, "Unable to create spreadsheet: " + spreadsheetContext.getFileName());
         }
@@ -54,23 +54,15 @@ public class SpreadsheetWriter {
         }
     }
 
-    private static void addSheet(XSSFWorkbook workbook, SpreadsheetContext spreadsheetContext) {
+    private static void addSheets(XSSFWorkbook workbook, SpreadsheetContext spreadsheetContext) {
 
-        ManifestReader manifest = spreadsheetContext.getManifest();
-        Set<String> ignoreFields = spreadsheetContext.getIgnoreFields();
+        ArrayList<ManifestFieldDefinition> fields = getFields(spreadsheetContext);
 
         XSSFSheet dataSheet = workbook.createSheet(spreadsheetContext.getSheetName());
         XSSFSheet cvSheet = workbook.createSheet(SHEET_NAME_CV);
 
         Row dataSheetHeaderRow = dataSheet.createRow(0);
         Row cvSheetHeaderRow = cvSheet.createRow(0);
-
-        ArrayList<ManifestFieldDefinition> fields = new ArrayList<>();
-        for (ManifestFieldDefinition field : manifest.getFields()) {
-            if (ignoreFields == null || !ignoreFields.contains(field.getName())) {
-                fields.add(field);
-            }
-        }
 
         addHeaderText(dataSheet, dataSheetHeaderRow, fields);
         addHeaderText(cvSheet, cvSheetHeaderRow, fields);
@@ -79,10 +71,21 @@ public class SpreadsheetWriter {
         addHeaderComment(workbook, cvSheet, cvSheetHeaderRow, fields);
 
         addCvValues(workbook, cvSheet, fields);
-
         addCvConstraints(dataSheet, fields);
 
         dataSheet.createFreezePane(0, 1);
+        cvSheet.createFreezePane(0, 1);
+    }
+
+    private static ArrayList<ManifestFieldDefinition> getFields(SpreadsheetContext spreadsheetContext) {
+        ManifestReader manifest = spreadsheetContext.getManifest();
+        ArrayList<ManifestFieldDefinition> fields = new ArrayList<>();
+        for (ManifestFieldDefinition field : manifest.getFields()) {
+            for (int i = 0 ; i < field.getSpreadsheetCount() ; ++i) {
+                fields.add(field);
+            }
+        }
+        return fields;
     }
 
     private static void addHeaderText(Sheet dataSheet, Row dataSheetHeaderRow, ArrayList<ManifestFieldDefinition> fields) {
@@ -112,12 +115,12 @@ public class SpreadsheetWriter {
             Drawing drawing = dataSheet.createDrawingPatriarch();
             ClientAnchor anchor = creationHelper.createClientAnchor();
             anchor.setCol1(columnNumber);
-            anchor.setCol2(columnNumber + 1);
+            anchor.setCol2(columnNumber + 2);
             anchor.setRow1(0);
             anchor.setRow2(2);
             Comment comment = drawing.createCellComment(anchor);
-            RichTextString str = creationHelper.createRichTextString(
-                    field.getMinCount() > 0 ? "Mandatory field" : "Optional field");
+            RichTextString str = creationHelper.createRichTextString(field.getDescription() +
+                    (field.getMinCount() > 0 ? " (mandatory field)" : " (optional field)"));
             comment.setString(str);
             comment.setAuthor("Webin-CLI");
             Cell cell = dataSheetHeaderRow.getCell(columnNumber);

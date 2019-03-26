@@ -39,10 +39,15 @@ ManifestReader
         String INFO = "INFO";
     }
 
+    public interface
+    Descriptions {
+        String INFO = "Info file";
+    }
+
     private final List<ManifestFieldDefinition> infoFields = new ArrayList<ManifestFieldDefinition>()
     {
         {
-            add( new ManifestFieldDefinition( INFO, ManifestFieldType.FILE, 0, 1 ) );
+            add( new ManifestFieldDefinition( Fields.INFO, Descriptions.INFO, ManifestFieldType.FILE, 0, 1, 0 ) );
         }
     };
 

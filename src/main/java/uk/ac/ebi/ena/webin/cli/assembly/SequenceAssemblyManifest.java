@@ -30,56 +30,64 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
-public class 
-SequenceAssemblyManifest extends ManifestReader
-{
+public class
+SequenceAssemblyManifest extends ManifestReader {
     public interface
-    Fields 
-    {
+    Fields {
         String NAME = "NAME";
         String STUDY = "STUDY";
+        String DESCRIPTION = "DESCRIPTION";
         String TAB = "TAB";
         String FLATFILE = "FLATFILE";
-        String DESCRIPTION = "DESCRIPTION";
     }
-    
-    
-	private SubmissionOptions submissionOptions;
+
+    public interface Descriptions {
+        String NAME = "Unique sequence submission name";
+        String STUDY = "Study accession or name";
+        String DESCRIPTION = "Sequence submission description";
+        String TAB = "Tabulated file";
+        String FLATFILE = "Flat file";
+    }
+
+    private SubmissionOptions submissionOptions;
     private String name;
     private String description;
 
-    
-    @SuppressWarnings( "serial" ) public
-    SequenceAssemblyManifest(StudyProcessor studyProcessor ) {
+
+    @SuppressWarnings("serial")
+    public SequenceAssemblyManifest(StudyProcessor studyProcessor) {
         super(
                 // Fields.
-                new ArrayList<ManifestFieldDefinition>() { 
-                {
-                    add( new ManifestFieldDefinition( Fields.NAME, ManifestFieldType.META, 1, 1 ) );
-                    add( new ManifestFieldDefinition( Fields.STUDY, ManifestFieldType.META, 1, 1, studyProcessor ) );
-                    add( new ManifestFieldDefinition( Fields.DESCRIPTION,  ManifestFieldType.META, 0, 1 ) );
-                    add( new ManifestFieldDefinition( Fields.TAB, ManifestFieldType.FILE, 0, 1,
-                                                      new ASCIIFileNameProcessor(), 
-                                                      new FileSuffixProcessor( ManifestFileSuffix.TAB_FILE_SUFFIX ) ) );
-                    
-                    add( new ManifestFieldDefinition( Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
-                                                      new ASCIIFileNameProcessor(), 
-                                                      new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
-                } },
+                new ArrayList<ManifestFieldDefinition>() {
+                    {
+                        add(new ManifestFieldDefinition(Fields.NAME, Descriptions.NAME, ManifestFieldType.META, 1, 1, 1));
+                        add(new ManifestFieldDefinition(Fields.STUDY, Descriptions.STUDY, ManifestFieldType.META, 1, 1, 1,
+                                studyProcessor));
+                        add(new ManifestFieldDefinition(Fields.DESCRIPTION, Descriptions.DESCRIPTION, ManifestFieldType.META, 0, 1, 1));
+                        add(new ManifestFieldDefinition(Fields.TAB, Descriptions.TAB, ManifestFieldType.FILE, 0, 1, 1,
+                                new ASCIIFileNameProcessor(),
+                                new FileSuffixProcessor(ManifestFileSuffix.TAB_FILE_SUFFIX)));
+                        add(new ManifestFieldDefinition(Fields.FLATFILE, Descriptions.FLATFILE, ManifestFieldType.FILE, 0, 1, 1,
+                                new ASCIIFileNameProcessor(),
+                                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                    }
+                },
 
                 // File groups.
                 new HashSet<List<ManifestFileCount>>() {
-                {
-                    add( new ArrayList<ManifestFileCount>() {
-                         {
-                             add( new ManifestFileCount( Fields.TAB, 1, 1 ) );
-                         } 
-                    } );
-                    add( new ArrayList<ManifestFileCount>() {
-                         {
-                             add(new ManifestFileCount( Fields.FLATFILE, 1, 1 ) );
-                         } } );
-                } } );
+                    {
+                        add(new ArrayList<ManifestFileCount>() {
+                            {
+                                add(new ManifestFileCount(Fields.TAB, 1, 1));
+                            }
+                        });
+                        add(new ArrayList<ManifestFileCount>() {
+                            {
+                                add(new ManifestFileCount(Fields.FLATFILE, 1, 1));
+                            }
+                        });
+                    }
+                });
     }
 
 

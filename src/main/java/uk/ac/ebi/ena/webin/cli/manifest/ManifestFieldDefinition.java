@@ -16,77 +16,73 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class 
-ManifestFieldDefinition 
-{
+public class
+ManifestFieldDefinition {
     private final String name;
+    private final String description;
     private final ManifestFieldType type;
     private final int minCount;
     private final int maxCount;
+    private final int spreadsheetCount;
     private final List<ManifestFieldProcessor> processors;
 
-    
-    public List<ManifestFieldProcessor>
-    getFieldProcessors()
-    {
+    public List<ManifestFieldProcessor> getFieldProcessors() {
         return processors;
     }
-    
-    public 
-    ManifestFieldDefinition( String name, ManifestFieldType type, int minCount, int maxCount )
-    {
+
+    public ManifestFieldDefinition(String name, String description, ManifestFieldType type, int minCount, int maxCount, int spreadsheetCount) {
         this.name = name;
         this.type = type;
+        this.description = description;
         this.minCount = minCount;
         this.maxCount = maxCount;
+        this.spreadsheetCount = spreadsheetCount;
         this.processors = Collections.emptyList();
     }
 
-    public 
-    ManifestFieldDefinition( String name, ManifestFieldType type, int minCount, int maxCount, ManifestFieldProcessor... processors)
-    {
+    public ManifestFieldDefinition(String name, String description, ManifestFieldType type, int minCount, int maxCount, int spreadsheetCount, ManifestFieldProcessor... processors) {
         this.name = name;
+        this.description = description;
         this.type = type;
         this.minCount = minCount;
         this.maxCount = maxCount;
-        this.processors = Arrays.stream(processors).filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        this.spreadsheetCount = spreadsheetCount;
+        this.processors = Arrays.stream(processors).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    public String 
-    getName()
-    {
+    public String getName() {
         return name;
     }
 
-    
-    public ManifestFieldType 
-    getType()
-    {
+    public String getDescription() {
+        return description;
+    }
+
+    public ManifestFieldType getType() {
         return type;
     }
 
-    
-    public int 
-    getMinCount()
-    {
+    public int getMinCount() {
         return minCount;
     }
 
-    
-    public int 
-    getMaxCount()
-    {
+    public int getMaxCount() {
         return maxCount;
+    }
+
+    public int getSpreadsheetCount() {
+        return spreadsheetCount;
     }
 
     @Override
     public String toString() {
         return "ManifestFieldDefinition{" +
                 "name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 ", type=" + type +
                 ", minCount=" + minCount +
                 ", maxCount=" + maxCount +
+                ", spreadsheetCount=" + spreadsheetCount +
                 ", processors=" + processors +
                 '}';
     }

@@ -32,84 +32,93 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
-public class 
-TranscriptomeAssemblyManifest extends ManifestReader
-{
-	public interface
-	Fields {
+public class
+TranscriptomeAssemblyManifest extends ManifestReader {
+	public interface Fields {
 		String NAME = "NAME";
 		String ASSEMBLYNAME = "ASSEMBLYNAME";
 		String STUDY = "STUDY";
 		String SAMPLE = "SAMPLE";
+		String DESCRIPTION = "DESCRIPTION";
 		String PROGRAM = "PROGRAM";
 		String PLATFORM = "PLATFORM";
+		String TPA = "TPA";
 		String FASTA = "FASTA";
 		String FLATFILE = "FLATFILE";
-		String TPA = "TPA";
-		String DESCRIPTION = "DESCRIPTION";
 	}
 
-	
+	public interface Descriptions {
+		String NAME = "Unique transcriptome assembly name";
+		String ASSEMBLYNAME = "Unique transcriptome assembly name";
+		String STUDY = "Study accession or name";
+		String SAMPLE = "Sample accession or name";
+		String DESCRIPTION = "Transcriptome assembly description";
+		String PROGRAM = "Assembly program";
+		String PLATFORM = "Sequencing platform";
+		String TPA = "Third party annotation";
+		String FASTA = "Fasta file";
+		String FLATFILE = "Flat file";
+	}
+
 	private String name;
 	private String description;
-	private SubmissionOptions submissionOptions; 
+	private SubmissionOptions submissionOptions;
 
-	
-	@SuppressWarnings( "serial" ) public
-	TranscriptomeAssemblyManifest( SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor )
-	{
+
+	@SuppressWarnings("serial")
+	public TranscriptomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor) {
 		super(
 				// Fields.
 				new ArrayList<ManifestFieldDefinition>() {
-                {
-					add( new ManifestFieldDefinition( Fields.NAME,         ManifestFieldType.META, 0, 1 ) );
-					add( new ManifestFieldDefinition( Fields.ASSEMBLYNAME, ManifestFieldType.META, 0, 1 ) );
-					add( new ManifestFieldDefinition( Fields.DESCRIPTION,  ManifestFieldType.META, 0, 1 ) );
-					add( new ManifestFieldDefinition( Fields.STUDY,        ManifestFieldType.META, 1, 1, studyProcessor ) );
-					add( new ManifestFieldDefinition( Fields.SAMPLE,       ManifestFieldType.META, 1, 1, sampleProcessor, sourceProcessor ) );
-					add( new ManifestFieldDefinition( Fields.PROGRAM,      ManifestFieldType.META, 1, 1 ) );
-					add( new ManifestFieldDefinition( Fields.PLATFORM,     ManifestFieldType.META, 1, 1 ) );
-					
-					add( new ManifestFieldDefinition( Fields.FASTA, ManifestFieldType.FILE, 0, 1,
-					                                  new ASCIIFileNameProcessor(), 
-					                                  new FileSuffixProcessor( ManifestFileSuffix.FASTA_FILE_SUFFIX ) ) );
-					
-					add( new ManifestFieldDefinition( Fields.FLATFILE, ManifestFieldType.FILE, 0, 1,
-					                                  new ASCIIFileNameProcessor(), 
-					                                  new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) ) );
-					
-					add( new ManifestFieldDefinition( Fields.TPA, ManifestFieldType.META, 0, 1,
-                                                      CVFieldProcessor.CV_BOOLEAN ) );
-				} },
+					{
+						add(new ManifestFieldDefinition(Fields.NAME, Descriptions.NAME, ManifestFieldType.META, 0, 1, 1));
+						add(new ManifestFieldDefinition(Fields.ASSEMBLYNAME, Descriptions.ASSEMBLYNAME, ManifestFieldType.META, 0, 1, 0));
+						add(new ManifestFieldDefinition(Fields.DESCRIPTION, Descriptions.DESCRIPTION, ManifestFieldType.META, 0, 1, 1));
+						add(new ManifestFieldDefinition(Fields.STUDY, Descriptions.STUDY, ManifestFieldType.META, 1, 1, 1,
+								studyProcessor));
+						add(new ManifestFieldDefinition(Fields.SAMPLE, Descriptions.SAMPLE, ManifestFieldType.META, 1, 1, 1,
+								sampleProcessor,
+								sourceProcessor));
+						add(new ManifestFieldDefinition(Fields.PROGRAM, Descriptions.PROGRAM, ManifestFieldType.META, 1, 1, 1));
+						add(new ManifestFieldDefinition(Fields.PLATFORM, Descriptions.PLATFORM, ManifestFieldType.META, 1, 1, 1));
+						add(new ManifestFieldDefinition(Fields.FASTA, Descriptions.FASTA, ManifestFieldType.FILE, 0, 1, 1,
+								new ASCIIFileNameProcessor(),
+								new FileSuffixProcessor(ManifestFileSuffix.FASTA_FILE_SUFFIX)));
+						add(new ManifestFieldDefinition(Fields.FLATFILE, Descriptions.FLATFILE, ManifestFieldType.FILE, 0, 1, 1,
+								new ASCIIFileNameProcessor(),
+								new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+						add(new ManifestFieldDefinition(Fields.TPA, Descriptions.TPA, ManifestFieldType.META, 0, 1, 1,
+								CVFieldProcessor.CV_BOOLEAN));
+					}
+				},
 
 				// File groups.
 				new HashSet<List<ManifestFileCount>>() {
-				{
-					add( new ArrayList<ManifestFileCount>() {
-					     {
-					         add( new ManifestFileCount( Fields.FASTA, 1, 1 ) );
-					     } 
-					} );
-					add( new ArrayList<ManifestFileCount>() {
-					     {
-					         add(new ManifestFileCount( Fields.FLATFILE, 1, 1 ) );
-					     } 
-					} );
-				} } );
+					{
+						add(new ArrayList<ManifestFileCount>() {
+							{
+								add(new ManifestFileCount(Fields.FASTA, 1, 1));
+							}
+						});
+						add(new ArrayList<ManifestFileCount>() {
+							{
+								add(new ManifestFileCount(Fields.FLATFILE, 1, 1));
+							}
+						});
+					}
+				});
 	}
 
-	
-	@Override public String 
-	getName() 
-	{
+
+	@Override
+	public String getName() {
 		return name;
 	}
 
-	
-	@Override public String
-	getDescription()
-	{
-	    return description;
+
+	@Override
+	public String getDescription() {
+		return description;
 	}
 	
 	
