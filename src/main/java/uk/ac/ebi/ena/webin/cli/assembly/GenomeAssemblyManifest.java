@@ -24,11 +24,8 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
@@ -116,39 +113,23 @@ GenomeAssemblyManifest extends ManifestReader {
 				// Fields.
 				new ArrayList<ManifestFieldDefinition>() {
 					{
-						add(new ManifestFieldDefinition(Fields.NAME, Descriptions.NAME, ManifestFieldType.META, 0, 1, 1));
-						add(new ManifestFieldDefinition(Fields.ASSEMBLYNAME, Descriptions.ASSEMBLYNAME, ManifestFieldType.META, 0, 1, 0));
-						add(new ManifestFieldDefinition(Fields.STUDY, Descriptions.STUDY, ManifestFieldType.META, 1, 1, 1,
-								studyProcessor));
-						add(new ManifestFieldDefinition(Fields.SAMPLE, Descriptions.SAMPLE, ManifestFieldType.META, 1, 1, 1,
-								sampleProcessor,
-								sourceProcessor));
-						add(new ManifestFieldDefinition(Fields.DESCRIPTION, Descriptions.DESCRIPTION, ManifestFieldType.META, 0, 1, 1));
-						add(new ManifestFieldDefinition(Fields.COVERAGE, Descriptions.COVERAGE, ManifestFieldType.META, 1, 1, 1));
-						add(new ManifestFieldDefinition(Fields.PROGRAM, Descriptions.PROGRAM, ManifestFieldType.META, 1, 1, 1));
-						add(new ManifestFieldDefinition(Fields.PLATFORM, Descriptions.PLATFORM, ManifestFieldType.META, 1, 1, 1));
-						add(new ManifestFieldDefinition(Fields.MINGAPLENGTH, Descriptions.MINGAPLENGTH, ManifestFieldType.META, 0, 1, 1));
-						add(new ManifestFieldDefinition(Fields.MOLECULETYPE, Descriptions.MOLECULETYPE, ManifestFieldType.META, 0, 1, 1,
-								new CVFieldProcessor(CV_MOLECULETYPE)));
-						add(new ManifestFieldDefinition(Fields.ASSEMBLY_TYPE, Descriptions.ASSEMBLY_TYPE, ManifestFieldType.META, 0, 1, 1,
-								new CVFieldProcessor(CV_ASSEMBLY_TYPE)));
-						add(new ManifestFieldDefinition(Fields.TPA, Descriptions.TPA, ManifestFieldType.META, 0, 1, 0,
-								CVFieldProcessor.CV_BOOLEAN));
-						add(new ManifestFieldDefinition(Fields.CHROMOSOME_LIST, Descriptions.CHROMOSOME_LIST, ManifestFieldType.FILE, 0, 1, 1,
-								new ASCIIFileNameProcessor(),
-								new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
-						add(new ManifestFieldDefinition(Fields.UNLOCALISED_LIST, Descriptions.UNLOCALISED_LIST, ManifestFieldType.FILE, 0, 1, 1,
-								new ASCIIFileNameProcessor(),
-								new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
-						add(new ManifestFieldDefinition(Fields.FASTA, Descriptions.FASTA, ManifestFieldType.FILE, 0, 1,1,
-								new ASCIIFileNameProcessor(),
-								new FileSuffixProcessor(ManifestFileSuffix.FASTA_FILE_SUFFIX)));
-						add(new ManifestFieldDefinition(Fields.FLATFILE, Descriptions.FLATFILE, ManifestFieldType.FILE, 0, 1,1,
-								new ASCIIFileNameProcessor(),
-								new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
-						add(new ManifestFieldDefinition(Fields.AGP, Descriptions.AGP, ManifestFieldType.FILE, 0, 1,1,
-								new ASCIIFileNameProcessor(),
-								new FileSuffixProcessor(ManifestFileSuffix.AGP_FILE_SUFFIX)));
+						add(new Builder().meta().optional().name(Fields.NAME).desc(Descriptions.NAME).build());
+						add(new Builder().meta().required().name(Fields.STUDY).desc(Descriptions.STUDY).processor(studyProcessor).build());
+						add(new Builder().meta().required().name(Fields.SAMPLE).desc(Descriptions.SAMPLE).processor(sampleProcessor, sourceProcessor).build());
+						add(new Builder().meta().optional().name(Fields.DESCRIPTION).desc(Descriptions.DESCRIPTION).build());
+						add(new Builder().meta().required().name(Fields.COVERAGE).desc(Descriptions.COVERAGE).build());
+						add(new Builder().meta().required().name(Fields.PROGRAM).desc(Descriptions.PROGRAM).build());
+						add(new Builder().meta().required().name(Fields.PLATFORM).desc(Descriptions.PLATFORM).build());
+						add(new Builder().meta().optional().name(Fields.MINGAPLENGTH).desc(Descriptions.MINGAPLENGTH).build());
+						add(new Builder().meta().optional().name(Fields.MOLECULETYPE).desc(Descriptions.MOLECULETYPE).processor(new CVFieldProcessor(CV_MOLECULETYPE)).build());
+						add(new Builder().meta().optional().name(Fields.ASSEMBLY_TYPE).desc(Descriptions.ASSEMBLY_TYPE).processor(new CVFieldProcessor(CV_ASSEMBLY_TYPE)).build());
+						add(new Builder().file().optional().name(Fields.CHROMOSOME_LIST).desc(Descriptions.CHROMOSOME_LIST).processor(getChromosomeListProcessors()).build());
+						add(new Builder().file().optional().name(Fields.UNLOCALISED_LIST).desc(Descriptions.UNLOCALISED_LIST).processor(getUnlocalisedListProcessors()).build());
+						add(new Builder().file().optional().name(Fields.FASTA).desc(Descriptions.FASTA).processor(getFastaProcessors()).build());
+						add(new Builder().file().optional().name(Fields.FLATFILE).desc(Descriptions.FLATFILE).processor(getFlatfileProcessors()).build());
+						add(new Builder().file().optional().name(Fields.AGP).desc(Descriptions.AGP).processor(getAgpProcessors()).build());
+						add(new Builder().meta().optional().spreadsheet(false).name(Fields.ASSEMBLYNAME).desc(Descriptions.ASSEMBLYNAME).build());
+						add(new Builder().meta().optional().spreadsheet(false).name(Fields.TPA).desc(Descriptions.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
 					}
 				},
 
@@ -196,8 +177,38 @@ GenomeAssemblyManifest extends ManifestReader {
 				});
 	}
 
+    private static ManifestFieldProcessor[] getChromosomeListProcessors() {
+        return new ManifestFieldProcessor[]{
+                new ASCIIFileNameProcessor(),
+                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
+    }
 
-	@SuppressWarnings( "serial" )
+	private static ManifestFieldProcessor[] getUnlocalisedListProcessors() {
+		return new ManifestFieldProcessor[]{
+				new ASCIIFileNameProcessor(),
+				new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
+	}
+
+	private static ManifestFieldProcessor[] getFastaProcessors() {
+		return new ManifestFieldProcessor[]{
+				new ASCIIFileNameProcessor(),
+				new FileSuffixProcessor(ManifestFileSuffix.FASTA_FILE_SUFFIX)};
+	}
+
+	private static ManifestFieldProcessor[] getFlatfileProcessors() {
+        return new ManifestFieldProcessor[]{
+                new ASCIIFileNameProcessor(),
+                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
+    }
+
+	private static ManifestFieldProcessor[] getAgpProcessors() {
+		return new ManifestFieldProcessor[]{
+				new ASCIIFileNameProcessor(),
+				new FileSuffixProcessor(ManifestFileSuffix.AGP_FILE_SUFFIX)};
+	}
+
+
+    @SuppressWarnings( "serial" )
     @Override public void
 	processManifest() 
 	{

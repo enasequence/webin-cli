@@ -22,13 +22,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
@@ -127,37 +122,23 @@ RawReadsManifest extends ManifestReader {
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {
                     {
-                        add(new ManifestFieldDefinition(Fields.NAME, Descriptions.NAME, ManifestFieldType.META, 1, 1,1));
-                        add(new ManifestFieldDefinition(Fields.DESCRIPTION, Descriptions.DESCRIPTION, ManifestFieldType.META, 0, 1, 1));
-                        add(new ManifestFieldDefinition(Fields.STUDY, Descriptions.STUDY, ManifestFieldType.META, 1, 1, 1,
-                                studyProcessor));
-                        add(new ManifestFieldDefinition(Fields.SAMPLE, Descriptions.SAMPLE, ManifestFieldType.META, 1, 1, 1,
-                                sampleProcessor));
-                        add(new ManifestFieldDefinition(Fields.INSTRUMENT, Descriptions.INSTRUMENT, ManifestFieldType.META, 0, 1, 1,
-                                new CVFieldProcessor(CV_INSTRUMENT)));
-                        add(new ManifestFieldDefinition(Fields.PLATFORM, Descriptions.PLATFORM, ManifestFieldType.META, 0, 1, 1,
-                                new CVFieldProcessor(CV_PLATFORM)));
-                        add(new ManifestFieldDefinition(Fields.INSERT_SIZE, Descriptions.INSERT_SIZE, ManifestFieldType.META, 0, 1, 1));
-                        add(new ManifestFieldDefinition(Fields.LIBRARY_SOURCE, Descriptions.LIBRARY_SOURCE, ManifestFieldType.META, 1, 1, 1,
-                                new CVFieldProcessor(CV_SOURCE)));
-                        add(new ManifestFieldDefinition(Fields.LIBRARY_SELECTION, Descriptions.LIBRARY_SELECTION, ManifestFieldType.META, 1, 1, 1,
-                                new CVFieldProcessor(CV_SELECTION)));
-                        add(new ManifestFieldDefinition(Fields.LIBRARY_STRATEGY, Descriptions.LIBRARY_STRATEGY, ManifestFieldType.META, 1, 1, 1,
-                                new CVFieldProcessor(CV_STRATEGY)));
-                        add(new ManifestFieldDefinition(Fields.LIBRARY_CONSTRUCTION_PROTOCOL, Descriptions.LIBRARY_CONSTRUCTION_PROTOCOL, ManifestFieldType.META, 0, 1, 1));
-                        add(new ManifestFieldDefinition(Fields.LIBRARY_NAME, Descriptions.LIBRARY_NAME, ManifestFieldType.META, 0, 1, 1));
-                        add(new ManifestFieldDefinition(Fields.QUALITY_SCORE, Descriptions.QUALITY_SCORE, ManifestFieldType.META, 0, 1, 0,
-                                new CVFieldProcessor(CV_QUALITY_SCORE)));
-                        add(new ManifestFieldDefinition(Fields.__HORIZON, Descriptions.__HORIZON, ManifestFieldType.META, 0, 1, 0));
-                        add(new ManifestFieldDefinition(Fields.FASTQ, Descriptions.FASTQ, ManifestFieldType.FILE, 0, 2, 2,
-                                new ASCIIFileNameProcessor(),
-                                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
-                        add(new ManifestFieldDefinition(Fields.BAM, Descriptions.BAM, ManifestFieldType.FILE, 0, 1, 1,
-                                new ASCIIFileNameProcessor(),
-                                new FileSuffixProcessor(ManifestFileSuffix.BAM_FILE_SUFFIX)));
-                        add(new ManifestFieldDefinition(Fields.CRAM, Descriptions.CRAM, ManifestFieldType.FILE, 0, 1, 1,
-                                new ASCIIFileNameProcessor(),
-                                new FileSuffixProcessor(ManifestFileSuffix.CRAM_FILE_SUFFIX)));
+                        add(new Builder().meta().required().name(Fields.NAME).desc(Descriptions.NAME).build());
+                        add(new Builder().meta().required().name(Fields.STUDY).desc(Descriptions.STUDY).processor(studyProcessor).build());
+                        add(new Builder().meta().required().name(Fields.SAMPLE).desc(Descriptions.SAMPLE).processor(sampleProcessor).build());
+                        add(new Builder().meta().optional().name(Fields.DESCRIPTION).desc(Descriptions.DESCRIPTION).build());
+                        add(new Builder().meta().optional().name(Fields.INSTRUMENT).desc(Descriptions.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).build());
+                        add(new Builder().meta().optional().name(Fields.PLATFORM).desc(Descriptions.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).build());
+                        add(new Builder().meta().required().name(Fields.LIBRARY_SOURCE).desc(Descriptions.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).build());
+                        add(new Builder().meta().required().name(Fields.LIBRARY_SELECTION).desc(Descriptions.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).build());
+                        add(new Builder().meta().required().name(Fields.LIBRARY_STRATEGY).desc(Descriptions.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).build());
+                        add(new Builder().meta().optional().name(Fields.LIBRARY_CONSTRUCTION_PROTOCOL).desc(Descriptions.LIBRARY_CONSTRUCTION_PROTOCOL).build());
+                        add(new Builder().meta().optional().name(Fields.LIBRARY_NAME).desc(Descriptions.LIBRARY_NAME).build());
+                        add(new Builder().meta().optional().name(Fields.INSERT_SIZE).desc(Descriptions.INSERT_SIZE).build());
+                        add(new Builder().file().optional(2).name(Fields.FASTQ).desc(Descriptions.FASTQ).processor(getFastqProcessors()).build());
+                        add(new Builder().file().optional().name(Fields.BAM).desc(Descriptions.BAM).processor(getBamProcessors()).build());
+                        add(new Builder().file().optional().name(Fields.CRAM).desc(Descriptions.CRAM).processor(getCramProcessors()).build());
+                        add(new Builder().meta().optional().spreadsheet(false).name(Fields.QUALITY_SCORE).desc(Descriptions.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).build());
+                        add(new Builder().meta().optional().spreadsheet(false).name(Fields.__HORIZON).desc(Descriptions.__HORIZON).build());
                     }
                 },
 
@@ -173,6 +154,25 @@ RawReadsManifest extends ManifestReader {
                         add(new ManifestFileCount(Fields.BAM, 1, 1));
                     }});
                 }});
+    }
+
+
+    private static ManifestFieldProcessor[] getFastqProcessors() {
+        return new ManifestFieldProcessor[]{
+                new ASCIIFileNameProcessor(),
+                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
+    }
+
+    private static ManifestFieldProcessor[] getBamProcessors() {
+        return new ManifestFieldProcessor[]{
+                new ASCIIFileNameProcessor(),
+                new FileSuffixProcessor(ManifestFileSuffix.BAM_FILE_SUFFIX)};
+    }
+
+    private static ManifestFieldProcessor[] getCramProcessors() {
+        return new ManifestFieldProcessor[]{
+                new ASCIIFileNameProcessor(),
+                new FileSuffixProcessor(ManifestFileSuffix.CRAM_FILE_SUFFIX)};
     }
 
     @Override public String

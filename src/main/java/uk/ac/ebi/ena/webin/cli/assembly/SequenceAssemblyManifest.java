@@ -21,11 +21,8 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
@@ -53,23 +50,17 @@ SequenceAssemblyManifest extends ManifestReader {
     private String name;
     private String description;
 
-
     @SuppressWarnings("serial")
     public SequenceAssemblyManifest(StudyProcessor studyProcessor) {
         super(
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {
                     {
-                        add(new ManifestFieldDefinition(Fields.NAME, Descriptions.NAME, ManifestFieldType.META, 1, 1, 1));
-                        add(new ManifestFieldDefinition(Fields.STUDY, Descriptions.STUDY, ManifestFieldType.META, 1, 1, 1,
-                                studyProcessor));
-                        add(new ManifestFieldDefinition(Fields.DESCRIPTION, Descriptions.DESCRIPTION, ManifestFieldType.META, 0, 1, 1));
-                        add(new ManifestFieldDefinition(Fields.TAB, Descriptions.TAB, ManifestFieldType.FILE, 0, 1, 1,
-                                new ASCIIFileNameProcessor(),
-                                new FileSuffixProcessor(ManifestFileSuffix.TAB_FILE_SUFFIX)));
-                        add(new ManifestFieldDefinition(Fields.FLATFILE, Descriptions.FLATFILE, ManifestFieldType.FILE, 0, 1, 1,
-                                new ASCIIFileNameProcessor(),
-                                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
+                        add(new Builder().meta().required().name(Fields.NAME).desc(Descriptions.NAME).build());
+                        add(new Builder().meta().required().name(Fields.STUDY).desc(Descriptions.STUDY).processor(studyProcessor).build());
+                        add(new Builder().meta().optional().name(Fields.DESCRIPTION).desc(Descriptions.DESCRIPTION).build());
+                        add(new Builder().file().optional().name(Fields.TAB).desc(Descriptions.TAB).processor(getTabProcessors()).build());
+                        add(new Builder().file().optional().name(Fields.FLATFILE).desc(Descriptions.FLATFILE).processor(getFlatfileProcessors()).build());
                     }
                 },
 
@@ -88,6 +79,18 @@ SequenceAssemblyManifest extends ManifestReader {
                         });
                     }
                 });
+    }
+
+    private static ManifestFieldProcessor[] getTabProcessors() {
+        return new ManifestFieldProcessor[]{
+                new ASCIIFileNameProcessor(),
+                new FileSuffixProcessor(ManifestFileSuffix.TAB_FILE_SUFFIX)};
+    }
+
+    private static ManifestFieldProcessor[] getFlatfileProcessors() {
+        return new ManifestFieldProcessor[]{
+                new ASCIIFileNameProcessor(),
+                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
     }
 
 

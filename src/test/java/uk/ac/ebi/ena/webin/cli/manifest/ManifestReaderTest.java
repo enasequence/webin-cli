@@ -28,6 +28,7 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 
 public class ManifestReaderTest {
 
@@ -38,7 +39,7 @@ public class ManifestReaderTest {
     static class ManifestReaderOneMetaFieldMin0Max1 extends TestManifestReader {
         ManifestReaderOneMetaFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("META_FIELD_1", "DESCRIPTION_1", ManifestFieldType.META, 0, 1, 0, new CVFieldProcessor(CV_FIELD_1 )));
+                add(new Builder().meta().optional().name("META_FIELD_1").desc("DESCRIPTION_1").processor(new CVFieldProcessor(CV_FIELD_1)).build());
             }});
         }
     }
@@ -46,8 +47,8 @@ public class ManifestReaderTest {
     static class ManifestReaderTwoMetaFieldMin1Max1 extends TestManifestReader {
         ManifestReaderTwoMetaFieldMin1Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("META_FIELD_1", "DESCRIPTION_1", ManifestFieldType.META, 1, 1, 0, new CVFieldProcessor(CV_FIELD_1 )));
-                add(new ManifestFieldDefinition("META_FIELD_2", "DESCRIPTION_2", ManifestFieldType.META, 1, 1, 0));
+                add(new Builder().meta().required().name("META_FIELD_1").desc("DESCRIPTION_1").processor(new CVFieldProcessor(CV_FIELD_1)).build());
+                add(new Builder().meta().required().name("META_FIELD_2").desc("DESCRIPTION_2").build());
             }});
         }
     }
@@ -55,8 +56,7 @@ public class ManifestReaderTest {
     static class ManifestReaderOneFileFieldMin0Max1 extends TestManifestReader {
         ManifestReaderOneFileFieldMin0Max1() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("FILE_FIELD_1", "DESCRIPTION_1", ManifestFieldType.FILE, 0, 1, 0,
-                        new FileSuffixProcessor( Arrays.asList(".txt"))));
+                add(new Builder().file().optional().name("FILE_FIELD_1").desc("DESCRIPTION_1").processor(new FileSuffixProcessor( Arrays.asList(".txt"))).build());
             }});
         }
     }
@@ -64,10 +64,10 @@ public class ManifestReaderTest {
     static class ManifestReaderFiles extends TestManifestReader {
         ManifestReaderFiles() {
             super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new ManifestFieldDefinition("FILE_FIELD_1", "DESCRIPTION_1", ManifestFieldType.FILE, 0, 1, 0));
-                add(new ManifestFieldDefinition("FILE_FIELD_2", "DESCRIPTION_2", ManifestFieldType.FILE, 0, 2, 0));
-                add(new ManifestFieldDefinition("FILE_FIELD_3", "DESCRIPTION_3", ManifestFieldType.FILE, 0, 1, 0));
-                add(new ManifestFieldDefinition("FILE_FIELD_4", "DESCRIPTION_4", ManifestFieldType.FILE, 0, 2, 0));
+                      add(new Builder().file().optional().name("FILE_FIELD_1").desc("DESCRIPTION_1").build());
+                      add(new Builder().file().optional(2).name("FILE_FIELD_2").desc("DESCRIPTION_2").build());
+                      add(new Builder().file().optional().name("FILE_FIELD_3").desc("DESCRIPTION_3").build());
+                      add(new Builder().file().optional(2).name("FILE_FIELD_4").desc("DESCRIPTION_4").build());
             }},
             new HashSet<List<ManifestFileCount>>() {{
                 add(new ArrayList<ManifestFileCount>() {{

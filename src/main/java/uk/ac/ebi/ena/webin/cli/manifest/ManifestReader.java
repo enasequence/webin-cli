@@ -29,28 +29,25 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 
 public abstract class 
 ManifestReader 
 {
-
-    public interface
-    Fields {
+    public interface Fields {
         String INFO = "INFO";
     }
 
-    public interface
-    Descriptions {
+    public interface Descriptions {
         String INFO = "Info file";
     }
 
     private final List<ManifestFieldDefinition> infoFields = new ArrayList<ManifestFieldDefinition>()
     {
         {
-            add( new ManifestFieldDefinition( Fields.INFO, Descriptions.INFO, ManifestFieldType.FILE, 0, 1, 0 ) );
+            add( new Builder().file().optional().name(Fields.INFO).desc(Descriptions.INFO).build());
         }
     };
-
 
     static class ManifestReaderState
     {

@@ -10,80 +10,137 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class
-ManifestFieldDefinition {
-    private final String name;
-    private final String description;
-    private final ManifestFieldType type;
-    private final int minCount;
-    private final int maxCount;
-    private final int spreadsheetCount;
-    private final List<ManifestFieldProcessor> processors;
+public class ManifestFieldDefinition {
+  private final String name;
+  private final String description;
+  private final ManifestFieldType type;
+  private final int minCount;
+  private final int maxCount;
+  private final int spreadsheetCount;
+  private final List<ManifestFieldProcessor> processors;
 
-    public List<ManifestFieldProcessor> getFieldProcessors() {
-        return processors;
+  public static class Builder {
+    private String name;
+    private String description;
+    private ManifestFieldType type;
+    private Integer minCount;
+    private Integer maxCount;
+    private boolean spreadsheet = true;
+    private List<ManifestFieldProcessor> processors = new ArrayList<>();
+
+    public Builder name(String name) {
+      this.name = name;
+      return this;
     }
 
-    public ManifestFieldDefinition(String name, String description, ManifestFieldType type, int minCount, int maxCount, int spreadsheetCount) {
-        this.name = name;
-        this.type = type;
-        this.description = description;
-        this.minCount = minCount;
-        this.maxCount = maxCount;
-        this.spreadsheetCount = spreadsheetCount;
-        this.processors = Collections.emptyList();
+    public Builder desc(String description) {
+      this.description = description;
+      return this;
     }
 
-    public ManifestFieldDefinition(String name, String description, ManifestFieldType type, int minCount, int maxCount, int spreadsheetCount, ManifestFieldProcessor... processors) {
-        this.name = name;
-        this.description = description;
-        this.type = type;
-        this.minCount = minCount;
-        this.maxCount = maxCount;
-        this.spreadsheetCount = spreadsheetCount;
-        this.processors = Arrays.stream(processors).filter(Objects::nonNull).collect(Collectors.toList());
+    public Builder meta() {
+      this.type = ManifestFieldType.META;
+      return this;
     }
 
-    public String getName() {
-        return name;
+    public Builder file() {
+      this.type = ManifestFieldType.FILE;
+      return this;
     }
 
-    public String getDescription() {
-        return description;
+    public Builder type(ManifestFieldType type) {
+      this.type = type;
+      return this;
     }
 
-    public ManifestFieldType getType() {
-        return type;
+    public Builder optional() {
+      this.minCount = 0;
+      this.maxCount = 1;
+      return this;
     }
 
-    public int getMinCount() {
-        return minCount;
+    public Builder optional(int maxCount) {
+      this.minCount = 0;
+      this.maxCount = maxCount;
+      return this;
     }
 
-    public int getMaxCount() {
-        return maxCount;
+    public Builder required() {
+      this.minCount = 1;
+      this.maxCount = 1;
+      return this;
     }
 
-    public int getSpreadsheetCount() {
-        return spreadsheetCount;
+    public Builder spreadsheet(boolean spreadsheet) {
+      this.spreadsheet = spreadsheet;
+      return this;
     }
 
-    @Override
-    public String toString() {
-        return "ManifestFieldDefinition{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", type=" + type +
-                ", minCount=" + minCount +
-                ", maxCount=" + maxCount +
-                ", spreadsheetCount=" + spreadsheetCount +
-                ", processors=" + processors +
-                '}';
+    public Builder processor(ManifestFieldProcessor... processors) {
+      this.processors.addAll(
+          Arrays.stream(processors).filter(Objects::nonNull).collect(Collectors.toList()));
+      return this;
     }
+
+    public ManifestFieldDefinition build() {
+      return new ManifestFieldDefinition(
+          name, description, type, minCount, maxCount, spreadsheet ? maxCount : 0, processors);
+    }
+  }
+
+  private ManifestFieldDefinition(
+      String name,
+      String description,
+      ManifestFieldType type,
+      int minCount,
+      int maxCount,
+      int spreadsheetCount,
+      List<ManifestFieldProcessor> processors) {
+    Assert.notNull(name, "Field name must not be null");
+    Assert.notNull(description, "Field description must not be null");
+    Assert.notNull(type, "Field type must not be null");
+    this.name = name;
+    this.description = description;
+    this.type = type;
+    this.minCount = minCount;
+    this.maxCount = maxCount;
+    this.spreadsheetCount = spreadsheetCount;
+    this.processors = processors;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public ManifestFieldType getType() {
+    return type;
+  }
+
+  public int getMinCount() {
+    return minCount;
+  }
+
+  public int getMaxCount() {
+    return maxCount;
+  }
+
+  public int getSpreadsheetCount() {
+    return spreadsheetCount;
+  }
+
+  public List<ManifestFieldProcessor> getFieldProcessors() {
+    return processors;
+  }
 }

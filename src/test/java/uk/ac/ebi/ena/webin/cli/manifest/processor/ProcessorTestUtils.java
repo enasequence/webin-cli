@@ -10,7 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
@@ -18,7 +18,7 @@ public class ProcessorTestUtils {
 
     static ManifestFieldValue
     createFieldValue(ManifestFieldType type, String name, String value) {
-        return new ManifestFieldValue(new ManifestFieldDefinition(
-                name, "", type, 0, 1, 0), value, null);
+        return new ManifestFieldValue(
+                new Builder().type(type).optional().name(name).desc(name).build(), value, null);
     }
 }

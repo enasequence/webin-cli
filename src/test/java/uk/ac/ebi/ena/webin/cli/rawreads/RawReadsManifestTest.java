@@ -25,11 +25,11 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Fields;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Descriptions;
 
 public class 
 RawReadsManifestTest
@@ -49,17 +49,17 @@ RawReadsManifestTest
         Path inputDir = Paths.get( "." );
 
         RawReadsFile file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new ManifestFieldDefinition(Fields.FASTQ, "DESCRIPTION", ManifestFieldType.FILE, 0, 2, 0), "file.fastq", null));
+                new Builder().file().optional(2).name(Fields.FASTQ).desc(Descriptions.FASTQ).build(), "file.fastq", null));
         Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
 
         file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new ManifestFieldDefinition(Fields.BAM, "DESCRIPTION", ManifestFieldType.FILE, 0, 1, 0), "file.bam", null));
+                new Builder().file().optional().name(Fields.BAM).desc(Descriptions.BAM).build(), "file.bam", null));
         Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
 
         file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new ManifestFieldDefinition(Fields.CRAM, "DESCRIPTION", ManifestFieldType.FILE, 0, 1, 0), "file.cram", null));
+                new Builder().file().optional().name(Fields.CRAM).desc(Descriptions.CRAM).build(), "file.cram", null));
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }

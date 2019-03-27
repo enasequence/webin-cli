@@ -25,6 +25,7 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
@@ -71,24 +72,16 @@ TranscriptomeAssemblyManifest extends ManifestReader {
 				// Fields.
 				new ArrayList<ManifestFieldDefinition>() {
 					{
-						add(new ManifestFieldDefinition(Fields.NAME, Descriptions.NAME, ManifestFieldType.META, 0, 1, 1));
-						add(new ManifestFieldDefinition(Fields.ASSEMBLYNAME, Descriptions.ASSEMBLYNAME, ManifestFieldType.META, 0, 1, 0));
-						add(new ManifestFieldDefinition(Fields.DESCRIPTION, Descriptions.DESCRIPTION, ManifestFieldType.META, 0, 1, 1));
-						add(new ManifestFieldDefinition(Fields.STUDY, Descriptions.STUDY, ManifestFieldType.META, 1, 1, 1,
-								studyProcessor));
-						add(new ManifestFieldDefinition(Fields.SAMPLE, Descriptions.SAMPLE, ManifestFieldType.META, 1, 1, 1,
-								sampleProcessor,
-								sourceProcessor));
-						add(new ManifestFieldDefinition(Fields.PROGRAM, Descriptions.PROGRAM, ManifestFieldType.META, 1, 1, 1));
-						add(new ManifestFieldDefinition(Fields.PLATFORM, Descriptions.PLATFORM, ManifestFieldType.META, 1, 1, 1));
-						add(new ManifestFieldDefinition(Fields.FASTA, Descriptions.FASTA, ManifestFieldType.FILE, 0, 1, 1,
-								new ASCIIFileNameProcessor(),
-								new FileSuffixProcessor(ManifestFileSuffix.FASTA_FILE_SUFFIX)));
-						add(new ManifestFieldDefinition(Fields.FLATFILE, Descriptions.FLATFILE, ManifestFieldType.FILE, 0, 1, 1,
-								new ASCIIFileNameProcessor(),
-								new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)));
-						add(new ManifestFieldDefinition(Fields.TPA, Descriptions.TPA, ManifestFieldType.META, 0, 1, 1,
-								CVFieldProcessor.CV_BOOLEAN));
+						add(new Builder().meta().optional().name(Fields.NAME).desc(Descriptions.NAME).build());
+						add(new Builder().meta().required().name(Fields.STUDY).desc(Descriptions.STUDY).processor(studyProcessor).build());
+						add(new Builder().meta().required().name(Fields.SAMPLE).desc(Descriptions.SAMPLE).processor(sampleProcessor, sourceProcessor).build());
+						add(new Builder().meta().optional().name(Fields.DESCRIPTION).desc(Descriptions.DESCRIPTION).build());
+						add(new Builder().meta().required().name(Fields.PROGRAM).desc(Descriptions.PROGRAM).build());
+						add(new Builder().meta().required().name(Fields.PLATFORM).desc(Descriptions.PLATFORM).build());
+						add(new Builder().file().optional().name(Fields.FASTA).desc(Descriptions.FASTA).processor(getFastaProcessors()).build());
+						add(new Builder().file().optional().name(Fields.FLATFILE).desc(Descriptions.FLATFILE).processor(getFlatfileProcessors()).build());
+						add(new Builder().meta().optional().spreadsheet(false).name(Fields.ASSEMBLYNAME).desc(Descriptions.ASSEMBLYNAME).build());
+						add(new Builder().meta().optional().spreadsheet(false).name(Fields.TPA).desc(Descriptions.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
 					}
 				},
 
@@ -109,6 +102,17 @@ TranscriptomeAssemblyManifest extends ManifestReader {
 				});
 	}
 
+	private static ManifestFieldProcessor[] getFastaProcessors() {
+		return new ManifestFieldProcessor[]{
+				new ASCIIFileNameProcessor(),
+				new FileSuffixProcessor(ManifestFileSuffix.FASTA_FILE_SUFFIX)};
+	}
+
+	private static ManifestFieldProcessor[] getFlatfileProcessors() {
+		return new ManifestFieldProcessor[]{
+				new ASCIIFileNameProcessor(),
+				new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
+	}
 
 	@Override
 	public String getName() {
