@@ -29,8 +29,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
 public class
 SequenceAssemblyManifest extends ManifestReader {
-    public interface
-    Fields {
+    public interface Field {
         String NAME = "NAME";
         String STUDY = "STUDY";
         String DESCRIPTION = "DESCRIPTION";
@@ -38,7 +37,7 @@ SequenceAssemblyManifest extends ManifestReader {
         String FLATFILE = "FLATFILE";
     }
 
-    public interface Descriptions {
+    public interface Description {
         String NAME = "Unique sequence submission name";
         String STUDY = "Study accession or name";
         String DESCRIPTION = "Sequence submission description";
@@ -56,11 +55,11 @@ SequenceAssemblyManifest extends ManifestReader {
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {
                     {
-                        add(new Builder().meta().required().name(Fields.NAME).desc(Descriptions.NAME).build());
-                        add(new Builder().meta().required().name(Fields.STUDY).desc(Descriptions.STUDY).processor(studyProcessor).build());
-                        add(new Builder().meta().optional().name(Fields.DESCRIPTION).desc(Descriptions.DESCRIPTION).build());
-                        add(new Builder().file().optional().name(Fields.TAB).desc(Descriptions.TAB).processor(getTabProcessors()).build());
-                        add(new Builder().file().optional().name(Fields.FLATFILE).desc(Descriptions.FLATFILE).processor(getFlatfileProcessors()).build());
+                        add(new Builder().meta().required().name(Field.NAME).desc(Description.NAME).build());
+                        add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
+                        add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
+                        add(new Builder().file().optional().name(Field.TAB).desc(Description.TAB).processor(getTabProcessors()).build());
+                        add(new Builder().file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build());
                     }
                 },
 
@@ -69,12 +68,12 @@ SequenceAssemblyManifest extends ManifestReader {
                     {
                         add(new ArrayList<ManifestFileCount>() {
                             {
-                                add(new ManifestFileCount(Fields.TAB, 1, 1));
+                                add(new ManifestFileCount(Field.TAB, 1, 1));
                             }
                         });
                         add(new ArrayList<ManifestFileCount>() {
                             {
-                                add(new ManifestFileCount(Fields.FLATFILE, 1, 1));
+                                add(new ManifestFileCount(Field.FLATFILE, 1, 1));
                             }
                         });
                     }
@@ -100,11 +99,11 @@ SequenceAssemblyManifest extends ManifestReader {
     	submissionOptions = new SubmissionOptions();
 		SubmissionFiles submissionFiles = new SubmissionFiles();
 		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
-		name = getResult().getValue( Fields.NAME );
-		description = getResult().getValue( Fields.DESCRIPTION );
+		name = getResult().getValue( Field.NAME );
+		description = getResult().getValue( Field.DESCRIPTION );
 		assemblyInfo.setName( name );
-		getFiles( getInputDir(), getResult(), Fields.TAB ).forEach( fastaFile-> submissionFiles.addFile( new SubmissionFile( FileType.TSV,fastaFile ) ) );
-		getFiles( getInputDir(), getResult(), Fields.FLATFILE ).forEach( flatFile->submissionFiles.addFile( new SubmissionFile( FileType.FLATFILE,flatFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.addFile( new SubmissionFile( FileType.TSV,fastaFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(flatFile->submissionFiles.addFile( new SubmissionFile( FileType.FLATFILE,flatFile ) ) );
 		submissionOptions.assemblyInfoEntry = Optional.of( assemblyInfo );
 		submissionOptions.context = Optional.of( Context.sequence );
 		submissionOptions.submissionFiles = Optional.of( submissionFiles );

@@ -43,7 +43,7 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Fields;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Field;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 
@@ -358,7 +358,7 @@ RawReadsWebinCliTest
         parameters.setInputDir( createOutputFolder() );
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "BAM " + file + "\n" 
-                                                 + Fields.DESCRIPTION + " description text" ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 + Field.DESCRIPTION + " description text" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
@@ -417,15 +417,15 @@ RawReadsWebinCliTest
     private String
     getInfoPart()
     {
-        return    Fields.STUDY             + " ERP109454\n"
-                + Fields.SAMPLE            + " ERS2713291\n"
-                + Fields.PLATFORM          + " ILLUMINA\n"
-                + Fields.INSTRUMENT        + " unspecifieD\n"
-                + Fields.INSERT_SIZE       + " 1\n"
-                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + Fields.LIBRARY_SOURCE    + " OTHER\n"
-                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + Fields.NAME              + " SOME-FANCY-NAME\n ";
+        return    Field.STUDY             + " ERP109454\n"
+                + Field.SAMPLE            + " ERS2713291\n"
+                + Field.PLATFORM          + " ILLUMINA\n"
+                + Field.INSTRUMENT        + " unspecifieD\n"
+                + Field.INSERT_SIZE       + " 1\n"
+                + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + Field.LIBRARY_SOURCE    + " OTHER\n"
+                + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + Field.NAME              + " SOME-FANCY-NAME\n ";
     }
     
     

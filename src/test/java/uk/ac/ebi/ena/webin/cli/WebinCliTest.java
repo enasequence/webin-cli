@@ -31,50 +31,50 @@ WebinCliTest
     private String
     getRawReadsInfoFields()
     {
-        return    RawReadsManifest.Fields.STUDY             + " SRP052303\n"
-                + RawReadsManifest.Fields.SAMPLE            + " ERS2554688\n"
-                + RawReadsManifest.Fields.PLATFORM          + " ILLUMINA\n"
-                + RawReadsManifest.Fields.INSTRUMENT        + " unspecifieD\n"
-                + RawReadsManifest.Fields.INSERT_SIZE       + " 1\n"
-                + RawReadsManifest.Fields.LIBRARY_NAME      + " YOBA LIB\n"
-                + RawReadsManifest.Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                + RawReadsManifest.Fields.LIBRARY_SOURCE    + " OTHER\n"
-                + RawReadsManifest.Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                + RawReadsManifest.Fields.DESCRIPTION       + " Some reads description\n"
-                + RawReadsManifest.Fields.NAME              + " " + WebinCliTestUtils.createName() + "\n ";
+        return    RawReadsManifest.Field.STUDY             + " SRP052303\n"
+                + RawReadsManifest.Field.SAMPLE            + " ERS2554688\n"
+                + RawReadsManifest.Field.PLATFORM          + " ILLUMINA\n"
+                + RawReadsManifest.Field.INSTRUMENT        + " unspecifieD\n"
+                + RawReadsManifest.Field.INSERT_SIZE       + " 1\n"
+                + RawReadsManifest.Field.LIBRARY_NAME      + " YOBA LIB\n"
+                + RawReadsManifest.Field.LIBRARY_STRATEGY  + " CLONEEND\n"
+                + RawReadsManifest.Field.LIBRARY_SOURCE    + " OTHER\n"
+                + RawReadsManifest.Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                + RawReadsManifest.Field.DESCRIPTION       + " Some reads description\n"
+                + RawReadsManifest.Field.NAME              + " " + WebinCliTestUtils.createName() + "\n ";
     }
 
     private String
     getGenomeManifestInfoFields()
     {
-        return    GenomeAssemblyManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
-                + GenomeAssemblyManifest.Fields.COVERAGE     + " 45\n"
-                + GenomeAssemblyManifest.Fields.PROGRAM      + " assembly\n"
-                + GenomeAssemblyManifest.Fields.PLATFORM     + " fghgf\n"
-                + GenomeAssemblyManifest.Fields.MINGAPLENGTH + " 34\n"
-                + GenomeAssemblyManifest.Fields.MOLECULETYPE + " genomic DNA\n"
-                + GenomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
-                + GenomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n"
-                + GenomeAssemblyManifest.Fields.DESCRIPTION  + " Some genome assembly description\n";
+        return    GenomeAssemblyManifest.Field.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+                + GenomeAssemblyManifest.Field.COVERAGE     + " 45\n"
+                + GenomeAssemblyManifest.Field.PROGRAM      + " assembly\n"
+                + GenomeAssemblyManifest.Field.PLATFORM     + " fghgf\n"
+                + GenomeAssemblyManifest.Field.MINGAPLENGTH + " 34\n"
+                + GenomeAssemblyManifest.Field.MOLECULETYPE + " genomic DNA\n"
+                + GenomeAssemblyManifest.Field.SAMPLE       + " SAMN04526268\n"
+                + GenomeAssemblyManifest.Field.STUDY        + " PRJEB20083\n"
+                + GenomeAssemblyManifest.Field.DESCRIPTION  + " Some genome assembly description\n";
     }
 
     private String
     getTranscriptomeManifestFields()
     {
-        return    TranscriptomeAssemblyManifest.Fields.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
-                + TranscriptomeAssemblyManifest.Fields.PROGRAM      + " assembly\n"
-                + TranscriptomeAssemblyManifest.Fields.PLATFORM     + " fghgf\n"
-                + TranscriptomeAssemblyManifest.Fields.SAMPLE       + " SAMN04526268\n"
-                + TranscriptomeAssemblyManifest.Fields.STUDY        + " PRJEB20083\n"
-                + TranscriptomeAssemblyManifest.Fields.DESCRIPTION  + " Some transcriptome assembly description\n";
+        return    TranscriptomeAssemblyManifest.Field.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+                + TranscriptomeAssemblyManifest.Field.PROGRAM      + " assembly\n"
+                + TranscriptomeAssemblyManifest.Field.PLATFORM     + " fghgf\n"
+                + TranscriptomeAssemblyManifest.Field.SAMPLE       + " SAMN04526268\n"
+                + TranscriptomeAssemblyManifest.Field.STUDY        + " PRJEB20083\n"
+                + TranscriptomeAssemblyManifest.Field.DESCRIPTION  + " Some transcriptome assembly description\n";
     }
 
     private String
     getSequenceManifestFields()
     {
-        return    SequenceAssemblyManifest.Fields.NAME  + " " + WebinCliTestUtils.createName() + "\n"
-                + SequenceAssemblyManifest.Fields.STUDY + " PRJEB20083\n"
-                + SequenceAssemblyManifest.Fields.DESCRIPTION  + " Some sequence assembly description\n";
+        return    SequenceAssemblyManifest.Field.NAME  + " " + WebinCliTestUtils.createName() + "\n"
+                + SequenceAssemblyManifest.Field.STUDY + " PRJEB20083\n"
+                + SequenceAssemblyManifest.Field.DESCRIPTION  + " Some sequence assembly description\n";
     }
 
 
@@ -106,7 +106,7 @@ WebinCliTest
 
         testWebinCli( WebinCliContext.reads,
                       input_dir,
-                      ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" + RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName(), 
+                      ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" + RawReadsManifest.Field.CRAM + " " + cram_file.getFileName(),
                       false );
     }
     
@@ -119,7 +119,7 @@ WebinCliTest
 
         testWebinCli( WebinCliContext.reads,
                       input_dir,
-                      RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
+                      RawReadsManifest.Field.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
                       false );
     }
 
@@ -132,7 +132,7 @@ WebinCliTest
         Assert.assertTrue( new ASCPService().isAvailable() );
         testWebinCli( WebinCliContext.reads,
                       input_dir,
-                      RawReadsManifest.Fields.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
+                      RawReadsManifest.Field.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
                       true );
     }
     
@@ -149,8 +149,8 @@ WebinCliTest
         testWebinCli( WebinCliContext.genome,
                       input_dir,
                       ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                              GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
-                              GenomeAssemblyManifest.Fields.AGP + " " + agpfile.getFileName(),
+                              GenomeAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                              GenomeAssemblyManifest.Field.AGP + " " + agpfile.getFileName(),
                       false );
     }
     
@@ -165,8 +165,8 @@ WebinCliTest
 
         testWebinCli( WebinCliContext.genome,
                       input_dir,
-                      GenomeAssemblyManifest.Fields.FLATFILE + " " + flatfile.getFileName() + "\n" +
-                              GenomeAssemblyManifest.Fields.AGP + " " + agpfile.getFileName()       + "\n" +
+                      GenomeAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                              GenomeAssemblyManifest.Field.AGP + " " + agpfile.getFileName()       + "\n" +
                               getGenomeManifestInfoFields(),
                       false );
     }
@@ -184,7 +184,7 @@ WebinCliTest
         testWebinCli( WebinCliContext.sequence,
                       input_dir,
                       ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                              SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName(),
+                              SequenceAssemblyManifest.Field.TAB + " " + tabfile.getFileName(),
                       false );
     }
     
@@ -198,7 +198,7 @@ WebinCliTest
 
         testWebinCli( WebinCliContext.sequence,
                       input_dir,
-                      SequenceAssemblyManifest.Fields.TAB + " " + tabfile.getFileName() + "\n" + getSequenceManifestFields(),
+                      SequenceAssemblyManifest.Field.TAB + " " + tabfile.getFileName() + "\n" + getSequenceManifestFields(),
                       false );
     }
 
@@ -214,7 +214,7 @@ WebinCliTest
         testWebinCli( WebinCliContext.transcriptome,
                       input_dir,
                       ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                              TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName(),
+                              TranscriptomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName(),
                       false );
     }
 
@@ -228,7 +228,7 @@ WebinCliTest
 
         testWebinCli( WebinCliContext.transcriptome,
                       input_dir,
-                      TranscriptomeAssemblyManifest.Fields.FASTA + " " + fastafile.getFileName() + "\n" + getTranscriptomeManifestFields(),
+                      TranscriptomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName() + "\n" + getTranscriptomeManifestFields(),
                       false );
     }
 

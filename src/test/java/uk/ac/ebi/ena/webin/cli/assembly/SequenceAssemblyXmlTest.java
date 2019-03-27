@@ -89,7 +89,7 @@ SequenceAssemblyXmlTest
                 "NAME\t" + name + "\n" +
                         "STUDY\ttest_study\n" +
                         "FLATFILE\t" + flatFile.getFileName() + "\n" +
-                        SequenceAssemblyManifest.Fields.DESCRIPTION + " d e s c r i p t i o n"
+                        SequenceAssemblyManifest.Field.DESCRIPTION + " d e s c r i p t i o n"
         );
 
         WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);

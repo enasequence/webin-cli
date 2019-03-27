@@ -36,7 +36,7 @@ import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.QualityScoringSystem;
 public class
 RawReadsManifest extends ManifestReader {
 
-    public interface Fields {
+    public interface Field {
         String NAME = "NAME";
         String STUDY = "STUDY";
         String SAMPLE = "SAMPLE";
@@ -56,7 +56,7 @@ RawReadsManifest extends ManifestReader {
         String CRAM = "CRAM";
     }
 
-    public interface Descriptions {
+    public interface Description {
         String NAME = "Unique sequencing experiment name";
         String STUDY = "Study accession or name";
         String SAMPLE = "Sample accession or name";
@@ -77,10 +77,10 @@ RawReadsManifest extends ManifestReader {
     }
 
 
+    private final static String INSTRUMENT_UNSPECIFIED = "unspecified";
     private final static String QUALITY_SCORE_PHRED_33 = "PHRED_33";
     private final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
     private final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
-    private final static String UNSPECIFIED_INSTRUMENT = "unspecified";
 
     public final static ManifestCVList CV_INSTRUMENT = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/instrument.properties"));
     public final static ManifestCVList CV_PLATFORM = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/platform.properties"));
@@ -122,36 +122,36 @@ RawReadsManifest extends ManifestReader {
                 // Fields.
                 new ArrayList<ManifestFieldDefinition>() {
                     {
-                        add(new Builder().meta().required().name(Fields.NAME).desc(Descriptions.NAME).build());
-                        add(new Builder().meta().required().name(Fields.STUDY).desc(Descriptions.STUDY).processor(studyProcessor).build());
-                        add(new Builder().meta().required().name(Fields.SAMPLE).desc(Descriptions.SAMPLE).processor(sampleProcessor).build());
-                        add(new Builder().meta().optional().name(Fields.DESCRIPTION).desc(Descriptions.DESCRIPTION).build());
-                        add(new Builder().meta().optional().name(Fields.INSTRUMENT).desc(Descriptions.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).build());
-                        add(new Builder().meta().optional().name(Fields.PLATFORM).desc(Descriptions.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).build());
-                        add(new Builder().meta().required().name(Fields.LIBRARY_SOURCE).desc(Descriptions.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).build());
-                        add(new Builder().meta().required().name(Fields.LIBRARY_SELECTION).desc(Descriptions.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).build());
-                        add(new Builder().meta().required().name(Fields.LIBRARY_STRATEGY).desc(Descriptions.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).build());
-                        add(new Builder().meta().optional().name(Fields.LIBRARY_CONSTRUCTION_PROTOCOL).desc(Descriptions.LIBRARY_CONSTRUCTION_PROTOCOL).build());
-                        add(new Builder().meta().optional().name(Fields.LIBRARY_NAME).desc(Descriptions.LIBRARY_NAME).build());
-                        add(new Builder().meta().optional().name(Fields.INSERT_SIZE).desc(Descriptions.INSERT_SIZE).build());
-                        add(new Builder().file().optional(2).name(Fields.FASTQ).desc(Descriptions.FASTQ).processor(getFastqProcessors()).build());
-                        add(new Builder().file().optional().name(Fields.BAM).desc(Descriptions.BAM).processor(getBamProcessors()).build());
-                        add(new Builder().file().optional().name(Fields.CRAM).desc(Descriptions.CRAM).processor(getCramProcessors()).build());
-                        add(new Builder().meta().optional().spreadsheet(false).name(Fields.QUALITY_SCORE).desc(Descriptions.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).build());
-                        add(new Builder().meta().optional().spreadsheet(false).name(Fields.__HORIZON).desc(Descriptions.__HORIZON).build());
+                        add(new Builder().meta().required().name(Field.NAME).desc(Description.NAME).build());
+                        add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
+                        add(new Builder().meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor).build());
+                        add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
+                        add(new Builder().meta().optional().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).build());
+                        add(new Builder().meta().optional().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).build());
+                        add(new Builder().meta().required().name(Field.LIBRARY_SOURCE).desc(Description.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).build());
+                        add(new Builder().meta().required().name(Field.LIBRARY_SELECTION).desc(Description.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).build());
+                        add(new Builder().meta().required().name(Field.LIBRARY_STRATEGY).desc(Description.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).build());
+                        add(new Builder().meta().optional().name(Field.LIBRARY_CONSTRUCTION_PROTOCOL).desc(Description.LIBRARY_CONSTRUCTION_PROTOCOL).build());
+                        add(new Builder().meta().optional().name(Field.LIBRARY_NAME).desc(Description.LIBRARY_NAME).build());
+                        add(new Builder().meta().optional().name(Field.INSERT_SIZE).desc(Description.INSERT_SIZE).build());
+                        add(new Builder().file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors()).build());
+                        add(new Builder().file().optional().name(Field.BAM).desc(Description.BAM).processor(getBamProcessors()).build());
+                        add(new Builder().file().optional().name(Field.CRAM).desc(Description.CRAM).processor(getCramProcessors()).build());
+                        add(new Builder().meta().optional().spreadsheet(false).name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).build());
+                        add(new Builder().meta().optional().spreadsheet(false).name(Field.__HORIZON).desc(Description.__HORIZON).build());
                     }
                 },
 
                 // File groups.
                 new HashSet<List<ManifestFileCount>>() {{
                     add(new ArrayList<ManifestFileCount>() {{
-                        add(new ManifestFileCount(Fields.FASTQ, 1, 2));
+                        add(new ManifestFileCount(Field.FASTQ, 1, 2));
                     }});
                     add(new ArrayList<ManifestFileCount>() {{
-                        add(new ManifestFileCount(Fields.CRAM, 1, 1));
+                        add(new ManifestFileCount(Field.CRAM, 1, 1));
                     }});
                     add(new ArrayList<ManifestFileCount>() {{
-                        add(new ManifestFileCount(Fields.BAM, 1, 1));
+                        add(new ManifestFileCount(Field.BAM, 1, 1));
                     }});
                 }});
     }
@@ -269,39 +269,39 @@ RawReadsManifest extends ManifestReader {
     @Override public void
     processManifest()
     {
-        name = getResult().getValue( Fields.NAME );
-        study_id = getResult().getValue( Fields.STUDY );
-        sample_id = getResult().getValue( Fields.SAMPLE );
-        description = getResult().getValue( Fields.DESCRIPTION );
+        name = getResult().getValue( Field.NAME );
+        study_id = getResult().getValue( Field.STUDY );
+        sample_id = getResult().getValue( Field.SAMPLE );
+        description = getResult().getValue( Field.DESCRIPTION );
         
-        if (getResult().getCount(Fields.INSTRUMENT) > 0 &&
-            getResult().getField(Fields.INSTRUMENT).isValidFieldValueOrFileSuffix())
-            instrument = getResult().getValue(Fields.INSTRUMENT);
+        if (getResult().getCount(Field.INSTRUMENT) > 0 &&
+            getResult().getField(Field.INSTRUMENT).isValidFieldValueOrFileSuffix())
+            instrument = getResult().getValue(Field.INSTRUMENT);
 
-        if (getResult().getCount(Fields.PLATFORM) > 0 &&
-            getResult().getField(Fields.PLATFORM).isValidFieldValueOrFileSuffix())
-            platform = getResult().getValue(Fields.PLATFORM);
+        if (getResult().getCount(Field.PLATFORM) > 0 &&
+            getResult().getField(Field.PLATFORM).isValidFieldValueOrFileSuffix())
+            platform = getResult().getValue(Field.PLATFORM);
 
-        insert_size = getAndValidatePositiveInteger(getResult().getField(Fields.INSERT_SIZE));
+        insert_size = getAndValidatePositiveInteger(getResult().getField(Field.INSERT_SIZE));
 
-        if (getResult().getCount(Fields.LIBRARY_SOURCE) > 0 &&
-            getResult().getField(Fields.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
-            library_source = getResult().getValue(Fields.LIBRARY_SOURCE);
+        if (getResult().getCount(Field.LIBRARY_SOURCE) > 0 &&
+            getResult().getField(Field.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
+            library_source = getResult().getValue(Field.LIBRARY_SOURCE);
 
-        if (getResult().getCount(Fields.LIBRARY_SELECTION) > 0 &&
-            getResult().getField(Fields.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
-            library_selection = getResult().getValue(Fields.LIBRARY_SELECTION);
+        if (getResult().getCount(Field.LIBRARY_SELECTION) > 0 &&
+            getResult().getField(Field.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
+            library_selection = getResult().getValue(Field.LIBRARY_SELECTION);
 
-        if (getResult().getCount(Fields.LIBRARY_STRATEGY) > 0 &&
-            getResult().getField(Fields.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
-            library_strategy = getResult().getValue(Fields.LIBRARY_STRATEGY);
+        if (getResult().getCount(Field.LIBRARY_STRATEGY) > 0 &&
+            getResult().getField(Field.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
+            library_strategy = getResult().getValue(Field.LIBRARY_STRATEGY);
 
-        library_construction_protocol = getResult().getValue(Fields.LIBRARY_CONSTRUCTION_PROTOCOL);
-        library_name = getResult().getValue(Fields.LIBRARY_NAME);
+        library_construction_protocol = getResult().getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL);
+        library_name = getResult().getValue(Field.LIBRARY_NAME);
 
-        if( getResult().getValue( Fields.QUALITY_SCORE ) != null )
+        if( getResult().getValue( Field.QUALITY_SCORE ) != null )
         {
-            switch( getResult().getValue( Fields.QUALITY_SCORE ) )
+            switch( getResult().getValue( Field.QUALITY_SCORE ) )
             {
             case QUALITY_SCORE_PHRED_33:
                 asciiOffset = AsciiOffset.FROM33;
@@ -318,8 +318,8 @@ RawReadsManifest extends ManifestReader {
             }
         }
 
-        if (getResult().getCount(Fields.__HORIZON) > 0)
-            pairing_horizon = getAndValidatePositiveInteger(getResult().getField(Fields.__HORIZON));
+        if (getResult().getCount(Field.__HORIZON) > 0)
+            pairing_horizon = getAndValidatePositiveInteger(getResult().getField(Field.__HORIZON));
 
         processInstrumentAndPlatform();
         processFiles();
@@ -330,7 +330,7 @@ RawReadsManifest extends ManifestReader {
     processInstrumentAndPlatform()
     {
 
-        if( null == platform && ( null == instrument || instrument.equals( UNSPECIFIED_INSTRUMENT ) ) )
+        if( null == platform && ( null == instrument || instrument.equals(INSTRUMENT_UNSPECIFIED) ) )
         {
             error(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR,
                     String.join(", ", CV_PLATFORM.keyList()),
@@ -361,7 +361,7 @@ RawReadsManifest extends ManifestReader {
             }
         } else
         {
-            instrument = UNSPECIFIED_INSTRUMENT;
+            instrument = INSTRUMENT_UNSPECIFIED;
         }
     }
 

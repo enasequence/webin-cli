@@ -28,8 +28,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.Filetype;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Fields;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Descriptions;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Field;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Description;
 
 public class 
 RawReadsManifestTest
@@ -49,17 +49,17 @@ RawReadsManifestTest
         Path inputDir = Paths.get( "." );
 
         RawReadsFile file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new Builder().file().optional(2).name(Fields.FASTQ).desc(Descriptions.FASTQ).build(), "file.fastq", null));
+                new Builder().file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).build(), "file.fastq", null));
         Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
 
         file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new Builder().file().optional().name(Fields.BAM).desc(Descriptions.BAM).build(), "file.bam", null));
+                new Builder().file().optional().name(Field.BAM).desc(Description.BAM).build(), "file.bam", null));
         Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
 
         file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new Builder().file().optional().name(Fields.CRAM).desc(Descriptions.CRAM).build(), "file.cram", null));
+                new Builder().file().optional().name(Field.CRAM).desc(Description.CRAM).build(), "file.cram", null));
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }
@@ -69,18 +69,18 @@ RawReadsManifestTest
     {
         String descr = "A description";
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( Fields.STUDY             + " SRP123456789\n"
-                                + Fields.SAMPLE            + " ERS198522\n"
-                                + Fields.PLATFORM          + " illumina\n"
-                                + Fields.INSTRUMENT        + " Illumina HiScanSQ\n"
-                                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + Fields.LIBRARY_SOURCE    + " OTHER\n"
-                                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + Fields.LIBRARY_NAME      + " Name library\n"
-                                + Fields.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
-                                + Fields.INSERT_SIZE       + " 100500\n"
-                                + Fields.NAME              + " SOME-FANCY-NAME\n "
-                                + Fields.DESCRIPTION       + " " + descr + "\n"
+                                ( Field.STUDY             + " SRP123456789\n"
+                                + Field.SAMPLE            + " ERS198522\n"
+                                + Field.PLATFORM          + " illumina\n"
+                                + Field.INSTRUMENT        + " Illumina HiScanSQ\n"
+                                + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
+                                + Field.LIBRARY_SOURCE    + " OTHER\n"
+                                + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                                + Field.LIBRARY_NAME      + " Name library\n"
+                                + Field.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
+                                + Field.INSERT_SIZE       + " 100500\n"
+                                + Field.NAME              + " SOME-FANCY-NAME\n "
+                                + Field.DESCRIPTION       + " " + descr + "\n"
                                 + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();
@@ -120,17 +120,17 @@ RawReadsManifestTest
     testValidManifestWithInfo() throws IOException
     {
         Path inf = Files.write( Files.createTempFile( Files.createTempDirectory( "TEMP" ), "TEMP", "INFO" ),
-                                ( Fields.STUDY             + " SRP123456789\n"
-                                + Fields.SAMPLE            + " ERS198522\n"
-                                + Fields.PLATFORM          + " illumina\n"
-                                + Fields.INSTRUMENT        + " Illumina HiScanSQ\n"
-                                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + Fields.LIBRARY_SOURCE    + " OTHER\n"
-                                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + Fields.LIBRARY_NAME      + " Name library\n"
-                                + Fields.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
-                                + Fields.INSERT_SIZE       + " 100500\n"
-                                + Fields.NAME              + " SOME-FANCY-NAME\n" ).getBytes(),
+                                ( Field.STUDY             + " SRP123456789\n"
+                                + Field.SAMPLE            + " ERS198522\n"
+                                + Field.PLATFORM          + " illumina\n"
+                                + Field.INSTRUMENT        + " Illumina HiScanSQ\n"
+                                + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
+                                + Field.LIBRARY_SOURCE    + " OTHER\n"
+                                + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                                + Field.LIBRARY_NAME      + " Name library\n"
+                                + Field.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
+                                + Field.INSERT_SIZE       + " 100500\n"
+                                + Field.NAME              + " SOME-FANCY-NAME\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
@@ -174,7 +174,7 @@ RawReadsManifestTest
     testUnspecifiedInstrument() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( Fields.PLATFORM + " illumina\n" ).getBytes(),
+                                ( Field.PLATFORM + " illumina\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifest rm = new RawReadsManifest();
@@ -192,8 +192,8 @@ RawReadsManifestTest
     testUnspecifiedInstrument2() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                (  Fields.PLATFORM + " ILLUMINA\n" +
-                Fields.INSTRUMENT + " unspecifieD\n" ).getBytes(),
+                (  Field.PLATFORM + " ILLUMINA\n" +
+                Field.INSTRUMENT + " unspecifieD\n" ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifest rm = new RawReadsManifest();
@@ -211,8 +211,8 @@ RawReadsManifestTest
     testPlatformOverride() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( Fields.PLATFORM + " ILLUMINA\n"
-                                + Fields.INSTRUMENT + " 454 GS FLX Titanium\n" ).getBytes(),
+                                ( Field.PLATFORM + " ILLUMINA\n"
+                                + Field.INSTRUMENT + " 454 GS FLX Titanium\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifest rm = new RawReadsManifest();
@@ -250,7 +250,7 @@ RawReadsManifestTest
     testUnspecifiedInstrumentNoPlatform2() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                ( Fields.INSTRUMENT + " unspecifieD\n" ).getBytes(),
+                ( Field.INSTRUMENT + " unspecifieD\n" ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifest rm = new RawReadsManifest();
@@ -270,15 +270,15 @@ RawReadsManifestTest
     negativeInsertSize() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( Fields.STUDY             + " SRP123456789\n"
-                                + Fields.SAMPLE            + " ERS198522\n"
-                                + Fields.PLATFORM          + " ILLUMINA\n"
-                                + Fields.INSTRUMENT        + " unspecifieD\n"
-                                + Fields.INSERT_SIZE       + " -1\n"
-                                + Fields.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + Fields.LIBRARY_SOURCE    + " OTHER\n"
-                                + Fields.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + Fields.NAME              + " SOME-FANCY-NAME\n "
+                                ( Field.STUDY             + " SRP123456789\n"
+                                + Field.SAMPLE            + " ERS198522\n"
+                                + Field.PLATFORM          + " ILLUMINA\n"
+                                + Field.INSTRUMENT        + " unspecifieD\n"
+                                + Field.INSERT_SIZE       + " -1\n"
+                                + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
+                                + Field.LIBRARY_SOURCE    + " OTHER\n"
+                                + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
+                                + Field.NAME              + " SOME-FANCY-NAME\n "
                                 + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
         RawReadsManifest rm = new RawReadsManifest();

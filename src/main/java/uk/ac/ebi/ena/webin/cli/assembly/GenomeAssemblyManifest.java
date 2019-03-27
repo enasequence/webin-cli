@@ -35,7 +35,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
 public class
 GenomeAssemblyManifest extends ManifestReader {
-	public interface Fields {
+	public interface Field {
 		String NAME = "NAME";
 		String ASSEMBLYNAME = "ASSEMBLYNAME";
 		String STUDY = "STUDY";
@@ -55,7 +55,7 @@ GenomeAssemblyManifest extends ManifestReader {
 		String AGP = "AGP";
 	}
 
-	public interface Descriptions {
+	public interface Description {
 		String NAME = "Unique genome assembly name";
 		String ASSEMBLYNAME = "Unique genome assembly name";
 		String STUDY = "Study accession or name";
@@ -75,37 +75,27 @@ GenomeAssemblyManifest extends ManifestReader {
 		String AGP = "AGP file";
 	}
 
-	private String name;
-	private String description;
+	private static final String MOLECULE_TYPE_DEFAULT = "genomic DNA";
+	private static final String ASSEMBLY_TYPE_PRIMARY_METAGENOME = "primary metagenome";
+	private static final String ASSEMBLY_TYPE_BINNED_METAGENOME = "binned metagenome";
 
-	private static final String DEFAULT_MOLECULE_TYPE = "genomic DNA";
-	private SubmissionOptions submissionOptions;
-	private final static String[] CV_MOLECULETYPE = {
+	private final static ManifestCVList CV_MOLECULE_TYPE = new ManifestCVList(
 			"genomic DNA",
 			"genomic RNA",
 			"viral cRNA"
-	};
+	);
 
-	private final static String[] CV_ASSEMBLY_TYPE = {
+	private final static ManifestCVList CV_ASSEMBLY_TYPE = new ManifestCVList(
 			"clone or isolate",
-			"primary metagenome",
-			"binned metagenome",
+			ASSEMBLY_TYPE_PRIMARY_METAGENOME,
+			ASSEMBLY_TYPE_BINNED_METAGENOME,
 			"Metagenome-Assembled Genome (MAG)",
 			"Environmental Single-Cell Amplified Genome (SAG)"
-	};
+	);
 
-	private enum
-	CV_ASSEMBLY_TYPE_ORD {
-		CLONE_OR_ISOLATE,
-		PRIMARY_METAGENOME,
-		BINNED_METAGENOME,
-		MAG,
-		SAG
-	}
-
-	private static String getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD ord) {
-		return CV_ASSEMBLY_TYPE[ord.ordinal()];
-	}
+	private String name;
+	private String description;
+	private SubmissionOptions submissionOptions;
 
 	@SuppressWarnings("serial")
 	public GenomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor) {
@@ -113,23 +103,23 @@ GenomeAssemblyManifest extends ManifestReader {
 				// Fields.
 				new ArrayList<ManifestFieldDefinition>() {
 					{
-						add(new Builder().meta().optional().name(Fields.NAME).desc(Descriptions.NAME).build());
-						add(new Builder().meta().required().name(Fields.STUDY).desc(Descriptions.STUDY).processor(studyProcessor).build());
-						add(new Builder().meta().required().name(Fields.SAMPLE).desc(Descriptions.SAMPLE).processor(sampleProcessor, sourceProcessor).build());
-						add(new Builder().meta().optional().name(Fields.DESCRIPTION).desc(Descriptions.DESCRIPTION).build());
-						add(new Builder().meta().required().name(Fields.COVERAGE).desc(Descriptions.COVERAGE).build());
-						add(new Builder().meta().required().name(Fields.PROGRAM).desc(Descriptions.PROGRAM).build());
-						add(new Builder().meta().required().name(Fields.PLATFORM).desc(Descriptions.PLATFORM).build());
-						add(new Builder().meta().optional().name(Fields.MINGAPLENGTH).desc(Descriptions.MINGAPLENGTH).build());
-						add(new Builder().meta().optional().name(Fields.MOLECULETYPE).desc(Descriptions.MOLECULETYPE).processor(new CVFieldProcessor(CV_MOLECULETYPE)).build());
-						add(new Builder().meta().optional().name(Fields.ASSEMBLY_TYPE).desc(Descriptions.ASSEMBLY_TYPE).processor(new CVFieldProcessor(CV_ASSEMBLY_TYPE)).build());
-						add(new Builder().file().optional().name(Fields.CHROMOSOME_LIST).desc(Descriptions.CHROMOSOME_LIST).processor(getChromosomeListProcessors()).build());
-						add(new Builder().file().optional().name(Fields.UNLOCALISED_LIST).desc(Descriptions.UNLOCALISED_LIST).processor(getUnlocalisedListProcessors()).build());
-						add(new Builder().file().optional().name(Fields.FASTA).desc(Descriptions.FASTA).processor(getFastaProcessors()).build());
-						add(new Builder().file().optional().name(Fields.FLATFILE).desc(Descriptions.FLATFILE).processor(getFlatfileProcessors()).build());
-						add(new Builder().file().optional().name(Fields.AGP).desc(Descriptions.AGP).processor(getAgpProcessors()).build());
-						add(new Builder().meta().optional().spreadsheet(false).name(Fields.ASSEMBLYNAME).desc(Descriptions.ASSEMBLYNAME).build());
-						add(new Builder().meta().optional().spreadsheet(false).name(Fields.TPA).desc(Descriptions.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
+						add(new Builder().meta().optional().name(Field.NAME).desc(Description.NAME).build());
+						add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
+						add(new Builder().meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor, sourceProcessor).build());
+						add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
+						add(new Builder().meta().required().name(Field.COVERAGE).desc(Description.COVERAGE).build());
+						add(new Builder().meta().required().name(Field.PROGRAM).desc(Description.PROGRAM).build());
+						add(new Builder().meta().required().name(Field.PLATFORM).desc(Description.PLATFORM).build());
+						add(new Builder().meta().optional().name(Field.MINGAPLENGTH).desc(Description.MINGAPLENGTH).build());
+						add(new Builder().meta().optional().name(Field.MOLECULETYPE).desc(Description.MOLECULETYPE).processor(new CVFieldProcessor(CV_MOLECULE_TYPE)).build());
+						add(new Builder().meta().optional().name(Field.ASSEMBLY_TYPE).desc(Description.ASSEMBLY_TYPE).processor(new CVFieldProcessor(CV_ASSEMBLY_TYPE)).build());
+						add(new Builder().file().optional().name(Field.CHROMOSOME_LIST).desc(Description.CHROMOSOME_LIST).processor(getChromosomeListProcessors()).build());
+						add(new Builder().file().optional().name(Field.UNLOCALISED_LIST).desc(Description.UNLOCALISED_LIST).processor(getUnlocalisedListProcessors()).build());
+						add(new Builder().file().optional().name(Field.FASTA).desc(Description.FASTA).processor(getFastaProcessors()).build());
+						add(new Builder().file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build());
+						add(new Builder().file().optional().name(Field.AGP).desc(Description.AGP).processor(getAgpProcessors()).build());
+						add(new Builder().meta().optional().spreadsheet(false).name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).build());
+						add(new Builder().meta().optional().spreadsheet(false).name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
 					}
 				},
 
@@ -139,38 +129,38 @@ GenomeAssemblyManifest extends ManifestReader {
 						// FASTA_WITHOUT_CHROMOSOMES
 						add(new ArrayList<ManifestFileCount>() {
 							{
-								add(new ManifestFileCount(Fields.AGP, 0, null));
-								add(new ManifestFileCount(Fields.FASTA, 1, null));
-								add(new ManifestFileCount(Fields.FLATFILE, 0, null));
+								add(new ManifestFileCount(Field.AGP, 0, null));
+								add(new ManifestFileCount(Field.FASTA, 1, null));
+								add(new ManifestFileCount(Field.FLATFILE, 0, null));
 							}
 						});
 
 						// FASTA_WITH_CHROMOSOMES
 						add(new ArrayList<ManifestFileCount>() {
 							{
-								add(new ManifestFileCount(Fields.AGP, 0, null));
-								add(new ManifestFileCount(Fields.FASTA, 1, null));
-								add(new ManifestFileCount(Fields.FLATFILE, 0, null));
-								add(new ManifestFileCount(Fields.CHROMOSOME_LIST, 1, 1));
-								add(new ManifestFileCount(Fields.UNLOCALISED_LIST, 0, 1));
+								add(new ManifestFileCount(Field.AGP, 0, null));
+								add(new ManifestFileCount(Field.FASTA, 1, null));
+								add(new ManifestFileCount(Field.FLATFILE, 0, null));
+								add(new ManifestFileCount(Field.CHROMOSOME_LIST, 1, 1));
+								add(new ManifestFileCount(Field.UNLOCALISED_LIST, 0, 1));
 							}
 						});
 
 						// FLATFILE_WITHOUT_CHROMOSOMES
 						add(new ArrayList<ManifestFileCount>() {
 							{
-								add(new ManifestFileCount(Fields.AGP, 0, null));
-								add(new ManifestFileCount(Fields.FLATFILE, 1, null));
+								add(new ManifestFileCount(Field.AGP, 0, null));
+								add(new ManifestFileCount(Field.FLATFILE, 1, null));
 							}
 						});
 
 						// FLATFILE_WITH_CHROMOSOMES
 						add(new ArrayList<ManifestFileCount>() {
 							{
-								add(new ManifestFileCount(Fields.AGP, 0, null));
-								add(new ManifestFileCount(Fields.FLATFILE, 1, null));
-								add(new ManifestFileCount(Fields.CHROMOSOME_LIST, 1, 1));
-								add(new ManifestFileCount(Fields.UNLOCALISED_LIST, 0, 1));
+								add(new ManifestFileCount(Field.AGP, 0, null));
+								add(new ManifestFileCount(Field.FLATFILE, 1, null));
+								add(new ManifestFileCount(Field.CHROMOSOME_LIST, 1, 1));
+								add(new ManifestFileCount(Field.UNLOCALISED_LIST, 0, 1));
 							}
 						});
 					}
@@ -215,43 +205,43 @@ GenomeAssemblyManifest extends ManifestReader {
 		submissionOptions = new SubmissionOptions();
 		SubmissionFiles submissionFiles = new SubmissionFiles();
 		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
-		name = StringUtils.isBlank( getResult().getValue( Fields.NAME ) ) ? getResult().getValue(Fields.ASSEMBLYNAME ) : getResult().getValue( Fields.NAME );
+		name = StringUtils.isBlank( getResult().getValue( Field.NAME ) ) ? getResult().getValue(Field.ASSEMBLYNAME ) : getResult().getValue( Field.NAME );
 		if( StringUtils.isBlank( name ) ) 
 		{
-			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Fields.NAME + " or " + Fields.ASSEMBLYNAME );
+			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
 		}
 		
 		if( name != null )
 			assemblyInfo.setName( name );
 
-		description = getResult().getValue( Fields.DESCRIPTION );
-		assemblyInfo.setPlatform( getResult().getValue( Fields.PLATFORM ) );
-		assemblyInfo.setProgram( getResult().getValue( Fields.PROGRAM ) );
-		assemblyInfo.setMoleculeType( getResult().getValue( Fields.MOLECULETYPE ) == null ? DEFAULT_MOLECULE_TYPE :  getResult().getValue( Fields.MOLECULETYPE ) );
-		getAndValidatePositiveFloat( getResult().getField( Fields.COVERAGE ) );
-		assemblyInfo.setCoverage(getResult().getValue( Fields.COVERAGE ) );
+		description = getResult().getValue( Field.DESCRIPTION );
+		assemblyInfo.setPlatform( getResult().getValue( Field.PLATFORM ) );
+		assemblyInfo.setProgram( getResult().getValue( Field.PROGRAM ) );
+		assemblyInfo.setMoleculeType( getResult().getValue( Field.MOLECULETYPE ) == null ? MOLECULE_TYPE_DEFAULT :  getResult().getValue( Field.MOLECULETYPE ) );
+		getAndValidatePositiveFloat( getResult().getField( Field.COVERAGE ) );
+		assemblyInfo.setCoverage(getResult().getValue( Field.COVERAGE ) );
 		
-		if( getResult().getCount( Fields.MINGAPLENGTH ) > 0 )
+		if( getResult().getCount( Field.MINGAPLENGTH ) > 0 )
 		{
-			assemblyInfo.setMinGapLength( getAndValidatePositiveInteger( getResult().getField( Fields.MINGAPLENGTH ) ) );
+			assemblyInfo.setMinGapLength( getAndValidatePositiveInteger( getResult().getField( Field.MINGAPLENGTH ) ) );
 		}
 		
-		assemblyInfo.setAssemblyType( getResult().getValue( Fields.ASSEMBLY_TYPE ) );
+		assemblyInfo.setAssemblyType( getResult().getValue( Field.ASSEMBLY_TYPE ) );
 		
-		if( getResult().getCount( Fields.TPA ) > 0 )
+		if( getResult().getCount( Field.TPA ) > 0 )
 		{
-			assemblyInfo.setTpa( getAndValidateBoolean( getResult().getField( Fields.TPA ) ) );
+			assemblyInfo.setTpa( getAndValidateBoolean( getResult().getField( Field.TPA ) ) );
 		}
 		
-		getFiles( getInputDir(), getResult(), Fields.FASTA ).forEach( fastaFile -> submissionFiles.addFile( new SubmissionFile( FileType.FASTA,fastaFile ) ) );
-		getFiles( getInputDir(), getResult(), Fields.AGP ).forEach( agpFile -> submissionFiles.addFile( new SubmissionFile( FileType.AGP,agpFile ) ) );
-		getFiles( getInputDir(), getResult(), Fields.FLATFILE ).forEach( flatFile -> submissionFiles.addFile( new SubmissionFile( FileType.FLATFILE,flatFile ) ) );
-		getFiles( getInputDir(), getResult(), Fields.CHROMOSOME_LIST ).forEach( chromosomeListFile -> submissionFiles.addFile( new SubmissionFile( FileType.CHROMOSOME_LIST, chromosomeListFile ) ) );
-		getFiles( getInputDir(), getResult(), Fields.UNLOCALISED_LIST ).forEach( unlocalisedListFile -> submissionFiles.addFile( new SubmissionFile( FileType.UNLOCALISED_LIST, unlocalisedListFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(fastaFile -> submissionFiles.addFile( new SubmissionFile( FileType.FASTA,fastaFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.AGP ).forEach(agpFile -> submissionFiles.addFile( new SubmissionFile( FileType.AGP,agpFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(flatFile -> submissionFiles.addFile( new SubmissionFile( FileType.FLATFILE,flatFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.CHROMOSOME_LIST ).forEach(chromosomeListFile -> submissionFiles.addFile( new SubmissionFile( FileType.CHROMOSOME_LIST, chromosomeListFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.UNLOCALISED_LIST ).forEach(unlocalisedListFile -> submissionFiles.addFile( new SubmissionFile( FileType.UNLOCALISED_LIST, unlocalisedListFile ) ) );
 
         // "primary metagenome" and "binned metagenome" checks
-		if( getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD.PRIMARY_METAGENOME).equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) ) ||
-			getCvAssemblyType(CV_ASSEMBLY_TYPE_ORD.BINNED_METAGENOME).equals( getResult().getValue( Fields.ASSEMBLY_TYPE ) ) )
+		if( ASSEMBLY_TYPE_PRIMARY_METAGENOME.equals( getResult().getValue( Field.ASSEMBLY_TYPE ) ) ||
+			ASSEMBLY_TYPE_BINNED_METAGENOME.equals( getResult().getValue( Field.ASSEMBLY_TYPE ) ) )
 		{
 		    if(submissionFiles.getFiles()
 					.stream()
@@ -262,14 +252,14 @@ GenomeAssemblyManifest extends ManifestReader {
 								// FASTA ONLY
 								add(new ArrayList<ManifestFileCount>() {
 									{
-										add(new ManifestFileCount(Fields.FASTA, 1, 1));
+										add(new ManifestFileCount(Field.FASTA, 1, 1));
 									}
 								});
 							}
 						}),
 						" for assembly types: \"" +
-								CV_ASSEMBLY_TYPE[CV_ASSEMBLY_TYPE_ORD.PRIMARY_METAGENOME.ordinal()] + "\" and \"" +
-								CV_ASSEMBLY_TYPE[CV_ASSEMBLY_TYPE_ORD.BINNED_METAGENOME.ordinal()] + "\"");
+								ASSEMBLY_TYPE_PRIMARY_METAGENOME + "\" and \"" +
+								ASSEMBLY_TYPE_BINNED_METAGENOME + "\"");
 			}
 		}
 	
