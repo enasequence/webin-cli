@@ -10,13 +10,13 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import org.springframework.util.Assert;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.springframework.util.Assert;
 
 public class ManifestFieldDefinition {
 

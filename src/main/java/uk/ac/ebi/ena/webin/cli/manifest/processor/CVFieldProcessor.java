@@ -10,14 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
+import java.util.List;
+
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-
-import java.util.List;
 
 public class
 CVFieldProcessor implements ManifestFieldProcessor

@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.manifest;
 
 import java.util.List;
-import java.util.Set;
 
 public class TestManifestReader extends ManifestReader {
 

@@ -227,7 +227,7 @@ GenomeAssemblyManifest extends ManifestReader {
 					.stream()
 					.anyMatch(file -> FileType.FASTA != file.getFileType() )) {
 				error(WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR,
-						getFileGroupList(PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS),
+						getFileGroupText(PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS),
 						" for assembly types: \"" +
 								ASSEMBLY_TYPE_PRIMARY_METAGENOME + "\" and \"" +
 								ASSEMBLY_TYPE_BINNED_METAGENOME + "\"");

@@ -373,7 +373,7 @@ ManifestReader
 
         if( fileCountMap == null || fileCountMap.isEmpty() )
         {
-            error( WebinCliMessage.Manifest.NO_DATA_FILES_ERROR, getFileGroupList(fileGroups) );
+            error( WebinCliMessage.Manifest.NO_DATA_FILES_ERROR, getFileGroupText(fileGroups) );
             return;
         }
 
@@ -406,7 +406,7 @@ ManifestReader
             return; // Valid
         }
 
-        error( WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR, getFileGroupList(fileGroups), "" );
+        error( WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
 
     }
 
@@ -530,8 +530,8 @@ ManifestReader
         }
     }
 
-    public String
-    getFileGroupList(List<ManifestFileGroup> fileGroups )
+    public static String
+    getFileGroupText(List<ManifestFileGroup> fileGroups )
     {
         return fileGroups.stream().map( fileGroup -> {
             StringBuilder str = new StringBuilder();

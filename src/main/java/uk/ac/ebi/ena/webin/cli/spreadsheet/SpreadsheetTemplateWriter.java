@@ -1,16 +1,14 @@
+/*
+ * Copyright 2018-2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.ena.webin.cli.spreadsheet;
-
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.*;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,12 +17,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-// https://poi.apache.org/components/spreadsheet/quick-guide.html
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.*;
 
-public class SpreadsheetWriter {
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
+
+public class SpreadsheetTemplateWriter {
 
     public static void main(String[] args) {
-        SpreadsheetWriter spreadsheetWriter = new SpreadsheetWriter();
+        SpreadsheetTemplateWriter spreadsheetWriter = new SpreadsheetTemplateWriter();
         spreadsheetWriter.write();
     }
 
@@ -35,12 +44,12 @@ public class SpreadsheetWriter {
     }
 
     public void write() {
-        for (SpreadsheetContext spreadsheetContext : SpreadsheetContext.values()) {
+        for (SpreadsheetTemplateWriterContext spreadsheetContext : SpreadsheetTemplateWriterContext.values()) {
             write(spreadsheetContext);
         }
     }
 
-    private static void write(SpreadsheetContext spreadsheetContext) {
+    private static void write(SpreadsheetTemplateWriterContext spreadsheetContext) {
 
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -57,13 +66,9 @@ public class SpreadsheetWriter {
         }
     }
 
-    private static void addSheets(XSSFWorkbook workbook, SpreadsheetContext spreadsheetContext) {
+    private static void addSheets(XSSFWorkbook workbook, SpreadsheetTemplateWriterContext spreadsheetContext) {
 
         ArrayList<ManifestFieldDefinition> fields = getFields(spreadsheetContext);
-
-
-        // System.out.println(spreadsheetContext.getManifest().getFileGroupList(spreadsheetContext.getManifest().getFileGroups()));
-
 
         XSSFSheet dataSheet = workbook.createSheet(spreadsheetContext.getSheetName());
         XSSFSheet cvSheet = workbook.createSheet(SHEET_NAME_CV);
@@ -77,8 +82,8 @@ public class SpreadsheetWriter {
         addHeaderText(dataSheet, dataSheetHeaderRow, fields, requiredHeaderStyle, optionalHeaderStyle);
         addHeaderText(cvSheet, cvSheetHeaderRow, fields, requiredHeaderStyle, optionalHeaderStyle);
 
-        addHeaderComment(workbook, dataSheet, dataSheetHeaderRow, fields);
-        addHeaderComment(workbook, cvSheet, cvSheetHeaderRow, fields);
+        addHeaderComment(workbook, dataSheet, dataSheetHeaderRow, fields, spreadsheetContext.getFileGroupText());
+        addHeaderComment(workbook, cvSheet, cvSheetHeaderRow, fields, spreadsheetContext.getFileGroupText());
 
         addCvValues(spreadsheetContext, workbook, cvSheet, fields);
         addCvConstraints(workbook, dataSheet, fields);
@@ -87,7 +92,7 @@ public class SpreadsheetWriter {
         cvSheet.createFreezePane(0, 1);
     }
 
-    private static ArrayList<ManifestFieldDefinition> getFields(SpreadsheetContext spreadsheetContext) {
+    private static ArrayList<ManifestFieldDefinition> getFields(SpreadsheetTemplateWriterContext spreadsheetContext) {
         ManifestReader manifest = spreadsheetContext.getManifest();
         ArrayList<ManifestFieldDefinition> fields = new ArrayList<>();
         for (ManifestFieldDefinition field : manifest.getFields()) {
@@ -140,7 +145,8 @@ public class SpreadsheetWriter {
             columnNumber++;
         }
 
-        for (int i = 0; i < columnNumber; ++i) {
+        int extraColumnToWidenForComments = 5;
+        for (int i = 0; i < columnNumber + extraColumnToWidenForComments; ++i) {
             if (dataSheet.getColumnWidth(i) < minColumnWidth) {
                 dataSheet.setColumnWidth(i, minColumnWidth);
             }
@@ -148,25 +154,25 @@ public class SpreadsheetWriter {
     }
 
 
-    private static void addHeaderComment(Workbook workbook, Sheet dataSheet, Row dataSheetHeaderRow, ArrayList<ManifestFieldDefinition> fields) {
+    private static void addHeaderComment(Workbook workbook, Sheet dataSheet, Row dataSheetHeaderRow, ArrayList<ManifestFieldDefinition> fields, String fileGroupText) {
         CreationHelper creationHelper = workbook.getCreationHelper();
         int columnNumber = 0;
         for (ManifestFieldDefinition field : fields) {
             Drawing drawing = dataSheet.createDrawingPatriarch();
             ClientAnchor anchor = creationHelper.createClientAnchor();
             anchor.setCol1(columnNumber);
-            anchor.setCol2(columnNumber + 2);
+            anchor.setCol2(columnNumber + 3);
             anchor.setRow1(0);
-            anchor.setRow2(2);
+            anchor.setRow2(7);
             Comment comment = drawing.createCellComment(anchor);
 
             RichTextString commentStr;
             if (field.getType() == ManifestFieldType.META) {
                     commentStr = creationHelper.createRichTextString(field.getDescription() +
-                    (field.getSpreadsheetMinCount() > 0 ? " (mandatory field)" : "")); // " (optional field)"));
+                    (field.getSpreadsheetMinCount() > 0 ? " (mandatory field)" : "(optional field)"));
             }
             else {
-                commentStr = creationHelper.createRichTextString("TODO");
+                commentStr = creationHelper.createRichTextString(fileGroupText);
             }
             comment.setString(commentStr);
             comment.setAuthor("Webin-CLI");
@@ -177,7 +183,7 @@ public class SpreadsheetWriter {
         }
     }
 
-    private static void addCvValues(SpreadsheetContext spreadsheetContext, Workbook workbook, XSSFSheet cvSheet, ArrayList<ManifestFieldDefinition> fields) {
+    private static void addCvValues(SpreadsheetTemplateWriterContext spreadsheetContext, Workbook workbook, XSSFSheet cvSheet, ArrayList<ManifestFieldDefinition> fields) {
         int maxValues = 0;
         for (ManifestFieldDefinition field : fields) {
             for (ManifestFieldProcessor processor : field.getFieldProcessors()) {
@@ -210,9 +216,9 @@ public class SpreadsheetWriter {
         }
     }
 
-    private static List<String> getCvValues(SpreadsheetContext spreadsheetContext, ManifestFieldDefinition field, CVFieldProcessor processor) {
+    private static List<String> getCvValues(SpreadsheetTemplateWriterContext spreadsheetContext, ManifestFieldDefinition field, CVFieldProcessor processor) {
         ArrayList<String> excludeValues = new ArrayList<>();
-        if (spreadsheetContext == SpreadsheetContext.READ && field.getName().equals(RawReadsManifest.Field.INSTRUMENT)) {
+        if (spreadsheetContext == SpreadsheetTemplateWriterContext.READ && field.getName().equals(RawReadsManifest.Field.INSTRUMENT)) {
             excludeValues.add("unspecified");
         }
         return processor.getValues().stream().filter(value -> !excludeValues.contains(value)).sorted().collect(Collectors.toList());
