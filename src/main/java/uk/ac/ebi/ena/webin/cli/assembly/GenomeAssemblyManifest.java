@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +32,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
 public class
 GenomeAssemblyManifest extends ManifestReader {
+
 	public interface Field {
 		String NAME = "NAME";
 		String ASSEMBLYNAME = "ASSEMBLYNAME";
@@ -77,19 +77,24 @@ GenomeAssemblyManifest extends ManifestReader {
 	private static final String ASSEMBLY_TYPE_PRIMARY_METAGENOME = "primary metagenome";
 	private static final String ASSEMBLY_TYPE_BINNED_METAGENOME = "binned metagenome";
 
-	private final static ManifestCVList CV_MOLECULE_TYPE = new ManifestCVList(
+	private static final ManifestCVList CV_MOLECULE_TYPE = new ManifestCVList(
 			"genomic DNA",
 			"genomic RNA",
 			"viral cRNA"
 	);
 
-	private final static ManifestCVList CV_ASSEMBLY_TYPE = new ManifestCVList(
+	private static final ManifestCVList CV_ASSEMBLY_TYPE = new ManifestCVList(
 			"clone or isolate",
 			ASSEMBLY_TYPE_PRIMARY_METAGENOME,
 			ASSEMBLY_TYPE_BINNED_METAGENOME,
 			"Metagenome-Assembled Genome (MAG)",
 			"Environmental Single-Cell Amplified Genome (SAG)"
 	);
+
+	public static final ArrayList<ManifestFileGroup> PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS = new ManifestFileCount.Builder()
+			.group()
+			.required(Field.FASTA)
+			.build();
 
 	private String name;
 	private String description;
@@ -222,16 +227,7 @@ GenomeAssemblyManifest extends ManifestReader {
 					.stream()
 					.anyMatch(file -> FileType.FASTA != file.getFileType() )) {
 				error(WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR,
-						getExpectedFileTypeList(new ArrayList<List<ManifestFileCount>>() {
-							{
-								// FASTA ONLY
-								add(new ArrayList<ManifestFileCount>() {
-									{
-										add(new ManifestFileCount(Field.FASTA, 1, 1));
-									}
-								});
-							}
-						}),
+						getFileGroupList(PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS),
 						" for assembly types: \"" +
 								ASSEMBLY_TYPE_PRIMARY_METAGENOME + "\" and \"" +
 								ASSEMBLY_TYPE_BINNED_METAGENOME + "\"");

@@ -62,7 +62,7 @@ public class SpreadsheetWriter {
         ArrayList<ManifestFieldDefinition> fields = getFields(spreadsheetContext);
 
 
-        // System.out.println(spreadsheetContext.getManifest().getExpectedFileTypeList(spreadsheetContext.getManifest().getFiles()));
+        // System.out.println(spreadsheetContext.getManifest().getFileGroupList(spreadsheetContext.getManifest().getFileGroups()));
 
 
         XSSFSheet dataSheet = workbook.createSheet(spreadsheetContext.getSheetName());

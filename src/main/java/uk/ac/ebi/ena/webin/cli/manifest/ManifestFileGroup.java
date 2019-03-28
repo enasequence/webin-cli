@@ -8,33 +8,21 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package uk.ac.ebi.ena.webin.cli.manifest;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-public class TestManifestReader extends ManifestReader {
+public class ManifestFileGroup {
 
-    public TestManifestReader(List<ManifestFieldDefinition> fields) {
-        super(fields);
+    private final List<ManifestFileCount> fileCounts = new ArrayList<>();
+
+    public void addFileCount(ManifestFileCount fileCount) {
+        fileCounts.add(fileCount);
     }
 
-    public TestManifestReader(List<ManifestFieldDefinition> fields, List<ManifestFileGroup> fileGroups) {
-        super(fields, fileGroups);
-    }
-
-    @Override
-    public String getName() {
-        return "Test";
-    }
-
-    @Override
-    protected void processManifest() {
-    }
-
-    @Override
-    public String getDescription()
-    {
-        return "Description";
+    public List<ManifestFileCount> getFileCounts() {
+        return fileCounts;
     }
 }

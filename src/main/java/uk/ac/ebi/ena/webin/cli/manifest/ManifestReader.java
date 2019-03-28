@@ -67,7 +67,7 @@ ManifestReader
     }
 
     private final List<ManifestFieldDefinition> fields;
-    private final List<List<ManifestFileCount>> files;
+    private final List<ManifestFileGroup> fileGroups;
     private ManifestReaderResult result;
     private ManifestReaderState state;
 
@@ -75,16 +75,16 @@ ManifestReader
     ManifestReader( List<ManifestFieldDefinition> fields )
     {
         this.fields = fields;
-        this.files = null;
+        this.fileGroups = null;
     }
 
 
     public
     ManifestReader( List<ManifestFieldDefinition> fields,
-                    List<List<ManifestFileCount>> files )
+                    List<ManifestFileGroup> fileGroups)
     {
         this.fields = fields;
-        this.files = files;
+        this.fileGroups = fileGroups;
     }
 
 
@@ -102,8 +102,8 @@ ManifestReader
         return fields;
     }
 
-    public List<List<ManifestFileCount>> getFiles() {
-        return files;
+    public List<ManifestFileGroup> getFileGroups() {
+        return fileGroups;
     }
 
     public final ManifestReaderResult
@@ -363,7 +363,7 @@ ManifestReader
     private void
     validateFileCount()
     {
-        if( files == null || files.isEmpty() )
+        if( fileGroups == null || fileGroups.isEmpty() )
             return;
 
         Map<String, Long> fileCountMap = result.getFields()
@@ -373,21 +373,21 @@ ManifestReader
 
         if( fileCountMap == null || fileCountMap.isEmpty() )
         {
-            error( WebinCliMessage.Manifest.NO_DATA_FILES_ERROR, getExpectedFileTypeList( files ) );
+            error( WebinCliMessage.Manifest.NO_DATA_FILES_ERROR, getFileGroupList(fileGroups) );
             return;
         }
 
         next:
-        for (List<ManifestFileCount> expectedFileCountList : files) {
-            for (ManifestFileCount expectedFileCount : expectedFileCountList) {
-                if (fileCountMap.get(expectedFileCount.getFileType()) == null) {
-                    if (expectedFileCount.getMinCount() > 0) {
+        for (ManifestFileGroup fileGroup : fileGroups) {
+            for (ManifestFileCount fileCount : fileGroup.getFileCounts()) {
+                if (fileCountMap.get(fileCount.getFileType()) == null) {
+                    if (fileCount.getMinCount() > 0) {
                         continue next; // Invalid because min is > 0.
                     }
                 } else {
-                    long manifestFileCount = fileCountMap.get(expectedFileCount.getFileType());
-                    if ((expectedFileCount.getMaxCount() != null && expectedFileCount.getMaxCount() < manifestFileCount) ||
-                        (expectedFileCount.getMinCount() > manifestFileCount)) {
+                    long manifestFileCount = fileCountMap.get(fileCount.getFileType());
+                    if ((fileCount.getMaxCount() != null && fileCount.getMaxCount() < manifestFileCount) ||
+                        (fileCount.getMinCount() > manifestFileCount)) {
                         continue next; // Invalid because larger than max or smaller than min.
                     }
                 }
@@ -395,9 +395,9 @@ ManifestReader
 
             for( String manifestFileType : fileCountMap.keySet() )
             {
-                if( expectedFileCountList.stream()
-                                         .filter( expectedFileCount -> expectedFileCount.getFileType().equals( manifestFileType ) )
-                                         .count() < 1 )
+                if( fileGroup.getFileCounts().stream()
+                     .filter( fileCount -> fileCount.getFileType().equals( manifestFileType ) )
+                     .count() < 1 )
                 {
                     continue next; // Invalid because unmatched file type.
                 }
@@ -406,7 +406,7 @@ ManifestReader
             return; // Valid
         }
 
-        error( WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR, getExpectedFileTypeList( files ), "" );
+        error( WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR, getFileGroupList(fileGroups), "" );
 
     }
 
@@ -531,13 +531,13 @@ ManifestReader
     }
 
     public String
-    getExpectedFileTypeList( List<List<ManifestFileCount>> fileCountLists )
+    getFileGroupList(List<ManifestFileGroup> fileGroups )
     {
-        return fileCountLists.stream().map( fileCountList -> {
+        return fileGroups.stream().map( fileGroup -> {
             StringBuilder str = new StringBuilder();
             str.append( "[" );
             String fileSeparator = "";
-               for( ManifestFileCount fileCount : fileCountList )
+               for( ManifestFileCount fileCount : fileGroup.getFileCounts() )
                {
                    String fileType = fileCount.getFileType();
 
