@@ -56,7 +56,6 @@ public class SequenceAssemblyValidationTest {
             "ERT000028-SVC.tsv.gz",
             "ERT000029-SCGD.tsv.gz",
             "ERT000030-MHC1.tsv.gz",
-            "ERT000031-viroid.tsv.gz",
             "ERT000032-matK.tsv.gz",
             "ERT000034-Dloop.tsv.gz",
             "ERT000035-IGS.tsv.gz",

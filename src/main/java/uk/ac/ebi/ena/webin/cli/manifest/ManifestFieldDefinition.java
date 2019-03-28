@@ -19,13 +19,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ManifestFieldDefinition {
-  private final String name;
-  private final String description;
-  private final ManifestFieldType type;
-  private final int minCount;
-  private final int maxCount;
-  private final int spreadsheetCount;
-  private final List<ManifestFieldProcessor> processors;
 
   public static class Builder {
     private String name;
@@ -33,7 +26,9 @@ public class ManifestFieldDefinition {
     private ManifestFieldType type;
     private Integer minCount;
     private Integer maxCount;
-    private boolean spreadsheet = true;
+    private boolean notInSpreadsheet = false;
+    private boolean requiredInSpreadsheet = false;
+
     private List<ManifestFieldProcessor> processors = new ArrayList<>();
 
     public Builder name(String name) {
@@ -79,8 +74,13 @@ public class ManifestFieldDefinition {
       return this;
     }
 
-    public Builder spreadsheet(boolean spreadsheet) {
-      this.spreadsheet = spreadsheet;
+    public Builder notInSpreadsheet() {
+      this.notInSpreadsheet = true;
+      return this;
+    }
+
+    public Builder requiredInSpreadsheet() {
+      this.requiredInSpreadsheet = true;
       return this;
     }
 
@@ -91,10 +91,28 @@ public class ManifestFieldDefinition {
     }
 
     public ManifestFieldDefinition build() {
+      int spreadsheetMinCount = minCount;
+      int spreadsheetMaxCount = maxCount;
+      if (notInSpreadsheet) {
+        spreadsheetMinCount = 0;
+        spreadsheetMaxCount = 0;
+      }
+      else if (requiredInSpreadsheet) {
+        spreadsheetMinCount = 1;
+      }
       return new ManifestFieldDefinition(
-          name, description, type, minCount, maxCount, spreadsheet ? maxCount : 0, processors);
+          name, description, type, minCount, maxCount, spreadsheetMinCount, spreadsheetMaxCount, processors);
     }
   }
+
+  private final String name;
+  private final String description;
+  private final ManifestFieldType type;
+  private final int minCount;
+  private final int maxCount;
+  private final int spreadsheetMinCount;
+  private final int spreadsheetMaxCount;
+  private final List<ManifestFieldProcessor> processors;
 
   private ManifestFieldDefinition(
       String name,
@@ -102,7 +120,8 @@ public class ManifestFieldDefinition {
       ManifestFieldType type,
       int minCount,
       int maxCount,
-      int spreadsheetCount,
+      int spreadsheetMinCount,
+      int spreadsheetMaxCount,
       List<ManifestFieldProcessor> processors) {
     Assert.notNull(name, "Field name must not be null");
     Assert.notNull(description, "Field description must not be null");
@@ -112,7 +131,8 @@ public class ManifestFieldDefinition {
     this.type = type;
     this.minCount = minCount;
     this.maxCount = maxCount;
-    this.spreadsheetCount = spreadsheetCount;
+    this.spreadsheetMinCount = spreadsheetMinCount;
+    this.spreadsheetMaxCount = spreadsheetMaxCount;
     this.processors = processors;
   }
 
@@ -136,8 +156,12 @@ public class ManifestFieldDefinition {
     return maxCount;
   }
 
-  public int getSpreadsheetCount() {
-    return spreadsheetCount;
+  public int getSpreadsheetMinCount() {
+    return spreadsheetMinCount;
+  }
+
+  public int getSpreadsheetMaxCount() {
+    return spreadsheetMaxCount;
   }
 
   public List<ManifestFieldProcessor> getFieldProcessors() {

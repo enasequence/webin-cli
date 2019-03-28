@@ -72,7 +72,7 @@ TranscriptomeAssemblyManifest extends ManifestReader {
 				// Fields.
 				new ArrayList<ManifestFieldDefinition>() {
 					{
-						add(new Builder().meta().optional().name(Field.NAME).desc(Description.NAME).build());
+						add(new Builder().meta().optional().requiredInSpreadsheet().name(Field.NAME).desc(Description.NAME).build());
 						add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
 						add(new Builder().meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor, sourceProcessor).build());
 						add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
@@ -80,8 +80,8 @@ TranscriptomeAssemblyManifest extends ManifestReader {
 						add(new Builder().meta().required().name(Field.PLATFORM).desc(Description.PLATFORM).build());
 						add(new Builder().file().optional().name(Field.FASTA).desc(Description.FASTA).processor(getFastaProcessors()).build());
 						add(new Builder().file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build());
-						add(new Builder().meta().optional().spreadsheet(false).name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).build());
-						add(new Builder().meta().optional().spreadsheet(false).name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
+						add(new Builder().meta().optional().notInSpreadsheet().name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).build());
+						add(new Builder().meta().optional().notInSpreadsheet().name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
 					}
 				},
 

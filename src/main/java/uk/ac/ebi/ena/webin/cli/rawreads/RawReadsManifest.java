@@ -126,8 +126,8 @@ RawReadsManifest extends ManifestReader {
                         add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
                         add(new Builder().meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor).build());
                         add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
-                        add(new Builder().meta().optional().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).build());
-                        add(new Builder().meta().optional().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).build());
+                        add(new Builder().meta().optional().requiredInSpreadsheet().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).build());
+                        add(new Builder().meta().optional().notInSpreadsheet().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).build());
                         add(new Builder().meta().required().name(Field.LIBRARY_SOURCE).desc(Description.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).build());
                         add(new Builder().meta().required().name(Field.LIBRARY_SELECTION).desc(Description.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).build());
                         add(new Builder().meta().required().name(Field.LIBRARY_STRATEGY).desc(Description.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).build());
@@ -137,8 +137,8 @@ RawReadsManifest extends ManifestReader {
                         add(new Builder().file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors()).build());
                         add(new Builder().file().optional().name(Field.BAM).desc(Description.BAM).processor(getBamProcessors()).build());
                         add(new Builder().file().optional().name(Field.CRAM).desc(Description.CRAM).processor(getCramProcessors()).build());
-                        add(new Builder().meta().optional().spreadsheet(false).name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).build());
-                        add(new Builder().meta().optional().spreadsheet(false).name(Field.__HORIZON).desc(Description.__HORIZON).build());
+                        add(new Builder().meta().optional().notInSpreadsheet().name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).build());
+                        add(new Builder().meta().optional().notInSpreadsheet().name(Field.__HORIZON).desc(Description.__HORIZON).build());
                     }
                 },
 
