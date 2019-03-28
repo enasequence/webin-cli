@@ -25,11 +25,10 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Field;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Description;
 
 public class 
 RawReadsManifestTest
@@ -48,18 +47,18 @@ RawReadsManifestTest
     {
         Path inputDir = Paths.get( "." );
 
-        RawReadsFile file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new Builder().file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).build(), "file.fastq", null));
+        RawReadsFile file = RawReadsManifest.createReadFile(inputDir,
+                ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.FASTQ, "file.fastq"));
         Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
 
-        file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new Builder().file().optional().name(Field.BAM).desc(Description.BAM).build(), "file.bam", null));
+        file = RawReadsManifest.createReadFile(inputDir,
+                ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.BAM, "file.bam"));
         Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
 
-        file = RawReadsManifest.createReadFile(inputDir, new ManifestFieldValue(
-                new Builder().file().optional().name(Field.CRAM).desc(Description.CRAM).build(), "file.cram", null));
+        file = RawReadsManifest.createReadFile(inputDir,
+                ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.CRAM, "file.cram"));
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }
@@ -95,7 +94,7 @@ RawReadsManifestTest
         Assert.assertNull( rm.getLibraryConstructionProtocol() );
         Assert.assertNull( rm.getInsertSize() );
         Assert.assertNull( rm.getName() );
-        Assert.assertNull( rm.getFiles() );
+        Assert.assertNull( rm.getRawReadFiles() );
         Assert.assertNull( rm.getDescription() );
         
         rm.readManifest( Paths.get( "." ), man.toFile() );
@@ -111,7 +110,7 @@ RawReadsManifestTest
         Assert.assertEquals( "library construction protocol", rm.getLibraryConstructionProtocol() );
         Assert.assertEquals( Integer.valueOf( 100500 ), rm.getInsertSize() );
         Assert.assertEquals( "SOME-FANCY-NAME", rm.getName() );
-        Assert.assertEquals( 1, rm.getFiles().size() );
+        Assert.assertEquals( 1, rm.getRawReadFiles().size() );
         Assert.assertEquals( descr, rm.getDescription() );
     }
 
@@ -151,7 +150,7 @@ RawReadsManifestTest
         Assert.assertNull( rm.getLibraryConstructionProtocol() );
         Assert.assertNull( rm.getInsertSize() );
         Assert.assertNull( rm.getName() );
-        Assert.assertNull( rm.getFiles() );
+        Assert.assertNull( rm.getRawReadFiles() );
 
         rm.readManifest( inf.getParent(), man.toFile() );
 
@@ -166,7 +165,7 @@ RawReadsManifestTest
         Assert.assertEquals( "library construction protocol", rm.getLibraryConstructionProtocol() );
         Assert.assertEquals( new Integer( 100500 ), rm.getInsertSize() );
         Assert.assertEquals( "SOME-FANCY-NAME", rm.getName() );
-        Assert.assertEquals( 1, rm.getFiles().size() );
+        Assert.assertEquals( 1, rm.getRawReadFiles().size() );
     }
 
 

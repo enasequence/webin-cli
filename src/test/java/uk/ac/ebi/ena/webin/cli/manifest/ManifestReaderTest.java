@@ -16,10 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,7 +25,6 @@ import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 
 public class ManifestReaderTest {
 
@@ -38,49 +34,45 @@ public class ManifestReaderTest {
 
     static class ManifestReaderOneMetaFieldMin0Max1 extends TestManifestReader {
         ManifestReaderOneMetaFieldMin0Max1() {
-            super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new Builder().meta().optional().name("META_FIELD_1").desc("DESCRIPTION_1").processor(new CVFieldProcessor(CV_FIELD_1)).build());
-            }});
+            super(new ManifestFieldDefinition.Builder()
+                .meta().optional().name("META_FIELD_1").desc("DESCRIPTION_1").processor(new CVFieldProcessor(CV_FIELD_1)).build());
         }
     }
 
     static class ManifestReaderTwoMetaFieldMin1Max1 extends TestManifestReader {
         ManifestReaderTwoMetaFieldMin1Max1() {
-            super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new Builder().meta().required().name("META_FIELD_1").desc("DESCRIPTION_1").processor(new CVFieldProcessor(CV_FIELD_1)).build());
-                add(new Builder().meta().required().name("META_FIELD_2").desc("DESCRIPTION_2").build());
-            }});
+            super(new ManifestFieldDefinition.Builder()
+                .meta().required().name("META_FIELD_1").desc("DESCRIPTION_1").processor(new CVFieldProcessor(CV_FIELD_1)).and()
+                .meta().required().name("META_FIELD_2").desc("DESCRIPTION_2").build());
         }
     }
 
     static class ManifestReaderOneFileFieldMin0Max1 extends TestManifestReader {
         ManifestReaderOneFileFieldMin0Max1() {
-            super(new ArrayList<ManifestFieldDefinition>() {{
-                add(new Builder().file().optional().name("FILE_FIELD_1").desc("DESCRIPTION_1").processor(new FileSuffixProcessor( Arrays.asList(".txt"))).build());
-            }});
+            super(new ManifestFieldDefinition.Builder()
+                .file().optional().name("FILE_FIELD_1").desc("DESCRIPTION_1").processor(new FileSuffixProcessor( Arrays.asList(".txt"))).build());
         }
     }
 
     static class ManifestReaderFiles extends TestManifestReader {
         ManifestReaderFiles() {
-            super(new ArrayList<ManifestFieldDefinition>() {{
-                      add(new Builder().file().optional().name("FILE_FIELD_1").desc("DESCRIPTION_1").build());
-                      add(new Builder().file().optional(2).name("FILE_FIELD_2").desc("DESCRIPTION_2").build());
-                      add(new Builder().file().optional().name("FILE_FIELD_3").desc("DESCRIPTION_3").build());
-                      add(new Builder().file().optional(2).name("FILE_FIELD_4").desc("DESCRIPTION_4").build());
-            }},
-            new HashSet<List<ManifestFileCount>>() {{
-                add(new ArrayList<ManifestFileCount>() {{
-                    add(new ManifestFileCount("FILE_FIELD_1", 1, 1));
-                }});
-                add(new ArrayList<ManifestFileCount>() {{
-                    add(new ManifestFileCount("FILE_FIELD_2", 1, 2));
-                }});
-                add(new ArrayList<ManifestFileCount>() {{
-                    add(new ManifestFileCount("FILE_FIELD_3", 1, 1));
-                    add(new ManifestFileCount("FILE_FIELD_4", 2, 2));
-                }});
-            }});
+            super(
+                new ManifestFieldDefinition.Builder()
+                  .file().optional().name("FILE_FIELD_1").desc("DESCRIPTION_1").and()
+                  .file().optional(2).name("FILE_FIELD_2").desc("DESCRIPTION_2").and()
+                  .file().optional().name("FILE_FIELD_3").desc("DESCRIPTION_3").and()
+                  .file().optional(2).name("FILE_FIELD_4").desc("DESCRIPTION_4").build()
+                ,
+                new ManifestFileCount.Builder()
+                    .group()
+                    .required("FILE_FIELD_1")
+                    .and().group()
+                    .required("FILE_FIELD_2", 2)
+                    .and().group()
+                    .required("FILE_FIELD_3")
+                    .required("FILE_FIELD_4", 2, 2)
+                    .build()
+            );
         }
     }
 

@@ -128,7 +128,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
         
-        List<RawReadsFile> files = getManifestReader().getFiles();
+        List<RawReadsFile> files = getManifestReader().getRawReadFiles();
 
         for (RawReadsFile rf : files) {
             if (Filetype.fastq.equals(rf.getFiletype())) {
@@ -337,7 +337,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     {
         try
         {
-            List<RawReadsFile> files = getManifestReader().getFiles();
+            List<RawReadsFile> files = getManifestReader().getRawReadFiles();
             
             List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
             Path uploadDir = Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDir(getName()) );

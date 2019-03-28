@@ -53,31 +53,22 @@ SequenceAssemblyManifest extends ManifestReader {
     public SequenceAssemblyManifest(StudyProcessor studyProcessor) {
         super(
                 // Fields.
-                new ArrayList<ManifestFieldDefinition>() {
-                    {
-                        add(new Builder().meta().required().name(Field.NAME).desc(Description.NAME).build());
-                        add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
-                        add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
-                        add(new Builder().file().optional().name(Field.TAB).desc(Description.TAB).processor(getTabProcessors()).build());
-                        add(new Builder().file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build());
-                    }
-                },
-
+                new ManifestFieldDefinition.Builder()
+                    .meta().required().name(Field.NAME).desc(Description.NAME).and()
+                    .meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).and()
+                    .meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
+                    .file().optional().name(Field.TAB).desc(Description.TAB).processor(getTabProcessors()).and()
+                    .file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build()
+                ,
                 // File groups.
-                new HashSet<List<ManifestFileCount>>() {
-                    {
-                        add(new ArrayList<ManifestFileCount>() {
-                            {
-                                add(new ManifestFileCount(Field.TAB, 1, 1));
-                            }
-                        });
-                        add(new ArrayList<ManifestFileCount>() {
-                            {
-                                add(new ManifestFileCount(Field.FLATFILE, 1, 1));
-                            }
-                        });
-                    }
-                });
+                new ManifestFileCount.Builder()
+                    .group()
+                    .required(Field.TAB)
+                    .and().group()
+                    .required(Field.FLATFILE)
+                    .build()
+
+        );
     }
 
     private static ManifestFieldProcessor[] getTabProcessors() {

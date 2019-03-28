@@ -70,36 +70,26 @@ TranscriptomeAssemblyManifest extends ManifestReader {
 	public TranscriptomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor) {
 		super(
 				// Fields.
-				new ArrayList<ManifestFieldDefinition>() {
-					{
-						add(new Builder().meta().optional().requiredInSpreadsheet().name(Field.NAME).desc(Description.NAME).build());
-						add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
-						add(new Builder().meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor, sourceProcessor).build());
-						add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
-						add(new Builder().meta().required().name(Field.PROGRAM).desc(Description.PROGRAM).build());
-						add(new Builder().meta().required().name(Field.PLATFORM).desc(Description.PLATFORM).build());
-						add(new Builder().file().optional().name(Field.FASTA).desc(Description.FASTA).processor(getFastaProcessors()).build());
-						add(new Builder().file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build());
-						add(new Builder().meta().optional().notInSpreadsheet().name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).build());
-						add(new Builder().meta().optional().notInSpreadsheet().name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
-					}
-				},
-
+				new ManifestFieldDefinition.Builder()
+					.meta().optional().requiredInSpreadsheet().name(Field.NAME).desc(Description.NAME).and()
+					.meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).and()
+					.meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor, sourceProcessor).and()
+					.meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
+					.meta().required().name(Field.PROGRAM).desc(Description.PROGRAM).and()
+					.meta().required().name(Field.PLATFORM).desc(Description.PLATFORM).and()
+					.file().optional().name(Field.FASTA).desc(Description.FASTA).processor(getFastaProcessors()).and()
+					.file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).and()
+					.meta().optional().notInSpreadsheet().name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).and()
+					.meta().optional().notInSpreadsheet().name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build()
+				,
 				// File groups.
-				new HashSet<List<ManifestFileCount>>() {
-					{
-						add(new ArrayList<ManifestFileCount>() {
-							{
-								add(new ManifestFileCount(Field.FASTA, 1, 1));
-							}
-						});
-						add(new ArrayList<ManifestFileCount>() {
-							{
-								add(new ManifestFileCount(Field.FLATFILE, 1, 1));
-							}
-						});
-					}
-				});
+				new ManifestFileCount.Builder()
+					.group()
+					.required(Field.FASTA)
+					.and().group()
+					.required(Field.FLATFILE)
+					.build()
+		);
 	}
 
 	private static ManifestFieldProcessor[] getFastaProcessors() {

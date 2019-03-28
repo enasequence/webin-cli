@@ -120,40 +120,35 @@ RawReadsManifest extends ManifestReader {
     public RawReadsManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor) {
         super(
                 // Fields.
-                new ArrayList<ManifestFieldDefinition>() {
-                    {
-                        add(new Builder().meta().required().name(Field.NAME).desc(Description.NAME).build());
-                        add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
-                        add(new Builder().meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor).build());
-                        add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
-                        add(new Builder().meta().optional().requiredInSpreadsheet().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).build());
-                        add(new Builder().meta().optional().notInSpreadsheet().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).build());
-                        add(new Builder().meta().required().name(Field.LIBRARY_SOURCE).desc(Description.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).build());
-                        add(new Builder().meta().required().name(Field.LIBRARY_SELECTION).desc(Description.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).build());
-                        add(new Builder().meta().required().name(Field.LIBRARY_STRATEGY).desc(Description.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).build());
-                        add(new Builder().meta().optional().name(Field.LIBRARY_CONSTRUCTION_PROTOCOL).desc(Description.LIBRARY_CONSTRUCTION_PROTOCOL).build());
-                        add(new Builder().meta().optional().name(Field.LIBRARY_NAME).desc(Description.LIBRARY_NAME).build());
-                        add(new Builder().meta().optional().name(Field.INSERT_SIZE).desc(Description.INSERT_SIZE).build());
-                        add(new Builder().file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors()).build());
-                        add(new Builder().file().optional().name(Field.BAM).desc(Description.BAM).processor(getBamProcessors()).build());
-                        add(new Builder().file().optional().name(Field.CRAM).desc(Description.CRAM).processor(getCramProcessors()).build());
-                        add(new Builder().meta().optional().notInSpreadsheet().name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).build());
-                        add(new Builder().meta().optional().notInSpreadsheet().name(Field.__HORIZON).desc(Description.__HORIZON).build());
-                    }
-                },
-
+                new ManifestFieldDefinition.Builder()
+                       .meta().required().name(Field.NAME).desc(Description.NAME).and()
+                       .meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).and()
+                       .meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor).and()
+                       .meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
+                       .meta().optional().requiredInSpreadsheet().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).and()
+                       .meta().optional().notInSpreadsheet().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).and()
+                       .meta().required().name(Field.LIBRARY_SOURCE).desc(Description.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).and()
+                       .meta().required().name(Field.LIBRARY_SELECTION).desc(Description.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).and()
+                       .meta().required().name(Field.LIBRARY_STRATEGY).desc(Description.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).and()
+                       .meta().optional().name(Field.LIBRARY_CONSTRUCTION_PROTOCOL).desc(Description.LIBRARY_CONSTRUCTION_PROTOCOL).and()
+                       .meta().optional().name(Field.LIBRARY_NAME).desc(Description.LIBRARY_NAME).and()
+                       .meta().optional().name(Field.INSERT_SIZE).desc(Description.INSERT_SIZE).and()
+                       .file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors()).and()
+                       .file().optional().name(Field.BAM).desc(Description.BAM).processor(getBamProcessors()).and()
+                       .file().optional().name(Field.CRAM).desc(Description.CRAM).processor(getCramProcessors()).and()
+                       .meta().optional().notInSpreadsheet().name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).and()
+                       .meta().optional().notInSpreadsheet().name(Field.__HORIZON).desc(Description.__HORIZON).build()
+                ,
                 // File groups.
-                new HashSet<List<ManifestFileCount>>() {{
-                    add(new ArrayList<ManifestFileCount>() {{
-                        add(new ManifestFileCount(Field.FASTQ, 1, 2));
-                    }});
-                    add(new ArrayList<ManifestFileCount>() {{
-                        add(new ManifestFileCount(Field.CRAM, 1, 1));
-                    }});
-                    add(new ArrayList<ManifestFileCount>() {{
-                        add(new ManifestFileCount(Field.BAM, 1, 1));
-                    }});
-                }});
+                new ManifestFileCount.Builder()
+                        .group()
+                        .required(Field.FASTQ, 2)
+                        .and().group()
+                        .required(Field.CRAM)
+                        .and().group()
+                        .required(Field.BAM)
+                        .build()
+        );
     }
 
 
@@ -260,7 +255,7 @@ RawReadsManifest extends ManifestReader {
 
 
     public List<RawReadsFile>
-    getFiles()
+    getRawReadFiles()
     {
         return files;
     }

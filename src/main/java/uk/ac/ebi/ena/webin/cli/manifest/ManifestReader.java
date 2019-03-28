@@ -29,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 
 public abstract class 
 ManifestReader 
@@ -42,12 +41,8 @@ ManifestReader
         String INFO = "Info file";
     }
 
-    private final List<ManifestFieldDefinition> infoFields = new ArrayList<ManifestFieldDefinition>()
-    {
-        {
-            add( new Builder().file().optional().name(Fields.INFO).desc(Descriptions.INFO).build());
-        }
-    };
+    private final List<ManifestFieldDefinition> infoFields = new ManifestFieldDefinition.Builder()
+        .file().optional().name(Fields.INFO).desc(Descriptions.INFO).build();
 
     static class ManifestReaderState
     {
@@ -65,7 +60,6 @@ ManifestReader
             VALIDATE
         }
 
-
         State state = State.INIT;
         final Path inputDir;
         String fileName;
@@ -73,7 +67,7 @@ ManifestReader
     }
 
     private final List<ManifestFieldDefinition> fields;
-    private final Set<List<ManifestFileCount>> files;
+    private final List<List<ManifestFileCount>> files;
     private ManifestReaderResult result;
     private ManifestReaderState state;
 
@@ -87,7 +81,7 @@ ManifestReader
 
     public
     ManifestReader( List<ManifestFieldDefinition> fields,
-                    Set<List<ManifestFileCount>> files )
+                    List<List<ManifestFileCount>> files )
     {
         this.fields = fields;
         this.files = files;
@@ -106,6 +100,10 @@ ManifestReader
 
     public List<ManifestFieldDefinition> getFields() {
         return fields;
+    }
+
+    public List<List<ManifestFileCount>> getFiles() {
+        return files;
     }
 
     public final ManifestReaderResult
@@ -532,43 +530,42 @@ ManifestReader
         }
     }
 
-    protected String
-    getExpectedFileTypeList( Set<List<ManifestFileCount>> expectedFileCountSet )
+    public String
+    getExpectedFileTypeList( List<List<ManifestFileCount>> fileCountLists )
     {
-        return expectedFileCountSet.stream()
-                                   .map( expectedFileCountList -> {
-                                       StringBuilder str = new StringBuilder();
-                                       str.append( "[" );
-                                       String fileSeparator = "";
-                                       for( ManifestFileCount expectedFileCount : expectedFileCountList )
-                                       {
-                                           String fileType = expectedFileCount.getFileType();
-                                           str.append( fileSeparator );
-                                           if( expectedFileCount.getMaxCount() == null ||
-                                               expectedFileCount.getMinCount() == expectedFileCount.getMaxCount() )
-                                           {
-                                               str.append( expectedFileCount.getMinCount());
-                                           } else
-                                           {
-                                               if ( expectedFileCount.getMaxCount() != null ) {
-                                                   str.append( expectedFileCount.getMinCount());
-                                                   str.append( ".." );
-                                                   str.append( expectedFileCount.getMaxCount());
-                                               }
-                                               else {
-                                                   str.append( ">= " );
-                                                   str.append( expectedFileCount.getMinCount());
-                                               }
-                                           }
-                                           str.append( " \"" );
-                                           str.append( fileType );
-                                           str.append( "\" file(s)" );
-                                           fileSeparator = ", ";
-                                       }
-                                       str.append( "]" );
-                                       return str.toString();
-                                   } )
-                                   .collect( Collectors.joining( ", " ) );
+        return fileCountLists.stream().map( fileCountList -> {
+            StringBuilder str = new StringBuilder();
+            str.append( "[" );
+            String fileSeparator = "";
+               for( ManifestFileCount fileCount : fileCountList )
+               {
+                   String fileType = fileCount.getFileType();
+
+                   str.append( fileSeparator );
+                   if( fileCount.getMaxCount() != null &&
+                       fileCount.getMinCount() == fileCount.getMaxCount() )
+                   {
+                       str.append(fileCount.getMinCount());
+                   }
+                   else {
+                       if ( fileCount.getMaxCount() != null ) {
+                           str.append( fileCount.getMinCount());
+                           str.append( "-" );
+                           str.append( fileCount.getMaxCount());
+                       }
+                       else {
+                           str.append( ">=" );
+                           str.append( fileCount.getMinCount());
+                       }
+                   }
+                   str.append( " " );
+                   str.append( fileType );
+                   fileSeparator = ", ";
+               }
+               str.append( "]" );
+               return str.toString();
+           } )
+           .collect( Collectors.joining( " or " ) );
     }
 
     protected static List<File>

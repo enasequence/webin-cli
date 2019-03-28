@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +24,6 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition.Builder;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
@@ -101,70 +99,47 @@ GenomeAssemblyManifest extends ManifestReader {
 	public GenomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor) {
 		super(
 				// Fields.
-				new ArrayList<ManifestFieldDefinition>() {
-					{
-						add(new Builder().meta().optional().requiredInSpreadsheet().name(Field.NAME).desc(Description.NAME).build());
-						add(new Builder().meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).build());
-						add(new Builder().meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor, sourceProcessor).build());
-						add(new Builder().meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).build());
-						add(new Builder().meta().required().name(Field.COVERAGE).desc(Description.COVERAGE).build());
-						add(new Builder().meta().required().name(Field.PROGRAM).desc(Description.PROGRAM).build());
-						add(new Builder().meta().required().name(Field.PLATFORM).desc(Description.PLATFORM).build());
-						add(new Builder().meta().optional().name(Field.MINGAPLENGTH).desc(Description.MINGAPLENGTH).build());
-						add(new Builder().meta().optional().name(Field.MOLECULETYPE).desc(Description.MOLECULETYPE).processor(new CVFieldProcessor(CV_MOLECULE_TYPE)).build());
-						add(new Builder().meta().optional().name(Field.ASSEMBLY_TYPE).desc(Description.ASSEMBLY_TYPE).processor(new CVFieldProcessor(CV_ASSEMBLY_TYPE)).build());
-						add(new Builder().file().optional().name(Field.CHROMOSOME_LIST).desc(Description.CHROMOSOME_LIST).processor(getChromosomeListProcessors()).build());
-						add(new Builder().file().optional().name(Field.UNLOCALISED_LIST).desc(Description.UNLOCALISED_LIST).processor(getUnlocalisedListProcessors()).build());
-						add(new Builder().file().optional().name(Field.FASTA).desc(Description.FASTA).processor(getFastaProcessors()).build());
-						add(new Builder().file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build());
-						add(new Builder().file().optional().name(Field.AGP).desc(Description.AGP).processor(getAgpProcessors()).build());
-						add(new Builder().meta().optional().notInSpreadsheet().name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).build());
-						add(new Builder().meta().optional().notInSpreadsheet().name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build());
-					}
-				},
-
+				new ManifestFieldDefinition.Builder()
+					.meta().optional().requiredInSpreadsheet().name(Field.NAME).desc(Description.NAME).and()
+					.meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).and()
+					.meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor, sourceProcessor).and()
+					.meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
+					.meta().required().name(Field.COVERAGE).desc(Description.COVERAGE).and()
+					.meta().required().name(Field.PROGRAM).desc(Description.PROGRAM).and()
+					.meta().required().name(Field.PLATFORM).desc(Description.PLATFORM).and()
+					.meta().optional().name(Field.MINGAPLENGTH).desc(Description.MINGAPLENGTH).and()
+					.meta().optional().name(Field.MOLECULETYPE).desc(Description.MOLECULETYPE).processor(new CVFieldProcessor(CV_MOLECULE_TYPE)).and()
+					.meta().optional().name(Field.ASSEMBLY_TYPE).desc(Description.ASSEMBLY_TYPE).processor(new CVFieldProcessor(CV_ASSEMBLY_TYPE)).and()
+					.file().optional().name(Field.CHROMOSOME_LIST).desc(Description.CHROMOSOME_LIST).processor(getChromosomeListProcessors()).and()
+					.file().optional().name(Field.UNLOCALISED_LIST).desc(Description.UNLOCALISED_LIST).processor(getUnlocalisedListProcessors()).and()
+					.file().optional().name(Field.FASTA).desc(Description.FASTA).processor(getFastaProcessors()).and()
+					.file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).and()
+					.file().optional().name(Field.AGP).desc(Description.AGP).processor(getAgpProcessors()).and()
+					.meta().optional().notInSpreadsheet().name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).and()
+					.meta().optional().notInSpreadsheet().name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build()
+				,
 				// File groups.
-				new HashSet<List<ManifestFileCount>>() {
-					{
-						// FASTA_WITHOUT_CHROMOSOMES
-						add(new ArrayList<ManifestFileCount>() {
-							{
-								add(new ManifestFileCount(Field.AGP, 0, null));
-								add(new ManifestFileCount(Field.FASTA, 1, null));
-								add(new ManifestFileCount(Field.FLATFILE, 0, null));
-							}
-						});
-
-						// FASTA_WITH_CHROMOSOMES
-						add(new ArrayList<ManifestFileCount>() {
-							{
-								add(new ManifestFileCount(Field.AGP, 0, null));
-								add(new ManifestFileCount(Field.FASTA, 1, null));
-								add(new ManifestFileCount(Field.FLATFILE, 0, null));
-								add(new ManifestFileCount(Field.CHROMOSOME_LIST, 1, 1));
-								add(new ManifestFileCount(Field.UNLOCALISED_LIST, 0, 1));
-							}
-						});
-
-						// FLATFILE_WITHOUT_CHROMOSOMES
-						add(new ArrayList<ManifestFileCount>() {
-							{
-								add(new ManifestFileCount(Field.AGP, 0, null));
-								add(new ManifestFileCount(Field.FLATFILE, 1, null));
-							}
-						});
-
-						// FLATFILE_WITH_CHROMOSOMES
-						add(new ArrayList<ManifestFileCount>() {
-							{
-								add(new ManifestFileCount(Field.AGP, 0, null));
-								add(new ManifestFileCount(Field.FLATFILE, 1, null));
-								add(new ManifestFileCount(Field.CHROMOSOME_LIST, 1, 1));
-								add(new ManifestFileCount(Field.UNLOCALISED_LIST, 0, 1));
-							}
-						});
-					}
-				});
+				new ManifestFileCount.Builder()
+					.group()
+					.required(Field.FASTA)
+					.optional(Field.AGP)
+					.optional(Field.FLATFILE)
+					.and().group()
+					.required(Field.FASTA)
+					.required(Field.CHROMOSOME_LIST)
+					.optional(Field.UNLOCALISED_LIST)
+					.optional(Field.AGP)
+					.optional(Field.FLATFILE)
+					.and().group()
+					.required(Field.FLATFILE)
+					.optional(Field.AGP)
+					.and().group()
+					.required(Field.FLATFILE)
+					.required(Field.CHROMOSOME_LIST)
+					.optional(Field.UNLOCALISED_LIST)
+					.optional(Field.AGP)
+					.build()
+		);
 	}
 
     private static ManifestFieldProcessor[] getChromosomeListProcessors() {
@@ -247,7 +222,7 @@ GenomeAssemblyManifest extends ManifestReader {
 					.stream()
 					.anyMatch(file -> FileType.FASTA != file.getFileType() )) {
 				error(WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR,
-						getExpectedFileTypeList(new HashSet<List<ManifestFileCount>>() {
+						getExpectedFileTypeList(new ArrayList<List<ManifestFileCount>>() {
 							{
 								// FASTA ONLY
 								add(new ArrayList<ManifestFileCount>() {

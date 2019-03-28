@@ -19,7 +19,7 @@ public class TestManifestReader extends ManifestReader {
         super(fields);
     }
 
-    public TestManifestReader(List<ManifestFieldDefinition> fields, Set<List<ManifestFileCount>> files) {
+    public TestManifestReader(List<ManifestFieldDefinition> fields, List<List<ManifestFileCount>> files) {
         super(fields, files);
     }
 

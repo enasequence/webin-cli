@@ -20,91 +20,6 @@ import java.util.stream.Collectors;
 
 public class ManifestFieldDefinition {
 
-  public static class Builder {
-    private String name;
-    private String description;
-    private ManifestFieldType type;
-    private Integer minCount;
-    private Integer maxCount;
-    private boolean notInSpreadsheet = false;
-    private boolean requiredInSpreadsheet = false;
-
-    private List<ManifestFieldProcessor> processors = new ArrayList<>();
-
-    public Builder name(String name) {
-      this.name = name;
-      return this;
-    }
-
-    public Builder desc(String description) {
-      this.description = description;
-      return this;
-    }
-
-    public Builder meta() {
-      this.type = ManifestFieldType.META;
-      return this;
-    }
-
-    public Builder file() {
-      this.type = ManifestFieldType.FILE;
-      return this;
-    }
-
-    public Builder type(ManifestFieldType type) {
-      this.type = type;
-      return this;
-    }
-
-    public Builder optional() {
-      this.minCount = 0;
-      this.maxCount = 1;
-      return this;
-    }
-
-    public Builder optional(int maxCount) {
-      this.minCount = 0;
-      this.maxCount = maxCount;
-      return this;
-    }
-
-    public Builder required() {
-      this.minCount = 1;
-      this.maxCount = 1;
-      return this;
-    }
-
-    public Builder notInSpreadsheet() {
-      this.notInSpreadsheet = true;
-      return this;
-    }
-
-    public Builder requiredInSpreadsheet() {
-      this.requiredInSpreadsheet = true;
-      return this;
-    }
-
-    public Builder processor(ManifestFieldProcessor... processors) {
-      this.processors.addAll(
-          Arrays.stream(processors).filter(Objects::nonNull).collect(Collectors.toList()));
-      return this;
-    }
-
-    public ManifestFieldDefinition build() {
-      int spreadsheetMinCount = minCount;
-      int spreadsheetMaxCount = maxCount;
-      if (notInSpreadsheet) {
-        spreadsheetMinCount = 0;
-        spreadsheetMaxCount = 0;
-      }
-      else if (requiredInSpreadsheet) {
-        spreadsheetMinCount = 1;
-      }
-      return new ManifestFieldDefinition(
-          name, description, type, minCount, maxCount, spreadsheetMinCount, spreadsheetMaxCount, processors);
-    }
-  }
-
   private final String name;
   private final String description;
   private final ManifestFieldType type;
@@ -166,5 +81,107 @@ public class ManifestFieldDefinition {
 
   public List<ManifestFieldProcessor> getFieldProcessors() {
     return processors;
+  }
+
+  public static class Builder {
+
+    private final List<ManifestFieldDefinition> fields = new ArrayList<>();
+
+    public Field meta() {
+      return new Field(this, ManifestFieldType.META);
+    }
+
+    public Field file() {
+      return new Field(this, ManifestFieldType.FILE);
+    }
+
+    public Field type(ManifestFieldType type) {
+      return new Field(this, type);
+    }
+
+    public static class Field {
+      private final Builder builder;
+      private final ManifestFieldType type;
+      private String name;
+      private String description;
+      private Integer minCount;
+      private Integer maxCount;
+      private boolean notInSpreadsheet = false;
+      private boolean requiredInSpreadsheet = false;
+      private List<ManifestFieldProcessor> processors = new ArrayList<>();
+
+      private Field(Builder builder, ManifestFieldType type) {
+        this.builder = builder;
+        this.type = type;
+      }
+
+      public Field name(String name) {
+        this.name = name;
+        return this;
+      }
+
+      public Field desc(String description) {
+        this.description = description;
+        return this;
+      }
+
+      public Field optional() {
+        this.minCount = 0;
+        this.maxCount = 1;
+        return this;
+      }
+
+      public Field optional(int maxCount) {
+        this.minCount = 0;
+        this.maxCount = maxCount;
+        return this;
+      }
+
+      public Field required() {
+        this.minCount = 1;
+        this.maxCount = 1;
+        return this;
+      }
+
+      public Field notInSpreadsheet() {
+        this.notInSpreadsheet = true;
+        return this;
+      }
+
+      public Field requiredInSpreadsheet() {
+        this.requiredInSpreadsheet = true;
+        return this;
+      }
+
+      public Field processor(ManifestFieldProcessor... processors) {
+        this.processors.addAll(
+                Arrays.stream(processors).filter(Objects::nonNull).collect(Collectors.toList()));
+        return this;
+      }
+
+      public Builder and() {
+        add();
+        return builder;
+      }
+
+      public List<ManifestFieldDefinition> build() {
+        add();
+        return builder.fields;
+      }
+
+      private void add() {
+        int spreadsheetMinCount = minCount;
+        int spreadsheetMaxCount = maxCount;
+        if (notInSpreadsheet) {
+          spreadsheetMinCount = 0;
+          spreadsheetMaxCount = 0;
+        }
+        else if (requiredInSpreadsheet) {
+          spreadsheetMinCount = 1;
+        }
+        builder.fields.add(new ManifestFieldDefinition(
+                name, description, type, minCount, maxCount, spreadsheetMinCount, spreadsheetMaxCount, processors));
+      }
+    }
   }
 }

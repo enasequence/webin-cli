@@ -7,6 +7,7 @@ import org.apache.poi.xssf.usermodel.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
@@ -59,6 +60,10 @@ public class SpreadsheetWriter {
     private static void addSheets(XSSFWorkbook workbook, SpreadsheetContext spreadsheetContext) {
 
         ArrayList<ManifestFieldDefinition> fields = getFields(spreadsheetContext);
+
+
+        // System.out.println(spreadsheetContext.getManifest().getExpectedFileTypeList(spreadsheetContext.getManifest().getFiles()));
+
 
         XSSFSheet dataSheet = workbook.createSheet(spreadsheetContext.getSheetName());
         XSSFSheet cvSheet = workbook.createSheet(SHEET_NAME_CV);
@@ -154,9 +159,16 @@ public class SpreadsheetWriter {
             anchor.setRow1(0);
             anchor.setRow2(2);
             Comment comment = drawing.createCellComment(anchor);
-            RichTextString str = creationHelper.createRichTextString(field.getDescription() +
+
+            RichTextString commentStr;
+            if (field.getType() == ManifestFieldType.META) {
+                    commentStr = creationHelper.createRichTextString(field.getDescription() +
                     (field.getSpreadsheetMinCount() > 0 ? " (mandatory field)" : "")); // " (optional field)"));
-            comment.setString(str);
+            }
+            else {
+                commentStr = creationHelper.createRichTextString("TODO");
+            }
+            comment.setString(commentStr);
             comment.setAuthor("Webin-CLI");
             Cell cell = dataSheetHeaderRow.getCell(columnNumber);
             cell.setCellComment(comment);

@@ -10,6 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ManifestFileCount {
     private final String fileType;
     private final int minCount;
@@ -29,5 +32,56 @@ public class ManifestFileCount {
     }
     public Integer getMaxCount() {
         return maxCount;
+    }
+
+    public static class Builder {
+        private final ArrayList<List<ManifestFileCount>> groups = new ArrayList<>();
+
+        public static class Group {
+            private final Builder builder;
+            private final List<ManifestFileCount> files = new ArrayList<>();
+
+            private Group(Builder builder) {
+                this.builder = builder;
+                builder.groups.add(this.files);
+            }
+
+            public Group required(String fieldName) {
+                files.add(new ManifestFileCount(fieldName, 1, 1));
+                return this;
+            }
+
+            public Group required(String fieldName, int maxCount) {
+                files.add(new ManifestFileCount(fieldName, 1, maxCount));
+                return this;
+            }
+
+            public Group required(String fieldName, int minCount, int maxCount) {
+                files.add(new ManifestFileCount(fieldName, minCount, maxCount));
+                return this;
+            }
+
+            public Group optional(String fieldName) {
+                files.add(new ManifestFileCount(fieldName, 0, 1));
+                return this;
+            }
+
+            public Group optional(String fieldName, int maxCount) {
+                files.add(new ManifestFileCount(fieldName, 0, maxCount));
+                return this;
+            }
+
+            public Builder and() {
+                return builder;
+            }
+
+            public ArrayList<List<ManifestFileCount>> build() {
+                return builder.groups;
+            }
+        }
+
+        public Group group() {
+            return new Group(this);
+        }
     }
 }
