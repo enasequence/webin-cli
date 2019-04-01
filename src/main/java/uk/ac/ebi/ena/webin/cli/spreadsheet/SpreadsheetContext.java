@@ -16,7 +16,7 @@ import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyManifest;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
 
-public enum SpreadsheetTemplateWriterContext {
+public enum SpreadsheetContext {
 
     GENOME(
             new GenomeAssemblyManifest(null, null, null),
@@ -42,7 +42,7 @@ public enum SpreadsheetTemplateWriterContext {
             null
     );
 
-    SpreadsheetTemplateWriterContext(ManifestReader manifest, String name, String extraFileGroupText) {
+    SpreadsheetContext(ManifestReader manifest, String name, String extraFileGroupText) {
         this.fileName = name + ".xlsx";
         this.sheetName = name;
         this.manifest = manifest;
@@ -68,7 +68,7 @@ public enum SpreadsheetTemplateWriterContext {
 
     public String getFileGroupText() {
         String fileGroupText =
-                "A submission must have " +
+                "Submission must have " +
                 ManifestReader.getFileGroupText(manifest.getFileGroups()) +
                 " files.";
         if (extraFileGroupText != null) {

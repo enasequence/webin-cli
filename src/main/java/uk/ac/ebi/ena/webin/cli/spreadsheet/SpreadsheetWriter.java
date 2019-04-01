@@ -30,11 +30,36 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
 
-public class SpreadsheetTemplateWriter {
+public class SpreadsheetWriter {
 
     public static void main(String[] args) {
-        SpreadsheetTemplateWriter spreadsheetWriter = new SpreadsheetTemplateWriter();
-        spreadsheetWriter.write();
+        SpreadsheetWriter.writeAll();
+    }
+
+    private final SpreadsheetContext spreadsheetContext;
+    private final XSSFWorkbook workbook = new XSSFWorkbook();
+    private final XSSFSheet dataSheet;
+    private final XSSFSheet cvSheet;
+    private final Row dataSheetHeaderRow;
+    private final Row cvSheetHeaderRow;
+    private final XSSFCellStyle requiredHeaderStyle;
+    private final XSSFCellStyle optionalHeaderStyle;
+
+
+    public SpreadsheetWriter(SpreadsheetContext spreadsheetContext) {
+        this.spreadsheetContext = spreadsheetContext;
+        this.dataSheet = workbook.createSheet(spreadsheetContext.getSheetName());
+        this.cvSheet = workbook.createSheet(SHEET_NAME_CV);
+        this.dataSheetHeaderRow = createHeaderRow(dataSheet);
+        this.cvSheetHeaderRow = createHeaderRow(cvSheet);
+        this.requiredHeaderStyle = getRequiredHeaderStyle();
+        this.optionalHeaderStyle = getOptionalHeaderStyle();
+
+        try {
+            addSheets();
+        } catch (Exception ex) {
+            throw WebinCliException.systemError(ex, "Unable to create spreadsheet: " + spreadsheetContext.getFileName());
+        }
     }
 
     private static final String SHEET_NAME_CV = "cv";
@@ -43,56 +68,24 @@ public class SpreadsheetTemplateWriter {
         return "CV_" + field.getName();
     }
 
-    public void write() {
-        for (SpreadsheetTemplateWriterContext spreadsheetContext : SpreadsheetTemplateWriterContext.values()) {
-            write(spreadsheetContext);
-        }
-    }
+    private void addSheets() {
 
-    private static void write(SpreadsheetTemplateWriterContext spreadsheetContext) {
+        ArrayList<ManifestFieldDefinition> fields = getFields();
 
-        XSSFWorkbook workbook = new XSSFWorkbook();
+        addHeaderText(dataSheet, dataSheetHeaderRow, fields);
+        addHeaderText(cvSheet, cvSheetHeaderRow, fields);
 
-        try {
-            addSheets(workbook, spreadsheetContext);
-        } catch (Exception ex) {
-            throw WebinCliException.systemError(ex, "Unable to create spreadsheet: " + spreadsheetContext.getFileName());
-        }
+        addHeaderComment(dataSheet, dataSheetHeaderRow, fields);
+        addHeaderComment(cvSheet, cvSheetHeaderRow, fields);
 
-        try (OutputStream fileOut = new FileOutputStream(spreadsheetContext.getFileName())) {
-            workbook.write(fileOut);
-        } catch (IOException ex) {
-            throw WebinCliException.systemError(ex, "Unable to write spreadsheet: " + spreadsheetContext.getFileName());
-        }
-    }
-
-    private static void addSheets(XSSFWorkbook workbook, SpreadsheetTemplateWriterContext spreadsheetContext) {
-
-        ArrayList<ManifestFieldDefinition> fields = getFields(spreadsheetContext);
-
-        XSSFSheet dataSheet = workbook.createSheet(spreadsheetContext.getSheetName());
-        XSSFSheet cvSheet = workbook.createSheet(SHEET_NAME_CV);
-
-        Row dataSheetHeaderRow = createHeaderRow(dataSheet);
-        Row cvSheetHeaderRow = createHeaderRow(cvSheet);
-
-        XSSFCellStyle requiredHeaderStyle = getRequiredHeaderStyle(workbook);
-        XSSFCellStyle optionalHeaderStyle = getOptionalHeaderStyle(workbook);
-
-        addHeaderText(dataSheet, dataSheetHeaderRow, fields, requiredHeaderStyle, optionalHeaderStyle);
-        addHeaderText(cvSheet, cvSheetHeaderRow, fields, requiredHeaderStyle, optionalHeaderStyle);
-
-        addHeaderComment(workbook, dataSheet, dataSheetHeaderRow, fields, spreadsheetContext.getFileGroupText());
-        addHeaderComment(workbook, cvSheet, cvSheetHeaderRow, fields, spreadsheetContext.getFileGroupText());
-
-        addCvValues(spreadsheetContext, workbook, cvSheet, fields);
-        addCvConstraints(workbook, dataSheet, fields);
+        addCvValues(fields);
+        addCvConstraints(fields);
 
         dataSheet.createFreezePane(0, 1);
         cvSheet.createFreezePane(0, 1);
     }
 
-    private static ArrayList<ManifestFieldDefinition> getFields(SpreadsheetTemplateWriterContext spreadsheetContext) {
+    private ArrayList<ManifestFieldDefinition> getFields() {
         ManifestReader manifest = spreadsheetContext.getManifest();
         ArrayList<ManifestFieldDefinition> fields = new ArrayList<>();
         for (ManifestFieldDefinition field : manifest.getFields()) {
@@ -107,21 +100,21 @@ public class SpreadsheetTemplateWriter {
         return sheet.createRow(0);
     }
 
-    private static XSSFCellStyle getRequiredHeaderStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = getCommonHeaderStyle(workbook);
+    private XSSFCellStyle getRequiredHeaderStyle() {
+        XSSFCellStyle style = getCommonHeaderStyle();
         style.getFont().setBold(true);
         return style;
     }
 
-    private static XSSFCellStyle getOptionalHeaderStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = getCommonHeaderStyle(workbook);
+    private XSSFCellStyle getOptionalHeaderStyle() {
+        XSSFCellStyle style = getCommonHeaderStyle();
         style.getFont().setBold(true);
         style.getFont().setItalic(true);
 
         return style;
     }
 
-    private static XSSFCellStyle getCommonHeaderStyle(XSSFWorkbook workbook) {
+    private XSSFCellStyle getCommonHeaderStyle() {
         XSSFCellStyle style = workbook.createCellStyle();
         style.setFillForegroundColor(new XSSFColor(new byte[]{(byte)29,(byte)128,(byte)134}, null));
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -132,33 +125,31 @@ public class SpreadsheetTemplateWriter {
 
     }
 
-        private static void addHeaderText(Sheet dataSheet, Row dataSheetHeaderRow, ArrayList<ManifestFieldDefinition> fields,
-                                          XSSFCellStyle requiredHeaderStyle, XSSFCellStyle optionalHeaderStyle) {
+    private void addHeaderText(XSSFSheet sheet, Row headerRow, ArrayList<ManifestFieldDefinition> fields) {
         int columnNumber = 0;
         int minColumnWidth = 256 * 20;
 
         for (ManifestFieldDefinition field : fields) {
-            Cell cell = dataSheetHeaderRow.createCell(columnNumber);
+            Cell cell = headerRow.createCell(columnNumber);
             cell.setCellValue(field.getName());
             cell.setCellStyle(field.getSpreadsheetMinCount() > 0 ? requiredHeaderStyle : optionalHeaderStyle);
-            dataSheet.autoSizeColumn(columnNumber);
+            sheet.autoSizeColumn(columnNumber);
             columnNumber++;
         }
 
         int extraColumnToWidenForComments = 5;
         for (int i = 0; i < columnNumber + extraColumnToWidenForComments; ++i) {
-            if (dataSheet.getColumnWidth(i) < minColumnWidth) {
-                dataSheet.setColumnWidth(i, minColumnWidth);
+            if (sheet.getColumnWidth(i) < minColumnWidth) {
+                sheet.setColumnWidth(i, minColumnWidth);
             }
         }
     }
 
-
-    private static void addHeaderComment(Workbook workbook, Sheet dataSheet, Row dataSheetHeaderRow, ArrayList<ManifestFieldDefinition> fields, String fileGroupText) {
+    private void addHeaderComment(XSSFSheet sheet, Row headerRow, ArrayList<ManifestFieldDefinition> fields) {
         CreationHelper creationHelper = workbook.getCreationHelper();
         int columnNumber = 0;
         for (ManifestFieldDefinition field : fields) {
-            Drawing drawing = dataSheet.createDrawingPatriarch();
+            Drawing drawing = sheet.createDrawingPatriarch();
             ClientAnchor anchor = creationHelper.createClientAnchor();
             anchor.setCol1(columnNumber);
             anchor.setCol2(columnNumber + 3);
@@ -172,18 +163,18 @@ public class SpreadsheetTemplateWriter {
                     (field.getSpreadsheetMinCount() > 0 ? " (mandatory field)" : "(optional field)"));
             }
             else {
-                commentStr = creationHelper.createRichTextString(fileGroupText);
+                commentStr = creationHelper.createRichTextString(spreadsheetContext.getFileGroupText());
             }
             comment.setString(commentStr);
             comment.setAuthor("Webin-CLI");
-            Cell cell = dataSheetHeaderRow.getCell(columnNumber);
+            Cell cell = headerRow.getCell(columnNumber);
             cell.setCellComment(comment);
 
             columnNumber++;
         }
     }
 
-    private static void addCvValues(SpreadsheetTemplateWriterContext spreadsheetContext, Workbook workbook, XSSFSheet cvSheet, ArrayList<ManifestFieldDefinition> fields) {
+    private void addCvValues(ArrayList<ManifestFieldDefinition> fields) {
         int maxValues = 0;
         for (ManifestFieldDefinition field : fields) {
             for (ManifestFieldProcessor processor : field.getFieldProcessors()) {
@@ -197,7 +188,7 @@ public class SpreadsheetTemplateWriter {
             ManifestFieldDefinition field = fields.get(columnNumber);
             for (ManifestFieldProcessor processor : field.getFieldProcessors()) {
                 if (processor instanceof CVFieldProcessor) {
-                    List<String> values = getCvValues(spreadsheetContext, field, (CVFieldProcessor) processor);
+                    List<String> values = getCvValues(field, (CVFieldProcessor) processor);
                     for (int rowNumber = 1; rowNumber <= values.size(); ++rowNumber) {
                         XSSFRow row = cvSheet.getRow(rowNumber);
                         XSSFCell cell = row.createCell(columnNumber);
@@ -216,15 +207,15 @@ public class SpreadsheetTemplateWriter {
         }
     }
 
-    private static List<String> getCvValues(SpreadsheetTemplateWriterContext spreadsheetContext, ManifestFieldDefinition field, CVFieldProcessor processor) {
+    private List<String> getCvValues(ManifestFieldDefinition field, CVFieldProcessor processor) {
         ArrayList<String> excludeValues = new ArrayList<>();
-        if (spreadsheetContext == SpreadsheetTemplateWriterContext.READ && field.getName().equals(RawReadsManifest.Field.INSTRUMENT)) {
+        if (spreadsheetContext == SpreadsheetContext.READ && field.getName().equals(RawReadsManifest.Field.INSTRUMENT)) {
             excludeValues.add("unspecified");
         }
         return processor.getValues().stream().filter(value -> !excludeValues.contains(value)).sorted().collect(Collectors.toList());
     }
 
-    private static void addCvConstraints(XSSFWorkbook workbook, XSSFSheet dataSheet, ArrayList<ManifestFieldDefinition> fields) {
+    private void addCvConstraints(ArrayList<ManifestFieldDefinition> fields) {
         XSSFDataValidationHelper helper = new XSSFDataValidationHelper(dataSheet);
         int lastRowNumber = workbook.getSpreadsheetVersion().getLastRowIndex();
         int columnNumber = 0;
@@ -242,5 +233,20 @@ public class SpreadsheetTemplateWriter {
             }
             columnNumber++;
         }
+    }
+
+    public void write() {
+        try (OutputStream fileOut = new FileOutputStream(spreadsheetContext.getFileName())) {
+            workbook.write(fileOut);
+        } catch (IOException ex) {
+            throw WebinCliException.systemError(ex, "Unable to write spreadsheet: " + spreadsheetContext.getFileName());
+        }
+    }
+
+    public static void writeAll() {
+        new SpreadsheetWriter(SpreadsheetContext.GENOME).write();
+        new SpreadsheetWriter(SpreadsheetContext.TRANSCRIPTOME).write();
+        new SpreadsheetWriter(SpreadsheetContext.SEQUENCE).write();
+        new SpreadsheetWriter(SpreadsheetContext.READ).write();
     }
 }
