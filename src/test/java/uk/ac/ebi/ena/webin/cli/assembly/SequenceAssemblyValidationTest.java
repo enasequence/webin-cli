@@ -10,9 +10,18 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
+
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Test;
+
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
@@ -26,14 +35,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SequenceAssemblyValidationTest {
 
