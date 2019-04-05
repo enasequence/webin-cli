@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,8 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
 import uk.ac.ebi.ena.webin.cli.service.SubmitService;
 import uk.ac.ebi.ena.webin.cli.service.VersionService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -185,16 +188,7 @@ public class WebinCli { // implements CommandLineRunner
                     return VALIDATION_ERROR;
             }
             
-        } catch( ValidationEngineException e ) 
-        {
-            log.error( e.getMessage(), e );
-
-            if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
-                return SYSTEM_ERROR;
-            else
-                return USER_ERROR;
-            
-        } catch( Throwable e ) 
+        } catch( Throwable e )
         {
             log.error( e.getMessage(), e );
             return SYSTEM_ERROR;
@@ -257,10 +251,9 @@ public class WebinCli { // implements CommandLineRunner
 	}
 
 	void
-	execute(WebinCliParameters parameters) throws Exception
-	{
+	execute(WebinCliParameters parameters)  {
 		try {
-			context = WebinCliContext.valueOf( params.context );
+			context = WebinCliContext.valueOf(params.context);
 		} catch (IllegalArgumentException e) {
 			throw WebinCliException.userError(WebinCliMessage.Cli.INVALID_CONTEXT_ERROR.format(params.context));
 		}
@@ -268,9 +261,50 @@ public class WebinCli { // implements CommandLineRunner
 		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
 
-		AbstractWebinCli<?> validator = context.getValidatorClass().newInstance();
-		validator.setTestMode( params.test );
-		validator.init( parameters );
+		File file = parameters.getManifestFile();
+
+		if (file.getName().endsWith(".xls") || file.getName().endsWith(".xlsx")) {
+			try {
+				DataFormatter dataFormatter = new DataFormatter();
+				Workbook workbook = WorkbookFactory.create(file);
+				Sheet dataSheet = workbook.getSheetAt(0);
+				for (int dataSheetRowNumber = 1 ; ; dataSheetRowNumber++) {
+					Row dataRow = dataSheet.getRow(dataSheetRowNumber);
+					boolean emptyRow = true;
+					for (int columnNumber = 0; columnNumber < ManifestReader.MAX_SPREADSHEET_COLUMNS; columnNumber++) {
+						String value = dataFormatter.formatCellValue(dataRow.getCell(columnNumber));
+						if (value != null && value.isEmpty()) {
+							emptyRow = false;
+							break;
+						}
+						if (emptyRow) {
+							break;
+						}
+						executeInternal(parameters, new ManifestSource(parameters.getManifestFile(), dataSheet, dataSheetRowNumber) );
+					}
+				}
+			}
+			catch(Exception ex){
+				throw WebinCliException.userError("Unable to read spreadsheet: " + file.getName());
+			}
+		}
+		else {
+			executeInternal(parameters, new ManifestSource(parameters.getManifestFile()) );
+		}
+	}
+
+	private void executeInternal(WebinCliParameters parameters, ManifestSource manifestSource)
+	{
+		AbstractWebinCli<?> validator = null;
+		try {
+			validator = context.getValidatorClass().newInstance();
+		}
+		catch (Exception ex) {
+			throw WebinCliException.userError("Unable to create validator");
+		}
+
+		validator.setTestMode(params.test);
+		validator.init( parameters, manifestSource );
 
 		if (params.validate || validator.getSubmissionBundle() == null) {
 			doValidation(validator);

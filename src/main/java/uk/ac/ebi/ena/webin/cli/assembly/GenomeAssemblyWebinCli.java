@@ -14,12 +14,14 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import org.apache.poi.ss.usermodel.Sheet;
 import org.jdom2.Element;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
@@ -47,9 +49,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 
 	
 	@Override public void 
-	readManifest( Path inputDir, File manifestFile ) 
+	readManifest(Path inputDir, ManifestSource manifestSource)
 	{
-		getManifestReader().readManifest( inputDir, manifestFile );
+		getManifestReader().readManifest( inputDir, manifestSource );
 		setSubmissionOptions( getManifestReader().getSubmissionOptions() );
 		setDescription( getManifestReader().getDescription() );
 		

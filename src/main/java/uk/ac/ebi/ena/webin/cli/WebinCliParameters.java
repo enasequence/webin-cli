@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+
 import java.io.File;
 
 public class WebinCliParameters

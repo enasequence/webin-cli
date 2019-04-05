@@ -27,12 +27,19 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import uk.ac.ebi.embl.api.validation.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public abstract class 
 ManifestReader 
 {
+
+    public static final int MAX_SPREADSHEET_COLUMNS = 100;
+
     public interface Fields {
         String INFO = "INFO";
     }
@@ -63,13 +70,14 @@ ManifestReader
         State state = State.INIT;
         final Path inputDir;
         String fileName;
-        int lineNo = 0;
+        int lineNumber = 0;
     }
 
     private final List<ManifestFieldDefinition> fields;
     private final List<ManifestFileGroup> fileGroups;
     private ManifestReaderResult result;
     private ManifestReaderState state;
+    private Integer spreadSheetLineNumber;
 
     public
     ManifestReader( List<ManifestFieldDefinition> fields )
@@ -94,7 +102,7 @@ ManifestReader
         return state.inputDir;
     }
 
-    
+
     public abstract String getName();
     public abstract String getDescription();
 
@@ -112,84 +120,72 @@ ManifestReader
         return result;
     }
 
-
     public final ValidationResult
     getValidationResult()
     {
         return result.getValidationResult();
     }
 
+    public final void
+    readManifest(Path inputDir, File manifestFile ) {
+        readTextManifest(inputDir, new ManifestSource(manifestFile));
+    }
 
     public final void
-    readManifest( Path inputDir, File file )
+    readManifest(Path inputDir, ManifestSource manifestSource ) {
+        if (manifestSource.isSpreadsheet()) {
+            readSpreadsheetManifest(inputDir, manifestSource);
+        }
+        else {
+            readTextManifest(inputDir, manifestSource);
+        }
+    }
+
+    private void
+    readSpreadsheetManifest(Path inputDir, ManifestSource manifestSource )
     {
-        state = new ManifestReaderState( inputDir, file.getPath() );
+        Sheet dataSheet = manifestSource.getDataSheet();
+        int dataSheetRowNumber = manifestSource.getDataSheetRowNumber();
+
+        Row headerRow = dataSheet.getRow(0);
+        Row dataRow = dataSheet.getRow(dataSheetRowNumber);
+
+        ArrayList<String> manifestLines = new ArrayList<>();
+        for (int columnNumber = 0; columnNumber < MAX_SPREADSHEET_COLUMNS; columnNumber++) {
+            DataFormatter dataFormatter = new DataFormatter();
+            String key = dataFormatter.formatCellValue(headerRow.getCell(columnNumber));
+            if (key == null || key.trim().isEmpty()) {
+                continue;
+            }
+            String value = dataFormatter.formatCellValue(dataRow.getCell(columnNumber));
+            manifestLines.add(key + "\t" + value );
+        }
+
+        spreadSheetLineNumber = dataSheetRowNumber;  // We are parsing a spreadsheet.
+
+        state = new ManifestReaderState( inputDir, manifestSource.getManifestFile().getPath() );
         result = new ManifestReaderResult();
 
-        List<String> manifestLines;
-        try
-        {
-            manifestLines = Files.readAllLines( file.toPath() );
-        } catch( IOException ex )
-        {
-            error( WebinCliMessage.Manifest.READING_MANIFEST_FILE_ERROR, file.getPath() );
-            return;
-        }
-
-        // Parse.
-
         parseManifest( inputDir, manifestLines );
-
-        // Expand info fields.
-
-        List<ManifestFieldValue> infoFields = result.getFields()
-                                                    .stream()
-                                                    .filter( field -> field.getName().equalsIgnoreCase( INFO ) )
-                                                    .collect( Collectors.toList() );
-
-        for( ManifestFieldValue infoField : infoFields )
-        {
-
-            List<String> infoLines;
-            File infoFile = new File( infoField.getValue() );
-            try
-            {
-                infoLines = readAllLines( infoFile );
-            } catch( IOException ex )
-            {
-                error( WebinCliMessage.Manifest.READING_INFO_FILE_ERROR, infoFile.getPath() );
-                return;
-            }
-
-            String savedManifestFileName = state.fileName;
-            int savedManifestLineNo = state.lineNo;
-
-            try
-            {
-                state.fileName = infoFile.getPath();
-                state.lineNo = 0;
-
-                parseManifest( inputDir, infoLines );
-            } finally
-            {
-                state.fileName = savedManifestFileName;
-                state.lineNo = savedManifestLineNo;
-            }
-        }
-
-        // Remove info fields.
-
-        result.setFields( result.getFields()
-                                .stream()
-                                .filter( field -> !field.getName().equalsIgnoreCase( INFO ) )
-                                .collect( Collectors.toList() ) );
-
-        // Validate.
         validateManifest();
+        processManifest();
 
-        // Process
+    }
+
+    private void
+    readTextManifest(Path inputDir, ManifestSource manifestSource )
+    {
+        spreadSheetLineNumber = null; // We are not parsing a spreadsheet.
+
+        state = new ManifestReaderState( inputDir, manifestSource.getManifestFile().getPath() );
+        result = new ManifestReaderResult();
+
+        parseManifest( inputDir, readManifestLines(manifestSource.getManifestFile()) );
+        expandInfoField(inputDir);
+        validateManifest();
         processManifest();
     }
+
 
 
     private void
@@ -205,6 +201,31 @@ ManifestReader
         }
     }
 
+    private void expandInfoField(Path inputDir) {
+        List<ManifestFieldValue> infoFields = result.getFields()
+                                                    .stream()
+                                                    .filter( field -> field.getName().equalsIgnoreCase( INFO ) )
+                                                    .collect( Collectors.toList() );
+
+        for( ManifestFieldValue infoField : infoFields )
+        {
+            File infoFile = new File( infoField.getValue() );
+            String savedManifestFileName = state.fileName;
+            int savedManifestLineNumber = state.lineNumber;
+            state.fileName = infoFile.getPath();
+            state.lineNumber = 0;
+            parseManifest( inputDir, readInfoLines( infoFile ) );
+            state.fileName = savedManifestFileName;
+            state.lineNumber = savedManifestLineNumber;
+        }
+
+        // Remove info fields.
+
+        result.setFields( result.getFields()
+                                .stream()
+                                .filter( field -> !field.getName().equalsIgnoreCase( INFO ) )
+                                .collect( Collectors.toList() ) );
+    }
 
     private ManifestFieldValue
     parseManifestLine( Path inputDir, String line )
@@ -213,7 +234,7 @@ ManifestReader
         if( line == null )
             return null;
 
-        ++state.lineNo;
+        ++state.lineNumber;
 
         line = line.trim();
 
@@ -505,29 +526,38 @@ ManifestReader
     }
 
 
-    private static List<String>
-    readAllLines( InputStream is )
-    {
-        return new BufferedReader( new InputStreamReader( is, StandardCharsets.UTF_8 ) ).lines().collect( Collectors.toList() );
+    public static List<String>
+    readManifestLines(File file) {
+        try {
+            return Files.readAllLines(file.toPath());
+        } catch (IOException ex) {
+            throw WebinCliException.systemError(ex, WebinCliMessage.Manifest.READING_MANIFEST_FILE_ERROR.format(file.getPath()));
+        }
     }
 
-
     private static List<String>
-    readAllLines(File file) throws FileNotFoundException
+    readInfoLines(File file)
     {
-        try( InputStream is = new GZIPInputStream( new FileInputStream( file ) ) )
-        {
-            return readAllLines( is );
-        } catch( IOException ioe )
-        {
-            try( InputStream is = new BZip2CompressorInputStream( new FileInputStream( file ) ) )
-            {
-                return readAllLines( is );
-            }catch( IOException ie )
-            {
-                return readAllLines( new FileInputStream( file ) );
+        try {
+            try (InputStream is = new GZIPInputStream(new FileInputStream(file))) {
+                return readLines(is);
+            } catch (IOException ioe) {
+                try (InputStream is = new BZip2CompressorInputStream(new FileInputStream(file))) {
+                    return readLines(is);
+                } catch (IOException ie) {
+                    return readLines(new FileInputStream(file));
+                }
             }
         }
+        catch (Exception ex) {
+            throw WebinCliException.systemError(ex, WebinCliMessage.Manifest.READING_INFO_FILE_ERROR.format(file.getPath()));
+        }
+    }
+
+    private static List<String>
+    readLines(InputStream is )
+    {
+        return new BufferedReader( new InputStreamReader( is, StandardCharsets.UTF_8 ) ).lines().collect( Collectors.toList() );
     }
 
     public static String
@@ -616,7 +646,7 @@ ManifestReader
     private Origin
     createParseOrigin()
     {
-        return new DefaultOrigin("File name: " + state.fileName + ", line number: " + state.lineNo);
+        return new DefaultOrigin("File name: " + state.fileName + ", line number: " + (spreadSheetLineNumber != null ? spreadSheetLineNumber : state.lineNumber));
     }
 
 

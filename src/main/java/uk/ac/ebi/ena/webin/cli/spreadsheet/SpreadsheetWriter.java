@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.spreadsheet;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,6 +23,8 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
@@ -32,9 +35,7 @@ import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
 
 public class SpreadsheetWriter {
 
-    public static void main(String[] args) {
-        SpreadsheetWriter.writeAll();
-    }
+    private static final Logger log = LoggerFactory.getLogger(SpreadsheetWriter.class);
 
     private final SpreadsheetContext spreadsheetContext;
     private final XSSFWorkbook workbook = new XSSFWorkbook();
@@ -44,7 +45,7 @@ public class SpreadsheetWriter {
     private final Row cvSheetHeaderRow;
     private final XSSFCellStyle requiredHeaderStyle;
     private final XSSFCellStyle optionalHeaderStyle;
-
+    private int nextDataRow = 1;
 
     public SpreadsheetWriter(SpreadsheetContext spreadsheetContext) {
         this.spreadsheetContext = spreadsheetContext;
@@ -235,18 +236,31 @@ public class SpreadsheetWriter {
         }
     }
 
-    public void write() {
-        try (OutputStream fileOut = new FileOutputStream(spreadsheetContext.getFileName())) {
-            workbook.write(fileOut);
-        } catch (IOException ex) {
-            throw WebinCliException.systemError(ex, "Unable to write spreadsheet: " + spreadsheetContext.getFileName());
+    public void addRow(String ... values) {
+        XSSFRow row = dataSheet.createRow(nextDataRow);
+        int columnNumber = 0;
+        for (String value: values) {
+            XSSFCell cell = row.createCell(columnNumber++);
+            cell.setCellValue(value);
         }
+        nextDataRow++;
     }
 
-    public static void writeAll() {
-        new SpreadsheetWriter(SpreadsheetContext.GENOME).write();
-        new SpreadsheetWriter(SpreadsheetContext.TRANSCRIPTOME).write();
-        new SpreadsheetWriter(SpreadsheetContext.SEQUENCE).write();
-        new SpreadsheetWriter(SpreadsheetContext.READ).write();
+    public void write(Path dir) {
+        Path spreadsheetPath = dir.resolve(spreadsheetContext.getFileName());
+
+        try (OutputStream fileOut = new FileOutputStream(spreadsheetPath.toFile())) {
+            workbook.write(fileOut);
+        } catch (IOException ex) {
+            throw WebinCliException.systemError(ex, "Unable to create spreadsheet: " + spreadsheetContext.getFileName());
+        }
+        log.info("Created spreadsheet: " + spreadsheetPath.toAbsolutePath().toString());
+    }
+
+    public static void writeAll(Path dir) {
+        new SpreadsheetWriter(SpreadsheetContext.GENOME).write(dir);
+        new SpreadsheetWriter(SpreadsheetContext.TRANSCRIPTOME).write(dir);
+        new SpreadsheetWriter(SpreadsheetContext.SEQUENCE).write(dir);
+        new SpreadsheetWriter(SpreadsheetContext.READ).write(dir);
     }
 }

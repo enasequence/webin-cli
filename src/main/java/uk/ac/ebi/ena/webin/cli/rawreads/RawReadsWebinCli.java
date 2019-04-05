@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -54,6 +55,7 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.ChecksumMethod;
@@ -101,8 +103,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     }
 
     @Override
-    public void readManifest(Path inputDir, File manifestFile) {
-        getManifestReader().readManifest( inputDir, manifestFile );
+    public void readManifest(Path inputDir, ManifestSource manifestSource) {
+        getManifestReader().readManifest(inputDir, manifestSource);
 
         if (StringUtils.isBlank(studyId)) {
             studyId = getManifestReader().getStudyId();
@@ -374,7 +376,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
                                                        Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile(), FileUtils.calculateDigest( "MD5", experimentXmlFile.toFile() ) ), 
                                                                       new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() ) ) ),
                                                        getParameters().getCenterName(),
-                                                       FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );
+                                                       getManifestSource().getManifestMd5() ) );
         } catch( NoSuchAlgorithmException | IOException ex )
         {
             throw WebinCliException.systemError( ex );

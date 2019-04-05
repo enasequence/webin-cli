@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
@@ -34,6 +35,7 @@ AbstractWebinCli<T extends ManifestReader>
 
     private String name; 
     private WebinCliParameters parameters = new WebinCliParameters();
+    private ManifestSource manifestSource;
 
     private boolean testMode;
 
@@ -65,13 +67,20 @@ AbstractWebinCli<T extends ManifestReader>
 
 
     public final void
-    init( WebinCliParameters parameters )
+    init( WebinCliParameters parameters ) {
+        init(parameters, new ManifestSource(parameters.getManifestFile()));
+    }
+
+    public final void
+    init( WebinCliParameters parameters, ManifestSource manifestSource )
     {
         this.parameters = parameters;
+        this.manifestSource = manifestSource;
         this.manifestReader = createManifestReader();
 
         this.validationDir = WebinCli.createOutputDir(parameters, ".");
 
+        Path inputDir = getParameters().getInputDir().toPath();
         File manifestFile = getParameters().getManifestFile();
         File reportFile = getReportFile(manifestFile.getName() );
 
@@ -79,7 +88,7 @@ AbstractWebinCli<T extends ManifestReader>
 
         try
         {
-            readManifest( getParameters().getInputDir().toPath(), manifestFile );
+            readManifest( inputDir, manifestSource);
 
             if (!StringUtils.isBlank(manifestReader.getName())) {
                 setName();
@@ -115,10 +124,7 @@ AbstractWebinCli<T extends ManifestReader>
 
     public abstract WebinCliContext getContext();
 
-    /**
-     * Reads the manifest file and returns the submission name.
-     */
-    public abstract void readManifest(Path inputDir, File manifestFile);
+    public abstract void readManifest(Path inputDir, ManifestSource manifestSource);
 
     public T getManifestReader() {
         return manifestReader;
@@ -192,13 +198,7 @@ AbstractWebinCli<T extends ManifestReader>
     getSubmissionBundle()
     {
         SubmissionBundleHelper submissionBundleHelper = new SubmissionBundleHelper( getSubmissionBundleFileName() );
-        try
-        {
-            return submissionBundleHelper.read( FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) ;
-        } catch( NoSuchAlgorithmException | IOException e )
-        {
-            return submissionBundleHelper.read();
-        }
+        return submissionBundleHelper.read( getManifestSource().getManifestMd5() );
     }
 
     
@@ -215,6 +215,9 @@ AbstractWebinCli<T extends ManifestReader>
         return this.parameters;
     }
 
+    public ManifestSource getManifestSource() {
+        return manifestSource;
+    }
 
     public String
     getName()
