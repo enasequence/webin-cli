@@ -122,6 +122,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         if( !FileUtils.emptyDirectory(getValidationDir()) )
             throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
 
+        if( !FileUtils.emptyDirectory( getProcessDir() ) )
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getProcessDir()));
+
         if( !FileUtils.emptyDirectory(getSubmitDir()) )
             throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 

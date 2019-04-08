@@ -40,6 +40,7 @@ public class SequenceAssemblyValidationTest {
 
     private File tempInputDir = WebinCliTestUtils.createTempDir();
     private File validationDir = WebinCliTestUtils.createTempDir();
+    private File processDir = WebinCliTestUtils.createTempDir();
     private File submitDir = WebinCliTestUtils.createTempDir();
 
     private final static String[] VALID_TSV_FILES = {
@@ -159,6 +160,7 @@ public class SequenceAssemblyValidationTest {
         validator.setStudy(new Study());
         validator.setSubmitDir(submitDir);
         validator.setValidationDir(validationDir);
+        validator.setProcessDir(processDir);
         validator.setSubmissionOptions(options);
         return validator;
     }
@@ -168,6 +170,7 @@ public class SequenceAssemblyValidationTest {
         cli.setTestMode(true);
         cli.setInputDir(inputDir);
         cli.setValidationDir(validationDir);
+        cli.setProcessDir(processDir);
         cli.setSubmitDir(submitDir);
         cli.setFetchSample(false);
         cli.setFetchStudy(false);

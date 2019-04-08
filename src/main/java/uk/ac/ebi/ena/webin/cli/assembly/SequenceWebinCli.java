@@ -22,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -36,6 +37,7 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -63,9 +65,6 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
     private static final Logger log = LoggerFactory.getLogger(SequenceWebinCli.class);
 
-	protected abstract void validateInternal() throws ValidationEngineException;
-
-
     public void
     setStudy( Study study )
     { 
@@ -78,13 +77,11 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         this.sample = sample;
     }
 
-
     public Study
     getStudy()
     { 
         return this.study;
     }
-
 
     public Sample
     getSample()
@@ -242,7 +239,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     {
         if( !FileUtils.emptyDirectory( getValidationDir() ) )
             throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
-        
+
+        if( !FileUtils.emptyDirectory( getProcessDir() ) )
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getProcessDir()));
+
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
             throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 
@@ -263,7 +263,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
         try
         {
-            validateInternal();
+            getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
+            getSubmissionOptions().processDir = Optional.of(getProcessDir().getAbsolutePath());
+            new SubmissionValidator(getSubmissionOptions()).validate();
         } catch( ValidationEngineException ex )
         {
             switch( ex.getErrorType() )

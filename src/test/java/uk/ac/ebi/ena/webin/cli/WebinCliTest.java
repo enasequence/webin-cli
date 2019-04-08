@@ -84,7 +84,7 @@ WebinCliTest
         WebinCli.Params parameters = new WebinCli.Params();
         parameters.context = context.toString();
         parameters.inputDir = inputDir.toString();
-        parameters.outputDir  = WebinCliTestUtils.createTempDir().getPath();
+        parameters.outputDir = WebinCliTestUtils.createTempDir().getPath();
         parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
                 manifestContents).toAbsolutePath().toString();
         parameters.userName = System.getenv( "webin-cli-username" );
