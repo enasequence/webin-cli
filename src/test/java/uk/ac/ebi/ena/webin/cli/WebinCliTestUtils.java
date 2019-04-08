@@ -48,7 +48,6 @@ public class WebinCliTestUtils {
         }
     }
 
-
     public static Path
     createEmptyTempFile()
     {
@@ -60,12 +59,6 @@ public class WebinCliTestUtils {
     {
         return createTempFile(fileName, null, false,null);
     }
-
-    public static Path
-    createEmptyTempFile(String fileName, Path folder) {
-        return createTempFile(fileName, folder, false, null);
-    }
-
 
     public static Path
     createTempFile(String contents) {
@@ -82,7 +75,6 @@ public class WebinCliTestUtils {
         return createTempFile(fileName, folder, false, contents);
     }
 
-
     public static Path
     createEmptyGzippedTempFile(String fileName, Path folder) {
         return createTempFile(fileName, folder, true, " ");
@@ -93,13 +85,6 @@ public class WebinCliTestUtils {
     createGzippedTempFile(String fileName, String contents) {
         return createTempFile(fileName,null,true, contents);
     }
-
-    public static Path
-    createGzippedTempFile(String fileName, Path folder, String contents) {
-        return createTempFile(fileName,folder,true, contents);
-    }
-
-
 
 
     private static Path
@@ -154,10 +139,15 @@ public class WebinCliTestUtils {
 
     public static String
     createName() {
-        return String.format( "TEST-NAME %X", System.currentTimeMillis() );
+        return String.format( "TEST-NAME-%X", System.currentTimeMillis() );
     }
 
-    private static String
+    public static String
+    readFile(File file) {
+        return readFile(file.toPath());
+    }
+
+    public static String
     readFile(Path file) {
         try {
             return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);

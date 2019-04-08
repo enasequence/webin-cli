@@ -199,7 +199,6 @@ AbstractWebinCli<T extends ManifestReader>
         return WebinCli.getReportFile( getValidationDir(), filename, REPORT_FILE_SUFFIX );
     }
 
-    
     public SubmissionBundle
     getSubmissionBundle()
     {
