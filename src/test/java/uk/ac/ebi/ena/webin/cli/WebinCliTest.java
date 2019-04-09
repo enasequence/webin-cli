@@ -45,9 +45,9 @@ WebinCliTest
     }
 
     private String
-    getGenomeManifestInfoFields()
+    getGenomeManifestFields(String name)
     {
-        return    GenomeAssemblyManifest.Field.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+        return    GenomeAssemblyManifest.Field.ASSEMBLYNAME + " " + name + "\n"
                 + GenomeAssemblyManifest.Field.COVERAGE     + " 45\n"
                 + GenomeAssemblyManifest.Field.PROGRAM      + " assembly\n"
                 + GenomeAssemblyManifest.Field.PLATFORM     + " fghgf\n"
@@ -59,9 +59,9 @@ WebinCliTest
     }
 
     private String
-    getTranscriptomeManifestFields()
+    getTranscriptomeManifestFields(String name)
     {
-        return    TranscriptomeAssemblyManifest.Field.ASSEMBLYNAME + " " + WebinCliTestUtils.createName() + "\n"
+        return    TranscriptomeAssemblyManifest.Field.ASSEMBLYNAME + " " + name + "\n"
                 + TranscriptomeAssemblyManifest.Field.PROGRAM      + " assembly\n"
                 + TranscriptomeAssemblyManifest.Field.PLATFORM     + " fghgf\n"
                 + TranscriptomeAssemblyManifest.Field.SAMPLE       + " SAMN04526268\n"
@@ -70,21 +70,21 @@ WebinCliTest
     }
 
     private String
-    getSequenceManifestFields()
+    getSequenceManifestFields(String name)
     {
-        return    SequenceAssemblyManifest.Field.NAME  + " " + WebinCliTestUtils.createName() + "\n"
+        return    SequenceAssemblyManifest.Field.NAME  + " " + name + "\n"
                 + SequenceAssemblyManifest.Field.STUDY + " PRJEB20083\n"
                 + SequenceAssemblyManifest.Field.DESCRIPTION  + " Some sequence assembly description\n";
     }
 
 
     private void
-    testWebinCli(WebinCliContext context, Path inputDir, String manifestContents, boolean ascp ) throws Exception
+    testWebinCli(WebinCliContext context, Path inputDir, Path outputDir, String manifestContents, boolean ascp ) throws Exception
     {
         WebinCli.Params parameters = new WebinCli.Params();
         parameters.context = context.toString();
         parameters.inputDir = inputDir.toString();
-        parameters.outputDir  = WebinCliTestUtils.createTempDir().getPath();
+        parameters.outputDir = outputDir.toString();
         parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
                 manifestContents).toAbsolutePath().toString();
         parameters.userName = System.getenv( "webin-cli-username" );
@@ -100,13 +100,16 @@ WebinCliTest
     @Test public void
     testRawReadsSubmissionWithInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
-        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", input_dir, false );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getRawReadsInfoFields());
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", inputDir, false );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", inputDir, getRawReadsInfoFields());
 
         testWebinCli( WebinCliContext.reads,
-                      input_dir,
-                      ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" + RawReadsManifest.Field.CRAM + " " + cram_file.getFileName(),
+                      inputDir,
+                      outputDir,
+                      ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
+                              RawReadsManifest.Field.CRAM + " " + cram_file.getFileName(),
                       false );
     }
     
@@ -114,11 +117,13 @@ WebinCliTest
     @Test public void
     testRawReadsSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
-        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", input_dir, false );
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", inputDir, false );
 
         testWebinCli( WebinCliContext.reads,
-                      input_dir,
+                      inputDir,
+                      outputDir,
                       RawReadsManifest.Field.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
                       false );
     }
@@ -127,11 +132,14 @@ WebinCliTest
     @Test public void
     testRawReadsSubmissionWithoutInfoAscp() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
-        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", input_dir, false );
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path cram_file = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", inputDir, false );
         Assert.assertTrue( new ASCPService().isAvailable() );
         testWebinCli( WebinCliContext.reads,
-                      input_dir,
+                      inputDir,
+                      outputDir,
                       RawReadsManifest.Field.CRAM + " " + cram_file.getFileName() + "\n" + getRawReadsInfoFields(),
                       true );
     }
@@ -140,17 +148,20 @@ WebinCliTest
     @Test public void
     testGenomeSubmissionWithInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
-        
-        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
-        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileAgp.txt", input_dir, true, ".agp.gz" );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getGenomeManifestInfoFields());
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileforAgp.txt", inputDir, true, ".gz" );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileAgp.txt", inputDir, true, ".agp.gz" );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", inputDir, getGenomeManifestFields(name));
 
         testWebinCli( WebinCliContext.genome,
-                      input_dir,
-                      ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                              GenomeAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
-                              GenomeAssemblyManifest.Field.AGP + " " + agpfile.getFileName(),
+                      inputDir,
+                      outputDir,
+                      GenomeAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                      GenomeAssemblyManifest.Field.AGP + " " + agpfile.getFileName() + "\n" +
+                      ManifestReader.Fields.INFO + " " + infofile.getFileName(),
                       false );
     }
     
@@ -158,33 +169,63 @@ WebinCliTest
     @Test public void
     testGenomeSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
-        
-        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileforAgp.txt", input_dir, true, ".gz" );
-        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileAgp.txt", input_dir, true, ".agp.gz" );
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileforAgp.txt", inputDir, true, ".gz" );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileAgp.txt", inputDir, true, ".agp.gz" );
 
         testWebinCli( WebinCliContext.genome,
-                      input_dir,
+                      inputDir,
+                      outputDir,
                       GenomeAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
-                              GenomeAssemblyManifest.Field.AGP + " " + agpfile.getFileName()       + "\n" +
-                              getGenomeManifestInfoFields(),
+                      GenomeAssemblyManifest.Field.AGP + " " + agpfile.getFileName()  + "\n" +
+                      getGenomeManifestFields(name),
                       false );
     }
-    
-    
-    
+
+    @Test public void
+    testGenomeSubmissionWithError() throws Exception
+    {
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.txt", inputDir, true, ".gz" );
+
+        try {
+            testWebinCli(WebinCliContext.genome,
+                    inputDir,
+                    outputDir,
+                    GenomeAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                    getGenomeManifestFields(name),
+                    false);
+        }
+        catch (WebinCliException ex) {
+            Assert.assertTrue(ex.getMessage().contains("Submission validation failed because of a user error"));
+            Path reportFile = outputDir.resolve("genome").resolve(name).resolve("validate").resolve(flatfile.getFileName().toString() + ".report" );
+            Assert.assertTrue(WebinCliTestUtils.readFile(reportFile).contains("ERROR: Invalid ID line format [ line: 1]"));
+            return;
+        }
+        Assert.assertTrue(false);
+    }
+
     @Test public void
     testSequenceSubmissionWithInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
-        
-        Path tabfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/template/ERT000003-EST.tsv.gz", input_dir, false );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getSequenceManifestFields());
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path tabfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/template/ERT000003-EST.tsv.gz", inputDir, false );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", inputDir, getSequenceManifestFields(name));
 
         testWebinCli( WebinCliContext.sequence,
-                      input_dir,
-                      ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                              SequenceAssemblyManifest.Field.TAB + " " + tabfile.getFileName(),
+                      inputDir,
+                      outputDir,
+                      SequenceAssemblyManifest.Field.TAB + " " + tabfile.getFileName() + "\n" +
+                      ManifestReader.Fields.INFO + " " + infofile.getFileName(),
                       false );
     }
     
@@ -192,29 +233,62 @@ WebinCliTest
     @Test public void
     testSequenceSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
-        
-        Path tabfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/template/ERT000003-EST.tsv.gz", input_dir, false );
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path tabfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/template/ERT000003-EST.tsv.gz", inputDir, false );
 
         testWebinCli( WebinCliContext.sequence,
-                      input_dir,
-                      SequenceAssemblyManifest.Field.TAB + " " + tabfile.getFileName() + "\n" + getSequenceManifestFields(),
+                      inputDir,
+                      outputDir,
+                      SequenceAssemblyManifest.Field.TAB + " " + tabfile.getFileName() + "\n" +
+                      getSequenceManifestFields(name),
                       false );
     }
 
 
     @Test public void
+    testSequenceSubmissionWithError() throws Exception
+    {
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.txt", inputDir, true, ".gz" );
+
+        try {
+            testWebinCli( WebinCliContext.sequence,
+                    inputDir,
+                    outputDir,
+                    SequenceAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                    getSequenceManifestFields(name),
+                    false );
+        }
+        catch (WebinCliException ex) {
+            Assert.assertTrue(ex.getMessage().contains("Submission validation failed because of a user error"));
+            Path reportFile = outputDir.resolve("sequence").resolve(name).resolve("validate").resolve(flatfile.getFileName().toString() + ".report" );
+            Assert.assertTrue(WebinCliTestUtils.readFile(reportFile).contains("ERROR: Invalid ID line format [ line: 1]"));
+            return;
+        }
+        Assert.assertTrue(false);
+    }
+
+    @Test public void
     testTranscriptomeSubmissionWithInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/transcriptome/valid_fasta.fasta.gz", input_dir, false );
-        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", input_dir, getTranscriptomeManifestFields());
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/transcriptome/valid_fasta.fasta.gz", inputDir, false );
+        Path infofile =  WebinCliTestUtils.createTempFile("info.txt", inputDir, getTranscriptomeManifestFields(name));
 
         testWebinCli( WebinCliContext.transcriptome,
-                      input_dir,
-                      ManifestReader.Fields.INFO + " " + infofile.getFileName() + "\n" +
-                              TranscriptomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName(),
+                      inputDir,
+                      outputDir,
+                      TranscriptomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName() + "\n" +
+                      ManifestReader.Fields.INFO + " " + infofile.getFileName(),
                       false );
     }
 
@@ -222,16 +296,46 @@ WebinCliTest
     @Test public void
     testTranscriptomeSubmissionWithoutInfo() throws Exception
     {
-        Path input_dir = WebinCliTestUtils.createTempDir().toPath();
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/transcriptome/valid_fasta.fasta.gz", input_dir, false );
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/transcriptome/valid_fasta.fasta.gz", inputDir, false );
 
         testWebinCli( WebinCliContext.transcriptome,
-                      input_dir,
-                      TranscriptomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName() + "\n" + getTranscriptomeManifestFields(),
+                      inputDir,
+                      outputDir,
+                      TranscriptomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName() + "\n" +
+                      getTranscriptomeManifestFields(name),
                       false );
     }
 
+    @Test public void
+    testTranscriptomeSubmissionWithError() throws Exception
+    {
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.txt", inputDir, true, ".gz" );
+
+        try {
+            testWebinCli(WebinCliContext.transcriptome,
+                    inputDir,
+                    outputDir,
+                    TranscriptomeAssemblyManifest.Field.FLATFILE + " " + flatfile.getFileName() + "\n" +
+                    getTranscriptomeManifestFields(name),
+                    false);
+        }
+        catch (WebinCliException ex) {
+                Assert.assertTrue(ex.getMessage().contains("Submission validation failed because of a user error"));
+                Path reportFile = outputDir.resolve("transcriptome").resolve(name).resolve("validate").resolve(flatfile.getFileName().toString() + ".report" );
+                Assert.assertTrue(WebinCliTestUtils.readFile(reportFile).contains("ERROR: Invalid ID line format [ line: 1]"));
+                return;
+            }
+            Assert.assertTrue(false);
+
+    }
 
     @Test public void
     testGetSafeOutputDir() {

@@ -35,6 +35,7 @@ public class TranscriptomeAssemblyValidationTest {
             "uk/ac/ebi/ena/webin/cli/transcriptome/valid_fasta.fasta.gz").getFile()).getParentFile();
     private File tempInputDir = WebinCliTestUtils.createTempDir();
     private File validationDir = WebinCliTestUtils.createTempDir();
+    private File processDir = WebinCliTestUtils.createTempDir();
     private File submitDir = WebinCliTestUtils.createTempDir();
 
     @Before
@@ -122,6 +123,7 @@ public class TranscriptomeAssemblyValidationTest {
         cli.setTestMode(true);
         cli.setInputDir(inputDir);
         cli.setValidationDir(validationDir);
+        cli.setProcessDir(processDir);
         cli.setSubmitDir(submitDir);
         cli.setFetchSample(false);
         cli.setFetchStudy(false);

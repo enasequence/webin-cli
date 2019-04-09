@@ -29,6 +29,7 @@ public abstract class
 AbstractWebinCli<T extends ManifestReader>
 {
     private static final String VALIDATE_DIR = "validate";
+    private static final String PROCESS_DIR = "process";
     private static final String SUBMIT_DIR   = "submit";
     private static final String REPORT_FILE_SUFFIX = ".report";
     private static final String SUBMISSION_BUNDLE = ".data";
@@ -42,6 +43,7 @@ AbstractWebinCli<T extends ManifestReader>
     private T manifestReader;
 
     private File validationDir;
+    private File processDir;
     private File submitDir;
 
     private boolean fetchSample = true;
@@ -93,6 +95,7 @@ AbstractWebinCli<T extends ManifestReader>
             if (!StringUtils.isBlank(manifestReader.getName())) {
                 setName();
                 this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), VALIDATE_DIR );
+                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), PROCESS_DIR );
                 this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), SUBMIT_DIR );
             } else {
                 throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
@@ -137,6 +140,15 @@ AbstractWebinCli<T extends ManifestReader>
     public void setValidationDir(File validationDir) {
         this.validationDir = validationDir;
     }
+
+    public File getProcessDir() {
+        return processDir;
+    }
+
+    public void setProcessDir(File processDir) {
+        this.processDir = processDir;
+    }
+
 
     public File getSubmitDir() {
         return submitDir;
@@ -193,7 +205,6 @@ AbstractWebinCli<T extends ManifestReader>
         return WebinCli.getReportFile( getValidationDir(), filename, REPORT_FILE_SUFFIX );
     }
 
-    
     public SubmissionBundle
     getSubmissionBundle()
     {

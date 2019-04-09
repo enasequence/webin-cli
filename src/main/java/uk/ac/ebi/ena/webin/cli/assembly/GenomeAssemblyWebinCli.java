@@ -18,8 +18,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.jdom2.Element;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
@@ -70,16 +68,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 
 		if( getSource()!=null )
 			getSubmissionOptions().source = Optional.of( getSource() );
-	}
-
-	
-	@Override public void 
-	validateInternal() throws ValidationEngineException 
-	{ 
-	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-	   	getSubmissionOptions().processDir = Optional.of(getInputDir().getAbsolutePath());
-
-	    new SubmissionValidator(getSubmissionOptions()).validate();
 	}
 
 	@Override Element 

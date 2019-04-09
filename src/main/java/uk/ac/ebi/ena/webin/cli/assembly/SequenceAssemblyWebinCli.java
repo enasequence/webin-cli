@@ -18,8 +18,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.jdom2.Element;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
@@ -55,16 +53,6 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
 		if(getStudy()!=null&&getStudy().getLocusTags()!=null)
  			getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTags());
 	}
-
-    @Override protected void
-    validateInternal() throws ValidationEngineException 
-    {
-	   	getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-	   	getSubmissionOptions().processDir = Optional.of(getInputDir().getAbsolutePath());
-
-	    new SubmissionValidator(getSubmissionOptions()).validate();
-    }
-
 
     @Override
     Element makeAnalysisType( AssemblyInfoEntry entry )
