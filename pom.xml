@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>uk.ac.ebi.ena.webin-cli</groupId>
   <artifactId>webin-cli</artifactId>
-  <version>1.8.1</version>
+  <version>1.8.2</version>
   <inceptionYear>2019</inceptionYear>
   <licenses>
     <license>
@@ -29,19 +29,19 @@
     <dependency>
       <groupId>uk.ac.ebi.ena.sequence</groupId>
       <artifactId>embl-api-ff</artifactId>
-      <version>1.3.24</version>
+      <version>1.3.29</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>uk.ac.ebi.ena.sequence</groupId>
       <artifactId>embl-api-core</artifactId>
-      <version>1.3.24</version>
+      <version>1.3.29</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>uk.ac.ebi.ena.sequence</groupId>
       <artifactId>embl-api-validator</artifactId>
-      <version>1.3.24</version>
+      <version>1.3.29</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
