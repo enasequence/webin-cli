@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -46,8 +45,7 @@ import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
 
-// @SpringBootApplication
-public class WebinCli { // implements CommandLineRunner
+public class WebinCli {
 	public final static int SUCCESS = 0;
 	public final static int SYSTEM_ERROR = 1;
 	public final static int USER_ERROR = 2;
@@ -55,71 +53,16 @@ public class WebinCli { // implements CommandLineRunner
 
 	private final static String LOG_FILE_NAME= "webin-cli.report";
 
-	private Params params;
+	private WebinCliOptions params;
 	private WebinCliContext context;
 
 	private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
-
-	public static class
-	Params	
-	{
-		@Parameter()
-		private List<String> unrecognisedOptions = new ArrayList<>();
-
-		@Parameter(names = "help")
-		public boolean help;
-		
-		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription)
-		public boolean test;
-
-		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = ContextValidator.class)
-		public String context;
-		
-		@Parameter(names = { ParameterDescriptor.userName, ParameterDescriptor.userNameSynonym }, description = ParameterDescriptor.userNameFlagDescription, required = true)
-		public String userName;
-		
-		@Parameter(names = ParameterDescriptor.password, description = ParameterDescriptor.passwordFlagDescription, required = true)
-		public String password;
-		
-		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = ManifestFileValidator.class)
-		public String manifest;
-		
-		@Parameter(names = { ParameterDescriptor.outputDir, ParameterDescriptor.outputDirSynonym }, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class)
-		public String outputDir;
-		
-		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription)
-		public boolean validate;
-		
-		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription)
-		public boolean submit;
-		
-        @Parameter(names = { ParameterDescriptor.centerName, ParameterDescriptor.centerNameSynonym }, description = ParameterDescriptor.centerNameFlagDescription)
-        public String centerName;
-        
-        @Parameter(names = ParameterDescriptor.version, description = ParameterDescriptor.versionFlagDescription)
-        public boolean version;
-	
-        @Parameter(names = { ParameterDescriptor.inputDir, ParameterDescriptor.inputDirSynonym }, description = ParameterDescriptor.inputDirFlagDescription, hidden=true )
-        public String inputDir = ".";
-        
-        @Parameter(names = ParameterDescriptor.ascp, description = ParameterDescriptor.tryAscpDescription)
-        public boolean ascp;
-	}
 
 
 	private static String getFullPath(String path) {
 		return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
 	}
 
-	
-	private static String 
-	getFormattedProgramVersion()
-	{
-        String version = WebinCli.class.getPackage().getImplementationVersion();
-        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
-	}
-	
-	
     public static void 
     main( String... args )
     {
@@ -138,22 +81,21 @@ public class WebinCli { // implements CommandLineRunner
             if( args != null && args.length > 0 )
             {
                 List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
-                if( found.contains( ParameterDescriptor.help ) ) {
-                    printUsage();
-                    return SUCCESS;
-                }
-                
-                if( found.contains( ParameterDescriptor.version ) )
+
+                if( found.contains( WebinCliOptions.Option.version ) )
                 {
-                    log.info( getFormattedProgramVersion() );
+                    log.info( getVersionForUsage() );
                     return SUCCESS;
                 }
             }
 
-            Params params = parseParameters( args );
-            if( null == params )
-                return USER_ERROR;
-            
+            WebinCliOptions params = parseParameters( args );
+			if( null == params )
+				return USER_ERROR;
+
+            if (params.help)
+				return SUCCESS;
+
             if( !params.validate && !params.submit ) 
             {
                 log.error("Either -validate or -submit option must be provided.");
@@ -203,7 +145,7 @@ public class WebinCli { // implements CommandLineRunner
 
 
 	WebinCliParameters
-    init( Params params )
+    init( WebinCliOptions params )
     {
         this.params = params;
         this.context = WebinCliContext.valueOf( params.context );
@@ -342,7 +284,7 @@ public class WebinCli { // implements CommandLineRunner
                                                            .setPassword( params.password )
                                                            .setTest( params.test )
                                                            .build();
-            submitService.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
+            submitService.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getVersionForSubmission() );
 
         } catch( WebinCliException e ) 
         {
@@ -351,14 +293,24 @@ public class WebinCli { // implements CommandLineRunner
     }
 	
 
-    private static Params 
+    private static WebinCliOptions
     parseParameters( String... args ) 
     {
-		Params params = new Params();
+		WebinCliOptions params = new WebinCliOptions();
 		JCommander jCommander = JCommander.newBuilder().expandAtSign( false ).addObject( params ).build();
+		jCommander.setProgramName("java -jar " + getVersionForUsage());
+
 		try 
 		{
 			jCommander.parse( args );
+
+			if (params.help) {
+				StringBuilder usage = new StringBuilder();
+				jCommander.usage(usage, " ");
+				log.info(usage.toString());
+				printExitCodes();
+				return params;
+			}
 
 			if( !params.unrecognisedOptions.isEmpty() )  
 			{
@@ -372,86 +324,26 @@ public class WebinCli { // implements CommandLineRunner
 		} catch( Exception e )
 		{
 			log.error( e.getMessage() );
+			printHelp();
 			return null;
 		}
 	}
 
     private static void 
-	printUsage() 
-	{
-	    log.info( new StringBuilder()
-				.append( "Program options: " )
-				.append( '\n' )
-				.append( '\t' )
-				.append( "\n" + ParameterDescriptor.context )
-				.append( ParameterDescriptor.contextFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.userName )
-				.append( ParameterDescriptor.userNameFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.password )
-				.append( ParameterDescriptor.passwordFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.manifest )
-				.append( ParameterDescriptor.manifestFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.inputDir )
-				.append( ParameterDescriptor.inputDirFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.outputDir )
-				.append( ParameterDescriptor.outputDirFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.validate )
-				.append( ParameterDescriptor.validateFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.submit )
-				.append( ParameterDescriptor.submitFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.centerName )
-				.append( ParameterDescriptor.centerNameFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.ascp)
-				.append( ParameterDescriptor.tryAscpDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.version )
-				.append( ParameterDescriptor.versionFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.help )
-				.append( ParameterDescriptor.helpFlagDescription )
-				.append( '\n' )
-				.append( '\t' )
-				.append( '\n' ).toString() );
-		writeReturnCodes();
-	}
-
-	
-    private static void 
 	printHelp() 
 	{
-		log.info( "Please use " + ParameterDescriptor.help + " to see all command line options." );
+		log.info( "Please use " + WebinCliOptions.Option.help + " to see all command line options." );
 	}
 
-	
-	private static void 
-	writeReturnCodes()	
+	private static void
+	printExitCodes()
 	{
-		HashMap<Integer, String> returnCodeMap = new HashMap<>();
-		returnCodeMap.put( SUCCESS, "SUCCESS" );
-		returnCodeMap.put( SYSTEM_ERROR, "INTERNAL ERROR" );
-		returnCodeMap.put( USER_ERROR, "USER ERROR" );
-		returnCodeMap.put( VALIDATION_ERROR, "VALIDATION ERROR" );
-		log.info( "Exit codes: " + returnCodeMap.toString() );
+		HashMap<Integer, String> exitCode = new HashMap<>();
+		exitCode.put( SUCCESS, "SUCCESS" );
+		exitCode.put( SYSTEM_ERROR, "INTERNAL ERROR" );
+		exitCode.put( USER_ERROR, "USER ERROR" );
+		exitCode.put( VALIDATION_ERROR, "VALIDATION ERROR" );
+		log.info( "Exit codes: " + exitCode.toString() );
 	}
 
 
@@ -484,11 +376,28 @@ public class WebinCli { // implements CommandLineRunner
 		}
 	}
 
-
-	private static void 
-	checkVersion( boolean test ) 
+	private static String getVersionForSubmission()
 	{
-		String currentVersion = WebinCli.class.getPackage().getImplementationVersion();
+		String version = WebinCli.class.getPackage().getImplementationVersion();
+		return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
+	}
+
+
+	private static String getVersionForUsage()	{
+		String version = getVersion();
+		if (version == null) {
+			return "webin-cli-<version>.jar";
+		}
+		return "webin-cli-" + version + ".jar";
+	}
+
+	private static String getVersion() {
+		return WebinCli.class.getPackage().getImplementationVersion();
+	}
+
+	private static void checkVersion( boolean test )
+	{
+		String currentVersion = getVersion();
 		
 		if( null == currentVersion || currentVersion.isEmpty() )
 		    return;

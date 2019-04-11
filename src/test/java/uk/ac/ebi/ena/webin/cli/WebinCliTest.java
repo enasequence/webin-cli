@@ -81,7 +81,7 @@ WebinCliTest
     private void
     testWebinCli(WebinCliContext context, Path inputDir, Path outputDir, String manifestContents, boolean ascp ) throws Exception
     {
-        WebinCli.Params parameters = new WebinCli.Params();
+        WebinCliOptions parameters = new WebinCliOptions();
         parameters.context = context.toString();
         parameters.inputDir = inputDir.toString();
         parameters.outputDir = outputDir.toString();
