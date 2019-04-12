@@ -10,21 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.nio.file.FileSystems;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
+import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.beust.jcommander.IParameterValidator;
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -32,6 +25,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
 
+import picocli.CommandLine;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
@@ -53,15 +47,10 @@ public class WebinCli {
 
 	private final static String LOG_FILE_NAME= "webin-cli.report";
 
-	private WebinCliOptions params;
+	private WebinCliCommand params;
 	private WebinCliContext context;
 
 	private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
-
-
-	private static String getFullPath(String path) {
-		return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
-	}
 
     public static void 
     main( String... args )
@@ -78,30 +67,12 @@ public class WebinCli {
 
         try 
         {
-            if( args != null && args.length > 0 )
-            {
-                List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
-
-                if( found.contains( WebinCliOptions.Option.version ) )
-                {
-                    log.info( getVersionForUsage() );
-                    return SUCCESS;
-                }
-            }
-
-            WebinCliOptions params = parseParameters( args );
+            WebinCliCommand params = parseParameters( args );
 			if( null == params )
 				return USER_ERROR;
 
-            if (params.help)
+            if (params.help || params.version)
 				return SUCCESS;
-
-            if( !params.validate && !params.submit ) 
-            {
-                log.error("Either -validate or -submit option must be provided.");
-                printHelp();
-                return USER_ERROR;
-            }
             
             checkVersion( params.test );
 
@@ -145,20 +116,15 @@ public class WebinCli {
 
 
 	WebinCliParameters
-    init( WebinCliOptions params )
+    init( WebinCliCommand params )
     {
         this.params = params;
-        this.context = WebinCliContext.valueOf( params.context );
-
-        params.manifest = getFullPath( params.manifest );
-        File manifestFile = new File( params.manifest );
-
-        String outputDir = getFullPath( params.outputDir == null ? manifestFile.getParent() : params.outputDir );
+        this.context = params.context;
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setManifestFile( manifestFile );
-        parameters.setInputDir( Paths.get( params.inputDir ).toAbsolutePath().toFile() );
-        parameters.setOutputDir( Paths.get( outputDir ).toAbsolutePath().toFile() );
+        parameters.setManifestFile(  params.manifest );
+        parameters.setInputDir( params.inputDir  );
+        parameters.setOutputDir( params. outputDir );
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
@@ -201,11 +167,7 @@ public class WebinCli {
 	void
 	execute(WebinCliParameters parameters) throws Exception
 	{
-		try {
-			context = WebinCliContext.valueOf( params.context );
-		} catch (IllegalArgumentException e) {
-			throw WebinCliException.userError(WebinCliMessage.Cli.INVALID_CONTEXT_ERROR.format(params.context));
-		}
+		context = params.context;
 
 		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
@@ -293,28 +255,61 @@ public class WebinCli {
     }
 	
 
-    private static WebinCliOptions
+    private static WebinCliCommand
     parseParameters( String... args ) 
     {
-		WebinCliOptions params = new WebinCliOptions();
-		JCommander jCommander = JCommander.newBuilder().expandAtSign( false ).addObject( params ).build();
-		jCommander.setProgramName("java -jar " + getVersionForUsage());
-
-		try 
+		AnsiConsole.systemInstall();
+		WebinCliCommand params = new WebinCliCommand();
+		CommandLine commandLine = new CommandLine(params);
+		commandLine.setExpandAtFiles(false);
+		commandLine.parse(args);
+		commandLine.setCommandName("java -jar " + getVersionForUsage());
+		try
 		{
-			jCommander.parse( args );
-
-			if (params.help) {
-				StringBuilder usage = new StringBuilder();
-				jCommander.usage(usage, " ");
-				log.info(usage.toString());
-				printExitCodes();
+			commandLine.parse(args);
+			if (commandLine.isUsageHelpRequested()) {
+				commandLine.usage(System.out);
+				params.help = true;
 				return params;
 			}
 
-			if( !params.unrecognisedOptions.isEmpty() )  
-			{
-				log.error( "Unrecognised options: " + String.join(", ", params.unrecognisedOptions));
+			if (commandLine.isVersionHelpRequested()) {
+				commandLine.printVersionHelp(System.out);
+				params.version = true;
+				return params;
+			}
+
+			if (!params.manifest.isFile() || !Files.isReadable(params.manifest.toPath())) {
+				log.error("Unable to read the manifest file.");
+				printHelp();
+				return null;
+			}
+			params.manifest = params.manifest.getAbsoluteFile();
+
+			if (params.inputDir == null) {
+				params.inputDir = Paths.get(".").toFile().getAbsoluteFile();
+			}
+			params.inputDir = params.inputDir.getAbsoluteFile();
+
+			if (params.outputDir == null) {
+				params.outputDir = params.manifest.getParentFile();
+			}
+			params.outputDir = params.outputDir.getAbsoluteFile();
+
+			if (!params.inputDir.canRead()) {
+				log.error("Unable to read from the input directory: " + params.inputDir.getAbsolutePath());
+				printHelp();
+				return null;
+			}
+
+			if (!params.outputDir.canWrite()) {
+				log.error("Unable to write to the output directory: " + params.outputDir.getAbsolutePath());
+				printHelp();
+				return null;
+			}
+
+			if( !params.validate && !params.submit ) {
+				log.error("Either -validate or -submit option must be provided.");
 				printHelp();
 				return null;
 			}
@@ -323,7 +318,7 @@ public class WebinCli {
 	        
 		} catch( Exception e )
 		{
-			log.error( e.getMessage() );
+			log.error( e.getMessage(), e );
 			printHelp();
 			return null;
 		}
@@ -332,58 +327,17 @@ public class WebinCli {
     private static void 
 	printHelp() 
 	{
-		log.info( "Please use " + WebinCliOptions.Option.help + " to see all command line options." );
+		log.info( "Please use " + WebinCliCommand.Options.help + " option to see all command line options." );
 	}
 
-	private static void
-	printExitCodes()
-	{
-		HashMap<Integer, String> exitCode = new HashMap<>();
-		exitCode.put( SUCCESS, "SUCCESS" );
-		exitCode.put( SYSTEM_ERROR, "INTERNAL ERROR" );
-		exitCode.put( USER_ERROR, "USER ERROR" );
-		exitCode.put( VALIDATION_ERROR, "VALIDATION ERROR" );
-		log.info( "Exit codes: " + exitCode.toString() );
-	}
-
-
-	public static class ContextValidator implements IParameterValidator {
-		@Override
-		public void validate(String name, String value)	throws ParameterException {
-			try {
-				WebinCliContext.valueOf(value);
-			} catch (IllegalArgumentException e) {
-				throw new ParameterException(WebinCliMessage.Cli.INVALID_CONTEXT_ERROR.format(value));
-			}
-		}
-	}
-
-	public static class OutputDirValidator implements IParameterValidator {
-		@Override
-		public void validate(String name, String value)	throws ParameterException {
-			File file = new File(value);
-			if(!file.exists())
-				throw new ParameterException("The output directory '" + value + "' does not exist.");
-		}
-	}
-
-	public static class ManifestFileValidator implements IParameterValidator {
-		@Override
-		public void validate(String name, String value)	throws ParameterException {
-			File file = new File(value);
-			if(!file.exists())
-				throw new ParameterException("The manifest file '" + value + "' does not exist.");
-		}
-	}
-
-	private static String getVersionForSubmission()
+	public static String getVersionForSubmission()
 	{
 		String version = WebinCli.class.getPackage().getImplementationVersion();
 		return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
 	}
 
 
-	private static String getVersionForUsage()	{
+	public static String getVersionForUsage() {
 		String version = getVersion();
 		if (version == null) {
 			return "webin-cli-<version>.jar";

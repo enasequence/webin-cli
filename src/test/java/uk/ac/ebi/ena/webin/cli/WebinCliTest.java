@@ -81,12 +81,12 @@ WebinCliTest
     private void
     testWebinCli(WebinCliContext context, Path inputDir, Path outputDir, String manifestContents, boolean ascp ) throws Exception
     {
-        WebinCliOptions parameters = new WebinCliOptions();
-        parameters.context = context.toString();
-        parameters.inputDir = inputDir.toString();
-        parameters.outputDir = outputDir.toString();
+        WebinCliCommand parameters = new WebinCliCommand();
+        parameters.context = context;
+        parameters.inputDir = inputDir.toFile();
+        parameters.outputDir = outputDir.toFile();
         parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
-                manifestContents).toAbsolutePath().toString();
+                manifestContents).toFile();
         parameters.userName = System.getenv( "webin-cli-username" );
         parameters.password = System.getenv( "webin-cli-password" );
         parameters.test = true;
