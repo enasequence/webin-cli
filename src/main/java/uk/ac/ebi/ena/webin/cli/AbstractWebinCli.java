@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang.StringUtils;
@@ -240,25 +241,39 @@ AbstractWebinCli<T extends ManifestReader>
         this.name = name;
     }
     
+    
     public boolean 
     getTestMode()
     {
         return this.testMode;
     }
 
+    
     public void
     setTestMode( boolean test_mode )
     {
         this.testMode = test_mode;
     }
 
-    public boolean isFetchSource() 
+    
+    public boolean 
+    isFetchSource() 
     {
  		return fetchSource;
  	}
 
- 	public void setFetchSource(boolean fetchSource) 
+ 	
+    public void 
+    setFetchSource( boolean fetchSource ) 
  	{
  		this.fetchSource = fetchSource;
  	}
+    
+    
+    public Path 
+    getUploadRoot()
+    {
+    	return Paths.get( getTestMode() ? "webin-cli-test" : "" );
+    }
+    
 }
