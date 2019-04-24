@@ -18,6 +18,7 @@ wrapper{
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
+ext.project_name = 'webin-cli'
 ext.version_base = '1.8.2'
 version = version_base
 sourceCompatibility = '1.8'
@@ -147,6 +148,7 @@ task sourceJar(type: Jar) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+        	artifactId project_name
             from components.java
             artifact sourceJar
         }
@@ -171,6 +173,7 @@ task writePom {
     doLast {
         pom {
             project {
+                artifactId project_name
                 inceptionYear '2019'
                 licenses {
                     license {

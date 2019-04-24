@@ -1,3 +1,7 @@
 .latest-version-check 
 /build/
 /.gradle/
+/.classpath
+/.project
+/bin/
+/.settings/

@@ -11,9 +11,11 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
@@ -263,7 +265,12 @@ public class WebinCli {
 		CommandLine commandLine = new CommandLine(params);
 		commandLine.setExpandAtFiles(false);
 		commandLine.parse(args);
-		commandLine.setCommandName("java -jar " + getVersionForUsage());
+		
+		List<String> jvm_args  = ManagementFactory.getRuntimeMXBean().getInputArguments();
+		String classpath = ManagementFactory.getRuntimeMXBean().getClassPath();
+		
+		commandLine.setCommandName( "java " + ( jvm_args.isEmpty() ? "" : jvm_args.stream().collect( Collectors.joining( " ", "", " " ) ) ) + "-jar " + classpath );
+				
 		try
 		{
 			commandLine.parse(args);
@@ -330,25 +337,30 @@ public class WebinCli {
 		log.info( "Please use " + WebinCliCommand.Options.help + " option to see all command line options." );
 	}
 
-	public static String getVersionForSubmission()
+	
+    public static String 
+	getVersionForSubmission()
 	{
-		String version = WebinCli.class.getPackage().getImplementationVersion();
+		String version = getVersion();
 		return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
 	}
 
 
-	public static String getVersionForUsage() {
+	public static String 
+	getVersionForUsage() 
+	{
 		String version = getVersion();
-		if (version == null) {
-			return "webin-cli-<version>.jar";
-		}
-		return "webin-cli-" + version + ".jar";
+		return String.format( "%s", null == version ? "no version declared" : version );
 	}
 
-	private static String getVersion() {
+	
+	private static String 
+	getVersion() 
+	{
 		return WebinCli.class.getPackage().getImplementationVersion();
 	}
 
+	
 	private static void checkVersion( boolean test )
 	{
 		String currentVersion = getVersion();
