@@ -222,7 +222,7 @@ GenomeAssemblyXmlTest
                         "      </SEQUENCE_ASSEMBLY>\n" +
                         "    </ANALYSIS_TYPE>\n" +
                         "    <FILES>\n" +
-                        "      <FILE filename=\"genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
+                        "      <FILE filename=\"webin-cli/genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
                         "    </FILES>\n" +
                         "  </ANALYSIS>\n" +
                         "</ANALYSIS_SET>\n");
@@ -286,7 +286,7 @@ GenomeAssemblyXmlTest
                             "      </SEQUENCE_ASSEMBLY>\n" +
                             "    </ANALYSIS_TYPE>\n" +
                             "    <FILES>\n" +
-                            "      <FILE filename=\"genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
+                            "      <FILE filename=\"webin-cli/genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
                             "    </FILES>\n" +
                             "  </ANALYSIS>\n" +
                             "</ANALYSIS_SET>\n");

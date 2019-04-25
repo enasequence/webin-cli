@@ -79,7 +79,7 @@ TranscriptomeAssemblyXmlTest {
                         "      </TRANSCRIPTOME_ASSEMBLY>\n" +
                         "    </ANALYSIS_TYPE>\n" +
                         "    <FILES>\n" +
-                        "      <FILE filename=\"transcriptome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"6f82bc96add84ece757afad265d7e341\" />\n" +
+                        "      <FILE filename=\"webin-cli/transcriptome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"6f82bc96add84ece757afad265d7e341\" />\n" +
                         "    </FILES>\n" +
                         "  </ANALYSIS>\n" +
                         "</ANALYSIS_SET>\n");
@@ -140,7 +140,7 @@ TranscriptomeAssemblyXmlTest {
                             "</TRANSCRIPTOME_ASSEMBLY>\n" +
                             "</ANALYSIS_TYPE>\n" +
                             "<FILES>\n" +
-                            "      <FILE filename=\"transcriptome/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+                            "      <FILE filename=\"webin-cli/transcriptome/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
                             "</FILES>\n" +
                             "</ANALYSIS>\n" +
                             "</ANALYSIS_SET>");

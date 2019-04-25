@@ -273,7 +273,7 @@ AbstractWebinCli<T extends ManifestReader>
     public Path 
     getUploadRoot()
     {
-    	return Paths.get( getTestMode() ? "webin-cli-test" : "" );
+    	return Paths.get( getTestMode() ? "webin-cli-test" : "webin-cli" );
     }
     
 }

@@ -73,7 +73,7 @@ SequenceAssemblyXmlTest
                         "<SEQUENCE_FLATFILE/>\n" +
                         "</ANALYSIS_TYPE>\n" +
                         "<FILES>\n" +
-                        "      <FILE filename=\"sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+                        "      <FILE filename=\"webin-cli/sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
                         "</FILES>\n" +
                         "</ANALYSIS>\n" +
                         "</ANALYSIS_SET>");
@@ -120,7 +120,7 @@ SequenceAssemblyXmlTest
                             "<SEQUENCE_FLATFILE/>\n" +
                             "</ANALYSIS_TYPE>\n" +
                             "<FILES>\n" +
-                            "      <FILE filename=\"sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+                            "      <FILE filename=\"webin-cli/sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
                             "</FILES>\n" +
                             "</ANALYSIS>\n" +
                             "</ANALYSIS_SET>");
