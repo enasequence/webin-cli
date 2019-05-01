@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -26,6 +27,8 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.entity.Analysis;
+import uk.ac.ebi.ena.webin.cli.entity.Run;
 import uk.ac.ebi.ena.webin.cli.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -47,8 +50,7 @@ GenomeAssemblyXmlTest
 		return source;
 	}
 
-    @Test
-    public void
+    @Test public void
     testAnalysisXMLAssemblyInfo_WithoutFiles()
     {
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
@@ -65,28 +67,34 @@ GenomeAssemblyXmlTest
         info.setPlatform( "test_platform" );
 
         cli.setSource(getDefaultSourceFeature());
+        cli.setAnalysisRef( new ArrayList<Analysis>() { { add( new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ) ); add( new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) ); } } );
+        cli.setRunRef( new ArrayList<Run>() { { add( new Run( "RUN_ID1", "RUN_ID1_ALIAS" ) ); add( new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) ); } } );
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
         WebinCliTestUtils.assertAnalysisXml(analysisXml,
-                "<ANALYSIS_SET>\n" +
-                        "  <ANALYSIS>\n" +
-                        "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
-                        "    <STUDY_REF accession=\"test_study\" />\n" +
-                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
-                        "    <ANALYSIS_TYPE>\n" +
-                        "      <SEQUENCE_ASSEMBLY>\n" +
-                        "        <NAME>test_genome</NAME>\n" +
-                        "        <PARTIAL>false</PARTIAL>\n" +
-                        "        <COVERAGE>1</COVERAGE>\n" +
-                        "        <PROGRAM>test_program</PROGRAM>\n" +
-                        "        <PLATFORM>test_platform</PLATFORM>\n" +
-                        "      </SEQUENCE_ASSEMBLY>\n" +
-                        "    </ANALYSIS_TYPE>\n" +
-                        "    <FILES />\n" +
-                        "  </ANALYSIS>\n" +
-                        "</ANALYSIS_SET>\n");
+                "<ANALYSIS_SET>\n" 
+                      + "  <ANALYSIS>\n"
+                      + "    <TITLE>Genome assembly: test_genome</TITLE>\n"
+                      + "    <STUDY_REF accession=\"test_study\" />\n"
+                      + "    <SAMPLE_REF accession=\"test_sample\" />\n"
+                      + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
+                      + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
+                      + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
+                      + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
+                      + "    <ANALYSIS_TYPE>\n"
+                      + "      <SEQUENCE_ASSEMBLY>\n"
+                      + "        <NAME>test_genome</NAME>\n"
+                      + "        <PARTIAL>false</PARTIAL>\n"
+                      + "        <COVERAGE>1</COVERAGE>\n"
+                      + "        <PROGRAM>test_program</PROGRAM>\n"
+                      + "        <PLATFORM>test_platform</PLATFORM>\n"
+                      + "      </SEQUENCE_ASSEMBLY>\n"
+                      + "    </ANALYSIS_TYPE>\n"
+                      + "    <FILES />\n"
+                      + "  </ANALYSIS>\n"
+                      + "</ANALYSIS_SET>\n");
     }
 
     @Test public void
@@ -106,7 +114,7 @@ GenomeAssemblyXmlTest
         info.setProgram( "test_program" );
         info.setPlatform( "test_platform" );
         info.setTpa(true);
-
+        
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);

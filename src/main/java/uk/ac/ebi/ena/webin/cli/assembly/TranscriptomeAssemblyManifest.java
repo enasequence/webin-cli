@@ -21,62 +21,87 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
 public class
-TranscriptomeAssemblyManifest extends ManifestReader {
-	public interface Field {
-		String NAME = "NAME";
+TranscriptomeAssemblyManifest extends ManifestReader 
+{
+	public interface
+	Field 
+	{
+		String NAME         = "NAME";
 		String ASSEMBLYNAME = "ASSEMBLYNAME";
-		String STUDY = "STUDY";
-		String SAMPLE = "SAMPLE";
-		String DESCRIPTION = "DESCRIPTION";
-		String PROGRAM = "PROGRAM";
-		String PLATFORM = "PLATFORM";
-		String TPA = "TPA";
-		String FASTA = "FASTA";
-		String FLATFILE = "FLATFILE";
+		String STUDY        = "STUDY";
+		String SAMPLE       = "SAMPLE";
+        String RUN_REF      = "RUN_REF";
+        String ANALYSIS_REF = "ANALYSIS_REF";
+		String DESCRIPTION  = "DESCRIPTION";
+		String PROGRAM      = "PROGRAM";
+		String PLATFORM     = "PLATFORM";
+		String TPA          = "TPA";
+		String FASTA        = "FASTA";
+		String FLATFILE     = "FLATFILE";
 	}
 
-	public interface Description {
-		String NAME = "Unique transcriptome assembly name";
+	
+	public interface 
+	Description 
+	{
+		String NAME         = "Unique transcriptome assembly name";
 		String ASSEMBLYNAME = "Unique transcriptome assembly name";
-		String STUDY = "Study accession or name";
-		String SAMPLE = "Sample accession or name";
-		String DESCRIPTION = "Transcriptome assembly description";
-		String PROGRAM = "Assembly program";
-		String PLATFORM = "Sequencing platform";
-		String TPA = "Third party annotation";
+		String STUDY        = "Study accession or name";
+		String SAMPLE       = "Sample accession or name";
+		String RUN_REF      = "Run accession or name comma-separated list";
+		String ANALYSIS_REF = "Analysis accession or name comma-separated list";
+
+		String DESCRIPTION  = "Transcriptome assembly description";
+		String PROGRAM      = "Assembly program";
+		String PLATFORM     = "Sequencing platform";
+		String TPA          = "Third party annotation";
 		String FASTA = "Fasta file";
 		String FLATFILE = "Flat file";
 	}
 
+	
 	private String name;
 	private String description;
 	private SubmissionOptions submissionOptions;
 
 
-	@SuppressWarnings("serial")
-	public TranscriptomeAssemblyManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor, SourceFeatureProcessor sourceProcessor) {
+	public 
+	TranscriptomeAssemblyManifest( SampleProcessor sampleProcessor, 
+	                               StudyProcessor  studyProcessor, 
+	                               SourceFeatureProcessor sourceProcessor,
+	                               RunProcessor    runProcessor,
+	                               AnalysisProcessor analysisProcessor )
+	{
 		super(
 				// Fields.
 				new ManifestFieldDefinition.Builder()
-					.meta().optional().requiredInSpreadsheet().name(Field.NAME).desc(Description.NAME).and()
-					.meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).and()
-					.meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor, sourceProcessor).and()
-					.meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
-					.meta().required().name(Field.PROGRAM).desc(Description.PROGRAM).and()
-					.meta().required().name(Field.PLATFORM).desc(Description.PLATFORM).and()
-					.file().optional().name(Field.FASTA).desc(Description.FASTA).processor(getFastaProcessors()).and()
-					.file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).and()
-					.meta().optional().notInSpreadsheet().name(Field.ASSEMBLYNAME).desc(Description.ASSEMBLYNAME).and()
-					.meta().optional().notInSpreadsheet().name(Field.TPA).desc(Description.TPA).processor(CVFieldProcessor.CV_BOOLEAN).build()
+					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
+					.meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor(studyProcessor).and()
+					.meta().required().name( Field.SAMPLE       ).desc( Description.SAMPLE       ).processor(sampleProcessor, sourceProcessor).and()
+                    .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( runProcessor ).and()
+                    .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( analysisProcessor ).and()
+					.meta().optional().name( Field.DESCRIPTION  ).desc( Description.DESCRIPTION  ).and()
+					.meta().required().name( Field.PROGRAM      ).desc( Description.PROGRAM      ).and()
+					.meta().required().name( Field.PLATFORM     ).desc( Description.PLATFORM     ).and()
+					.file().optional().name( Field.FASTA        ).desc( Description.FASTA        ).processor(getFastaProcessors()).and()
+					.file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor(getFlatfileProcessors()).and()
+					.meta().optional().notInSpreadsheet().name( Field.ASSEMBLYNAME ).desc( Description.ASSEMBLYNAME ).and()
+					.meta().optional().notInSpreadsheet().name( Field.TPA ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).build()
 				,
 				// File groups.
 				new ManifestFileCount.Builder()

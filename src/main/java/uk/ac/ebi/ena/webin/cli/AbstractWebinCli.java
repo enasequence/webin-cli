@@ -45,10 +45,13 @@ AbstractWebinCli<T extends ManifestReader>
     private File processDir;
     private File submitDir;
 
-    private boolean fetchSample = true;
-    private boolean fetchStudy = true;
- 	private boolean fetchSource = true;
+    private boolean fetchSample   = true;
+    private boolean fetchStudy    = true;
+ 	private boolean fetchSource   = true;
+    private boolean fetchRun      = true;
+    private boolean fetchAnalysis = true;
 
+    
     protected abstract T createManifestReader();
 
     private String description;
@@ -167,6 +170,35 @@ AbstractWebinCli<T extends ManifestReader>
         return new File( getSubmitDir(), SUBMISSION_BUNDLE ).getPath();
     }
 
+
+    public boolean
+    isFetchRun()
+    {
+        return fetchRun;
+    }
+    
+    
+    public boolean
+    isFetchAnalysis()
+    {
+        return fetchAnalysis;
+    }
+
+    
+    public void
+    setFetchRun( boolean fetchRun )
+    {
+        this.fetchRun = fetchRun;
+    }
+
+
+    public void
+    setFetchAnalysis( boolean fetchAnalysis )
+    {
+        this.fetchAnalysis = fetchAnalysis;
+    }
+    
+    
     public boolean
     isFetchStudy()
     {

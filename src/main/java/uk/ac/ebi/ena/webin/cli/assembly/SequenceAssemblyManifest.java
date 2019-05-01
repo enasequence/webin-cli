@@ -18,50 +18,71 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
-import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
 public class
-SequenceAssemblyManifest extends ManifestReader {
-    public interface Field {
-        String NAME = "NAME";
-        String STUDY = "STUDY";
-        String DESCRIPTION = "DESCRIPTION";
-        String TAB = "TAB";
-        String FLATFILE = "FLATFILE";
+SequenceAssemblyManifest extends ManifestReader 
+{
+    public interface 
+    Field 
+    {
+        String NAME         = "NAME";
+        String STUDY        = "STUDY";
+        String RUN_REF      = "RUN_REF";
+        String ANALYSIS_REF = "ANALYSIS_REF";
+        String DESCRIPTION  = "DESCRIPTION";
+        String TAB          = "TAB";
+        String FLATFILE     = "FLATFILE";
     }
 
-    public interface Description {
-        String NAME = "Unique sequence submission name";
-        String STUDY = "Study accession or name";
-        String DESCRIPTION = "Sequence submission description";
-        String TAB = "Tabulated file";
-        String FLATFILE = "Flat file";
+    
+    public interface 
+    Description 
+    {
+        String NAME         = "Unique sequence submission name";
+        String STUDY        = "Study accession or name";
+        String RUN_REF      = "Run accession or name comma-separated list";
+        String ANALYSIS_REF = "Analysis accession or name comma-separated list";
+        String DESCRIPTION  = "Sequence submission description";
+        String TAB          = "Tabulated file";
+        String FLATFILE     = "Flat file";
     }
 
     private SubmissionOptions submissionOptions;
     private String name;
     private String description;
 
-    @SuppressWarnings("serial")
-    public SequenceAssemblyManifest(StudyProcessor studyProcessor) {
+    public
+    SequenceAssemblyManifest( StudyProcessor    studyProcessor, 
+                              RunProcessor      runProcessor, 
+                              AnalysisProcessor analysisProcessor ) 
+    {
         super(
                 // Fields.
                 new ManifestFieldDefinition.Builder()
-                    .meta().required().name(Field.NAME).desc(Description.NAME).and()
-                    .meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).and()
-                    .meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
-                    .file().optional().name(Field.TAB).desc(Description.TAB).processor(getTabProcessors()).and()
-                    .file().optional().name(Field.FLATFILE).desc(Description.FLATFILE).processor(getFlatfileProcessors()).build()
+                    .meta().required().name( Field.NAME         ).desc( Description.NAME         ).and()
+                    .meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor( studyProcessor ).and()
+                    .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( runProcessor ).and()
+                    .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( analysisProcessor ).and()
+                    .meta().optional().name( Field.DESCRIPTION  ).desc( Description.DESCRIPTION  ).and()
+                    .file().optional().name( Field.TAB          ).desc( Description.TAB          ).processor( getTabProcessors() ).and()
+                    .file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor( getFlatfileProcessors() ).build()
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
                     .group()
-                    .required(Field.TAB)
+                    .required( Field.TAB )
                     .and().group()
-                    .required(Field.FLATFILE)
+                    .required( Field.FLATFILE )
                     .build()
 
         );
@@ -70,13 +91,13 @@ SequenceAssemblyManifest extends ManifestReader {
     private static ManifestFieldProcessor[] getTabProcessors() {
         return new ManifestFieldProcessor[]{
                 new ASCIIFileNameProcessor(),
-                new FileSuffixProcessor(ManifestFileSuffix.TAB_FILE_SUFFIX)};
+                new FileSuffixProcessor( ManifestFileSuffix.TAB_FILE_SUFFIX ) };
     }
 
     private static ManifestFieldProcessor[] getFlatfileProcessors() {
         return new ManifestFieldProcessor[]{
                 new ASCIIFileNameProcessor(),
-                new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
+                new FileSuffixProcessor( ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX ) };
     }
 
 

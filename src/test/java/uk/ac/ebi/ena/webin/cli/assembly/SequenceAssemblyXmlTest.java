@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -24,34 +25,34 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.entity.Analysis;
+import uk.ac.ebi.ena.webin.cli.entity.Run;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 
 public class
 SequenceAssemblyXmlTest
 {
-    @Before
-    public void
+    @Before public void
     before()
     {
         Locale.setDefault( Locale.UK );
     }
 
-    @Test
-    public void
+    
+    @Test public void
     testAnalysisXML_AssemblyInfo_WithFlatFile()
     {
-    	
-        Path flatFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", "ID   ;");
+        Path flatFile = WebinCliTestUtils.createGzippedTempFile( "flatfile.dat.gz", "ID   ;" );
        	SubmissionOptions submissionOptions =  new SubmissionOptions();
        	SubmissionFiles submissionFiles = new SubmissionFiles();
-       	SubmissionFile submissionFile = new SubmissionFile(FileType.FLATFILE,flatFile.toFile());
-       	submissionFiles.addFile(submissionFile);
-       	submissionOptions.submissionFiles = Optional.of(submissionFiles);
+       	SubmissionFile submissionFile = new SubmissionFile( FileType.FLATFILE,flatFile.toFile() );
+       	submissionFiles.addFile( submissionFile );
+       	submissionOptions.submissionFiles = Optional.of( submissionFiles );
         SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
         String name = "test_sequence";
         cli.setName( name );
-        cli.setSubmissionOptions(submissionOptions);
+        cli.setSubmissionOptions( submissionOptions );
         cli.getParameters().setInputDir( flatFile.getParent().toFile() );
 
         AssemblyInfoEntry info = new AssemblyInfoEntry();
@@ -59,26 +60,35 @@ SequenceAssemblyXmlTest
         info.setStudyId( "test_study" );
         cli.setAssemblyInfo( info );
         cli.setDescription( "sequence description" );
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+        cli.setAnalysisRef( new ArrayList<Analysis>() { { add( new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ) ); add( new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) ); } } );
+        cli.setRunRef( new ArrayList<Run>() { { add( new Run( "RUN_ID1", "RUN_ID1_ALIAS" ) ); add( new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) ); } } );
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
-                "<ANALYSIS_SET>\n" +
-                        "<ANALYSIS>\n" +
-                        "<TITLE>Sequence assembly: test_sequence</TITLE>\n" +
-                        "<DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
-                        "<STUDY_REF accession=\"test_study\"/>\n" +
-                        "<ANALYSIS_TYPE>\n" +
-                        "<SEQUENCE_FLATFILE/>\n" +
-                        "</ANALYSIS_TYPE>\n" +
-                        "<FILES>\n" +
-                        "      <FILE filename=\"webin-cli/sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
-                        "</FILES>\n" +
-                        "</ANALYSIS>\n" +
-                        "</ANALYSIS_SET>");
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
+
+        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+                "<ANALYSIS_SET>\n"
+                      + "<ANALYSIS>\n"
+                      + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
+                      + "<DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n"
+                      + "<STUDY_REF accession=\"test_study\"/>\n"
+                      + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
+                      + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
+                      + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
+                      + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
+                      + "<ANALYSIS_TYPE>\n"
+                      + "<SEQUENCE_FLATFILE/>\n"
+                      + "</ANALYSIS_TYPE>\n"
+                      + "<FILES>\n"
+                      + "      <FILE filename=\"webin-cli/sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"
+                      + "</FILES>\n"
+                      + "</ANALYSIS>\n"
+                      + "</ANALYSIS_SET>" );
     }
 
+    
     @Test public void
     testAnalysisXML_Manifest_WithFlatFile()
     {

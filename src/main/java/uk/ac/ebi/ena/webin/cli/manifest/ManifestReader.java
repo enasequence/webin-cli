@@ -307,14 +307,9 @@ ManifestReader
 
             for( ManifestFieldProcessor v : field.getFieldProcessors() )
             {
-                ValidationMessage<Origin> m = v.process( fieldValue );
-                if( null != m )
-                {
-                    validationResult.append( m );
-                    
-                    if( Severity.ERROR.equals( m.getSeverity() ) )
-                        fieldValue.setValidFieldValueOrFileSuffix( false );
-                }
+                ValidationResult vr = v.process( fieldValue );
+                fieldValue.setValidFieldValueOrFileSuffix( vr.isValid() );
+                validationResult.append( vr );
             }
 
             result.getValidationResult().append( validationResult );
@@ -592,18 +587,24 @@ ManifestReader
     }
 
     protected final void
-    error(WebinCliMessage message, Object... arguments )
+    error( WebinCliMessage message, Object... arguments )
     {
         Origin origin = null;
-        switch (state.state) {
+        switch( state.state )
+        {
+            default: 
+                break;
+                
             case PARSE:
                 origin = createParseOrigin();
                 break;
+                
             case VALIDATE:
                 origin = createValidateOrigin();
                 break;
         }
-        error(message, origin, arguments);
+        
+        error( message, origin, arguments );
     }
 
 

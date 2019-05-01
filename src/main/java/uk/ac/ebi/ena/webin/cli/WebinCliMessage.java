@@ -90,8 +90,13 @@ public interface WebinCliMessage {
         SAMPLE_SERVICE_VALIDATION_ERROR("Unknown sample {0} or the sample cannot be referenced by your submission account. Samples must be submitted before they can be referenced in the submission."),
         SAMPLE_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving sample {0} information."),
         STUDY_SERVICE_VALIDATION_ERROR("Unknown study {0} or the study cannot be referenced by your submission account. Studies must be submitted before they can be referenced in the submission."),
-        STUDY_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving study {0} information.");
+        STUDY_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving study {0} information."),
+        RUN_SERVICE_SYSTEM_ERROR( "A server error occurred when retrieving analysis {0} information." ),
+    	RUN_SERVICE_VALIDATION_ERROR( "Unknown run {0} or the run cannot be referenced by your submission account. Runs must be submitted before they can be referenced in the submission." ),
+        ANALYSIS_SERVICE_SYSTEM_ERROR( "A server error occurred when retrieving analysis {0} information." ),
+        ANALYSIS_SERVICE_VALIDATION_ERROR( "Unknown analysis {0} or the analysis cannot be referenced by your submission account. Analyses must be submitted before they can be referenced in the submission." );
 
+        
         public final String text;
         Service(String text) {
             this.text = text;
@@ -117,6 +122,8 @@ public interface WebinCliMessage {
         FIELD_VALUE_CORRECTED("Field \"{0}\" value \"{1}\" was corrected to \"{2}\"."),
         STUDY_LOOKUP_ERROR("Failed to lookup study \"{0}\". {1}"),
         SAMPLE_LOOKUP_ERROR("Failed to lookup sample \"{0}\". {1}"),
+        RUN_LOOKUP_ERROR( "Failed to lookup run \"{0}\". {1}" ),
+        ANALYSIS_LOOKUP_ERROR( "Failed to lookup analysis \"{0}\". {1}" ),
         MISSING_PLATFORM_AND_INSTRUMENT_ERROR("Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),
         INVALID_PLATFORM_FOR_INSTRUMENT_ERROR("Platform {0} for instrument {1}. Valid platforms are: {2}."),
         MISSING_PLATFORM_FOR_INSTRUMENT_ERROR("Missing platform for instrument: {0}.");

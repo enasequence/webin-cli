@@ -27,31 +27,33 @@ StudyProcessorTest
 {
     private final WebinCliParameters parameters = new WebinCliParameters();
 
-    @Before
-    public void
-    before() {
-        parameters.setUsername(System.getenv( "webin-cli-username" ));
-        parameters.setPassword(System.getenv( "webin-cli-password" ));
-        parameters.setTestMode(true);
+    @Before public void
+    before() 
+    {
+        parameters.setUsername( System.getenv( "webin-cli-username" ) );
+        parameters.setPassword( System.getenv( "webin-cli-password" ) );
+        parameters.setTestMode( true );
     }
 
+    
     @Test public void
     testCorrect()
     {
-        StudyProcessor processor = new StudyProcessor(parameters, (Study study) -> Assert.assertEquals("PRJNA28545", study.getProjectId()));
+        StudyProcessor processor = new StudyProcessor( parameters, (Study study) -> Assert.assertEquals( "PRJNA28545", study.getProjectId() ) );
 
-        ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "STUDY", "SRP000392");
-        Assert.assertNull( processor.process(fieldValue) );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "STUDY", "SRP000392" );
+        Assert.assertTrue( processor.process( fieldValue ).isValid() );
         Assert.assertEquals( "PRJNA28545", fieldValue.getValue() );
     }
+    
 
     @Test public void
     testIncorrect()
     {
-        StudyProcessor processor = new StudyProcessor(parameters, Assert::assertNull);
+        StudyProcessor processor = new StudyProcessor( parameters, Assert::assertNull );
 
-        ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "STUDY", "ERS000002");
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "STUDY", "ERS000002" );
+        Assert.assertFalse( processor.process( fieldValue ).isValid() );
         Assert.assertEquals( "ERS000002", fieldValue.getValue() );
     }
 }

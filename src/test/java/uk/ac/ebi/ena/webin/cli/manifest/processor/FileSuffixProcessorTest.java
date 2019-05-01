@@ -20,19 +20,22 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 
-public class FileSuffixProcessorTest {
+public class 
+FileSuffixProcessorTest 
+{
 
-    @Test
-    public void test() {
+    @Test public void 
+    test() 
+    {
 
-        FileSuffixProcessor processor = new FileSuffixProcessor(ManifestFileSuffix.BAM_FILE_SUFFIX);
+        FileSuffixProcessor processor = new FileSuffixProcessor( ManifestFileSuffix.BAM_FILE_SUFFIX );
 
-        ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a.bam");
-        Assert.assertNull( processor.process(fieldValue) );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.bam" );
+        Assert.assertTrue( processor.process( fieldValue ).isValid() );
         Assert.assertEquals( "a.bam", fieldValue.getValue() );
 
-        fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a.cram");
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
+        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.cram" );
+        Assert.assertFalse( processor.process( fieldValue ).isValid() );
         Assert.assertEquals( "a.cram", fieldValue.getValue() );
     }
 }

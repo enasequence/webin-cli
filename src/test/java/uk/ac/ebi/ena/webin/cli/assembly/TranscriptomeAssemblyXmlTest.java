@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -24,6 +25,8 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.entity.Analysis;
+import uk.ac.ebi.ena.webin.cli.entity.Run;
 import uk.ac.ebi.ena.webin.cli.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -36,53 +39,61 @@ TranscriptomeAssemblyXmlTest {
         Locale.setDefault(Locale.UK);
     }
 
-    @Test
-    public void
-    testAnalysisXML_AssemblyInfo_WithFastaFile() {
-    	
-    	Path fastaFile = WebinCliTestUtils.createTempFile(">123\nACGT");
+    
+    @Test public void
+    testAnalysisXML_AssemblyInfo_WithFastaFile() 
+    {
+    	Path fastaFile = WebinCliTestUtils.createTempFile( ">123\nACGT" );
     	SubmissionOptions submissionOptions =  new SubmissionOptions();
     	SubmissionFiles submissionFiles = new SubmissionFiles();
-    	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
-    	submissionFiles.addFile(submissionFile);
-    	submissionOptions.submissionFiles = Optional.of(submissionFiles);
+    	SubmissionFile submissionFile = new SubmissionFile( FileType.FASTA,fastaFile.toFile() );
+    	submissionFiles.addFile( submissionFile );
+    	submissionOptions.submissionFiles = Optional.of( submissionFiles );
         TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
         String name = "test_transcriptome";
-        cli.setName(name);
-        cli.getParameters().setInputDir(fastaFile.getParent().toFile());
+        cli.setName( name );
+        cli.getParameters().setInputDir( fastaFile.getParent().toFile() );
         AssemblyInfoEntry info = new AssemblyInfoEntry();
-        cli.setAssemblyInfo(info);
-        cli.setSubmissionOptions(submissionOptions);
-        info.setName(name);
-        info.setBiosampleId("test_sample");
-        info.setStudyId("test_study");
-        info.setProgram("test_program");
-        info.setPlatform("test_platform");
-        info.setTpa(false);
+        cli.setAssemblyInfo( info );
+        cli.setSubmissionOptions( submissionOptions );
+        info.setName( name );
+        info.setBiosampleId( "test_sample" );
+        info.setStudyId( "test_study" );
+        info.setProgram( "test_program" );
+        info.setPlatform( "test_platform" );
+        info.setTpa( false );
         cli.setDescription( "test description" );
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        
+        cli.setAnalysisRef( new ArrayList<Analysis>() { { add( new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ) ); add( new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) ); } } );
+        cli.setRunRef( new ArrayList<Run>() { { add( new Run( "RUN_ID1", "RUN_ID1_ALIAS" ) ); add( new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) ); } } );
+        
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
 
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
-                "<ANALYSIS_SET>\n" +
-                        "  <ANALYSIS>\n" +
-                        "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n" +
-                        "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
-                        "    <STUDY_REF accession=\"test_study\" />\n" +
-                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
-                        "    <ANALYSIS_TYPE>\n" +
-                        "      <TRANSCRIPTOME_ASSEMBLY>\n" +
-                        "        <NAME>test_transcriptome</NAME>\n" +
-                        "        <PROGRAM>test_program</PROGRAM>\n" +
-                        "        <PLATFORM>test_platform</PLATFORM>\n" +
-                        "      </TRANSCRIPTOME_ASSEMBLY>\n" +
-                        "    </ANALYSIS_TYPE>\n" +
-                        "    <FILES>\n" +
-                        "      <FILE filename=\"webin-cli/transcriptome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"6f82bc96add84ece757afad265d7e341\" />\n" +
-                        "    </FILES>\n" +
-                        "  </ANALYSIS>\n" +
-                        "</ANALYSIS_SET>\n");
+        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+                "<ANALYSIS_SET>\n"
+                      + "  <ANALYSIS>\n"
+                      + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
+                      + "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n"
+                      + "    <STUDY_REF accession=\"test_study\" />\n"
+                      + "    <SAMPLE_REF accession=\"test_sample\" />\n"
+                      + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
+                      + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
+                      + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
+                      + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
+                      + "    <ANALYSIS_TYPE>\n"
+                      + "      <TRANSCRIPTOME_ASSEMBLY>\n"
+                      + "        <NAME>test_transcriptome</NAME>\n"
+                      + "        <PROGRAM>test_program</PROGRAM>\n"
+                      + "        <PLATFORM>test_platform</PLATFORM>\n"
+                      + "      </TRANSCRIPTOME_ASSEMBLY>\n"
+                      + "    </ANALYSIS_TYPE>\n"
+                      + "    <FILES>\n"
+                      + "      <FILE filename=\"webin-cli/transcriptome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"6f82bc96add84ece757afad265d7e341\" />\n"
+                      + "    </FILES>\n"
+                      + "  </ANALYSIS>\n"
+                      + "</ANALYSIS_SET>\n" );
     }
 
     @Test

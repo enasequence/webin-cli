@@ -10,8 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
-import uk.ac.ebi.embl.api.validation.Origin;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -26,14 +25,16 @@ StudyProcessor implements ManifestFieldProcessor
     private final WebinCliParameters parameters;
     private final ManifestFieldProcessor.Callback<Study> callback;
 
-    public StudyProcessor(WebinCliParameters parameters, ManifestFieldProcessor.Callback<Study> callback )
+    public 
+    StudyProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<Study> callback )
     {
         this.parameters = parameters;
         this.callback = callback;
     }
 
-    @Override public ValidationMessage<Origin>
-    process(ManifestFieldValue fieldValue )
+    
+    @Override public ValidationResult
+    process( ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
 
@@ -44,12 +45,13 @@ StudyProcessor implements ManifestFieldProcessor
                                                         .setTest( parameters.isTestMode() )
                                                         .build();
             Study study = studyService.getStudy( value );
-            fieldValue.setValue(study.getProjectId());
-            callback.notify(study);
-            return null;
+            fieldValue.setValue( study.getProjectId() );
+            callback.notify( study );
+            return new ValidationResult();
+            
         } catch( WebinCliException e )
         {
-            return WebinCliMessage.error(WebinCliMessage.Manifest.STUDY_LOOKUP_ERROR, value, e.getMessage() );
+            return new ValidationResult().append( WebinCliMessage.error( WebinCliMessage.Manifest.STUDY_LOOKUP_ERROR, value, e.getMessage() ) );
         }
     }
 }

@@ -42,6 +42,8 @@ import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.entity.Analysis;
+import uk.ac.ebi.ena.webin.cli.entity.Run;
 import uk.ac.ebi.ena.webin.cli.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
@@ -61,10 +63,39 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     private Study study;
     private Sample sample;
 	private SourceFeature source;
+	private List<Run> run_refs;
+	private List<Analysis> analysis_refs;
 	protected AssemblyInfoEntry assembly_info;
 
     private static final Logger log = LoggerFactory.getLogger(SequenceWebinCli.class);
 
+    public void
+    setRunRef( List<Run> run_refs )
+    {
+        this.run_refs = run_refs;
+    }
+    
+    
+    public void
+    setAnalysisRef( List<Analysis> analysis_refs )
+    {
+        this.analysis_refs = analysis_refs;
+    }
+
+    public List<Run>
+    getRunRef()
+    {
+        return this.run_refs;
+    }
+    
+    
+    public List<Analysis> 
+    getAnalysisRef()
+    {
+        return this.analysis_refs;
+    }
+    
+    
     public void
     setStudy( Study study )
     { 
@@ -145,7 +176,12 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
    
     private String
-    createAnalysisXml(List<Element> fileList, AssemblyInfoEntry entry, String centerName, String description)
+    createAnalysisXml( List<Element> fileList, 
+                       AssemblyInfoEntry entry, 
+                       String centerName, 
+                       String description,
+                       List<Run> run_ref,
+                       List<Analysis> analysis_ref )
     {
         try 
         {
@@ -175,6 +211,29 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                 analysisE.addContent( sampleRefE );
 				sampleRefE.setAttribute( "accession", entry.getBiosampleId() );
             }
+			
+			
+            if( null != run_ref )
+            {
+                for( Run r : run_ref )
+                {
+                    Element runRefE = new Element( "RUN_REF" );
+                    analysisE.addContent( runRefE );
+                    runRefE.setAttribute( "accession", r.getRunId() );
+                }
+            }
+            
+            
+            if( null != analysis_ref )
+            {
+                for( Analysis a : analysis_ref )
+                {
+                    Element analysisRefE = new Element( "ANALYSIS_REF" );
+                    analysisE.addContent( analysisRefE );
+                    analysisRefE.setAttribute( "accession", a.getAnalysisId() );
+                }
+            }
+			
             Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
             analysisE.addContent( analysisTypeE );
             Element typeE = makeAnalysisType( entry );
@@ -319,7 +378,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             List<File> uploadFileList = getUploadFiles();
             List<Element> eList = getXMLFiles( uploadDir );
 
-            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName(), getDescription() );
+            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName(), getDescription(), getRunRef(), getAnalysisRef() );
             
             Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
     
