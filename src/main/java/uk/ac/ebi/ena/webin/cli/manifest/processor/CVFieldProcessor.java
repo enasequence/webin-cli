@@ -12,8 +12,7 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import java.util.List;
 
-import uk.ac.ebi.embl.api.validation.Origin;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
@@ -42,13 +41,13 @@ CVFieldProcessor implements ManifestFieldProcessor
         this.cvList = cvList;
     }
 
-    @Override public ValidationMessage<Origin>
-    process(ManifestFieldValue fieldValue )
+    @Override public ValidationResult
+    process( ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
-
+        
         if( !cvList.contains( value ) ) {
-            return WebinCliMessage.error(WebinCliMessage.Manifest.INVALID_FIELD_VALUE_ERROR, fieldValue.getName(), value, cvList.keyList());
+            return new ValidationResult().append( WebinCliMessage.error( WebinCliMessage.Manifest.INVALID_FIELD_VALUE_ERROR, fieldValue.getName(), value, cvList.keyList() ) );
         }
 
         String corrected = cvList.getKey( value );
@@ -56,13 +55,16 @@ CVFieldProcessor implements ManifestFieldProcessor
         if( !value.equals( corrected ) )
         {
             fieldValue.setValue( corrected );
-            return WebinCliMessage.info(WebinCliMessage.Manifest.FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected );
+            return new ValidationResult().append( WebinCliMessage.info( WebinCliMessage.Manifest.FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected ) );
         }
 
-        return null;
+        return new ValidationResult();
     }
 
-    public List<String> getValues() {
+    
+    public List<String> 
+    getValues() 
+    {
         return cvList.keyList();
     }
 }

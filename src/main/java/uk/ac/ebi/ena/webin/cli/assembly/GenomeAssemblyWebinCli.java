@@ -20,6 +20,8 @@ import org.jdom2.Element;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
@@ -39,10 +41,11 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	{
 		// Call manifest parser which also set the sample and study fields.
 
-		return new GenomeAssemblyManifest(
-				isFetchSample() ? new SampleProcessor( getParameters(), this::setSample ) : null,
-						isFetchStudy() ? new StudyProcessor( getParameters(), this::setStudy ) : null,
-								isFetchSource() ? new SourceFeatureProcessor( getParameters(), this::setSource ) : null );
+		return new GenomeAssemblyManifest( isFetchSample() ? new SampleProcessor( getParameters(), this::setSample ) : null,
+						                   isFetchStudy() ? new StudyProcessor( getParameters(), this::setStudy ) : null,
+						                   isFetchRun() ? new RunProcessor( getParameters(), this::setRunRef ) : null,
+						                   isFetchAnalysis() ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null,
+						                   isFetchSource() ? new SourceFeatureProcessor( getParameters(), this::setSource ) : null );
 	}
 
 	

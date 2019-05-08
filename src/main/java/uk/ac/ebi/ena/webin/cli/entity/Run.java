@@ -8,23 +8,42 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.manifest;
+package uk.ac.ebi.ena.webin.cli.entity;
 
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.service.RunService;
 
-public interface
-ManifestFieldProcessor
+public class 
+Run 
 {
-    /** Validates and fixes a manifest field.
-     */
-    ValidationResult process( ManifestFieldValue fieldValue );
+    private String run_id;
+    private String alias;
+    
+    
+    public 
+    Run( RunService.RunResponse run_response )
+    {
+        this( run_response.id, run_response.alias );
+    }
 
-    /** Interface to notify the user of the field processor.
-     */
-    interface Callback<T> {
+    
+    public 
+    Run( String run_id, String alias )
+    {
+        this.run_id = run_id;
+        this.alias  = alias;
+    }
 
-        /** Callback to notify the user of the field processor.
-         */
-        void notify( T value );
+    
+    public String 
+    getRunId()
+    {
+        return this.run_id;
+    }
+
+    
+    public String 
+    getAlias()
+    {
+        return this.alias;
     }
 }

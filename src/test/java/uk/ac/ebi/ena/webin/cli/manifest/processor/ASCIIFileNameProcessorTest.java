@@ -15,7 +15,6 @@ import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.crea
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
@@ -28,20 +27,20 @@ ASCIIFileNameProcessorTest
         ASCIIFileNameProcessor processor = new ASCIIFileNameProcessor();
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.bam" );
-        Assert.assertNull( processor.process( fieldValue ) );
+        Assert.assertEquals( 0, processor.process( fieldValue ).count() );
         Assert.assertEquals( "a.bam", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "/a/b/c.bam" );
-        Assert.assertNull( processor.process( fieldValue ) );
+        Assert.assertEquals( 0, processor.process( fieldValue ).count() );
         
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a:\\B\\c.bam" );
-        Assert.assertNull( processor.process( fieldValue ) );
+        Assert.assertEquals( 0, processor.process( fieldValue ).count() );
         
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a|b.cram" );
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
+        Assert.assertEquals( false, processor.process( fieldValue ).isValid() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a&b.cram" );
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
+        Assert.assertEquals( false, processor.process( fieldValue ).isValid() );
         Assert.assertEquals( "a&b.cram", fieldValue.getValue() );
     }
 }

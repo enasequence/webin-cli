@@ -16,42 +16,58 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.validation.Severity;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
-public class CVFieldProcessorTest {
+public class
+CVFieldProcessorTest 
+{
 
-    @Test public void test()
+    @Test public void 
+    test()
     {
-        CVFieldProcessor processor = new CVFieldProcessor( new ManifestCVList("TEST1", "test2") );
+        CVFieldProcessor processor = new CVFieldProcessor( new ManifestCVList( "TEST1", "test2" ) );
 
-        ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "TEST1");
-        Assert.assertNull( processor.process(fieldValue) );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST1" );
+        ValidationResult vr = processor.process( fieldValue );
+        Assert.assertTrue( vr.isValid() );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
-        fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "test1");
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
+        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "test1" );
+        vr = processor.process( fieldValue );
+        Assert.assertTrue( vr.isValid() );
+        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
-        fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "te_st1");
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
+        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "te_st1" );
+        vr = processor.process( fieldValue );
+        Assert.assertTrue( vr.isValid() );
+        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
-        fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "test2");
-        Assert.assertNull( processor.process(fieldValue) );
+        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "test2" );
+        vr = processor.process( fieldValue );
+        Assert.assertTrue( vr.isValid() );
+        Assert.assertEquals( 0, vr.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
-        fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "TEST2");
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
+        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST2" );
+        vr = processor.process( fieldValue );
+        Assert.assertTrue( vr.isValid() );
+        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
-        fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "TE_ST2");
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.INFO);
+        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TE_ST2" );
+        vr = processor.process( fieldValue );
+        Assert.assertTrue( vr.isValid() );
+        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
-        fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "TEST3");
-        Assert.assertEquals(processor.process(fieldValue).getSeverity(), Severity.ERROR);
+        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST3" );
+        vr = processor.process( fieldValue );
+        Assert.assertFalse( vr.isValid() );
         Assert.assertEquals( "TEST3", fieldValue.getValue() );
     }
 }

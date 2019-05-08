@@ -19,25 +19,23 @@ import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
 public enum SpreadsheetContext {
 
     GENOME(
-            new GenomeAssemblyManifest(null, null, null),
+            new GenomeAssemblyManifest( null, null, null, null, null ),
             "genome",
             "Additionally, primary and binned metagenomes must have " +
-            ManifestReader.getFileGroupText(
-                    GenomeAssemblyManifest.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS) +
-            " files."
+            ManifestReader.getFileGroupText( GenomeAssemblyManifest.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
     ),
     TRANSCRIPTOME(
-            new TranscriptomeAssemblyManifest(null, null, null),
+            new TranscriptomeAssemblyManifest( null, null, null, null, null ),
             "transcriptome",
             null
     ),
     SEQUENCE(
-            new SequenceAssemblyManifest(null),
+            new SequenceAssemblyManifest( null, null, null ),
             "sequence",
             null
     ),
     READ(
-            new RawReadsManifest(null, null),
+            new RawReadsManifest( null, null ),
             "read",
             null
     );

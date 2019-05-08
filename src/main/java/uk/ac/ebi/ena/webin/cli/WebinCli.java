@@ -10,23 +10,17 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.nio.file.FileSystems;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.*;
+import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.beust.jcommander.IParameterValidator;
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -34,6 +28,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
 
+import picocli.CommandLine;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
@@ -49,8 +44,7 @@ import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
 
-// @SpringBootApplication
-public class WebinCli { // implements CommandLineRunner
+public class WebinCli {
 	public final static int SUCCESS = 0;
 	public final static int SYSTEM_ERROR = 1;
 	public final static int USER_ERROR = 2;
@@ -58,71 +52,11 @@ public class WebinCli { // implements CommandLineRunner
 
 	private final static String LOG_FILE_NAME= "webin-cli.report";
 
-	private Params params;
+	private WebinCliCommand params;
 	private WebinCliContext context;
 
 	private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
 
-	public static class
-	Params	
-	{
-		@Parameter()
-		private List<String> unrecognisedOptions = new ArrayList<>();
-
-		@Parameter(names = "help")
-		public boolean help;
-		
-		@Parameter(names = ParameterDescriptor.test, description = ParameterDescriptor.testFlagDescription)
-		public boolean test;
-
-		@Parameter(names = ParameterDescriptor.context, description = ParameterDescriptor.contextFlagDescription, required = true,validateWith = ContextValidator.class)
-		public String context;
-		
-		@Parameter(names = { ParameterDescriptor.userName, ParameterDescriptor.userNameSynonym }, description = ParameterDescriptor.userNameFlagDescription, required = true)
-		public String userName;
-		
-		@Parameter(names = ParameterDescriptor.password, description = ParameterDescriptor.passwordFlagDescription, required = true)
-		public String password;
-		
-		@Parameter(names = ParameterDescriptor.manifest, description = ParameterDescriptor.manifestFlagDescription, required = true,validateWith = ManifestFileValidator.class)
-		public String manifest;
-		
-		@Parameter(names = { ParameterDescriptor.outputDir, ParameterDescriptor.outputDirSynonym }, description = ParameterDescriptor.outputDirFlagDescription,validateWith = OutputDirValidator.class)
-		public String outputDir;
-		
-		@Parameter(names = ParameterDescriptor.validate, description = ParameterDescriptor.validateFlagDescription)
-		public boolean validate;
-		
-		@Parameter(names = ParameterDescriptor.submit, description = ParameterDescriptor.submitFlagDescription)
-		public boolean submit;
-		
-        @Parameter(names = { ParameterDescriptor.centerName, ParameterDescriptor.centerNameSynonym }, description = ParameterDescriptor.centerNameFlagDescription)
-        public String centerName;
-        
-        @Parameter(names = ParameterDescriptor.version, description = ParameterDescriptor.versionFlagDescription)
-        public boolean version;
-	
-        @Parameter(names = { ParameterDescriptor.inputDir, ParameterDescriptor.inputDirSynonym }, description = ParameterDescriptor.inputDirFlagDescription, hidden=true )
-        public String inputDir = ".";
-        
-        @Parameter(names = ParameterDescriptor.ascp, description = ParameterDescriptor.tryAscpDescription)
-        public boolean ascp;
-	}
-
-
-	private static String getFullPath(String path) {
-		return FileSystems.getDefault().getPath(path).normalize().toAbsolutePath().toString();
-	}
-
-	
-	private static String 
-	getFormattedProgramVersion()
-	{
-        String version = WebinCli.class.getPackage().getImplementationVersion();
-        return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
-	}
-	
-	
     public static void 
     main( String... args )
     {
@@ -138,31 +72,12 @@ public class WebinCli { // implements CommandLineRunner
 
         try 
         {
-            if( args != null && args.length > 0 )
-            {
-                List<String> found = Arrays.stream( args ).collect( Collectors.toList() );
-                if( found.contains( ParameterDescriptor.help ) ) {
-                    printUsage();
-                    return SUCCESS;
-                }
-                
-                if( found.contains( ParameterDescriptor.version ) )
-                {
-                    log.info( getFormattedProgramVersion() );
-                    return SUCCESS;
-                }
-            }
+            WebinCliCommand params = parseParameters( args );
+			if( null == params )
+				return USER_ERROR;
 
-            Params params = parseParameters( args );
-            if( null == params )
-                return USER_ERROR;
-            
-            if( !params.validate && !params.submit ) 
-            {
-                log.error("Either -validate or -submit option must be provided.");
-                printHelp();
-                return USER_ERROR;
-            }
+            if (params.help || params.version)
+				return SUCCESS;
             
             checkVersion( params.test );
 
@@ -188,7 +103,16 @@ public class WebinCli { // implements CommandLineRunner
                     return VALIDATION_ERROR;
             }
             
-        } catch( Throwable e )
+        } catch( ValidationEngineException e ) 
+        {
+            log.error( e.getMessage(), e );
+
+            if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
+                return SYSTEM_ERROR;
+            else
+                return USER_ERROR;
+            
+        } catch( Throwable e ) 
         {
             log.error( e.getMessage(), e );
             return SYSTEM_ERROR;
@@ -197,20 +121,15 @@ public class WebinCli { // implements CommandLineRunner
 
 
 	WebinCliParameters
-    init( Params params )
+    init( WebinCliCommand params )
     {
         this.params = params;
-        this.context = WebinCliContext.valueOf( params.context );
-
-        params.manifest = getFullPath( params.manifest );
-        File manifestFile = new File( params.manifest );
-
-        String outputDir = getFullPath( params.outputDir == null ? manifestFile.getParent() : params.outputDir );
+        this.context = params.context;
 
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setManifestFile( manifestFile );
-        parameters.setInputDir( Paths.get( params.inputDir ).toAbsolutePath().toFile() );
-        parameters.setOutputDir( Paths.get( outputDir ).toAbsolutePath().toFile() );
+        parameters.setManifestFile(  params.manifest );
+        parameters.setInputDir( params.inputDir  );
+        parameters.setOutputDir( params. outputDir );
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );
@@ -251,16 +170,27 @@ public class WebinCli { // implements CommandLineRunner
 	}
 
 	void
-	execute(WebinCliParameters parameters)  {
-		try {
-			context = WebinCliContext.valueOf(params.context);
-		} catch (IllegalArgumentException e) {
-			throw WebinCliException.userError(WebinCliMessage.Cli.INVALID_CONTEXT_ERROR.format(params.context));
-		}
+	execute(WebinCliParameters parameters) throws Exception {
+		context = params.context;
 
 		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
 
+		AbstractWebinCli<?> validator = context.getValidatorClass().newInstance();
+		validator.setTestMode(params.test);
+		validator.init(parameters, getManifestSource(parameters));
+
+		if (params.validate || validator.getSubmissionBundle() == null) {
+			doValidation(validator);
+		}
+
+		if (params.submit) {
+			doSubmit(validator);
+		}
+	}
+
+	private ManifestSource
+	getManifestSource(WebinCliParameters parameters) {
 		File file = parameters.getManifestFile();
 
 		if (file.getName().endsWith(".xls") || file.getName().endsWith(".xlsx")) {
@@ -280,7 +210,7 @@ public class WebinCli { // implements CommandLineRunner
 						if (emptyRow) {
 							break;
 						}
-						executeInternal(parameters, new ManifestSource(parameters.getManifestFile(), dataSheet, dataSheetRowNumber) );
+						return new ManifestSource(parameters.getManifestFile(), dataSheet, dataSheetRowNumber);
 					}
 				}
 			}
@@ -289,33 +219,10 @@ public class WebinCli { // implements CommandLineRunner
 			}
 		}
 		else {
-			executeInternal(parameters, new ManifestSource(parameters.getManifestFile()) );
+			return new ManifestSource(parameters.getManifestFile());
 		}
 	}
 
-	private void executeInternal(WebinCliParameters parameters, ManifestSource manifestSource)
-	{
-		AbstractWebinCli<?> validator = null;
-		try {
-			validator = context.getValidatorClass().newInstance();
-		}
-		catch (Exception ex) {
-			throw WebinCliException.userError("Unable to create validator");
-		}
-
-		validator.setTestMode(params.test);
-		validator.init( parameters, manifestSource );
-
-		if (params.validate || validator.getSubmissionBundle() == null) {
-			doValidation(validator);
-		}
-
-		if (params.submit) {
-			doSubmit(validator);
-		}
-	}
-
-	
 	private void
 	doValidation(AbstractWebinCli<?> validator)
 	{
@@ -376,7 +283,7 @@ public class WebinCli { // implements CommandLineRunner
                                                            .setPassword( params.password )
                                                            .setTest( params.test )
                                                            .build();
-            submitService.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getFormattedProgramVersion() );
+            submitService.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getVersionForSubmission() );
 
         } catch( WebinCliException e ) 
         {
@@ -385,18 +292,66 @@ public class WebinCli { // implements CommandLineRunner
     }
 	
 
-    private static Params 
+    private static WebinCliCommand
     parseParameters( String... args ) 
     {
-		Params params = new Params();
-		JCommander jCommander = JCommander.newBuilder().expandAtSign( false ).addObject( params ).build();
-		try 
-		{
-			jCommander.parse( args );
+		AnsiConsole.systemInstall();
+		WebinCliCommand params = new WebinCliCommand();
+		CommandLine commandLine = new CommandLine(params);
+		commandLine.setExpandAtFiles(false);
+		commandLine.parse(args);
 
-			if( !params.unrecognisedOptions.isEmpty() )  
-			{
-				log.error( "Unrecognised options: " + String.join(", ", params.unrecognisedOptions));
+		List<String> jvm_args  = ManagementFactory.getRuntimeMXBean().getInputArguments();
+		String classpath = ManagementFactory.getRuntimeMXBean().getClassPath();
+
+		commandLine.setCommandName( "java " + ( jvm_args.isEmpty() ? "" : jvm_args.stream().collect( Collectors.joining( " ", "", " " ) ) ) + "-jar " + classpath );
+
+		try
+		{
+			commandLine.parse(args);
+			if (commandLine.isUsageHelpRequested()) {
+				commandLine.usage(System.out);
+				params.help = true;
+				return params;
+			}
+
+			if (commandLine.isVersionHelpRequested()) {
+				commandLine.printVersionHelp(System.out);
+				params.version = true;
+				return params;
+			}
+
+			if (!params.manifest.isFile() || !Files.isReadable(params.manifest.toPath())) {
+				log.error("Unable to read the manifest file.");
+				printHelp();
+				return null;
+			}
+			params.manifest = params.manifest.getAbsoluteFile();
+
+			if (params.inputDir == null) {
+				params.inputDir = Paths.get(".").toFile().getAbsoluteFile();
+			}
+			params.inputDir = params.inputDir.getAbsoluteFile();
+
+			if (params.outputDir == null) {
+				params.outputDir = params.manifest.getParentFile();
+			}
+			params.outputDir = params.outputDir.getAbsoluteFile();
+
+			if (!params.inputDir.canRead()) {
+				log.error("Unable to read from the input directory: " + params.inputDir.getAbsolutePath());
+				printHelp();
+				return null;
+			}
+
+			if (!params.outputDir.canWrite()) {
+				log.error("Unable to write to the output directory: " + params.outputDir.getAbsolutePath());
+				printHelp();
+				return null;
+			}
+
+			if( !params.validate && !params.submit ) {
+				log.error("Either -validate or -submit option must be provided.");
 				printHelp();
 				return null;
 			}
@@ -405,124 +360,45 @@ public class WebinCli { // implements CommandLineRunner
 	        
 		} catch( Exception e )
 		{
-			log.error( e.getMessage() );
+			log.error( e.getMessage(), e );
+			printHelp();
 			return null;
 		}
 	}
 
     private static void 
-	printUsage() 
-	{
-	    log.info( new StringBuilder()
-				.append( "Program options: " )
-				.append( '\n' )
-				.append( '\t' )
-				.append( "\n" + ParameterDescriptor.context )
-				.append( ParameterDescriptor.contextFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.userName )
-				.append( ParameterDescriptor.userNameFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.password )
-				.append( ParameterDescriptor.passwordFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.manifest )
-				.append( ParameterDescriptor.manifestFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.inputDir )
-				.append( ParameterDescriptor.inputDirFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.outputDir )
-				.append( ParameterDescriptor.outputDirFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.validate )
-				.append( ParameterDescriptor.validateFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.submit )
-				.append( ParameterDescriptor.submitFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.centerName )
-				.append( ParameterDescriptor.centerNameFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.ascp)
-				.append( ParameterDescriptor.tryAscpDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.version )
-				.append( ParameterDescriptor.versionFlagDescription )
-				.append( '\n' )
-
-				.append( "\n" + ParameterDescriptor.help )
-				.append( ParameterDescriptor.helpFlagDescription )
-				.append( '\n' )
-				.append( '\t' )
-				.append( '\n' ).toString() );
-		writeReturnCodes();
-	}
-
-	
-    private static void 
 	printHelp() 
 	{
-		log.info( "Please use " + ParameterDescriptor.help + " to see all command line options." );
+		log.info( "Please use " + WebinCliCommand.Options.help + " option to see all command line options." );
 	}
 
 	
-	private static void 
-	writeReturnCodes()	
+    public static String
+	getVersionForSubmission()
 	{
-		HashMap<Integer, String> returnCodeMap = new HashMap<>();
-		returnCodeMap.put( SUCCESS, "SUCCESS" );
-		returnCodeMap.put( SYSTEM_ERROR, "INTERNAL ERROR" );
-		returnCodeMap.put( USER_ERROR, "USER ERROR" );
-		returnCodeMap.put( VALIDATION_ERROR, "VALIDATION ERROR" );
-		log.info( "Exit codes: " + returnCodeMap.toString() );
+		String version = getVersion();
+		return String.format( "%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version );
 	}
 
 
-	public static class ContextValidator implements IParameterValidator {
-		@Override
-		public void validate(String name, String value)	throws ParameterException {
-			try {
-				WebinCliContext.valueOf(value);
-			} catch (IllegalArgumentException e) {
-				throw new ParameterException(WebinCliMessage.Cli.INVALID_CONTEXT_ERROR.format(value));
-			}
-		}
-	}
-
-	public static class OutputDirValidator implements IParameterValidator {
-		@Override
-		public void validate(String name, String value)	throws ParameterException {
-			File file = new File(value);
-			if(!file.exists())
-				throw new ParameterException("The output directory '" + value + "' does not exist.");
-		}
-	}
-
-	public static class ManifestFileValidator implements IParameterValidator {
-		@Override
-		public void validate(String name, String value)	throws ParameterException {
-			File file = new File(value);
-			if(!file.exists())
-				throw new ParameterException("The manifest file '" + value + "' does not exist.");
-		}
-	}
-
-
-	private static void 
-	checkVersion( boolean test ) 
+	public static String
+	getVersionForUsage()
 	{
-		String currentVersion = WebinCli.class.getPackage().getImplementationVersion();
+		String version = getVersion();
+		return String.format( "%s", null == version ? "no version declared" : version );
+	}
+
+
+	private static String
+	getVersion()
+	{
+		return WebinCli.class.getPackage().getImplementationVersion();
+	}
+
+
+	private static void checkVersion( boolean test )
+	{
+		String currentVersion = getVersion();
 		
 		if( null == currentVersion || currentVersion.isEmpty() )
 		    return;

@@ -10,8 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
-import uk.ac.ebi.embl.api.validation.Origin;
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -26,14 +25,15 @@ SampleProcessor implements ManifestFieldProcessor
     private final WebinCliParameters parameters;
     private final ManifestFieldProcessor.Callback<Sample> callback;
 
-    public SampleProcessor(WebinCliParameters parameters, ManifestFieldProcessor.Callback<Sample> callback)
+    public 
+    SampleProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<Sample> callback )
     {
         this.parameters = parameters;
         this.callback = callback;
     }
 
-    @Override public ValidationMessage<Origin>
-    process(ManifestFieldValue fieldValue )
+    @Override public ValidationResult
+    process( ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
 
@@ -44,12 +44,13 @@ SampleProcessor implements ManifestFieldProcessor
                                                            .setTest( parameters.isTestMode() )
                                                            .build();
             Sample sample = sampleService.getSample( value );
-            fieldValue.setValue(sample.getBiosampleId());
-            callback.notify(sample);
-            return null;
+            fieldValue.setValue( sample.getBiosampleId() );
+            callback.notify( sample );
+            return new ValidationResult();
+            
         } catch( WebinCliException e )
         {
-            return WebinCliMessage.error(WebinCliMessage.Manifest.SAMPLE_LOOKUP_ERROR, value, e.getMessage() );
+            return new ValidationResult().append( WebinCliMessage.error( WebinCliMessage.Manifest.SAMPLE_LOOKUP_ERROR, value, e.getMessage() ) );
         }
     }
 }

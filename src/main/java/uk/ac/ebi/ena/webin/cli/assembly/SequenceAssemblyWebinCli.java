@@ -20,6 +20,8 @@ import org.jdom2.Element;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestSource;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
 
 
@@ -33,8 +35,9 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     protected SequenceAssemblyManifest createManifestReader() {
         // Create manifest parser which will also set the study field.
 
-        return new SequenceAssemblyManifest(
-                isFetchStudy() ? new StudyProcessor(getParameters(), this::setStudy ) : null);
+        return new SequenceAssemblyManifest( isFetchStudy()    ? new StudyProcessor( getParameters(), this::setStudy ) : null,
+                                             isFetchRun()      ? new RunProcessor( getParameters(), this::setRunRef ) : null,
+                                             isFetchAnalysis() ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null );
     }
 
     @Override

@@ -45,7 +45,7 @@ WebinCliTest
     }
 
     private String
-    getGenomeManifestFields(String name)
+    getGenomeManifestFields( String name )
     {
         return    GenomeAssemblyManifest.Field.ASSEMBLYNAME + " " + name + "\n"
                 + GenomeAssemblyManifest.Field.COVERAGE     + " 45\n"
@@ -55,6 +55,8 @@ WebinCliTest
                 + GenomeAssemblyManifest.Field.MOLECULETYPE + " genomic DNA\n"
                 + GenomeAssemblyManifest.Field.SAMPLE       + " SAMN04526268\n"
                 + GenomeAssemblyManifest.Field.STUDY        + " PRJEB20083\n"
+                + GenomeAssemblyManifest.Field.RUN_REF      + " ERR2836762, ERR2836753, SRR8083599\n"
+                + GenomeAssemblyManifest.Field.ANALYSIS_REF + " ERZ690501, ERZ690500\n"
                 + GenomeAssemblyManifest.Field.DESCRIPTION  + " Some genome assembly description\n";
     }
 
@@ -66,14 +68,18 @@ WebinCliTest
                 + TranscriptomeAssemblyManifest.Field.PLATFORM     + " fghgf\n"
                 + TranscriptomeAssemblyManifest.Field.SAMPLE       + " SAMN04526268\n"
                 + TranscriptomeAssemblyManifest.Field.STUDY        + " PRJEB20083\n"
+                + TranscriptomeAssemblyManifest.Field.RUN_REF      + " ERR2836762, ERR2836753, SRR8083599\n"
+                + TranscriptomeAssemblyManifest.Field.ANALYSIS_REF + " ERZ690501, ERZ690500\n"
                 + TranscriptomeAssemblyManifest.Field.DESCRIPTION  + " Some transcriptome assembly description\n";
     }
 
     private String
     getSequenceManifestFields(String name)
     {
-        return    SequenceAssemblyManifest.Field.NAME  + " " + name + "\n"
-                + SequenceAssemblyManifest.Field.STUDY + " PRJEB20083\n"
+        return    SequenceAssemblyManifest.Field.NAME         + " " + name + "\n"
+                + SequenceAssemblyManifest.Field.STUDY        + " PRJEB20083\n"
+                + SequenceAssemblyManifest.Field.RUN_REF      + " ERR2836762, ERR2836753, SRR8083599\n"
+                + SequenceAssemblyManifest.Field.ANALYSIS_REF + " ERZ690501, ERZ690500\n"
                 + SequenceAssemblyManifest.Field.DESCRIPTION  + " Some sequence assembly description\n";
     }
 
@@ -81,12 +87,12 @@ WebinCliTest
     private void
     testWebinCli(WebinCliContext context, Path inputDir, Path outputDir, String manifestContents, boolean ascp ) throws Exception
     {
-        WebinCli.Params parameters = new WebinCli.Params();
-        parameters.context = context.toString();
-        parameters.inputDir = inputDir.toString();
-        parameters.outputDir = outputDir.toString();
+        WebinCliCommand parameters = new WebinCliCommand();
+        parameters.context = context;
+        parameters.inputDir = inputDir.toFile();
+        parameters.outputDir = outputDir.toFile();
         parameters.manifest = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
-                manifestContents).toAbsolutePath().toString();
+                manifestContents).toFile();
         parameters.userName = System.getenv( "webin-cli-username" );
         parameters.password = System.getenv( "webin-cli-password" );
         parameters.test = true;

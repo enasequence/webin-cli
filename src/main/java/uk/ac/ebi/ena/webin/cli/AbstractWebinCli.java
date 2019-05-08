@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang.StringUtils;
@@ -46,10 +47,13 @@ AbstractWebinCli<T extends ManifestReader>
     private File processDir;
     private File submitDir;
 
-    private boolean fetchSample = true;
-    private boolean fetchStudy = true;
- 	private boolean fetchSource = true;
+    private boolean fetchSample   = true;
+    private boolean fetchStudy    = true;
+ 	private boolean fetchSource   = true;
+    private boolean fetchRun      = true;
+    private boolean fetchAnalysis = true;
 
+    
     protected abstract T createManifestReader();
 
     private String description;
@@ -172,6 +176,35 @@ AbstractWebinCli<T extends ManifestReader>
         return new File( getSubmitDir(), SUBMISSION_BUNDLE ).getPath();
     }
 
+
+    public boolean
+    isFetchRun()
+    {
+        return fetchRun;
+    }
+    
+    
+    public boolean
+    isFetchAnalysis()
+    {
+        return fetchAnalysis;
+    }
+
+    
+    public void
+    setFetchRun( boolean fetchRun )
+    {
+        this.fetchRun = fetchRun;
+    }
+
+
+    public void
+    setFetchAnalysis( boolean fetchAnalysis )
+    {
+        this.fetchAnalysis = fetchAnalysis;
+    }
+    
+    
     public boolean
     isFetchStudy()
     {
@@ -243,25 +276,39 @@ AbstractWebinCli<T extends ManifestReader>
         this.name = name;
     }
     
+    
     public boolean 
     getTestMode()
     {
         return this.testMode;
     }
 
+    
     public void
     setTestMode( boolean test_mode )
     {
         this.testMode = test_mode;
     }
 
-    public boolean isFetchSource() 
+    
+    public boolean 
+    isFetchSource() 
     {
  		return fetchSource;
  	}
 
- 	public void setFetchSource(boolean fetchSource) 
+ 	
+    public void 
+    setFetchSource( boolean fetchSource ) 
  	{
  		this.fetchSource = fetchSource;
  	}
+    
+    
+    public Path 
+    getUploadRoot()
+    {
+    	return Paths.get( getTestMode() ? "webin-cli-test" : "webin-cli" );
+    }
+    
 }
