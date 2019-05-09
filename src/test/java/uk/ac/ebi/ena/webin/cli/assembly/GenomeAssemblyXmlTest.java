@@ -269,7 +269,7 @@ GenomeAssemblyXmlTest
 
         try
         {
-            cli.init(parameters);
+            cli.readManifest(parameters);
         }
         finally {
             SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);

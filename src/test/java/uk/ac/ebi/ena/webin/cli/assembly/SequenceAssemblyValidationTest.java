@@ -182,13 +182,13 @@ public class SequenceAssemblyValidationTest {
     }
 
     private SequenceAssemblyWebinCli initValidator(Path manifestFile, SequenceAssemblyWebinCli validator) {
-        validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
+        validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
         return validator;
     }
 
     private SequenceAssemblyWebinCli initValidatorThrows(Path manifestFile, SequenceAssemblyWebinCli validator) {
         assertThatThrownBy(() ->
-                validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir())))
+                validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir())))
                 .isInstanceOf(WebinCliException.class);
         return validator;
     }

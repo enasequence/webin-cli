@@ -26,7 +26,7 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 public abstract class 
-AbstractWebinCli<T extends ManifestReader>
+AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
 {
     private static final String VALIDATE_DIR = "validate";
     private static final String PROCESS_DIR = "process";
@@ -51,9 +51,6 @@ AbstractWebinCli<T extends ManifestReader>
     private boolean fetchRun      = true;
     private boolean fetchAnalysis = true;
 
-    
-    protected abstract T createManifestReader();
-
     private String description;
 
     public String 
@@ -69,9 +66,20 @@ AbstractWebinCli<T extends ManifestReader>
         this.description = description;
     }
 
+    /**
+     * Create manifest reader for this submission context.
+     */
+    protected abstract T createManifestReader();
 
+    /**
+     * Read manifest file.
+     */
+    protected abstract void readManifest(Path inputDir, File manifestFile);
+
+
+    @Override
     public final void
-    init( WebinCliParameters parameters )
+    readManifest( WebinCliParameters parameters )
     {
         this.parameters = parameters;
         this.manifestReader = createManifestReader();
@@ -120,13 +128,6 @@ AbstractWebinCli<T extends ManifestReader>
         }
     }
 
-    public abstract WebinCliContext getContext();
-
-    /**
-     * Reads the manifest file and returns the submission name.
-     */
-    public abstract void readManifest(Path inputDir, File manifestFile);
-
     public T getManifestReader() {
         return manifestReader;
     }
@@ -160,9 +161,6 @@ AbstractWebinCli<T extends ManifestReader>
         String alias = "webin-" + getContext().name() + "-" + getName();
         return alias;
     }
-
-    public abstract void validate() throws WebinCliException;
-    public abstract void prepareSubmissionBundle();
 
     private String
     getSubmissionBundleFileName()
@@ -232,6 +230,7 @@ AbstractWebinCli<T extends ManifestReader>
         return WebinCli.getReportFile( getValidationDir(), filename, REPORT_FILE_SUFFIX );
     }
 
+    @Override
     public SubmissionBundle
     getSubmissionBundle()
     {
@@ -245,7 +244,6 @@ AbstractWebinCli<T extends ManifestReader>
         }
     }
 
-    
     protected void
     setSubmissionBundle( SubmissionBundle submissionBundle )
     {

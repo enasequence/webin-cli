@@ -31,7 +31,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		return WebinCliContext.transcriptome;
 	}
 
-	@Override protected 
+	@Override protected
 	TranscriptomeAssemblyManifest createManifestReader() 
 	{
 		// Create manifest parser which will also set the sample and study fields.
@@ -43,7 +43,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	}
 
 	@Override
-	public void readManifest(Path inputDir, File manifestFile) {
+	protected void readManifest(Path inputDir, File manifestFile) {
 		getManifestReader().readManifest(inputDir, manifestFile);
 		setSubmissionOptions(getManifestReader().getSubmissionOptions());
 	    setDescription( getManifestReader().getDescription() );

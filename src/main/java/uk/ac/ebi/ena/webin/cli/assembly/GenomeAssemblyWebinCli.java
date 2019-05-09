@@ -47,7 +47,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	}
 
 	
-	@Override public void 
+	@Override protected void
 	readManifest( Path inputDir, File manifestFile ) 
 	{
 		getManifestReader().readManifest( inputDir, manifestFile );

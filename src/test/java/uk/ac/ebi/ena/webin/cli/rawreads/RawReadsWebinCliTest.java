@@ -85,7 +85,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -105,7 +105,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -125,7 +125,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -145,7 +145,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -165,7 +165,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -184,7 +184,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -203,7 +203,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -222,7 +222,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -245,7 +245,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -264,7 +264,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -282,7 +282,7 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -302,7 +302,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -320,7 +320,7 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -341,7 +341,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -363,7 +363,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -409,7 +409,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
     }
 
@@ -446,7 +446,7 @@ RawReadsWebinCliTest
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
         
-        rr.init( parameters );
+        rr.readManifest( parameters );
         
         try
         {
@@ -475,7 +475,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
         rr.prepareSubmissionBundle();
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
@@ -501,7 +501,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
     }
     
@@ -523,7 +523,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
     }
     
@@ -544,7 +544,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
         rr.prepareSubmissionBundle();
         String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
@@ -573,7 +573,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
         rr.prepareSubmissionBundle();
         String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
@@ -607,7 +607,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
     }
 
@@ -627,7 +627,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         try
         {
             rr.validate();
@@ -655,7 +655,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         try
         {
             rr.validate();
@@ -683,7 +683,7 @@ RawReadsWebinCliTest
         parameters.setOutputDir( createOutputFolder() );
         rr.setFetchSample( false );
         rr.setFetchStudy( false );
-        rr.init( parameters );
+        rr.readManifest( parameters );
         rr.validate();
     }
 

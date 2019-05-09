@@ -101,7 +101,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     }
 
     @Override
-    public void readManifest(Path inputDir, File manifestFile) {
+    protected void readManifest(Path inputDir, File manifestFile) {
         getManifestReader().readManifest( inputDir, manifestFile );
 
         if (StringUtils.isBlank(studyId)) {
