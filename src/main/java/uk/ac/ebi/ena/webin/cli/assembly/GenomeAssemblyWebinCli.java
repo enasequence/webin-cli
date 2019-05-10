@@ -39,11 +39,12 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 	{
 		// Call manifest parser which also set the sample and study fields.
 
-		return new GenomeAssemblyManifest( isFetchSample() ? new SampleProcessor( getParameters(), this::setSample ) : null,
-						                   isFetchStudy() ? new StudyProcessor( getParameters(), this::setStudy ) : null,
-						                   isFetchRun() ? new RunProcessor( getParameters(), this::setRunRef ) : null,
-						                   isFetchAnalysis() ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null,
-						                   isFetchSource() ? new SourceFeatureProcessor( getParameters(), this::setSource ) : null );
+		return new GenomeAssemblyManifest(
+				isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor( getParameters(), this::setSample ) : null,
+				isMetadataServiceActive(MetadataService.STUDY) ? new StudyProcessor( getParameters(), this::setStudy ) : null,
+				isMetadataServiceActive(MetadataService.RUN) ? new RunProcessor( getParameters(), this::setRunRef ) : null,
+				isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null,
+				isMetadataServiceActive(MetadataService.SOURCE) ? new SourceFeatureProcessor( getParameters(), this::setSource ) : null );
 	}
 
 	

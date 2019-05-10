@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.EnumSet;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -45,11 +46,34 @@ AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
     private File processDir;
     private File submitDir;
 
-    private boolean fetchSample   = true;
-    private boolean fetchStudy    = true;
- 	private boolean fetchSource   = true;
-    private boolean fetchRun      = true;
-    private boolean fetchAnalysis = true;
+
+    // MetadataService
+
+    private final EnumSet<MetadataService> activeMetadataService = EnumSet.allOf(MetadataService.class);
+
+    @Override
+    public boolean isMetadataServiceActive(AbstractWebinCli.MetadataService metadataService) {
+        return activeMetadataService.contains(metadataService);
+    }
+
+    @Override
+    public void setMetadataServiceActive(AbstractWebinCli.MetadataService metadataService, boolean isActive) {
+        if (isActive) {
+            activeMetadataService.add(metadataService);
+        }
+        else {
+            activeMetadataService.remove(metadataService);
+        }
+    }
+
+    @Override
+    public void setMetadataServiceActive(boolean isActive) {
+        for (MetadataService metadataService: MetadataService.values()) {
+            setMetadataServiceActive(metadataService, isActive);
+        }
+    }
+
+
 
     private String description;
 
@@ -169,60 +193,9 @@ AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
     }
 
 
-    public boolean
-    isFetchRun()
-    {
-        return fetchRun;
-    }
-    
-    
-    public boolean
-    isFetchAnalysis()
-    {
-        return fetchAnalysis;
-    }
-
-    
-    public void
-    setFetchRun( boolean fetchRun )
-    {
-        this.fetchRun = fetchRun;
-    }
 
 
-    public void
-    setFetchAnalysis( boolean fetchAnalysis )
-    {
-        this.fetchAnalysis = fetchAnalysis;
-    }
-    
-    
-    public boolean
-    isFetchStudy()
-    {
-        return fetchStudy;
-    }
 
-
-    public boolean
-    isFetchSample()
-    {
-        return fetchSample;
-    }
-
-
-    public void
-    setFetchSample(boolean fetchSample)
-    {
-        this.fetchSample = fetchSample;
-    }
-
-
-    public void
-    setFetchStudy(boolean fetchStudy)
-    {
-        this.fetchStudy = fetchStudy;
-    }
 
     protected File
     getReportFile( String filename )
@@ -285,20 +258,6 @@ AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
         this.testMode = test_mode;
     }
 
-    
-    public boolean 
-    isFetchSource() 
-    {
- 		return fetchSource;
- 	}
-
- 	
-    public void 
-    setFetchSource( boolean fetchSource ) 
- 	{
- 		this.fetchSource = fetchSource;
- 	}
-    
     
     public Path 
     getUploadRoot()

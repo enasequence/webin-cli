@@ -106,7 +106,7 @@ SequenceAssemblyXmlTest
 
         SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
 
-        cli.setFetchStudy(false);
+        cli.setMetadataServiceActive(false);
         Study study = new Study();
         study.setProjectId("test_study");
         cli.setStudy(study);

@@ -257,12 +257,10 @@ GenomeAssemblyXmlTest
 
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         cli.setSource(getDefaultSourceFeature());
-        cli.setFetchSample(false);
-        cli.setFetchSource(false);
+        cli.setMetadataServiceActive(false);
         Sample sample = new Sample();
         sample.setBiosampleId("test_sample");
         cli.setSample(sample);
-        cli.setFetchStudy(false);
         Study study = new Study();
         study.setProjectId("test_study");
         cli.setStudy(study);

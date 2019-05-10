@@ -10,15 +10,33 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyWebinCli;
 import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
 
+import java.util.EnumSet;
+
+import static org.junit.Assert.*;
+
 public class AbstractWebinCliTest {
+
+    @Test
+    public void
+    testMetadataServiceActive() {
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+        EnumSet<WebinCliWrapper.MetadataService> services = EnumSet.allOf(WebinCliWrapper.MetadataService.class);
+        services.forEach(metadataService -> assertTrue(cli.isMetadataServiceActive(metadataService)));
+        cli.setMetadataServiceActive(false);
+        services.forEach(metadataService -> assertFalse(cli.isMetadataServiceActive(metadataService)));
+        cli.setMetadataServiceActive(true);
+        services.forEach(metadataService -> assertTrue(cli.isMetadataServiceActive(metadataService)));
+        services.forEach(metadataService -> cli.setMetadataServiceActive(metadataService, false));
+        services.forEach(metadataService -> assertFalse(cli.isMetadataServiceActive(metadataService)));
+        services.forEach(metadataService -> cli.setMetadataServiceActive(metadataService, true));
+        services.forEach(metadataService -> assertTrue(cli.isMetadataServiceActive(metadataService)));
+    }
 
     @Test
     public void

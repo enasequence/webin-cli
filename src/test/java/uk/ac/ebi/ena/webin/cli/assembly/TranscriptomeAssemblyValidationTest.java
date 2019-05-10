@@ -125,9 +125,7 @@ public class TranscriptomeAssemblyValidationTest {
         cli.setValidationDir(validationDir);
         cli.setProcessDir(processDir);
         cli.setSubmitDir(submitDir);
-        cli.setFetchSample(false);
-        cli.setFetchStudy(false);
-        cli.setFetchSource(false);
+        cli.setMetadataServiceActive(false);
         cli.setSample(AssemblyTestUtils.getDefaultSample());
         cli.setSource(AssemblyTestUtils.getDefaultSourceFeature());
         cli.setStudy(new Study());

@@ -35,11 +35,12 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	TranscriptomeAssemblyManifest createManifestReader() 
 	{
 		// Create manifest parser which will also set the sample and study fields.
-		return new TranscriptomeAssemblyManifest( isFetchSample() ? new SampleProcessor(getParameters(), this::setSample) : null,
-				                                  isFetchStudy()  ? new StudyProcessor(getParameters(), this::setStudy) : null,
-				                                  isFetchSource() ? new SourceFeatureProcessor(getParameters(), this::setSource ):null,
-				                                  isFetchRun()    ? new RunProcessor( getParameters(), this::setRunRef ) : null,
-				                                  isFetchAnalysis() ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null );
+		return new TranscriptomeAssemblyManifest(
+				isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters(), this::setSample) : null,
+				isMetadataServiceActive(MetadataService.STUDY)  ? new StudyProcessor(getParameters(), this::setStudy) : null,
+				isMetadataServiceActive(MetadataService.SOURCE) ? new SourceFeatureProcessor(getParameters(), this::setSource ):null,
+				isMetadataServiceActive(MetadataService.RUN)    ? new RunProcessor( getParameters(), this::setRunRef ) : null,
+				isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null );
 	}
 
 	@Override

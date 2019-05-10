@@ -33,9 +33,10 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     protected SequenceAssemblyManifest createManifestReader() {
         // Create manifest parser which will also set the study field.
 
-        return new SequenceAssemblyManifest( isFetchStudy()    ? new StudyProcessor( getParameters(), this::setStudy ) : null,
-                                             isFetchRun()      ? new RunProcessor( getParameters(), this::setRunRef ) : null,
-                                             isFetchAnalysis() ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null );
+        return new SequenceAssemblyManifest(
+                isMetadataServiceActive(MetadataService.STUDY)    ? new StudyProcessor( getParameters(), this::setStudy ) : null,
+                isMetadataServiceActive(MetadataService.RUN)      ? new RunProcessor( getParameters(), this::setRunRef ) : null,
+                isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null );
     }
 
     @Override

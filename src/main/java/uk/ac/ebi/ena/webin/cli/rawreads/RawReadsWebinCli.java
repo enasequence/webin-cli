@@ -96,8 +96,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         // Create manifest parser which will also set the sample and study fields.
 
         return new RawReadsManifest(
-                isFetchSample() ? new SampleProcessor(getParameters(), (Sample sample) -> this.sampleId = sample.getBiosampleId()) : null,
-                isFetchStudy() ? new StudyProcessor(getParameters(), (Study study) -> this.studyId = study.getProjectId()) : null);
+                isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters(), (Sample sample) -> this.sampleId = sample.getBiosampleId()) : null,
+                isMetadataServiceActive(MetadataService.STUDY) ? new StudyProcessor(getParameters(), (Study study) -> this.studyId = study.getProjectId()) : null);
     }
 
     @Override
