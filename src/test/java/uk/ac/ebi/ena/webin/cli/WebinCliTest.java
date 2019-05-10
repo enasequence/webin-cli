@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.nio.file.Path;
 
+import org.apache.commons.collections.functors.FalsePredicate;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 
-public class 
+public class
 WebinCliTest
 {
 
@@ -217,6 +218,51 @@ WebinCliTest
         Assert.assertTrue(false);
     }
 
+    @Test public void
+    testFastaSubmission1SequenceNonPrimaryMetagenome() throws Exception
+    {
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_fasta_primary_metagenome.fasta.gz", inputDir, false );
+
+        try {
+
+        testWebinCli( WebinCliContext.genome,
+                inputDir,
+                outputDir,
+                GenomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName() + "\n" +
+                        getGenomeManifestFields(name),
+                false );
+        }
+        catch (WebinCliException ex) {
+            Assert.assertTrue(ex.getMessage().contains("Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2"));
+        }
+    }
+
+    @Test public void
+    testFastaSubmission1SequencePrimaryMetagenome() throws Exception
+    {
+        String name = WebinCliTestUtils.createName();
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_fasta_primary_metagenome.fasta.gz", inputDir, false );
+
+        try {
+
+            testWebinCli( WebinCliContext.genome,
+                    inputDir,
+                    outputDir,
+                    GenomeAssemblyManifest.Field.FASTA + " " + fastafile.getFileName() + "\n" +
+                            getGenomeManifestFields(name)+ GenomeAssemblyManifest.Field.ASSEMBLY_TYPE+ " primary metagenome\n",
+                    false );
+        }
+        catch (WebinCliException ex) {
+            Assert.fail();
+        }
+    }
     @Test public void
     testSequenceSubmissionWithInfo() throws Exception
     {
