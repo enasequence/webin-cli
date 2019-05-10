@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.nio.file.Path;
 
-import org.apache.commons.collections.functors.FalsePredicate;
 import org.junit.Assert;
 import org.junit.Test;
 

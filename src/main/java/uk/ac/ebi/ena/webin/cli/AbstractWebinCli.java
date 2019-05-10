@@ -29,11 +29,6 @@ import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 public abstract class 
 AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
 {
-    private static final String VALIDATE_DIR = "validate";
-    private static final String PROCESS_DIR = "process";
-    private static final String SUBMIT_DIR   = "submit";
-    private static final String REPORT_FILE_SUFFIX = ".report";
-    private static final String SUBMISSION_BUNDLE = ".data";
 
     private String name; 
     private WebinCliParameters parameters = new WebinCliParameters();
@@ -121,9 +116,9 @@ AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
 
             if (!StringUtils.isBlank(manifestReader.getName())) {
                 setName();
-                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), VALIDATE_DIR );
-                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), PROCESS_DIR );
-                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), SUBMIT_DIR );
+                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.VALIDATE_DIR );
+                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.PROCESS_DIR );
+                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.SUBMIT_DIR );
             } else {
                 throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
             }
@@ -189,7 +184,7 @@ AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
     private String
     getSubmissionBundleFileName()
     {
-        return new File( getSubmitDir(), SUBMISSION_BUNDLE ).getPath();
+        return new File( getSubmitDir(), WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX).getPath();
     }
 
 
@@ -200,7 +195,7 @@ AbstractWebinCli<T extends ManifestReader> implements WebinCliWrapper<T>
     protected File
     getReportFile( String filename )
     {
-        return WebinCli.getReportFile( getValidationDir(), filename, REPORT_FILE_SUFFIX );
+        return WebinCli.getReportFile( getValidationDir(), filename, WebinCliConfig.REPORT_FILE_SUFFIX );
     }
 
     @Override
