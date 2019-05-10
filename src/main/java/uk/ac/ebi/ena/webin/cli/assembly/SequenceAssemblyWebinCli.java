@@ -39,7 +39,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     }
 
     @Override
-    public void readManifest(Path inputDir, File manifestFile) 
+    protected void readManifest(Path inputDir, File manifestFile)
     {
     	getManifestReader().readManifest(inputDir, manifestFile);
     	setSubmissionOptions(getManifestReader().getSubmissionOptions());

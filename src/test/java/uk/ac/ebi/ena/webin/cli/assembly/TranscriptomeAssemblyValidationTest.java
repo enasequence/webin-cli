@@ -135,13 +135,13 @@ public class TranscriptomeAssemblyValidationTest {
     }
 
     private TranscriptomeAssemblyWebinCli initValidator(Path manifestFile, TranscriptomeAssemblyWebinCli validator) {
-        validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
+        validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
         return validator;
     }
 
     private TranscriptomeAssemblyWebinCli initValidatorThrows(Path manifestFile, TranscriptomeAssemblyWebinCli validator) {
         assertThatThrownBy(() ->
-                validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir())))
+                validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir())))
                 .isInstanceOf(WebinCliException.class);
         return validator;
     }

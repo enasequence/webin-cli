@@ -181,13 +181,13 @@ public class GenomeAssemblyValidationTest {
     }
 
     private GenomeAssemblyWebinCli initValidator(Path manifestFile, GenomeAssemblyWebinCli validator) {
-        validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
+        validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
         return validator;
     }
 
     private GenomeAssemblyWebinCli initValidatorThrows(Path manifestFile, GenomeAssemblyWebinCli validator) {
         assertThatThrownBy(() ->
-                validator.init(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir())))
+                validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir())))
                 .isInstanceOf(WebinCliException.class);
         return validator;
     }
