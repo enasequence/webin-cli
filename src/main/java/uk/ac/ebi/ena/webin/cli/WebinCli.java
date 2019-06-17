@@ -10,11 +10,15 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.*;
+import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.fusesource.jansi.AnsiConsole;
@@ -26,7 +30,6 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
-
 import picocli.CommandLine;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
@@ -123,10 +126,16 @@ public class WebinCli {
         this.params = params;
         this.context = params.context;
 
+        if( !params.inputDir.isDirectory() )
+            throw WebinCliException.userError( WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.format( params.inputDir.getPath() ) );
+
+        if( !params.outputDir.isDirectory() )
+            throw WebinCliException.userError( WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.format( params.outputDir.getPath() ) );
+        
         WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setManifestFile(  params.manifest );
+        parameters.setManifestFile( params.manifest );
         parameters.setInputDir( params.inputDir  );
-        parameters.setOutputDir( params. outputDir );
+        parameters.setOutputDir( params.outputDir );
         parameters.setUsername( params.userName );
         parameters.setPassword( params.password );
         parameters.setCenterName( params.centerName );

@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import org.junit.Assert;
@@ -85,7 +86,7 @@ WebinCliTest
 
 
     private void
-    testWebinCli(WebinCliContext context, Path inputDir, Path outputDir, String manifestContents, boolean ascp ) throws Exception
+    testWebinCli( WebinCliContext context, Path inputDir, Path outputDir, String manifestContents, boolean ascp ) throws Exception
     {
         WebinCliCommand parameters = new WebinCliCommand();
         parameters.context = context;
@@ -102,6 +103,61 @@ WebinCliTest
         WebinCli webinCli = new WebinCli();
         webinCli.execute( webinCli.init( parameters ) );
     }
+    
+    
+    private String 
+    extractConstant( String str )
+    {
+        return str.substring( 0, str.indexOf( "{" ) );
+    }
+    
+    
+    @Test public void
+    testInputDirParam() throws Exception
+    {
+        WebinCliCommand parameters = new WebinCliCommand();
+        parameters.inputDir  = WebinCliTestUtils.createTempFile( "input-dir-file" ).toFile();
+        parameters.outputDir = WebinCliTestUtils.createTempFile( "output-dir-dile" ).toFile();
+        WebinCli webinCli   = new WebinCli();
+        
+        try
+        {
+            webinCli.init( parameters );
+        } catch( WebinCliException ex )
+        {
+            Assert.assertTrue( ex.getMessage(), ex.getMessage().startsWith( extractConstant( WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text ) ) );
+        }
+    }
+    
+    
+    @Test public void
+    testOutputDirParam() throws Exception
+    {
+        WebinCliCommand parameters = new WebinCliCommand();
+        parameters.inputDir  = WebinCliTestUtils.createTempDir();
+        parameters.outputDir = WebinCliTestUtils.createTempFile( "output-dir-dile" ).toFile();
+        
+        WebinCli webinCli   = new WebinCli();
+        try
+        {
+            webinCli.init( parameters );
+        } catch( WebinCliException ex )
+        {
+            Assert.assertTrue( ex.getMessage(), ex.getMessage().startsWith( extractConstant( WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text ) ) );
+        }
+    }
+
+    
+    @Test public void
+    testDirParam() throws Exception
+    {
+        WebinCliCommand parameters = new WebinCliCommand();
+        parameters.inputDir  = new File( "." );
+        parameters.outputDir = new File( "." );
+        WebinCli webinCli   = new WebinCli();
+        webinCli.init( parameters );
+    }
+
     
     @Test public void
     testRawReadsSubmissionWithInfo() throws Exception

@@ -134,6 +134,21 @@ public interface WebinCliMessage {
         }
     }
 
+    
+    enum 
+    Parameters implements WebinCliMessage 
+    {
+        INPUT_PATH_NOT_DIR( "Input dir path does not represent folder: \"{0}\"." ),
+        OUTPUT_PATH_NOT_DIR( "Output dir path does represent folder: \"{0}\"." );
+    
+        public final String text;
+        Parameters( String text ) 
+        {
+            this.text = text;
+        }
+    }
+
+    
     // Interface methods.
     //
 

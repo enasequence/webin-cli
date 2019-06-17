@@ -47,7 +47,7 @@ import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.util.Log;
 import htsjdk.samtools.util.Log.LogLevel;
-import net.sf.cram.ref.PathPattern;
+import uk.ac.ebi.ena.readtools.cram.ref.PathPattern;
 
 public class 
 CramReferenceInfo
