@@ -35,11 +35,10 @@ import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
-import net.sf.cram.ref.ENAReferenceSource;
-import net.sf.cram.ref.ENAReferenceSource.LoggerWrapper;
-
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.readtools.cram.ref.ENAReferenceSource;
+import uk.ac.ebi.ena.readtools.cram.ref.ENAReferenceSource.LoggerWrapper;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;

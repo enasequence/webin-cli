@@ -20,7 +20,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import htsjdk.samtools.SAMSequenceRecord;
-import net.sf.cram.ref.ENAReferenceSource;
+import uk.ac.ebi.ena.readtools.cram.ref.ENAReferenceSource;
 
 public class 
 ENAReferenceSourceTest 
