@@ -23,9 +23,15 @@ public interface WebinCliMessage {
     //
 
     enum Cli implements WebinCliMessage {
-        VALIDATE_SUCCESS("The submission has been validated successfully."),
-        UPLOAD_SUCCESS("Files have been uploaded to webin.ebi.ac.uk. "),
-        SUBMIT_SUCCESS("The submission has been completed successfully. "),
+        VALIDATE_SUCCESS( "The submission has been validated successfully." ),
+        UPLOAD_SUCCESS( "Files have been uploaded to webin.ebi.ac.uk. "),
+        
+        SUBMIT_SUCCESS(       "The submission has been completed successfully. The following {0} accession was assigned to the submission: {1}" ),
+        SUBMIT_SUCCESS_NOACC( "The submission has been completed successfully. No accession was assigned to the {0} submission. Please contact the helpdesk." ),
+        
+        SUBMIT_SUCCESS_TEST(       "The TEST submission has been completed successfully. This was a TEST submission and no data was submitted. The following {0} accession was assigned to the submission: {1}" ),
+        SUBMIT_SUCCESS_TEST_NOACC( "The TEST submission has been completed successfully. This was a TEST submission and no data was submitted. No accession was assigned to the {0} submission." ),
+                
         CURRENT_VERSION("Your application version is {0}"),
         NEW_VERSION("A new application version is available. Please download the latest version {0} from https://github.com/enasequence/webin-cli/releases"),
         UNSUPPORTED_VERSION("Your application version is no longer supported. The minimum supported version is {0}. Please download the latest version {1} from https://github.com/enasequence/webin-cli/releases"),

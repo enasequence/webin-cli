@@ -127,21 +127,24 @@ public class SubmitService extends AbstractService {
             xmlOutput.output(doc, stringWriter);
             Files.write(receiptFile, stringWriter.toString().getBytes());
             Element rootNode = doc.getRootElement();
-            if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
-                for (SubmissionXMLFile xmlFile : xmlFileList ) {
-                    String xmlFileType = String.valueOf(xmlFile.getType());
-                    String accession = rootNode.getChild(xmlFileType).getAttributeValue("accession");
-                    if (accession != null && !accession.isEmpty()) {
-                        String msg = WebinCliMessage.Cli.SUBMIT_SUCCESS.format() +
-                                " The following " + xmlFileType.toLowerCase() + " accession was assigned to the submission: " + accession;
-                        log.info(msg);
-                    } else {
-                        String msg = WebinCliMessage.Cli.SUBMIT_SUCCESS.format() +
-                                " No accession was assigned to the " + xmlFileType.toLowerCase() + " XML submission. Please contact the helpdesk.";
-                        log.info(msg);
-                    }
+            if( Boolean.valueOf( rootNode.getAttributeValue( "success" ) ) ) 
+            {
+                for (SubmissionXMLFile xmlFile : xmlFileList ) 
+                {
+                    String xmlFileType = String.valueOf( xmlFile.getType() );
+                    String accession = rootNode.getChild( xmlFileType ).getAttributeValue( "accession" );
+
+                    String msg = ( getTest() ? WebinCliMessage.Cli.SUBMIT_SUCCESS_TEST 
+                                             : WebinCliMessage.Cli.SUBMIT_SUCCESS ).format( xmlFileType.toLowerCase(), accession );
+                   
+                    if( null == accession || accession.isEmpty() ) 
+                        msg = ( getTest() ? WebinCliMessage.Cli.SUBMIT_SUCCESS_TEST_NOACC 
+                                          : WebinCliMessage.Cli.SUBMIT_SUCCESS_NOACC ).format( xmlFileType.toLowerCase() );
+                    
+                    log.info( msg );
                 }
-            } else {
+            } else 
+            {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
                 for (Element child : childrenList) {
                     List<Element> errorList = child.getChildren("ERROR");
