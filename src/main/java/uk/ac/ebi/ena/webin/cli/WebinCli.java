@@ -11,6 +11,8 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -221,7 +223,9 @@ public class WebinCli {
 	      }
 	   } catch( Throwable ex )
 	   {
-	      throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), validator.getValidationDir()));
+	       StringWriter sw = new StringWriter();
+	       ex.printStackTrace( new PrintWriter( sw ) );
+	      throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format( null == ex.getMessage() ? sw.toString() : ex.getMessage(), validator.getValidationDir()));
 	   }
 	}
 	 

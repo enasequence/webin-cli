@@ -13,10 +13,17 @@ package uk.ac.ebi.ena.webin.cli;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.common.reflect.ClassPath;
 
 import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyManifest;
 import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyManifest;
@@ -461,5 +468,47 @@ WebinCliTest
 
         assertEquals("AaZ", WebinCli.getSafeOutputDir("AaZ","AaZ")[0]);
         assertEquals("A.AA", WebinCli.getSafeOutputDir("AaZ","A.AA")[1]);
+    }
+    
+    
+    @Test public void
+    contextDetector() throws IOException
+    {
+        long start = System.currentTimeMillis();
+        @SuppressWarnings( "unchecked" )
+        List<Class<? extends AbstractWebinCli<?>>> contexts = ClassPath.from( getClass().getClassLoader() )
+                                                      .getAllClasses()
+                                                      .stream()
+                                                      .filter( e -> e.getPackageName().startsWith( "uk.ac.ebi.ena.webin.cli" ) )
+                                                      .filter( c -> AbstractWebinCli.class.isAssignableFrom( c.load() ) )
+                                                      .filter( c -> ! c.load().isAssignableFrom( AbstractWebinCli.class ) )
+                                                      .filter( c -> ! Modifier.isAbstract( c.load().getModifiers() ) )
+                                                      .map( c -> 
+                                                      {
+                                                          try 
+                                                          {
+                                                              return (Class<? extends AbstractWebinCli<?>>) c.load().asSubclass( AbstractWebinCli.class );
+                                                          } catch( ClassCastException | NoClassDefFoundError | UnsupportedClassVersionError e )
+                                                          {
+                                                              return null;
+                                                          }
+                                                      } )
+                                                      .filter( Objects::nonNull )
+                                                      .collect( Collectors.toList() );
+        contexts.forEach( System.out::println ); 
+        
+        contexts.forEach( cpe -> 
+        {
+            try 
+            { 
+                System.out.println( cpe.newInstance().getContext() );
+            } catch( Throwable t )
+            {
+                throw new RuntimeException( t );
+            }
+        } );
+        System.out.println( System.currentTimeMillis() - start );
+        //23331 all classes
+        //  889 only uk.ac.ebi
     }
 }
