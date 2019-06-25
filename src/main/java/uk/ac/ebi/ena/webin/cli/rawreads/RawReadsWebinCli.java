@@ -33,23 +33,20 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import htsjdk.samtools.DefaultSAMRecordFactory;
 import htsjdk.samtools.SAMFormatException;
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SamFiles;
-import htsjdk.samtools.SamInputResource;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.SamReaderFactory;
-import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.cram.CRAMException;
-import htsjdk.samtools.util.Log;
-import htsjdk.samtools.util.Log.LogLevel;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.readtools.cram.ref.ENAReferenceSource;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.BamScanner;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.FastqScanner;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.ChecksumMethod;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage.ScannerErrorMessage;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
@@ -59,8 +56,6 @@ import uk.ac.ebi.ena.webin.cli.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.ChecksumMethod;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.rawreads.refs.CramReferenceInfo;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -203,8 +198,26 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             }
             
             
-            FastqScanner fs = new FastqScanner( getManifestReader().getPairingHorizon() );            
-            ValidationResult vr = fs.checkFiles( files.toArray( new RawReadsFile[ files.size() ] ) );
+            FastqScanner fs = new FastqScanner(  getManifestReader().getPairingHorizon() )
+            {
+                @Override protected void 
+                logProcessedReadNumber( long count )
+                {
+                    RawReadsWebinCli.this.logProcessedReadNumber( count );
+                }
+                
+                
+                @Override protected void 
+                logFlushMsg( String msg )
+                {
+                    RawReadsWebinCli.this.logFlushMsg( msg );
+                    
+                }
+            };            
+            
+            List<ScannerMessage> sm_list = fs.checkFiles( files.toArray( new RawReadsFile[ files.size() ] ) );
+            ValidationResult vr = new ValidationResult();
+            vr.append( sm_list.stream().map( e -> fMsg( e ) ).collect( Collectors.toList() ) );
             paired.set( fs.getPaired() );
             files.forEach(rf -> {
                 try (ValidationMessageReporter reporter = new ValidationMessageReporter( getReportFile( rf.getFilename() ))) {
@@ -217,6 +230,20 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         {
             throw WebinCliException.systemError( ex, "Unable to validate file(s): " + files );
         }
+    }
+    
+    
+    private ValidationMessage<Origin>
+    fMsg( ScannerMessage sm )
+    {   
+        Severity severity = sm instanceof ScannerErrorMessage ? Severity.ERROR : Severity.INFO;
+        
+        ValidationMessage<Origin> result = new ValidationMessage<>( severity, ValidationMessage.NO_KEY );
+        result.setMessage( sm.getMessage() );
+        if( null != sm.getOrigin() )
+            result.append( new DefaultOrigin(  sm.getOrigin() ) );
+        
+        return result;
     }
     
     
@@ -235,102 +262,38 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     private boolean
     readBamFile( List<RawReadsFile> files, AtomicBoolean paired ) throws WebinCliException
     {
+        BamScanner scanner = new BamScanner() 
+        {
+            @Override protected void 
+            logProcessedReadNumber( long count )
+            {
+                RawReadsWebinCli.this.logProcessedReadNumber( count );
+            }
+        };
+        
+        
         boolean valid = true;
         for( RawReadsFile rf : files )
         {
-            long read_no = 0;
-            long reads_cnt = 0;
-
-            try (ValidationMessageReporter reporter = new ValidationMessageReporter( getReportFile( rf.getFilename() ))) {
-                try {
-                    String msg = String.format("Processing file %s\n", rf.getFilename());
-                    log.info(msg);
-                    ENAReferenceSource reference_source = new ENAReferenceSource();
-                    reference_source.setLoggerWrapper(new ENAReferenceSource.LoggerWrapper() {
-                        @Override
-                        public void
-                        error(Object... messageParts) {
-                            reporter.write(Severity.ERROR, null == messageParts ? "null" : String.valueOf(Arrays.asList(messageParts)));
-                        }
-
-                        @Override
-                        public void
-                        warn(Object... messageParts) {
-                            reporter.write(Severity.WARNING, null == messageParts ? "null" : String.valueOf(Arrays.asList(messageParts)));
-                        }
-
-                        @Override
-                        public void
-                        info(Object... messageParts) {
-                            reporter.write(Severity.INFO, null == messageParts ? "null" : String.valueOf(Arrays.asList(messageParts)));
-                        }
-                    });
-
-                    reporter.write(Severity.INFO, "REF_PATH  " + reference_source.getRefPathList());
-                    reporter.write(Severity.INFO, "REF_CACHE " + reference_source.getRefCacheList());
-
-
-                    File file = new File(rf.getFilename());
-                    Log.setGlobalLogLevel(LogLevel.ERROR);
-                    SamReaderFactory.setDefaultValidationStringency(ValidationStringency.SILENT);
-                    SamReaderFactory factory = SamReaderFactory.make();
-                    factory.enable(SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX);
-                    factory.validationStringency(ValidationStringency.SILENT);
-                    factory.referenceSource(reference_source);
-                    factory.samRecordFactory(DefaultSAMRecordFactory.getInstance());
-                    SamInputResource ir = SamInputResource.of(file);
-                    File indexMaybe = SamFiles.findIndex(file);
-                    reporter.write(Severity.INFO, "proposed index: " + indexMaybe);
-
-                    if (null != indexMaybe)
-                        ir.index(indexMaybe);
-
-                    SamReader reader = factory.open(ir);
-
-                    for (SAMRecord record : reader) {
-                        read_no++;
-                        //do not load supplementary reads
-                        if (record.isSecondaryOrSupplementary())
-                            continue;
-
-                        if (record.getDuplicateReadFlag())
-                            continue;
-
-                        if (record.getReadString().equals(BAM_STAR) && record.getBaseQualityString().equals(BAM_STAR))
-                            continue;
-
-                        if (record.getReadBases().length != record.getBaseQualities().length) {
-                            ValidationMessage<Origin> validationMessage = ValidationMessageReporter.createValidationMessage(Severity.ERROR, "Mismatch between length of read bases and qualities",
-                                    new DefaultOrigin(String.format("%s:%d", rf.getFilename(), read_no)));
-
-                            reporter.write(validationMessage);
-                            valid = false;
-                        }
-
-                        paired.compareAndSet(false, record.getReadPairedFlag());
-                        reads_cnt++;
-                        if (0 == reads_cnt % 1000)
-                            logProcessedReadNumber(reads_cnt);
-                    }
-
-                    logProcessedReadNumber(reads_cnt);
-
-                    reader.close();
-
-                    reporter.write(Severity.INFO, "Valid reads count: " + reads_cnt);
-                    reporter.write(Severity.INFO, "LibraryLayout: " + (paired.get() ? "PAIRED" : "SINGLE"));
-
-                    if (0 == reads_cnt) {
-                        reporter.write(Severity.ERROR, "File contains no valid reads");
-                        valid = false;
-                    }
-
-                } catch (SAMFormatException | CRAMException e) {
-                    reporter.write(Severity.ERROR, e.getMessage());
+            try( ValidationMessageReporter reporter = new ValidationMessageReporter( getReportFile( rf.getFilename() ) ) ) 
+            {
+                try 
+                {
+                    String msg = String.format( "Processing file %s\n", rf.getFilename() );
+                    log.info( msg );
+                    
+                    List<ScannerMessage> list = Filetype.cram == rf.getFiletype() ? scanner.readCramFile( rf, paired ) : scanner.readBamFile( rf, paired );
+                    List<ValidationMessage<Origin>> mv_list = list.stream().sequential().map( sm ->fMsg( sm ) ).collect( Collectors.toList() );
+                    mv_list.stream().forEachOrdered( m -> reporter.write( m ) );
+                    valid = new ValidationResult().append( mv_list ).isValid();
+                } catch( SAMFormatException | CRAMException e )
+                {
+                    reporter.write( Severity.ERROR, e.getMessage() );
                     valid = false;
 
-                } catch (IOException ex) {
-                    throw WebinCliException.systemError(ex);
+                } catch( IOException ex )
+                {
+                    throw WebinCliException.systemError( ex );
                 }
             }
         }
@@ -554,6 +517,13 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     logProcessedReadNumber( long count )
     {
         String msg = String.format( "\rProcessed %16d read(s)", count );
+        logFlushMsg( msg );
+    }
+
+    
+    private void
+    logFlushMsg( String msg )
+    {
         System.out.print( msg );
         System.out.flush();
     }
