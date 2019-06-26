@@ -47,6 +47,7 @@ import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage.ScannerErrorMessage;
+import uk.ac.ebi.ena.readtools.webin.cli.rawreads.refs.CramReferenceInfo;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
@@ -56,7 +57,6 @@ import uk.ac.ebi.ena.webin.cli.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
-import uk.ac.ebi.ena.webin.cli.rawreads.refs.CramReferenceInfo;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
@@ -66,14 +66,8 @@ import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 public class 
 RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
 {   
-    static 
-    {
-        System.setProperty( "samjdk.use_cram_ref_download", Boolean.TRUE.toString() );
-    }
-    
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
-    private static final String BAM_STAR = "*";
 
     private String studyId;
     private String sampleId;

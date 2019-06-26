@@ -121,8 +121,9 @@ RawReadsManifest extends ManifestReader {
     }
 
 
-    @SuppressWarnings("serial")
-    public RawReadsManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor) {
+    public 
+    RawReadsManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor) 
+    {
         super(
                 // Fields.
                 new ManifestFieldDefinition.Builder()
