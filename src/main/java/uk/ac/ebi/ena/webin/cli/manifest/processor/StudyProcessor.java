@@ -49,9 +49,11 @@ StudyProcessor implements ManifestFieldProcessor
             callback.notify( study );
             return new ValidationResult();
             
-        } catch( WebinCliException e )
-        {
-            return new ValidationResult().append( WebinCliMessage.error( WebinCliMessage.Manifest.STUDY_LOOKUP_ERROR, value, e.getMessage() ) );
+        } catch( WebinCliException e ) {
+            if (WebinCliMessage.Cli.AUTHENTICATION_ERROR.text.equals(e.getMessage())) {
+                return new ValidationResult().append(WebinCliMessage.error(WebinCliMessage.Cli.AUTHENTICATION_ERROR));
+            }
+            return new ValidationResult().append(WebinCliMessage.error(WebinCliMessage.Manifest.STUDY_LOOKUP_ERROR, value, e.getMessage()));
         }
     }
 }

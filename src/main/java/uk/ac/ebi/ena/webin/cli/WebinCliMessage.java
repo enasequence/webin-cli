@@ -45,7 +45,7 @@ public interface WebinCliMessage {
         UNSUPPORTED_FILETYPE_ERROR("Unsupported file type: {0}"),
         UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk because of a {0}. "),
         SUBMIT_ERROR("The submission has failed because of a {0}. "),
-        AUTHENTICATION_ERROR("Invalid submission account user name or password."),
+        AUTHENTICATION_ERROR("Invalid submission account user name or password. Please try enclosing your password in single quotes."),
         INVALID_CONTEXT_ERROR("Invalid context: {0}."),
         EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}" );
 
@@ -126,8 +126,8 @@ public interface WebinCliMessage {
         INVALID_FILE_GROUP_ERROR("An invalid set of files has been specified{1}. Expected data files are: {0}."),
         INVALID_FILE_COMPRESSION_ERROR("Failed to uncompress file: \"{0}\". The file must be compressed with {1}."),
         FIELD_VALUE_CORRECTED("Field \"{0}\" value \"{1}\" was corrected to \"{2}\"."),
-        STUDY_LOOKUP_ERROR("Failed to lookup study \"{0}\". {1}"),
-        SAMPLE_LOOKUP_ERROR("Failed to lookup sample \"{0}\". {1}"),
+        STUDY_LOOKUP_ERROR("Could not find study \"{0}\". The study must be either public or owned by the submission account used for this submission. Note that only a single study can be referenced.{1}"),
+        SAMPLE_LOOKUP_ERROR("Could not find sample \"{0}\". The sample must be either public or owned by the submission account used for this submission. Note that only a single sample can be referenced.{1}"),
         RUN_LOOKUP_ERROR( "Failed to lookup run \"{0}\". {1}" ),
         ANALYSIS_LOOKUP_ERROR( "Failed to lookup analysis \"{0}\". {1}" ),
         MISSING_PLATFORM_AND_INSTRUMENT_ERROR("Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),

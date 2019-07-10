@@ -50,6 +50,9 @@ SampleProcessor implements ManifestFieldProcessor
             
         } catch( WebinCliException e )
         {
+            if (WebinCliMessage.Cli.AUTHENTICATION_ERROR.text.equals(e.getMessage())) {
+                return new ValidationResult().append(WebinCliMessage.error(WebinCliMessage.Cli.AUTHENTICATION_ERROR));
+            }
             return new ValidationResult().append( WebinCliMessage.error( WebinCliMessage.Manifest.SAMPLE_LOOKUP_ERROR, value, e.getMessage() ) );
         }
     }
