@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
@@ -26,14 +27,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 
 public class
 TranscriptomeAssemblyManifest extends ManifestReader 
@@ -53,6 +47,8 @@ TranscriptomeAssemblyManifest extends ManifestReader
 		String TPA          = "TPA";
 		String FASTA        = "FASTA";
 		String FLATFILE     = "FLATFILE";
+		String AUTHORS          = "AUTHORS";
+		String ADDRESS          = "ADDRESS";
 	}
 
 	
@@ -72,6 +68,8 @@ TranscriptomeAssemblyManifest extends ManifestReader
 		String TPA          = "Third party annotation";
 		String FASTA = "Fasta file";
 		String FLATFILE = "Flat file";
+		String AUTHORS          = "Author names, comma-separated list";
+		String ADDRESS          = "Author address";
 	}
 
 	
@@ -101,7 +99,10 @@ TranscriptomeAssemblyManifest extends ManifestReader
 					.file().optional().name( Field.FASTA        ).desc( Description.FASTA        ).processor(getFastaProcessors()).and()
 					.file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor(getFlatfileProcessors()).and()
 					.meta().optional().notInSpreadsheet().name( Field.ASSEMBLYNAME ).desc( Description.ASSEMBLYNAME ).and()
-					.meta().optional().notInSpreadsheet().name( Field.TPA ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).build()
+					.meta().optional().notInSpreadsheet().name( Field.TPA ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
+					.meta().optional().name( Field.AUTHORS ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
+					.meta().optional().name( Field.ADDRESS ).desc( Description.ADDRESS )
+					.build()
 				,
 				// File groups.
 				new ManifestFileCount.Builder()
@@ -158,7 +159,17 @@ TranscriptomeAssemblyManifest extends ManifestReader
 		submissionOptions = new SubmissionOptions();
 		SubmissionFiles submissionFiles = new SubmissionFiles();
 		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
-        assemblyInfo.setName( name );
+		Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+		if (!authorAndAddress.isEmpty()) {
+			if (authorAndAddress.size() == 2) {
+				assemblyInfo.setAddress(authorAndAddress.get(Field.ADDRESS));
+				assemblyInfo.setAuthors(authorAndAddress.get(Field.AUTHORS));
+			} else {
+				error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
+			}
+		}
+
+		assemblyInfo.setName( name );
 		assemblyInfo.setProgram( getResult().getValue( Field.PROGRAM ) );
 		assemblyInfo.setPlatform( getResult().getValue( Field.PLATFORM ) );
 

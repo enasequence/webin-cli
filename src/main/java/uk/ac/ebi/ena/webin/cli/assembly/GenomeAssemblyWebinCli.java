@@ -18,11 +18,7 @@ import org.jdom2.Element;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
@@ -84,6 +80,10 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 		typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
 		typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
 		typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
+		if (null != entry.getAuthors() && null != entry.getAddress()) {
+			typeE.addContent(createTextElement("AUTHORS", entry.getAuthors()));
+			typeE.addContent(createTextElement("ADDRESS", entry.getAddress()));
+		}
 
 		if( null != entry.getMinGapLength() )
 			typeE.addContent( createTextElement( "MIN_GAP_LENGTH", String.valueOf( entry.getMinGapLength() ) ) );

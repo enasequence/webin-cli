@@ -356,6 +356,21 @@ public class GenomeAssemblyValidationTest {
 
     @Test
     public void
+    testValidFlatFileWithSubmitterReferenceInManifest() {
+        Path manifestFile = new ManifestBuilder(defaultInputDir).
+                field(GenomeAssemblyManifest.Field.ADDRESS,"Biologische Anstalt Helgoland, Alfred-Wegener-Institut, Helmholtz " +
+                        "Zentrum für Polar- und Meeresforschung, Kurpromenade 27498 Helgoland, Germany").
+                field(GenomeAssemblyManifest.Field.AUTHORS,"Kirstein   Ivan, Wichels Alfred..;")
+                .flatfile("valid_flatfile.txt.gz").build();
+
+        GenomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
+        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(1);
+        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isOne();
+        validator.validate();
+    }
+
+    @Test
+    public void
     testValidFlatFile() {
         Path manifestFile = new ManifestBuilder(defaultInputDir)
                 .flatfile("valid_flatfile.txt.gz").build();

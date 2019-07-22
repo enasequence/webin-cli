@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import java.util.Map;
 import java.util.Optional;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
@@ -18,16 +19,13 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 
 public class
 SequenceAssemblyManifest extends ManifestReader 
@@ -42,6 +40,8 @@ SequenceAssemblyManifest extends ManifestReader
         String DESCRIPTION  = "DESCRIPTION";
         String TAB          = "TAB";
         String FLATFILE     = "FLATFILE";
+        String AUTHORS          = "AUTHORS";
+        String ADDRESS          = "ADDRESS";
     }
 
     
@@ -55,6 +55,8 @@ SequenceAssemblyManifest extends ManifestReader
         String DESCRIPTION  = "Sequence submission description";
         String TAB          = "Tabulated file";
         String FLATFILE     = "Flat file";
+        String AUTHORS          = "Author names, comma-separated list";
+        String ADDRESS          = "Author address";
     }
 
     private SubmissionOptions submissionOptions;
@@ -75,7 +77,10 @@ SequenceAssemblyManifest extends ManifestReader
                     .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( analysisProcessor ).and()
                     .meta().optional().name( Field.DESCRIPTION  ).desc( Description.DESCRIPTION  ).and()
                     .file().optional().name( Field.TAB          ).desc( Description.TAB          ).processor( getTabProcessors() ).and()
-                    .file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor( getFlatfileProcessors() ).build()
+                    .file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor( getFlatfileProcessors() ).and()
+                    .meta().optional().name( Field.AUTHORS      ).desc( Description.AUTHORS      ).processor(new AuthorProcessor()).and()
+                    .meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS      )
+                    .build()
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
@@ -107,6 +112,15 @@ SequenceAssemblyManifest extends ManifestReader
     	submissionOptions = new SubmissionOptions();
 		SubmissionFiles submissionFiles = new SubmissionFiles();
 		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
+        Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+        if (!authorAndAddress.isEmpty()) {
+            if (authorAndAddress.size() == 2) {
+                assemblyInfo.setAddress(authorAndAddress.get(Field.ADDRESS));
+                assemblyInfo.setAuthors(authorAndAddress.get(Field.AUTHORS));
+            } else {
+                error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
+            }
+        }
 		name = getResult().getValue( Field.NAME );
 		description = getResult().getValue( Field.DESCRIPTION );
 		assemblyInfo.setName( name );

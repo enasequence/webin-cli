@@ -10,11 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 
 public class 
@@ -74,6 +73,26 @@ ManifestReaderResult
         } catch( NoSuchElementException ex )
         {
             return null;
+        }
+    }
+
+    public Map<String,String>
+    getNonEmptyValues( String... fieldNames )
+    {
+        Map<String,String> nameValues = new HashMap<>();
+        try
+        {
+            fields.forEach(field -> {
+                for (String fieldName : fieldNames) {
+                    if (field.getName().equalsIgnoreCase(fieldName) && StringUtils.isNotBlank(field.getValue())) {
+                        nameValues.put(fieldName, field.getValue());
+                    }
+                }
+            });
+             return nameValues;
+        } catch( NoSuchElementException ex )
+        {
+            return new HashMap<>();
         }
     }
 

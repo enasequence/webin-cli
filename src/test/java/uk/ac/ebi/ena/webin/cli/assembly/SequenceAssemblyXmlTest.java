@@ -136,4 +136,57 @@ SequenceAssemblyXmlTest
                             "</ANALYSIS_SET>");
         }
     }
+
+    @Test public void
+    testAnalysisXML_Manifest_With_Submitter_reference_and_FlatFile()
+    {
+        String name = "test_sequence";
+        Path flatFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", "ID   ;");
+        Path inputDir = flatFile.getParent();
+        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
+                "NAME\t" + name + "\n" +
+                        "STUDY\ttest_study\n" +
+                        "AUTHORS\ttest_author1,test_author2.\n" +
+                        "ADDRESS\tena,ebi,embl,UK\n" +
+                        "FLATFILE\t" + flatFile.getFileName() + "\n" +
+                        SequenceAssemblyManifest.Field.DESCRIPTION + " d e s c r i p t i o n"
+        );
+
+        WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
+
+        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
+
+        cli.setMetadataServiceActive(false);
+        Study study = new Study();
+        study.setProjectId("test_study");
+        cli.setStudy(study);
+
+        try
+        {
+            cli.readManifest(parameters);
+        }
+        finally {
+            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+            WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                    "<ANALYSIS_SET>\n" +
+                            "<ANALYSIS>\n" +
+                            "<TITLE>Sequence assembly: test_sequence</TITLE>\n" +
+                            "<DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
+                            "<STUDY_REF accession=\"test_study\"/>\n" +
+                            "<ANALYSIS_TYPE>\n" +
+                            "<SEQUENCE_FLATFILE>\n" +
+                            "<AUTHORS>test_author1,test_author2.</AUTHORS>\n"+
+                            "<ADDRESS>ena,ebi,embl,UK</ADDRESS>\n"+
+                            "</SEQUENCE_FLATFILE>\n" +
+                            "</ANALYSIS_TYPE>\n" +
+                            "<FILES>\n" +
+                            "      <FILE filename=\"webin-cli/sequence/" + name + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n" +
+                            "</FILES>\n" +
+                            "</ANALYSIS>\n" +
+                            "</ANALYSIS_SET>");
+        }
+    }
 }

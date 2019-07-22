@@ -10,11 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
-import java.util.ArrayList;
-import java.util.Optional;
-
 import org.apache.commons.lang.StringUtils;
-
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.submission.Context;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
@@ -22,21 +18,12 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileGroup;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.SourceFeatureProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
 
 public class
 GenomeAssemblyManifest extends ManifestReader {
@@ -63,6 +50,8 @@ GenomeAssemblyManifest extends ManifestReader {
 		String FASTA            = "FASTA";
 		String FLATFILE         = "FLATFILE";
 		String AGP              = "AGP";
+		String AUTHORS          = "AUTHORS";
+		String ADDRESS          = "ADDRESS";
 	}
 
 	
@@ -88,6 +77,8 @@ GenomeAssemblyManifest extends ManifestReader {
 		String FASTA            = "Fasta file";
 		String FLATFILE         = "Flat file";
 		String AGP              = "AGP file";
+		String AUTHORS          = "Author names, comma-separated list";
+		String ADDRESS          = "Author address";
 	}
 
 	
@@ -146,7 +137,9 @@ GenomeAssemblyManifest extends ManifestReader {
 					.file().optional().name( Field.FLATFILE         ).desc( Description.FLATFILE         ).processor( getFlatfileProcessors() ).and()
 					.file().optional().name( Field.AGP              ).desc( Description.AGP              ).processor( getAgpProcessors() ).and()
 					.meta().optional().notInSpreadsheet().name( Field.ASSEMBLYNAME ).desc( Description.ASSEMBLYNAME ).and()
-					.meta().optional().notInSpreadsheet().name( Field.TPA          ).desc( Description.TPA          ).processor( CVFieldProcessor.CV_BOOLEAN )
+					.meta().optional().notInSpreadsheet().name( Field.TPA          ).desc( Description.TPA          ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
+					.meta().optional().name( Field.AUTHORS ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
+					.meta().optional().name( Field.ADDRESS ).desc( Description.ADDRESS )
 					.build()
 				,
 				// File groups.
@@ -215,7 +208,17 @@ GenomeAssemblyManifest extends ManifestReader {
 		{
 			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
 		}
-		
+
+		Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+		if (!authorAndAddress.isEmpty()) {
+			if (authorAndAddress.size() == 2) {
+				assemblyInfo.setAddress(authorAndAddress.get(Field.ADDRESS));
+				assemblyInfo.setAuthors(authorAndAddress.get(Field.AUTHORS));
+			} else {
+				error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
+			}
+		}
+
 		if( name != null )
 			assemblyInfo.setName( name );
 

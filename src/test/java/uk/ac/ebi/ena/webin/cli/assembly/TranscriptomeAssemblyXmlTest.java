@@ -110,6 +110,8 @@ TranscriptomeAssemblyXmlTest {
                                                             + "STUDY\ttest_study\n"
                                                             + "PROGRAM\ttest_program\n"
                                                             + "PLATFORM\ttest_platform\n"
+                                                            +"AUTHORS\ttest_author1,test_author2.\n"
+                                                            +"ADDRESS\tena,ebi,embl,UK\n"
                                                             + "TPA\ttrue\n"
                                                             + "FLATFILE\t" + flatFile.getFileName() + "\n" );
 
@@ -145,6 +147,8 @@ TranscriptomeAssemblyXmlTest {
                             "<NAME>test_transcriptome</NAME>\n" +
                             "<PROGRAM>test_program</PROGRAM>\n" +
                             "<PLATFORM>test_platform</PLATFORM>\n" +
+                            "<AUTHORS>test_author1,test_author2.</AUTHORS>\n"+
+                            "<ADDRESS>ena,ebi,embl,UK</ADDRESS>\n"+
                             "<TPA>true</TPA>\n" +
                             "</TRANSCRIPTOME_ASSEMBLY>\n" +
                             "</ANALYSIS_TYPE>\n" +
