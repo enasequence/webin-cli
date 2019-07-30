@@ -10,7 +10,12 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+
 import org.apache.commons.lang.StringUtils;
+
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.submission.Context;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
@@ -20,10 +25,6 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
 
 public class
 GenomeAssemblyManifest extends ManifestReader {

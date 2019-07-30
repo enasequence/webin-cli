@@ -18,7 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
 SampleServiceTest {
@@ -61,7 +61,7 @@ SampleServiceTest {
                                                        .build();
         Sample sample = sampleService.getSample( id );
         assertThat(sample).isNotNull();
-        assertThat(sample.getBiosampleId()).isEqualTo(BIO_SAMPLE_ID);
+        assertThat(sample.getBioSampleId()).isEqualTo(BIO_SAMPLE_ID);
         assertThat(sample.getOrganism()).isEqualTo(SCIENTIFIC_NAME);
         assertThat(sample.getTaxId()).isEqualTo(TAX_ID);
     }

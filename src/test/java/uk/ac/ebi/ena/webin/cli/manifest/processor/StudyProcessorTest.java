@@ -16,11 +16,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
 StudyProcessorTest
@@ -39,7 +38,7 @@ StudyProcessorTest
     @Test public void
     testCorrect()
     {
-        StudyProcessor processor = new StudyProcessor( parameters, (Study study) -> Assert.assertEquals( "PRJNA28545", study.getProjectId() ) );
+        StudyProcessor processor = new StudyProcessor( parameters, (Study study) -> Assert.assertEquals( "PRJNA28545", study.getBioProjectId() ) );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "STUDY", "SRP000392" );
         Assert.assertTrue( processor.process( fieldValue ).isValid() );

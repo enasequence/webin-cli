@@ -27,7 +27,7 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class GenomeAssemblyValidationTest {
 

@@ -54,9 +54,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 		if( getSubmissionOptions().assemblyInfoEntry.isPresent() )
 		{
 			if (getStudy() != null)
-				getSubmissionOptions().assemblyInfoEntry.get().setStudyId( getStudy().getProjectId() );
+				getSubmissionOptions().assemblyInfoEntry.get().setStudyId( getStudy().getBioProjectId() );
 			if (getSample() != null)
-				getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId( getSample().getBiosampleId() );
+				getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId( getSample().getBioSampleId() );
 			this.setAssemblyInfo( getSubmissionOptions().assemblyInfoEntry.get() );
 
 		}

@@ -10,15 +10,15 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import static org.junit.Assert.*;
+
+import java.util.EnumSet;
+
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyWebinCli;
 import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
-
-import java.util.EnumSet;
-
-import static org.junit.Assert.*;
 
 public class AbstractWebinCliTest {
 

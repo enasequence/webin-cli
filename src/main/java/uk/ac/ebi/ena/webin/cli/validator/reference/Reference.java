@@ -8,27 +8,36 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.entity;
+package uk.ac.ebi.ena.webin.cli.validator.reference;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Study {
-    private String projectId;
-	private List<String> locusTags;
+/**
+ * Abstract base class for references with id, name and list of attributes.
+ */
+public abstract class Reference {
 
-    public String getProjectId() {
-        return projectId;
+    private String name;
+    private List<Attribute> attributes = new ArrayList<>();
+
+    public String getName() {
+        return name;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<String> getLocusTags() {
-        return locusTags;
+    public void setAttributes(List<Attribute> attributes) {
+        this.attributes = attributes;
     }
 
-    public void setLocusTags(List<String> locusTags) {
-        this.locusTags = locusTags;
+    public List<Attribute> getAttributes() {
+        return attributes;
+    }
+
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
     }
 }

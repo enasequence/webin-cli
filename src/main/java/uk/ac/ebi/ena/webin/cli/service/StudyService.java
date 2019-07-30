@@ -20,9 +20,9 @@ import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class StudyService extends AbstractService {
 
@@ -80,7 +80,7 @@ public class StudyService extends AbstractService {
                     WebinCliMessage.Service.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
         }
         Study study = new Study();
-        study.setProjectId(studyResponse.bioProjectId);
+        study.setBioProjectId(studyResponse.bioProjectId);
         study.setLocusTags(studyResponse.locusTags);
         return study;
     }
