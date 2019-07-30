@@ -15,30 +15,30 @@ package uk.ac.ebi.ena.webin.cli.validator.reference;
  */
 public class Attribute {
 
-    private final String tag;
+    private final String name;
     private final String value;
     private final String unit;
 
-    public Attribute(String tag) {
-        this.tag = tag;
+    public Attribute(String name) {
+        this.name = name;
         this.value = null;
         this.unit = null;
     }
 
-    public Attribute(String tag, String value) {
-        this.tag = tag;
+    public Attribute(String name, String value) {
+        this.name = name;
         this.value = value;
         this.unit = null;
     }
 
-    public Attribute(String tag, String value, String unit) {
-        this.tag = tag;
+    public Attribute(String name, String value, String unit) {
+        this.name = name;
         this.value = value;
         this.unit = unit;
     }
 
-    public String getTag() {
-        return tag;
+    public String getName() {
+        return name;
     }
 
     public String getValue() {

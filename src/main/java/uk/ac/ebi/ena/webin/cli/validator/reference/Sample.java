@@ -16,7 +16,7 @@ package uk.ac.ebi.ena.webin.cli.validator.reference;
 public class Sample extends Reference {
 
     private String bioSampleId;
-    private long taxId;
+    private Integer taxId;
     private String organism;
 
     public String getBioSampleId() {
@@ -27,11 +27,11 @@ public class Sample extends Reference {
         this.bioSampleId = bioSampleId;
     }
 
-    public long getTaxId() {
+    public Integer getTaxId() {
         return taxId;
     }
 
-    public void setTaxId(long taxId) {
+    public void setTaxId(Integer taxId) {
         this.taxId = taxId;
     }
 

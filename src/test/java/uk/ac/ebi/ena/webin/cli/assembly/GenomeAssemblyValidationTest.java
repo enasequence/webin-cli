@@ -173,7 +173,6 @@ public class GenomeAssemblyValidationTest {
         cli.setSubmitDir(submitDir);
         cli.setMetadataServiceActive(false);
         cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setSource(AssemblyTestUtils.getDefaultSourceFeature());
         cli.setStudy(new Study());
         return cli;
     }
@@ -419,7 +418,6 @@ public class GenomeAssemblyValidationTest {
 
         GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
         validator.setSample(AssemblyTestUtils.getHumanSample());
-        validator.setSource(AssemblyTestUtils.getHumanSourceFeature());
         initValidator(manifestFile, validator);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(3);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size()).isOne();
@@ -438,7 +436,6 @@ public class GenomeAssemblyValidationTest {
 
         GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
         validator.setSample(AssemblyTestUtils.getHumanSample());
-        validator.setSource(AssemblyTestUtils.getHumanSourceFeature());
         initValidator(manifestFile, validator);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(3);
         assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FLATFILE).size()).isOne();
@@ -490,7 +487,6 @@ public class GenomeAssemblyValidationTest {
 
         GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
         validator.setSample(AssemblyTestUtils.getHumanSample());
-        validator.setSource(AssemblyTestUtils.getHumanSourceFeature());
         initValidator(manifestFile, validator);
         assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");

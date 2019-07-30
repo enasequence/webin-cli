@@ -40,7 +40,7 @@ SampleService extends AbstractService
     }
 
     private static class SampleResponse {
-        public long taxId;
+        public int taxId;
         public String organism;
         public String bioSampleId;
         public boolean canBeReferenced;

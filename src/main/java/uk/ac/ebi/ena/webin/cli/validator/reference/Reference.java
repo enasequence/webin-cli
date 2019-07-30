@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.validator.reference;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,5 +40,9 @@ public abstract class Reference {
 
     public void addAttribute(Attribute attribute) {
         attributes.add(attribute);
+    }
+
+    public void addAttributes(Collection<Attribute> attributes) {
+        this.attributes.addAll(attributes);
     }
 }

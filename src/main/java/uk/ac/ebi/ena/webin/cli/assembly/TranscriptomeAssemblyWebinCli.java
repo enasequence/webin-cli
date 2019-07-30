@@ -16,9 +16,16 @@ import java.util.Optional;
 
 import org.jdom2.Element;
 
+import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
+import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
+import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
+import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
+import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifest> {
 
@@ -34,7 +41,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		return new TranscriptomeAssemblyManifest(
 				isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters(), this::setSample) : null,
 				isMetadataServiceActive(MetadataService.STUDY)  ? new StudyProcessor(getParameters(), this::setStudy) : null,
-				isMetadataServiceActive(MetadataService.SOURCE) ? new SourceFeatureProcessor(getParameters(), this::setSource ):null,
+				isMetadataServiceActive(MetadataService.SAMPLE_XML) ? new SampleXmlProcessor(getParameters(), this::setSample ):null,
 				isMetadataServiceActive(MetadataService.RUN)    ? new RunProcessor( getParameters(), this::setRunRef ) : null,
 				isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null );
 	}
@@ -54,8 +61,21 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		}
 		if(getStudy()!=null&&getStudy().getLocusTags()!=null)
  			getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTags());
-		if(getSource()!=null)
-		getSubmissionOptions().source = Optional.of(getSource());
+
+		if( getSample() != null ) {
+			Sample sample = getSample();
+			SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();
+			MasterSourceFeatureUtils sourceUtils = new MasterSourceFeatureUtils();
+			if (sample.getTaxId() != null) {
+				sourceFeature.addQualifier(Qualifier.DB_XREF_QUALIFIER_NAME, String.valueOf(sample.getTaxId()));
+			}
+			sourceFeature.setScientificName(sample.getOrganism());
+			for (Attribute attribute: sample.getAttributes()) {
+				sourceUtils.addSourceQualifier(attribute.getName(), attribute.getValue(), sourceFeature);
+			}
+			sourceUtils.addExtraSourceQualifiers(sourceFeature, new TaxonHelperImpl(), sample.getName());
+			getSubmissionOptions().source = Optional.of(sourceFeature);
+		}
 	}
 
 	@Override	

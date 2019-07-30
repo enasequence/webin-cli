@@ -13,8 +13,6 @@ package uk.ac.ebi.ena.webin.cli.assembly;
 import java.io.File;
 import java.nio.file.Path;
 
-import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
-import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
@@ -27,22 +25,10 @@ class AssemblyTestUtils {
         return sample;
     }
 
-    static SourceFeature getDefaultSourceFeature() {
-        SourceFeature source = new FeatureFactory().createSourceFeature();
-        source.setScientificName("Micrococcus sp. 5");
-        return source;
-    }
-
     static Sample getHumanSample() {
         Sample sample = new Sample();
         sample.setOrganism("Homo sapiens");
         return sample;
-    }
-
-    static SourceFeature getHumanSourceFeature() {
-        SourceFeature source = new FeatureFactory().createSourceFeature();
-        source.setScientificName("Homo sapiens");
-        return source;
     }
 
     static WebinCliParameters

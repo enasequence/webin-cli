@@ -174,7 +174,6 @@ public class SequenceAssemblyValidationTest {
         cli.setSubmitDir(submitDir);
         cli.setMetadataServiceActive(false);
         cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setSource(AssemblyTestUtils.getDefaultSourceFeature());
         cli.setStudy(new Study());
         return cli;
     }

@@ -21,7 +21,7 @@ public interface WebinCliWrapper<T extends ManifestReader> {
     enum MetadataService {
         SAMPLE,
         STUDY,
-        SOURCE,
+        SAMPLE_XML,
         RUN,
         ANALYSIS
     }

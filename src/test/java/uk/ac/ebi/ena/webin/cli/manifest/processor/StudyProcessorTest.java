@@ -44,7 +44,7 @@ StudyProcessorTest
         Assert.assertTrue( processor.process( fieldValue ).isValid() );
         Assert.assertEquals( "PRJNA28545", fieldValue.getValue() );
     }
-    
+
 
     @Test public void
     testIncorrect()

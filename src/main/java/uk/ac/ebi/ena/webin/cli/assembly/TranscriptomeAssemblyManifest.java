@@ -81,7 +81,7 @@ TranscriptomeAssemblyManifest extends ManifestReader
 	public 
 	TranscriptomeAssemblyManifest( SampleProcessor sampleProcessor, 
 	                               StudyProcessor  studyProcessor, 
-	                               SourceFeatureProcessor sourceProcessor,
+	                               SampleXmlProcessor sampleXmlProcessor,
 	                               RunProcessor    runProcessor,
 	                               AnalysisProcessor analysisProcessor )
 	{
@@ -90,7 +90,7 @@ TranscriptomeAssemblyManifest extends ManifestReader
 				new ManifestFieldDefinition.Builder()
 					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
 					.meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor(studyProcessor).and()
-					.meta().required().name( Field.SAMPLE       ).desc( Description.SAMPLE       ).processor(sampleProcessor, sourceProcessor).and()
+					.meta().required().name( Field.SAMPLE       ).desc( Description.SAMPLE       ).processor(sampleProcessor, sampleXmlProcessor).and()
                     .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( runProcessor ).and()
                     .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( analysisProcessor ).and()
 					.meta().optional().name( Field.DESCRIPTION  ).desc( Description.DESCRIPTION  ).and()
