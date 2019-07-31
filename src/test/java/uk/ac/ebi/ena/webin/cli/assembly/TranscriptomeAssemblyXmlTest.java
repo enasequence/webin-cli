@@ -147,9 +147,9 @@ TranscriptomeAssemblyXmlTest {
                             "<NAME>test_transcriptome</NAME>\n" +
                             "<PROGRAM>test_program</PROGRAM>\n" +
                             "<PLATFORM>test_platform</PLATFORM>\n" +
+                            "<TPA>true</TPA>\n" +
                             "<AUTHORS>test_author1,test_author2.</AUTHORS>\n"+
                             "<ADDRESS>ena,ebi,embl,UK</ADDRESS>\n"+
-                            "<TPA>true</TPA>\n" +
                             "</TRANSCRIPTOME_ASSEMBLY>\n" +
                             "</ANALYSIS_TYPE>\n" +
                             "<FILES>\n" +

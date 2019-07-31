@@ -64,12 +64,12 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		typeE.addContent( createTextElement( "NAME", entry.getName() ) );
 		typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
 		typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
+		if ( entry.isTpa())
+			typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
 		if (null != entry.getAuthors() && null != entry.getAddress()) {
 			typeE.addContent(createTextElement("AUTHORS", entry.getAuthors()));
 			typeE.addContent(createTextElement("ADDRESS", entry.getAddress()));
 		}
-		if ( entry.isTpa())
-			typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
 		return typeE;
 	}
 }

@@ -353,9 +353,9 @@ GenomeAssemblyXmlTest
                             "        <COVERAGE>1</COVERAGE>\n" +
                             "        <PROGRAM>test_program</PROGRAM>\n" +
                             "        <PLATFORM>test_platform</PLATFORM>\n" +
+                            "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n" +
                             "        <AUTHORS>test_author1,test_author2.</AUTHORS>\n"+
                             "        <ADDRESS>ena,ebi,embl,UK</ADDRESS>\n"+
-                            "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n" +
                             "      </SEQUENCE_ASSEMBLY>\n" +
                             "    </ANALYSIS_TYPE>\n" +
                             "    <FILES>\n" +

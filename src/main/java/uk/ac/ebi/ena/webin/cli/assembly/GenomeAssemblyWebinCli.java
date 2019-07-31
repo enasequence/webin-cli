@@ -80,10 +80,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 		typeE.addContent( createTextElement( "COVERAGE", entry.getCoverage() ) );
 		typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
 		typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
-		if (null != entry.getAuthors() && null != entry.getAddress()) {
-			typeE.addContent(createTextElement("AUTHORS", entry.getAuthors()));
-			typeE.addContent(createTextElement("ADDRESS", entry.getAddress()));
-		}
 
 		if( null != entry.getMinGapLength() )
 			typeE.addContent( createTextElement( "MIN_GAP_LENGTH", String.valueOf( entry.getMinGapLength() ) ) );
@@ -93,6 +89,10 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifest>
 
 		if( entry.isTpa() ) 
 			typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
+		if (null != entry.getAuthors() && null != entry.getAddress()) {
+			typeE.addContent(createTextElement("AUTHORS", entry.getAuthors()));
+			typeE.addContent(createTextElement("ADDRESS", entry.getAddress()));
+		}
 
 		return typeE;
 	}
