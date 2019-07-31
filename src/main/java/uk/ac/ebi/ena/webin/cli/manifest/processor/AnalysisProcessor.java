@@ -18,10 +18,10 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.entity.Analysis;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.service.AnalysisService;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class
 AnalysisProcessor implements ManifestFieldProcessor
@@ -41,14 +41,14 @@ AnalysisProcessor implements ManifestFieldProcessor
     process( ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
-        String[] analyses = value.split( ", *" );
-        List<Analysis> analysis_list = new ArrayList<Analysis>( analyses.length );
+        String[] ids = value.split( ", *" );
+        List<Analysis> analysis_list = new ArrayList<Analysis>( ids.length );
         ValidationResult result    = new ValidationResult();
         
-        for( String a : analyses )
+        for( String a : ids )
         {
-            String an = a.trim();
-            if( an.isEmpty() )
+            String id = a.trim();
+            if( id.isEmpty() )
                 continue;
 
             try
@@ -57,12 +57,11 @@ AnalysisProcessor implements ManifestFieldProcessor
                                                                      .setCredentials( parameters.getUsername(), parameters.getPassword() )
                                                                      .setTest( parameters.isTestMode() )
                                                                      .build();
-                Analysis analysis = analysisService.getAnalysis( an );
-                analysis_list.add( analysis );
+                analysis_list.add( analysisService.getAnalysis( id ) );
                 
             } catch( WebinCliException e )
             {
-                result.append( WebinCliMessage.error( WebinCliMessage.Manifest.ANALYSIS_LOOKUP_ERROR, an, e.getMessage() ) );
+                result.append( WebinCliMessage.error( WebinCliMessage.Manifest.ANALYSIS_LOOKUP_ERROR, id, e.getMessage() ) );
             }
         }
         

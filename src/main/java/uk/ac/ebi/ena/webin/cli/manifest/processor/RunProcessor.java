@@ -18,10 +18,10 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.entity.Run;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.service.RunService;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class
 RunProcessor implements ManifestFieldProcessor
@@ -42,13 +42,13 @@ RunProcessor implements ManifestFieldProcessor
     {
         ValidationResult result = new ValidationResult();
         String value = fieldValue.getValue();
-        String[] runs = value.split( ", *" );
-        List<Run> run_list = new ArrayList<Run>( runs.length );
+        String[] ids = value.split( ", *" );
+        List<Run> run_list = new ArrayList<Run>( ids.length );
         
-        for( String r : runs )
+        for( String r : ids )
         {
-            String run = r.trim();
-            if( run.isEmpty() )
+            String id = r.trim();
+            if( id.isEmpty() )
                 continue;
 
             try
@@ -57,12 +57,11 @@ RunProcessor implements ManifestFieldProcessor
                                                       .setCredentials( parameters.getUsername(), parameters.getPassword() )
                                                       .setTest( parameters.isTestMode() )
                                                       .build();
-                Run ru = runService.getRun( run );
-                run_list.add( ru );
+                run_list.add( runService.getRun( id ) );
                            
             } catch( WebinCliException e )
             {
-                result.append( WebinCliMessage.error( WebinCliMessage.Manifest.RUN_LOOKUP_ERROR, run, e.getMessage() ) );
+                result.append( WebinCliMessage.error( WebinCliMessage.Manifest.RUN_LOOKUP_ERROR, id, e.getMessage() ) );
             }
         }
         

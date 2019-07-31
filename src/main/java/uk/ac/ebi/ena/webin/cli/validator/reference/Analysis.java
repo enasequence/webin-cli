@@ -8,42 +8,24 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.entity;
+package uk.ac.ebi.ena.webin.cli.validator.reference;
 
-import uk.ac.ebi.ena.webin.cli.service.RunService;
+public class Analysis extends Reference {
+    private String analysisId;
 
-public class 
-Run 
-{
-    private String run_id;
-    private String alias;
-    
-    
-    public 
-    Run( RunService.RunResponse run_response )
-    {
-        this( run_response.id, run_response.alias );
+    public Analysis() {
     }
 
-    
-    public 
-    Run( String run_id, String alias )
-    {
-        this.run_id = run_id;
-        this.alias  = alias;
+    public Analysis(String analysisId, String name) {
+        this.analysisId = analysisId;
+        this.setName(name);
     }
 
-    
-    public String 
-    getRunId()
-    {
-        return this.run_id;
+    public String getAnalysisId() {
+        return analysisId;
     }
 
-    
-    public String 
-    getAlias()
-    {
-        return this.alias;
+    public void setAnalysisId(String analysisId) {
+        this.analysisId = analysisId;
     }
 }
