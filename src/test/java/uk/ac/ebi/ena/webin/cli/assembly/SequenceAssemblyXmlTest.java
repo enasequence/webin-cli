@@ -25,10 +25,10 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Analysis;
-import uk.ac.ebi.ena.webin.cli.entity.Run;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
 SequenceAssemblyXmlTest
@@ -108,7 +108,7 @@ SequenceAssemblyXmlTest
 
         cli.setMetadataServiceActive(false);
         Study study = new Study();
-        study.setProjectId("test_study");
+        study.setBioProjectId("test_study");
         cli.setStudy(study);
 
         try
@@ -158,7 +158,7 @@ SequenceAssemblyXmlTest
 
         cli.setMetadataServiceActive(false);
         Study study = new Study();
-        study.setProjectId("test_study");
+        study.setBioProjectId("test_study");
         cli.setStudy(study);
 
         try

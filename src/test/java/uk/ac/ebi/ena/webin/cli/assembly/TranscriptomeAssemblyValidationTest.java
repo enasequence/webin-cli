@@ -27,7 +27,7 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class TranscriptomeAssemblyValidationTest {
 
@@ -127,7 +127,6 @@ public class TranscriptomeAssemblyValidationTest {
         cli.setSubmitDir(submitDir);
         cli.setMetadataServiceActive(false);
         cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setSource(AssemblyTestUtils.getDefaultSourceFeature());
         cli.setStudy(new Study());
         return cli;
     }

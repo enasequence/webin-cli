@@ -10,23 +10,22 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
-import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.service.SourceFeatureService;
+import uk.ac.ebi.ena.webin.cli.service.SampleXmlService;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
-SourceFeatureProcessor implements ManifestFieldProcessor
+SampleXmlProcessor implements ManifestFieldProcessor
 {
     private final WebinCliParameters parameters;
-    private final ManifestFieldProcessor.Callback<SourceFeature> callback;
+    private final ManifestFieldProcessor.Callback<Sample> callback;
 
-    public
-    SourceFeatureProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<SourceFeature> callback )
+    public SampleXmlProcessor(WebinCliParameters parameters, ManifestFieldProcessor.Callback<Sample> callback )
     {
         this.parameters = parameters;
         this.callback = callback;
@@ -39,11 +38,11 @@ SourceFeatureProcessor implements ManifestFieldProcessor
 
         try
         {
-            SourceFeatureService sourceFeatureService = new SourceFeatureService.Builder()
+            SampleXmlService sampleXmlService = new SampleXmlService.Builder()
                                                                                 .setCredentials( parameters.getUsername(), parameters.getPassword() )
                                                                                 .setTest( parameters.isTestMode() )
                                                                                 .build();
-            SourceFeature source = sourceFeatureService.getSourceFeature( value );
+            Sample source = sampleXmlService.getSample( value );
             callback.notify( source );
             return new ValidationResult();
             

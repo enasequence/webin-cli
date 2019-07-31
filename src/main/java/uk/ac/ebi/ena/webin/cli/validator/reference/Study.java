@@ -8,20 +8,24 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.entity;
+package uk.ac.ebi.ena.webin.cli.validator.reference;
 
 import java.util.List;
 
+/**
+ * Study reference.
+ */
 public class Study {
-    private String projectId;
-	private List<String> locusTags;
 
-    public String getProjectId() {
-        return projectId;
+    private String bioProjectId;
+    private List<String> locusTags;
+
+    public String getBioProjectId() {
+        return bioProjectId;
     }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setBioProjectId(String bioProjectId) {
+        this.bioProjectId = bioProjectId;
     }
 
     public List<String> getLocusTags() {
@@ -30,5 +34,9 @@ public class Study {
 
     public void setLocusTags(List<String> locusTags) {
         this.locusTags = locusTags;
+    }
+
+    public void addLocusTag(String locusTag) {
+        locusTags.add(locusTag);
     }
 }

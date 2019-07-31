@@ -14,10 +14,10 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.entity.Sample;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.service.SampleService;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
 SampleProcessor implements ManifestFieldProcessor
@@ -44,7 +44,7 @@ SampleProcessor implements ManifestFieldProcessor
                                                            .setTest( parameters.isTestMode() )
                                                            .build();
             Sample sample = sampleService.getSample( value );
-            fieldValue.setValue( sample.getBiosampleId() );
+            fieldValue.setValue( sample.getBioSampleId() );
             callback.notify( sample );
             return new ValidationResult();
             

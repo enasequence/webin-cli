@@ -18,8 +18,6 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
-import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
@@ -27,11 +25,11 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Analysis;
-import uk.ac.ebi.ena.webin.cli.entity.Run;
-import uk.ac.ebi.ena.webin.cli.entity.Sample;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
 GenomeAssemblyXmlTest
@@ -42,13 +40,6 @@ GenomeAssemblyXmlTest
     {
         Locale.setDefault( Locale.UK );
     }
-    
-    private static SourceFeature getDefaultSourceFeature()
-	{
-		SourceFeature source= new FeatureFactory().createSourceFeature();
-		source.setScientificName("Micrococcus sp. 5");
-		return source;
-	}
 
     @Test public void
     testAnalysisXMLAssemblyInfo_WithoutFiles()
@@ -66,7 +57,7 @@ GenomeAssemblyXmlTest
         info.setProgram( "test_program" );
         info.setPlatform( "test_platform" );
 
-        cli.setSource(getDefaultSourceFeature());
+        cli.setSample(AssemblyTestUtils.getDefaultSample());
         cli.setAnalysisRef( new ArrayList<Analysis>() { { add( new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ) ); add( new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) ); } } );
         cli.setRunRef( new ArrayList<Run>() { { add( new Run( "RUN_ID1", "RUN_ID1_ALIAS" ) ); add( new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) ); } } );
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
@@ -103,7 +94,7 @@ GenomeAssemblyXmlTest
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         String name = "test_genome";
         cli.setName( name );
-        cli.setSource(getDefaultSourceFeature());
+        cli.setSample(AssemblyTestUtils.getDefaultSample());
 
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo( info );
@@ -146,7 +137,7 @@ GenomeAssemblyXmlTest
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         String name = "test_genome";
         cli.setName( name );
-        cli.setSource(getDefaultSourceFeature());
+        cli.setSample(AssemblyTestUtils.getDefaultSample());
 
         AssemblyInfoEntry info = new AssemblyInfoEntry();
         cli.setAssemblyInfo( info );
@@ -196,7 +187,7 @@ GenomeAssemblyXmlTest
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         String name = "test_genome";
         cli.setName( name );
-        cli.setSource(getDefaultSourceFeature());
+        cli.setSample(AssemblyTestUtils.getDefaultSample());
         cli.setSubmissionOptions(submissionOptions);
         cli.getParameters().setInputDir( fastaFile.getParent().toFile() );
         AssemblyInfoEntry info = new AssemblyInfoEntry();
@@ -256,13 +247,13 @@ GenomeAssemblyXmlTest
         WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
 
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        cli.setSource(getDefaultSourceFeature());
+        cli.setSample(AssemblyTestUtils.getDefaultSample());
         cli.setMetadataServiceActive(false);
         Sample sample = new Sample();
-        sample.setBiosampleId("test_sample");
+        sample.setBioSampleId("test_sample");
         cli.setSample(sample);
         Study study = new Study();
-        study.setProjectId("test_study");
+        study.setBioProjectId("test_study");
         cli.setStudy(study);
 
         try
@@ -321,13 +312,13 @@ GenomeAssemblyXmlTest
         WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
 
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        cli.setSource(getDefaultSourceFeature());
+        cli.setSample(AssemblyTestUtils.getDefaultSample());
         cli.setMetadataServiceActive(false);
         Sample sample = new Sample();
-        sample.setBiosampleId("test_sample");
+        sample.setBioSampleId("test_sample");
         cli.setSample(sample);
         Study study = new Study();
-        study.setProjectId("test_study");
+        study.setBioProjectId("test_study");
         cli.setStudy(study);
 
         try

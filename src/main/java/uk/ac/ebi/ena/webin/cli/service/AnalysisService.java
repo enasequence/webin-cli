@@ -18,9 +18,9 @@ import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.entity.Analysis;
 import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class
 AnalysisService extends AbstractService 
@@ -53,7 +53,7 @@ AnalysisService extends AbstractService
     }
 
     
-    public Analysis 
+    public Analysis
     getAnalysis( String analysisId )
     {
         return getAnalysis( analysisId, getUserName(), getPassword(), getTest() );
@@ -79,6 +79,9 @@ AnalysisService extends AbstractService
         if( analysisResponse == null || !analysisResponse.canBeReferenced )
             throw WebinCliException.userError( WebinCliMessage.Service.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ) );
 
-        return new Analysis( analysisResponse );
+        Analysis analysis = new Analysis();
+        analysis.setAnalysisId(analysisResponse.id);
+        analysis.setName(analysisResponse.alias);
+        return analysis;
     }
 }

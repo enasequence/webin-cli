@@ -10,7 +10,12 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+
 import org.apache.commons.lang.StringUtils;
+
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.submission.Context;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
@@ -20,10 +25,6 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
 
 public class
 GenomeAssemblyManifest extends ManifestReader {
@@ -114,14 +115,14 @@ GenomeAssemblyManifest extends ManifestReader {
 	                        StudyProcessor    studyProcessor, 
 	                        RunProcessor      runProcessor, 
 	                        AnalysisProcessor analysisProcessor,
-	                        SourceFeatureProcessor sourceProcessor )
+	                        SampleXmlProcessor sampleXmlProcessor)
 	{
 		super(
 				// Fields.
 				new ManifestFieldDefinition.Builder()
 					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
 					.meta().required().name( Field.STUDY            ).desc( Description.STUDY            ).processor( studyProcessor ).and()
-					.meta().required().name( Field.SAMPLE           ).desc( Description.SAMPLE           ).processor( sampleProcessor, sourceProcessor ).and()
+					.meta().required().name( Field.SAMPLE           ).desc( Description.SAMPLE           ).processor( sampleProcessor, sampleXmlProcessor).and()
 					.meta().optional().name( Field.RUN_REF          ).desc( Description.RUN_REF          ).processor( runProcessor ).and()
 					.meta().optional().name( Field.ANALYSIS_REF     ).desc( Description.ANALYSIS_REF     ).processor( analysisProcessor ).and()
 					.meta().optional().name( Field.DESCRIPTION      ).desc( Description.DESCRIPTION      ).and()

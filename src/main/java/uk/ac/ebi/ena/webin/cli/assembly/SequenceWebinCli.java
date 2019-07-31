@@ -31,7 +31,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
@@ -42,16 +41,16 @@ import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.entity.Analysis;
-import uk.ac.ebi.ena.webin.cli.entity.Run;
-import uk.ac.ebi.ena.webin.cli.entity.Sample;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public abstract class 
 SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
@@ -62,7 +61,6 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 	SubmissionOptions submissionOptions;
     private Study study;
     private Sample sample;
-	private SourceFeature source;
 	private List<Run> run_refs;
 	private List<Analysis> analysis_refs;
 	protected AssemblyInfoEntry assembly_info;
@@ -105,7 +103,24 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     public void
     setSample( Sample sample )
     {
-        this.sample = sample;
+        if (this.sample == null) {
+            this.sample = sample;
+        }
+        else {
+            if (this.sample.getName() == null || this.sample.getName().isEmpty()) {
+                this.sample.setName(sample.getName());
+            }
+            if (this.sample.getBioSampleId() == null || this.sample.getBioSampleId().isEmpty()) {
+                this.sample.setBioSampleId(sample.getBioSampleId());
+            }
+            if (this.sample.getTaxId() == null) {
+                this.sample.setTaxId(sample.getTaxId());
+            }
+            if (this.sample.getOrganism() == null || this.sample.getOrganism().isEmpty()) {
+                this.sample.setOrganism(sample.getOrganism());
+            }
+            this.sample.addAttributes(sample.getAttributes());
+        }
     }
 
     public Study
@@ -119,15 +134,6 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     {
         return this.sample;
     }
-
-	public SourceFeature getSource() {
-		return source;
-	}
-         
-	public void setSource( SourceFeature source ) {
-		this.source = source;
-    }
-
 
     public void 
     setInputDir( File inputDir )

@@ -18,7 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Run;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class 
 RunServiceTest 
@@ -53,7 +53,7 @@ RunServiceTest
                                               .build();
         Run run = runService.getRun( id );
         assertThat( run ).isNotNull();
-        assertThat( run.getAlias() ).isNotNull();
+        assertThat( run.getName() ).isNotNull();
         return run;
     }
 

@@ -49,7 +49,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     	if(getSubmissionOptions().assemblyInfoEntry.isPresent())
     	{
     		if (getStudy() != null)
-    	  	  getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getProjectId());
+    	  	  getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getBioProjectId());
     	    this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
     	}
 		if(getStudy()!=null&&getStudy().getLocusTags()!=null)

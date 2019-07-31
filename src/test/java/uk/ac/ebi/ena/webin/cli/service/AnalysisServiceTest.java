@@ -18,7 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Analysis;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class 
 AnalysisServiceTest 
@@ -53,7 +53,7 @@ AnalysisServiceTest
                                                              .build();
         Analysis analysis = analysisService.getAnalysis( id );
         assertThat( analysis ).isNotNull();
-        assertThat( analysis.getAlias() ).isNotNull();
+        assertThat( analysis.getName() ).isNotNull();
         return analysis;
     }
 

@@ -18,9 +18,9 @@ import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.entity.Run;
 import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class
 RunService extends AbstractService 
@@ -79,6 +79,9 @@ RunService extends AbstractService
         if( runResponse == null || !runResponse.canBeReferenced )
             throw WebinCliException.userError( WebinCliMessage.Service.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
 
-        return new Run( runResponse );
+        Run run = new Run();
+        run.setRunId(runResponse.id);
+        run.setName(runResponse.alias);
+        return run;
     }
 }

@@ -18,7 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.entity.Study;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
 StudyServiceTest {
@@ -48,7 +48,7 @@ StudyServiceTest {
                                                     .build();
         Study study = studyService.getStudy( id );
         assertThat(study).isNotNull();
-        assertThat(study.getProjectId()).isEqualTo(BIO_PROJECT_ID);
+        assertThat(study.getBioProjectId()).isEqualTo(BIO_PROJECT_ID);
         assertThat(study.getLocusTags()).hasSize(1);
         assertThat(study.getLocusTags()).first().isEqualTo(LOCUS_TAG);
     }
