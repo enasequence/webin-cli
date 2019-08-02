@@ -29,10 +29,9 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public abstract class
-ManifestReader<M extends Manifest> implements ManifestReaderInterface<M>
+ManifestReader
 {
     public interface Fields {
         String INFO = "INFO";

@@ -21,15 +21,13 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderInterface;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public abstract class 
-AbstractWebinCli<M extends Manifest> implements WebinCliWrapper<ManifestReaderInterface<M>>
+AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
 {
 
     private String name; 
@@ -37,7 +35,7 @@ AbstractWebinCli<M extends Manifest> implements WebinCliWrapper<ManifestReaderIn
 
     private boolean testMode;
 
-    private ManifestReaderInterface<M> manifestReader;
+    private M manifestReader;
 
     private File validationDir;
     private File processDir;
@@ -89,7 +87,7 @@ AbstractWebinCli<M extends Manifest> implements WebinCliWrapper<ManifestReaderIn
         this.description = description;
     }
 
-    protected abstract ManifestReader<M> createManifestReader();
+    protected abstract M createManifestReader();
 
     protected abstract void readManifest(Path inputDir, File manifestFile);
 
@@ -111,7 +109,7 @@ AbstractWebinCli<M extends Manifest> implements WebinCliWrapper<ManifestReaderIn
         {
             readManifest( getParameters().getInputDir().toPath(), manifestFile );
 
-            if (!StringUtils.isBlank(manifestReader.getManifest().getName())) {
+            if (!StringUtils.isBlank(manifestReader.getName())) {
                 setName();
                 this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.VALIDATE_DIR );
                 this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.PROCESS_DIR );
@@ -139,12 +137,12 @@ AbstractWebinCli<M extends Manifest> implements WebinCliWrapper<ManifestReaderIn
     }
 
     private void setName() {
-        if (manifestReader.getManifest().getName() != null) {
-            this.name = manifestReader.getManifest().getName().trim().replaceAll("\\s+", "_");
+        if (manifestReader.getName() != null) {
+            this.name = manifestReader.getName().trim().replaceAll("\\s+", "_");
         }
     }
 
-    public ManifestReaderInterface<M> getManifestReader() {
+    public M getManifestReader() {
         return manifestReader;
     }
 

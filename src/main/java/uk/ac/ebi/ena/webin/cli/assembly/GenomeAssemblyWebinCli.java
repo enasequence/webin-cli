@@ -33,7 +33,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
 public class 
-GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeManifest>
+GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, GenomeManifest>
 {
 	@Override public WebinCliContext
 	getContext() 

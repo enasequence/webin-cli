@@ -19,14 +19,13 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class
-TranscriptomeAssemblyManifestReader extends ManifestReader
+TranscriptomeAssemblyManifestReader extends SequenceManifestReader
 {
 	public interface
 	Field 
@@ -184,17 +183,5 @@ TranscriptomeAssemblyManifestReader extends ManifestReader
 	@Override
 	public TranscriptomeManifest getManifest() {
 		return manifest;
-	}
-
-	// TODO: remove
-	@Override
-	public String getName() {
-		return manifest.getName();
-	}
-
-	// TODO: remove
-	@Override
-	public String getDescription() {
-		return manifest.getDescription();
 	}
 }

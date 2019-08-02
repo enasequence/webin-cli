@@ -10,11 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderInterface;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 
-public interface WebinCliWrapper<T extends ManifestReaderInterface> {
+public interface WebinCliWrapper {
 
     /**
      * Services used by retrieve metadata from external sources.
@@ -66,9 +64,4 @@ public interface WebinCliWrapper<T extends ManifestReaderInterface> {
      * Get the submission bundle.
      * */
     SubmissionBundle getSubmissionBundle();
-
-
-
-
-
 }

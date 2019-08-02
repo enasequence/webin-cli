@@ -44,7 +44,7 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public abstract class 
-SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
+SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends AbstractWebinCli<R>
 {
     private static final String DIGEST_NAME = "MD5";
     protected final static String ANALYSIS_XML = "analysis.xml";
@@ -61,6 +61,19 @@ SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
     getInputDir()
     {
         return getParameters().getInputDir();
+    }
+
+    @Override
+    public R getManifestReader() {
+        return super.getManifestReader();
+    }
+
+    private M getManifest() {
+        SequenceManifestReader<M> manifestReader = getManifestReader();
+        if (manifestReader != null) {
+            return manifestReader.getManifest();
+        }
+        return null;
     }
 
     // TODO: remove function
@@ -84,7 +97,7 @@ SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
     private String
     createAnalysisXml( List<Element> fileElements, String centerName )
     {
-        M manifest = getManifestReader().getManifest();
+        M manifest = getManifest();
 
         try
         {
@@ -210,7 +223,7 @@ SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
             throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 
-        M manifest = getManifestReader().getManifest();
+        M manifest = getManifest();
 
         manifest.setIgnoreErrors(false);
         try {
@@ -252,7 +265,7 @@ SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
         {
             Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDir( getName() ) ) );
             
-            List<File> uploadFileList = getManifestReader().getManifest().files().files();
+            List<File> uploadFileList = getManifest().files().files();
             List<Element> fileElements = createXmlFileElements( uploadDir );
 
             String xml = createAnalysisXml( fileElements, getParameters().getCenterName() );

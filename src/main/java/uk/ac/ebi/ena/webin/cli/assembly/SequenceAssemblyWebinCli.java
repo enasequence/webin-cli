@@ -35,7 +35,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
 
-public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceManifest> {
+public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyManifestReader, SequenceManifest> {
 
     @Override
     public WebinCliContext getContext() {

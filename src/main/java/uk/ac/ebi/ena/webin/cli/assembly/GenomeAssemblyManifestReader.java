@@ -23,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 public class
-GenomeAssemblyManifestReader extends ManifestReader<GenomeManifest> {
+GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
 
 	public interface
 	Field 
@@ -282,17 +282,5 @@ GenomeAssemblyManifestReader extends ManifestReader<GenomeManifest> {
 	@Override
 	public GenomeManifest getManifest() {
 		return manifest;
-	}
-
-	// TODO: remove
-	@Override
-	public String getName() {
-		return manifest.getName();
-	}
-
-	// TODO: remove
-	@Override
-	public String getDescription() {
-		return manifest.getDescription();
 	}
 }

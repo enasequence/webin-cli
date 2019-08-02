@@ -33,7 +33,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
 
-public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeManifest> {
+public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifestReader, TranscriptomeManifest> {
 
 	@Override
 	public WebinCliContext getContext() {
