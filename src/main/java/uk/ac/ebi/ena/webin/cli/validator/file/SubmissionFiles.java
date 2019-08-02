@@ -24,6 +24,10 @@ public class SubmissionFiles <FileType extends Enum<FileType>> {
         return files;
     }
 
+    public List<SubmissionFile<FileType>> get(FileType fileType) {
+        return files.stream().filter(file -> file.isFileType(fileType)).collect(Collectors.toList());
+    }
+
     public List<File> files() {
         return files.stream().map(file -> file.getFile()).collect(Collectors.toList());
     }
