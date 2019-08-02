@@ -27,16 +27,25 @@ public class
 RunProcessor implements ManifestFieldProcessor
 {
     private final WebinCliParameters parameters;
-    private final ManifestFieldProcessor.Callback<List<Run>> callback;
+    private ManifestFieldProcessor.Callback<List<Run>> callback;
 
-    public 
+    public
     RunProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<List<Run>> callback )
     {
         this.parameters = parameters;
         this.callback = callback;
     }
 
-    
+    public
+    RunProcessor( WebinCliParameters parameters )
+    {
+        this.parameters = parameters;
+    }
+
+    public void setCallback(Callback<List<Run>> callback) {
+        this.callback = callback;
+    }
+
     @Override public ValidationResult
     process( ManifestFieldValue fieldValue )
     {

@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyManifest;
+import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
@@ -25,8 +25,8 @@ public class AuthorProcessorTest {
     public void testProcess() {
         ManifestFieldDefinition fieldDef = new ManifestFieldDefinition.Builder().
                 type(ManifestFieldType.META).
-                name(GenomeAssemblyManifest.Field.AUTHORS).
-                desc(GenomeAssemblyManifest.Description.AUTHORS).optional().notInSpreadsheet().
+                name(GenomeAssemblyManifestReader.Field.AUTHORS).
+                desc(GenomeAssemblyManifestReader.Description.AUTHORS).optional().notInSpreadsheet().
                 build().get(0);
         ManifestFieldValue manifestField = new ManifestFieldValue(fieldDef,"Senthil .V", null);
         new AuthorProcessor().process(manifestField);

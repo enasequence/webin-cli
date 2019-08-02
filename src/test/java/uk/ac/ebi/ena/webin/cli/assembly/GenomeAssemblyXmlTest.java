@@ -236,7 +236,7 @@ GenomeAssemblyXmlTest
         Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
                 "NAME\t" + name + "\n" +
                         "SAMPLE\ttest_sample\n" +
-                        GenomeAssemblyManifest.Field.DESCRIPTION + " a description\n" +
+                        GenomeAssemblyManifestReader.Field.DESCRIPTION + " a description\n" +
                         "STUDY\ttest_study\n" +
                         "PROGRAM\ttest_program\n" +
                         "PLATFORM\ttest_platform\n" +
@@ -299,7 +299,7 @@ GenomeAssemblyXmlTest
         Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
                 "NAME\t" + name + "\n" +
                         "SAMPLE\ttest_sample\n" +
-                        GenomeAssemblyManifest.Field.DESCRIPTION + " a description\n" +
+                        GenomeAssemblyManifestReader.Field.DESCRIPTION + " a description\n" +
                         "STUDY\ttest_study\n" +
                         "PROGRAM\ttest_program\n" +
                         "PLATFORM\ttest_platform\n" +

@@ -61,11 +61,12 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class 
-RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
+RawReadsWebinCli extends AbstractWebinCli<ReadManifest>
 {   
     private static final String RUN_XML = "run.xml";
     private static final String EXPERIMENT_XML = "experiment.xml";
@@ -91,6 +92,11 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
         return new RawReadsManifest(
                 isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters(), (Sample sample) -> this.sampleId = sample.getBioSampleId()) : null,
                 isMetadataServiceActive(MetadataService.STUDY) ? new StudyProcessor(getParameters(), (Study study) -> this.studyId = study.getBioProjectId()) : null);
+    }
+
+    public RawReadsManifest getManifestReader() {
+        // TODO: convert to using validation interface
+        return (RawReadsManifest)super.getManifestReader();
     }
 
     @Override

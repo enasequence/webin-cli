@@ -23,15 +23,24 @@ public class
 StudyProcessor implements ManifestFieldProcessor
 {
     private final WebinCliParameters parameters;
-    private final ManifestFieldProcessor.Callback<Study> callback;
+    private ManifestFieldProcessor.Callback<Study> callback;
 
-    public 
+    public
     StudyProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<Study> callback )
     {
         this.parameters = parameters;
         this.callback = callback;
     }
 
+    public
+    StudyProcessor( WebinCliParameters parameters )
+    {
+        this.parameters = parameters;
+    }
+
+    public void setCallback(Callback<Study> callback) {
+        this.callback = callback;
+    }
     
     @Override public ValidationResult
     process( ManifestFieldValue fieldValue )

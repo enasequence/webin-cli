@@ -88,7 +88,9 @@ public class SpreadsheetWriter {
     private ArrayList<ManifestFieldDefinition> getFields() {
         ManifestReader manifest = spreadsheetContext.getManifest();
         ArrayList<ManifestFieldDefinition> fields = new ArrayList<>();
-        for (ManifestFieldDefinition field : manifest.getFields()) {
+        List<ManifestFieldDefinition> manifestFields = manifest.getFields();
+
+        for (ManifestFieldDefinition field : manifestFields) {
             for (int i = 0 ; i < field.getSpreadsheetMaxCount() ; ++i) {
                 fields.add(field);
             }

@@ -27,16 +27,25 @@ public class
 AnalysisProcessor implements ManifestFieldProcessor
 {
     private final WebinCliParameters parameters;
-    private final ManifestFieldProcessor.Callback<List<Analysis>> callback;
+    private ManifestFieldProcessor.Callback<List<Analysis>> callback;
 
-    public 
+    public
     AnalysisProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<List<Analysis>> callback )
     {
         this.parameters = parameters;
         this.callback = callback;
     }
 
-    
+    public
+    AnalysisProcessor( WebinCliParameters parameters )
+    {
+        this.parameters = parameters;
+    }
+
+    public void setCallback(Callback<List<Analysis>> callback) {
+        this.callback = callback;
+    }
+
     @Override public ValidationResult
     process( ManifestFieldValue fieldValue )
     {

@@ -23,12 +23,22 @@ public class
 SampleProcessor implements ManifestFieldProcessor
 {
     private final WebinCliParameters parameters;
-    private final ManifestFieldProcessor.Callback<Sample> callback;
+    private ManifestFieldProcessor.Callback<Sample> callback;
 
-    public 
+    public
     SampleProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<Sample> callback )
     {
         this.parameters = parameters;
+        this.callback = callback;
+    }
+
+    public
+    SampleProcessor( WebinCliParameters parameters )
+    {
+        this.parameters = parameters;
+    }
+
+    public void setCallback(Callback<Sample> callback) {
         this.callback = callback;
     }
 

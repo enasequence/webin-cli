@@ -11,14 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.util.Map;
-import java.util.Optional;
 
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.submission.Context;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
@@ -26,9 +19,12 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class
-SequenceAssemblyManifest extends ManifestReader 
+SequenceAssemblyManifestReader extends ManifestReader
 {
     public interface 
     Field 
@@ -59,14 +55,11 @@ SequenceAssemblyManifest extends ManifestReader
         String ADDRESS          = "Author address";
     }
 
-    private SubmissionOptions submissionOptions;
-    private String name;
-    private String description;
+    private SequenceManifest manifest = new SequenceManifest();
 
-    public
-    SequenceAssemblyManifest( StudyProcessor    studyProcessor, 
-                              RunProcessor      runProcessor, 
-                              AnalysisProcessor analysisProcessor ) 
+    public SequenceAssemblyManifestReader(StudyProcessor    studyProcessor,
+                                          RunProcessor      runProcessor,
+                                          AnalysisProcessor analysisProcessor )
     {
         super(
                 // Fields.
@@ -89,8 +82,17 @@ SequenceAssemblyManifest extends ManifestReader
                     .and().group()
                     .required( Field.FLATFILE )
                     .build()
-
         );
+
+        if ( studyProcessor != null ) {
+            studyProcessor.setCallback(study -> manifest.setStudy(study));
+        }
+        if ( runProcessor != null ) {
+            runProcessor.setCallback(run -> manifest.setRun(run));
+        }
+        if (analysisProcessor != null ) {
+            analysisProcessor.setCallback(analysis -> manifest.setAnalysis(analysis));
+        }
     }
 
     private static ManifestFieldProcessor[] getTabProcessors() {
@@ -109,47 +111,40 @@ SequenceAssemblyManifest extends ManifestReader
     @Override public void
     processManifest() 
     {
-    	submissionOptions = new SubmissionOptions();
-		SubmissionFiles submissionFiles = new SubmissionFiles();
-		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
+        manifest = new SequenceManifest();
+
         Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
         if (!authorAndAddress.isEmpty()) {
             if (authorAndAddress.size() == 2) {
-                assemblyInfo.setAddress(authorAndAddress.get(Field.ADDRESS));
-                assemblyInfo.setAuthors(authorAndAddress.get(Field.AUTHORS));
+                manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
+                manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
             } else {
                 error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
             }
         }
-		name = getResult().getValue( Field.NAME );
-		description = getResult().getValue( Field.DESCRIPTION );
-		assemblyInfo.setName( name );
-		getFiles( getInputDir(), getResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.addFile( new SubmissionFile( FileType.TSV,fastaFile ) ) );
-		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(flatFile->submissionFiles.addFile( new SubmissionFile( FileType.FLATFILE,flatFile ) ) );
-		submissionOptions.assemblyInfoEntry = Optional.of( assemblyInfo );
-		submissionOptions.context = Optional.of( Context.sequence );
-		submissionOptions.submissionFiles = Optional.of( submissionFiles );
-		submissionOptions.isRemote = true;
-    }
-    
+		manifest.setName(getResult().getValue( Field.NAME ));
+		manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
 
-    @Override public String 
-	getName() 
-	{
-		return name;
-	}
-	
-	
-    @Override public String
-    getDescription()
-    {
-        return description;
+        SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
+
+		getFiles( getInputDir(), getResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.TAB,fastaFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(flatFile->submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.FLATFILE,flatFile ) ) );
     }
-    
-    
-    public SubmissionOptions 
-    getSubmissionOptions() 
-    {
-		return submissionOptions;
-	}
+
+    @Override
+    public SequenceManifest getManifest() {
+        return manifest;
+    }
+
+    // TODO: remove
+    @Override
+    public String getName() {
+        return manifest.getName();
+    }
+
+    // TODO: remove
+    @Override
+    public String getDescription() {
+        return manifest.getDescription();
+    }
 }

@@ -11,16 +11,9 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.submission.Context;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
@@ -28,9 +21,12 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class
-TranscriptomeAssemblyManifest extends ManifestReader 
+TranscriptomeAssemblyManifestReader extends ManifestReader
 {
 	public interface
 	Field 
@@ -72,18 +68,13 @@ TranscriptomeAssemblyManifest extends ManifestReader
 		String ADDRESS          = "Author address";
 	}
 
-	
-	private String name;
-	private String description;
-	private SubmissionOptions submissionOptions;
+	private TranscriptomeManifest manifest = new TranscriptomeManifest();
 
-
-	public 
-	TranscriptomeAssemblyManifest( SampleProcessor sampleProcessor, 
-	                               StudyProcessor  studyProcessor, 
-	                               SampleXmlProcessor sampleXmlProcessor,
-	                               RunProcessor    runProcessor,
-	                               AnalysisProcessor analysisProcessor )
+	public TranscriptomeAssemblyManifestReader(SampleProcessor sampleProcessor,
+											   StudyProcessor  studyProcessor,
+											   SampleXmlProcessor sampleXmlProcessor,
+											   RunProcessor    runProcessor,
+											   AnalysisProcessor analysisProcessor )
 	{
 		super(
 				// Fields.
@@ -112,6 +103,26 @@ TranscriptomeAssemblyManifest extends ManifestReader
 					.required(Field.FLATFILE)
 					.build()
 		);
+
+		if ( studyProcessor != null ) {
+			studyProcessor.setCallback(study -> manifest.setStudy(study));
+		}
+		if ( sampleProcessor != null ) {
+			sampleProcessor.setCallback(sample -> manifest.setSample(sample));
+		}
+		if ( runProcessor != null ) {
+			runProcessor.setCallback(run -> manifest.setRun(run));
+		}
+		if (analysisProcessor != null ) {
+			analysisProcessor.setCallback(analysis -> manifest.setAnalysis(analysis));
+		}
+		if (sampleXmlProcessor != null) {
+			sampleXmlProcessor.setCallback(sample -> {
+				manifest.getSample().setName(sample.getName());
+				manifest.getSample().setAttributes(sample.getAttributes());
+			});
+		}
+
 	}
 
 	private static ManifestFieldProcessor[] getFastaProcessors() {
@@ -126,71 +137,64 @@ TranscriptomeAssemblyManifest extends ManifestReader
 				new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)};
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-
-	@Override
-	public String getDescription() {
-		return description;
-	}
-	
-	
 	@Override public void
 	processManifest() 
 	{
+		manifest = new TranscriptomeManifest();
 
-		name = getResult().getValue( Field.NAME );
+		manifest.setName(getResult().getValue( Field.NAME ));
 		
-		if( StringUtils.isBlank( name ) )
+		if( StringUtils.isBlank( manifest.getName() ) )
 		{
-			name = getResult().getValue( Field.ASSEMBLYNAME );
+			manifest.setName(getResult().getValue( Field.ASSEMBLYNAME ));
 		}
 		
-		if( StringUtils.isBlank( name ) ) 
+		if( StringUtils.isBlank( manifest.getName() ) )
 		{
 			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
 		}
 
-		description = getResult().getValue( Field.DESCRIPTION );
+		manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
 		
-		submissionOptions = new SubmissionOptions();
-		SubmissionFiles submissionFiles = new SubmissionFiles();
-		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
 		Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
 		if (!authorAndAddress.isEmpty()) {
 			if (authorAndAddress.size() == 2) {
-				assemblyInfo.setAddress(authorAndAddress.get(Field.ADDRESS));
-				assemblyInfo.setAuthors(authorAndAddress.get(Field.AUTHORS));
+				manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
+				manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
 			} else {
 				error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
 			}
 		}
 
-		assemblyInfo.setName( name );
-		assemblyInfo.setProgram( getResult().getValue( Field.PROGRAM ) );
-		assemblyInfo.setPlatform( getResult().getValue( Field.PLATFORM ) );
+		manifest.setProgram( getResult().getValue( Field.PROGRAM ) );
+		manifest.setPlatform( getResult().getValue( Field.PLATFORM ) );
 
 		if( getResult().getCount(Field.TPA) > 0 )
 		{
-			assemblyInfo.setTpa( getAndValidateBoolean( getResult().getField(Field.TPA ) ) );
+			manifest.setTpa( getAndValidateBoolean( getResult().getField(Field.TPA ) ) );
 		}
 
-		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(fastaFile-> submissionFiles.addFile( new SubmissionFile( FileType.FASTA, fastaFile ) ) );
-		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(fastaFile-> submissionFiles.addFile( new SubmissionFile( FileType.FLATFILE, fastaFile ) ) );
-		submissionOptions.assemblyInfoEntry = Optional.of( assemblyInfo );
-		submissionOptions.context = Optional.of( Context.transcriptome );
-		submissionOptions.submissionFiles = Optional.of( submissionFiles );
-		submissionOptions.isRemote = true;
-	}
-	
-	
-	public SubmissionOptions 
-	getSubmissionOptions() 
-	{
-		return submissionOptions;
+		SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
+
+		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, fastaFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, fastaFile ) ) );
 	}
 
+
+	@Override
+	public TranscriptomeManifest getManifest() {
+		return manifest;
+	}
+
+	// TODO: remove
+	@Override
+	public String getName() {
+		return manifest.getName();
+	}
+
+	// TODO: remove
+	@Override
+	public String getDescription() {
+		return manifest.getDescription();
+	}
 }

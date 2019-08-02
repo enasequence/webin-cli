@@ -19,10 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -31,109 +29,27 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public abstract class 
-SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
+SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
 {
     private static final String DIGEST_NAME = "MD5";
     protected final static String ANALYSIS_XML = "analysis.xml";
 
-	SubmissionOptions submissionOptions;
-    private Study study;
-    private Sample sample;
-	private List<Run> run_refs;
-	private List<Analysis> analysis_refs;
-	protected AssemblyInfoEntry assembly_info;
-
     private static final Logger log = LoggerFactory.getLogger(SequenceWebinCli.class);
-
-    public void
-    setRunRef( List<Run> run_refs )
-    {
-        this.run_refs = run_refs;
-    }
-    
-    
-    public void
-    setAnalysisRef( List<Analysis> analysis_refs )
-    {
-        this.analysis_refs = analysis_refs;
-    }
-
-    public List<Run>
-    getRunRef()
-    {
-        return this.run_refs;
-    }
-    
-    
-    public List<Analysis> 
-    getAnalysisRef()
-    {
-        return this.analysis_refs;
-    }
-    
-    
-    public void
-    setStudy( Study study )
-    { 
-        this.study = study;
-    }
-
-    public void
-    setSample( Sample sample )
-    {
-        if (this.sample == null) {
-            this.sample = sample;
-        }
-        else {
-            if (this.sample.getName() == null || this.sample.getName().isEmpty()) {
-                this.sample.setName(sample.getName());
-            }
-            if (this.sample.getBioSampleId() == null || this.sample.getBioSampleId().isEmpty()) {
-                this.sample.setBioSampleId(sample.getBioSampleId());
-            }
-            if (this.sample.getTaxId() == null) {
-                this.sample.setTaxId(sample.getTaxId());
-            }
-            if (this.sample.getOrganism() == null || this.sample.getOrganism().isEmpty()) {
-                this.sample.setOrganism(sample.getOrganism());
-            }
-            this.sample.addAttributes(sample.getAttributes());
-        }
-    }
-
-    public Study
-    getStudy()
-    { 
-        return this.study;
-    }
-
-    public Sample
-    getSample()
-    {
-        return this.sample;
-    }
 
     public void 
     setInputDir( File inputDir )
@@ -141,55 +57,36 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         getParameters().setInputDir( inputDir );
     }
 
-
     public File
     getInputDir()
     {
         return getParameters().getInputDir();
     }
-    
-    
-    public AssemblyInfoEntry
-    getAssemblyInfo()
+
+    // TODO: remove function
+    @Override protected void
+    readManifest( Path inputDir, File manifestFile )
     {
-        return assembly_info;
+        getManifestReader().readManifest( inputDir, manifestFile );
+        setDescription( getManifestReader().getManifest().getDescription() );
     }
 
-
-    public void
-    setAssemblyInfo( AssemblyInfoEntry assembly_info )
-    {
-        this.assembly_info = assembly_info;
-    }
+    abstract Element createXmlAnalysisTypeElement();
 
     protected Element
-    createTextElement( String name, String text )
+    createXmlTextElement(String name, String text )
     {
         Element e = new Element( name );
         e.setText( text );
         return e;
     }
-   
-	public SubmissionOptions getSubmissionOptions() {
-		return submissionOptions;
-	}
 
-	public void setSubmissionOptions( SubmissionOptions submissionOptions ) {
-		this.submissionOptions = submissionOptions;
-	}
-    
-   abstract Element makeAnalysisType( AssemblyInfoEntry entry );
-
-   
     private String
-    createAnalysisXml( List<Element> fileList, 
-                       AssemblyInfoEntry entry, 
-                       String centerName, 
-                       String description,
-                       List<Run> run_ref,
-                       List<Analysis> analysis_ref )
+    createAnalysisXml( List<Element> fileElements, String centerName )
     {
-        try 
+        M manifest = getManifestReader().getManifest();
+
+        try
         {
             String full_name = getContext().getXmlTitle( getName() );
 
@@ -205,34 +102,36 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             
             analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
             
-            if( null != description && !description.isEmpty() )
-                analysisE.addContent( new Element( "DESCRIPTION" ).setText( description ) );
+            if( null != manifest.getDescription() && !manifest.getDescription().isEmpty() )
+                analysisE.addContent( new Element( "DESCRIPTION" ).setText( manifest.getDescription() ) );
                 
             Element studyRefE = new Element( "STUDY_REF" );
             analysisE.addContent( studyRefE );
-            studyRefE.setAttribute( "accession", entry.getStudyId() );
-			if( entry.getBiosampleId() != null && !entry.getBiosampleId().isEmpty() )
+            studyRefE.setAttribute( "accession", manifest.getStudy().getBioProjectId() );
+			if( manifest.getSample().getBioSampleId() != null && !manifest.getSample().getBioSampleId().isEmpty() )
             {
                 Element sampleRefE = new Element( "SAMPLE_REF" );
                 analysisE.addContent( sampleRefE );
-				sampleRefE.setAttribute( "accession", entry.getBiosampleId() );
+				sampleRefE.setAttribute( "accession", manifest.getSample().getBioSampleId() );
             }
 			
 			
-            if( null != run_ref )
+            if( null != manifest.getRun() )
             {
-                for( Run r : run_ref )
+                List<Run> run = manifest.getRun();
+                for( Run r : run )
                 {
                     Element runRefE = new Element( "RUN_REF" );
                     analysisE.addContent( runRefE );
                     runRefE.setAttribute( "accession", r.getRunId() );
                 }
             }
+
             
-            
-            if( null != analysis_ref )
+            if( null != manifest.getAnalysis() )
             {
-                for( Analysis a : analysis_ref )
+                List<Analysis> analysis = manifest.getAnalysis();
+                for( Analysis a : analysis )
                 {
                     Element analysisRefE = new Element( "ANALYSIS_REF" );
                     analysisE.addContent( analysisRefE );
@@ -242,13 +141,13 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 			
             Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
             analysisE.addContent( analysisTypeE );
-            Element typeE = makeAnalysisType( entry );
+            Element typeE = createXmlAnalysisTypeElement();
             analysisTypeE.addContent( typeE );
 
             Element filesE = new Element( "FILES" );
             analysisE.addContent( filesE );
             
-            for( Element e: fileList )
+            for( Element e: fileElements )
                 filesE.addContent( e );
             
             XMLOutputter xmlOutput = new XMLOutputter();
@@ -264,13 +163,13 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
     }
 
 
-    private Element
-    createfileElement(Path uploadDir, File file, String file_type)
+    protected Element
+    createXmlFileElement(Path uploadDir, File file, String fileType)
     {
         try
         {
-            return createfileElement( String.valueOf( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ) ).replaceAll( "\\\\+", "/" ), 
-                                      String.valueOf( file_type ), 
+            return createXmlFileElement( String.valueOf( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ) ).replaceAll( "\\\\+", "/" ),
+                                      String.valueOf( fileType ),
                                       DIGEST_NAME, 
                                       FileUtils.calculateDigest( DIGEST_NAME, file ) );
         }catch( IOException | NoSuchAlgorithmException e )
@@ -281,16 +180,15 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
     
     private Element
-    createfileElement( String file_path, String file_type, String digest, String checksum )
+    createXmlFileElement(String fileName, String fileType, String digest, String checksum )
     {
         Element fileE = new Element( "FILE" );
-        fileE.setAttribute( "filename", file_path );
-        fileE.setAttribute( "filetype", String.valueOf( file_type ) );
+        fileE.setAttribute( "filename", fileName );
+        fileE.setAttribute( "filetype", String.valueOf( fileType ) );
         fileE.setAttribute( "checksum_method", digest );
         fileE.setAttribute( "checksum", checksum );
         return fileE;
     }
-    
 
     private String
     extractSubpath(File inputDir, File file)
@@ -298,6 +196,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
 
+    protected abstract void validate(File reportDir, File processDir) throws WebinCliException, ValidationEngineException;
    
     @Override public void
     validate() throws WebinCliException
@@ -311,8 +210,9 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         if( !FileUtils.emptyDirectory( getSubmitDir() ) )
             throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
 
+        M manifest = getManifestReader().getManifest();
 
-        getSubmissionOptions().ignoreErrors = false;
+        manifest.setIgnoreErrors(false);
         try {
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
                     .setCredentials(getParameters().getUsername(),
@@ -320,7 +220,7 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
                     .setTest(getTestMode())
                     .build();
 
-            getSubmissionOptions().ignoreErrors = ignoreErrorsService.getIgnoreErrors(getContext().name(), getName());
+            manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getName()));
         }
         catch (RuntimeException ex) {
             log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
@@ -328,9 +228,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
 
         try
         {
-            getSubmissionOptions().reportDir = Optional.of(getValidationDir().getAbsolutePath());
-            getSubmissionOptions().processDir = Optional.of(getProcessDir().getAbsolutePath());
-            new SubmissionValidator(getSubmissionOptions()).validate();
+            validate(getValidationDir(), getProcessDir());
+
         } catch( ValidationEngineException ex )
         {
             switch( ex.getErrorType() )
@@ -343,36 +242,8 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             }
         }
     }
-    
-    
-    private List<File>
-    getUploadFiles() {
-		List<File> uploadFiles = new ArrayList<>();
-		uploadFiles.addAll( getFilesToUpload( FileType.CHROMOSOME_LIST ) );
-		uploadFiles.addAll( getFilesToUpload( FileType.UNLOCALISED_LIST ) );
-		uploadFiles.addAll( getFilesToUpload( FileType.FASTA ) );
-		uploadFiles.addAll( getFilesToUpload( FileType.AGP ) );
-		uploadFiles.addAll( getFilesToUpload( FileType.FLATFILE ) );
-		uploadFiles.addAll( getFilesToUpload( FileType.TSV ) );
-        
-		return uploadFiles;
-    }
-    
-    
-    private List<Element>
-    getXMLFiles(Path uploadDir) {
-        List<Element> eList = new ArrayList<>();
 
-        getFilesToUpload( FileType.CHROMOSOME_LIST ).forEach( file -> eList.add( createfileElement( uploadDir, file, "chromosome_list" ) ) );
-	    getFilesToUpload( FileType.UNLOCALISED_LIST ).forEach( file -> eList.add( createfileElement( uploadDir, file, "unlocalised_list" ) ) );
-	    getFilesToUpload( FileType.FASTA ).forEach( file -> eList.add( createfileElement( uploadDir, file, "fasta" ) ) );
-	    getFilesToUpload( FileType.FLATFILE ).forEach( file -> eList.add( createfileElement( uploadDir, file, "flatfile" ) ) );
-	    getFilesToUpload( FileType.AGP ).forEach( file -> eList.add( createfileElement( uploadDir, file, "agp" ) ) );
-	    getFilesToUpload( FileType.TSV ).forEach( file -> eList.add( createfileElement( uploadDir, file, "tab" ) ) );
-        
-        return eList;
-    }
-    
+    protected abstract List<Element> createXmlFileElements(Path uploadDir);
     
     @Override public void
     prepareSubmissionBundle() throws WebinCliException
@@ -381,10 +252,10 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
         {
             Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDir( getName() ) ) );
             
-            List<File> uploadFileList = getUploadFiles();
-            List<Element> eList = getXMLFiles( uploadDir );
+            List<File> uploadFileList = getManifestReader().getManifest().files().files();
+            List<Element> fileElements = createXmlFileElements( uploadDir );
 
-            String xml = createAnalysisXml( eList, getAssemblyInfo(), getParameters().getCenterName(), getDescription(), getRunRef(), getAnalysisRef() );
+            String xml = createAnalysisXml( fileElements, getParameters().getCenterName() );
             
             Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
     
@@ -401,21 +272,4 @@ SequenceWebinCli<T extends ManifestReader> extends AbstractWebinCli<T>
             throw WebinCliException.systemError( ex );
         }        
     }
-
-    
-	private List<File> 
-	getFilesToUpload(FileType fileType)
-	{
-		List<File> files= new ArrayList<>();
-		if( getSubmissionOptions() != null && getSubmissionOptions().submissionFiles.isPresent() )
-		{
-			for( SubmissionFile submissionFile : getSubmissionOptions().submissionFiles.get().getFiles() )
-			{
-				if( fileType!=null && fileType.equals( submissionFile.getFileType() ) )
-					files.add( submissionFile.getFile() );
-			}
-
-		}
-		return files;
-	}
 }

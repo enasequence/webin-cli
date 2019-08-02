@@ -12,6 +12,8 @@ package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.jdom2.Element;
@@ -20,76 +22,113 @@ import uk.ac.ebi.embl.api.entry.feature.FeatureFactory;
 import uk.ac.ebi.embl.api.entry.feature.SourceFeature;
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.entry.qualifier.Qualifier;
+import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
 import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
+import uk.ac.ebi.embl.api.validation.submission.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
-public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifest> {
+
+public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeManifest> {
 
 	@Override
 	public WebinCliContext getContext() {
 		return WebinCliContext.transcriptome;
 	}
 
-	@Override protected
-	TranscriptomeAssemblyManifest createManifestReader() 
+	@Override protected TranscriptomeAssemblyManifestReader createManifestReader()
 	{
-		// Create manifest parser which will also set the sample and study fields.
-		return new TranscriptomeAssemblyManifest(
-				isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters(), this::setSample) : null,
-				isMetadataServiceActive(MetadataService.STUDY)  ? new StudyProcessor(getParameters(), this::setStudy) : null,
-				isMetadataServiceActive(MetadataService.SAMPLE_XML) ? new SampleXmlProcessor(getParameters(), this::setSample ):null,
-				isMetadataServiceActive(MetadataService.RUN)    ? new RunProcessor( getParameters(), this::setRunRef ) : null,
-				isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters(), this::setAnalysisRef ) : null );
+		return new TranscriptomeAssemblyManifestReader(
+				isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters()) : null,
+				isMetadataServiceActive(MetadataService.STUDY)  ? new StudyProcessor(getParameters()) : null,
+				isMetadataServiceActive(MetadataService.SAMPLE_XML) ? new SampleXmlProcessor(getParameters() ):null,
+				isMetadataServiceActive(MetadataService.RUN)    ? new RunProcessor( getParameters() ) : null,
+				isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters() ) : null );
 	}
 
 	@Override
-	protected void readManifest(Path inputDir, File manifestFile) {
-		getManifestReader().readManifest(inputDir, manifestFile);
-		setSubmissionOptions(getManifestReader().getSubmissionOptions());
-	    setDescription( getManifestReader().getDescription() );
-		if(getSubmissionOptions().assemblyInfoEntry.isPresent())
-		{
-		if (getStudy() != null)
-			getSubmissionOptions().assemblyInfoEntry.get().setStudyId(getStudy().getBioProjectId());
-		if (getSample() != null)
-			getSubmissionOptions().assemblyInfoEntry.get().setBiosampleId(getSample().getBioSampleId());
-			this.setAssemblyInfo(getSubmissionOptions().assemblyInfoEntry.get());
-		}
-		if(getStudy()!=null&&getStudy().getLocusTags()!=null)
- 			getSubmissionOptions().locusTagPrefixes = Optional.of( getStudy().getLocusTags());
+	protected void validate(File reportDir, File processDir) throws WebinCliException, ValidationEngineException {
+		TranscriptomeManifest manifest = getManifestReader().getManifest();
+		manifest.setReportDir(getValidationDir());
+		manifest.setProcessDir(getProcessDir());
 
-		if( getSample() != null ) {
-			Sample sample = getSample();
-			SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();
-			MasterSourceFeatureUtils sourceUtils = new MasterSourceFeatureUtils();
-			if (sample.getTaxId() != null) {
-				sourceFeature.addQualifier(Qualifier.DB_XREF_QUALIFIER_NAME, String.valueOf(sample.getTaxId()));
+		SubmissionOptions submissionOptions = new SubmissionOptions();
+		submissionOptions.context = Optional.of( Context.transcriptome );
+		AssemblyInfoEntry assemblyInfo = new AssemblyInfoEntry();
+		MasterSourceFeatureUtils sourceUtils = new MasterSourceFeatureUtils();
+		SubmissionFiles submissionFiles = new SubmissionFiles();
+
+		assemblyInfo.setName( manifest.getName() );
+		assemblyInfo.setPlatform( manifest.getPlatform() );
+		assemblyInfo.setProgram( manifest.getProgram() );
+		assemblyInfo.setTpa(manifest.isTpa());
+		assemblyInfo.setAuthors(manifest.getAuthors());
+		assemblyInfo.setAddress(manifest.getAddress());
+
+		if (manifest.getStudy() != null) {
+			assemblyInfo.setStudyId(manifest.getStudy().getBioProjectId());
+			if (manifest.getStudy().getLocusTags()!= null) {
+				submissionOptions.locusTagPrefixes = Optional.of(manifest.getStudy().getLocusTags());
 			}
-			sourceFeature.setScientificName(sample.getOrganism());
-			for (Attribute attribute: sample.getAttributes()) {
+		}
+		if (manifest.getSample() != null) {
+			assemblyInfo.setBiosampleId(manifest.getSample().getBioSampleId());
+
+			SourceFeature sourceFeature = new FeatureFactory().createSourceFeature();
+			sourceFeature.addQualifier(Qualifier.DB_XREF_QUALIFIER_NAME, String.valueOf(manifest.getSample().getTaxId()));
+			sourceFeature.setScientificName(manifest.getSample().getOrganism());
+			for (Attribute attribute: manifest.getSample().getAttributes()) {
 				sourceUtils.addSourceQualifier(attribute.getName(), attribute.getValue(), sourceFeature);
 			}
-			sourceUtils.addExtraSourceQualifiers(sourceFeature, new TaxonHelperImpl(), sample.getName());
-			getSubmissionOptions().source = Optional.of(sourceFeature);
+			sourceUtils.addExtraSourceQualifiers(sourceFeature, new TaxonHelperImpl(), manifest.getName());
 		}
+
+		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FASTA, file.getFile() )));
+		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.AGP,file.getFile() )));
+		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FLATFILE, file.getFile() )));
+		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.CHROMOSOME_LIST, file.getFile() )));
+		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.UNLOCALISED_LIST, file.getFile() )));
+
+		submissionOptions.assemblyInfoEntry = Optional.of( assemblyInfo );
+		submissionOptions.isRemote = true;
+		submissionOptions.ignoreErrors = manifest.isIgnoreErrors();
+		submissionOptions.reportDir = Optional.of(manifest.getReportDir().getAbsolutePath());
+		submissionOptions.processDir = Optional.of( manifest.getProcessDir().getAbsolutePath());
+		submissionOptions.submissionFiles = Optional.of( submissionFiles );
+
+		new SubmissionValidator(submissionOptions).validate();
 	}
 
-	@Override	
-	Element makeAnalysisType( AssemblyInfoEntry entry ) {
+	@Override Element
+	createXmlAnalysisTypeElement()
+	{
+		TranscriptomeManifest manifest = getManifestReader().getManifest();
+
 		Element typeE = new Element( WebinCliContext.transcriptome.getXmlElement() );
-		typeE.addContent( createTextElement( "NAME", entry.getName() ) );
-		typeE.addContent( createTextElement( "PROGRAM",  entry.getProgram() ) );
-		typeE.addContent( createTextElement( "PLATFORM", entry.getPlatform() ) );
-		if ( entry.isTpa())
-			typeE.addContent( createTextElement( "TPA", String.valueOf( entry.isTpa() ) ) );
-		if (null != entry.getAuthors() && null != entry.getAddress()) {
-			typeE.addContent(createTextElement("AUTHORS", entry.getAuthors()));
-			typeE.addContent(createTextElement("ADDRESS", entry.getAddress()));
+		typeE.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
+		typeE.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
+		typeE.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
+		if ( manifest.isTpa())
+			typeE.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
+		if (null != manifest.getAuthors() && null != manifest.getAddress()) {
+			typeE.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
+			typeE.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
 		}
 		return typeE;
+	}
+
+	@Override
+	protected List<Element> createXmlFileElements(Path uploadDir) {
+		List<Element> fileElements = new ArrayList<>();
+
+		TranscriptomeManifest manifest = getManifestReader().getManifest();
+		manifest.files( TranscriptomeManifest.FileType.FASTA ).forEach( file -> fileElements.add( createXmlFileElement( uploadDir, file.getFile(), "fasta" ) ) );
+		manifest.files( TranscriptomeManifest.FileType.FLATFILE ).forEach( file -> fileElements.add( createXmlFileElement( uploadDir, file.getFile(), "flatfile" ) ) );
+
+		return fileElements;
 	}
 }

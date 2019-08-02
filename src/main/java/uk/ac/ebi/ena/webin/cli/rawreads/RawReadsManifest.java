@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
@@ -37,6 +38,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public class
 RawReadsManifest extends ManifestReader {
@@ -413,5 +415,11 @@ RawReadsManifest extends ManifestReader {
     getDescription()
     {
         return description;
+    }
+
+    @Override
+    public Manifest getManifest() {
+        // TODO: convert to using validation interface
+        throw new NotImplementedException();
     }
 }
