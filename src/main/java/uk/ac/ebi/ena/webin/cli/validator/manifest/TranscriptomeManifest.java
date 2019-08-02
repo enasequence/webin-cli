@@ -28,6 +28,9 @@ public class TranscriptomeManifest extends Manifest<TranscriptomeManifest.FileTy
     }
 
     public Boolean isTpa() {
+        if (tpa == null) {
+            return false;
+        }
         return tpa;
     }
 

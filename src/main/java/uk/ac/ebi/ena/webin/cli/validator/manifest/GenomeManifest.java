@@ -66,7 +66,10 @@ public class GenomeManifest extends Manifest<GenomeManifest.FileType> {
         this.minGapLength = minGapLength;
     }
 
-    public Boolean isTpa() {
+    public boolean isTpa() {
+        if (tpa == null) {
+            return false;
+        }
         return tpa;
     }
 
