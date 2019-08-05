@@ -11,25 +11,21 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class
 GenomeAssemblyXmlTest
@@ -41,31 +37,46 @@ GenomeAssemblyXmlTest
         Locale.setDefault( Locale.UK );
     }
 
+    private static final String NAME = "test_genome";
+
+    private GenomeManifest initMockManifestReader(GenomeAssemblyWebinCli cli) {
+        cli.setName( NAME );
+
+        GenomeManifest manifest = new GenomeManifest();
+        GenomeAssemblyManifestReader manifestReader = mock(GenomeAssemblyManifestReader.class);
+        when(manifestReader.getManifest()).thenReturn(manifest);
+        cli.setManifestReader(manifestReader);
+
+        manifest.setName( NAME );
+        manifest.setSample(AssemblyTestUtils.getDefaultSample());
+        manifest.getSample().setBioSampleId( "test_sample" );
+        manifest.setStudy(new Study());
+        manifest.getStudy().setBioProjectId( "test_study" );
+        manifest.setCoverage( "1" );
+        manifest.setProgram( "test_program" );
+        manifest.setPlatform( "test_platform" );
+
+        return manifest;
+    }
+
     @Test public void
-    testAnalysisXMLAssemblyInfo_WithoutFiles()
+    testAnalysisXML()
     {
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        String name = "test_genome";
-        cli.setName( name );
+        GenomeManifest manifest = initMockManifestReader(cli);
+        manifest.addAnalysis(
+                new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
+                new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) );
+        manifest.addRun(
+                new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
+                new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
 
-        AssemblyInfoEntry info = new AssemblyInfoEntry();
-        cli.setAssemblyInfo( info );
-        info.setName( name );
-        info.setBiosampleId( "test_sample" );
-        info.setStudyId( "test_study" );
-        info.setCoverage( "1" );
-        info.setProgram( "test_program" );
-        info.setPlatform( "test_platform" );
-
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setAnalysisRef( new ArrayList<Analysis>() { { add( new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ) ); add( new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) ); } } );
-        cli.setRunRef( new ArrayList<Run>() { { add( new Run( "RUN_ID1", "RUN_ID1_ALIAS" ) ); add( new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) ); } } );
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
         WebinCliTestUtils.assertAnalysisXml(analysisXml,
-                "<ANALYSIS_SET>\n" 
+                "<ANALYSIS_SET>\n"
                       + "  <ANALYSIS>\n"
                       + "    <TITLE>Genome assembly: test_genome</TITLE>\n"
                       + "    <STUDY_REF accession=\"test_study\" />\n"
@@ -89,23 +100,76 @@ GenomeAssemblyXmlTest
     }
 
     @Test public void
-    testAnalysisXML_AssemblyInfo_TpaWithoutFiles()
+    testAnalysisXML_Description()
     {
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        String name = "test_genome";
-        cli.setName( name );
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
+        GenomeManifest manifest = initMockManifestReader(cli);
+        manifest.setDescription("test_description");
 
-        AssemblyInfoEntry info = new AssemblyInfoEntry();
-        cli.setAssemblyInfo( info );
-        info.setName( name );
-        info.setBiosampleId( "test_sample" );
-        info.setStudyId( "test_study" );
-        info.setCoverage( "1" );
-        info.setProgram( "test_program" );
-        info.setPlatform( "test_platform" );
-        info.setTpa(true);
-        
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "  <ANALYSIS>\n" +
+                        "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                        "    <DESCRIPTION>test_description</DESCRIPTION>\n" +
+                        "    <STUDY_REF accession=\"test_study\" />\n" +
+                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                        "    <ANALYSIS_TYPE>\n" +
+                        "      <SEQUENCE_ASSEMBLY>\n" +
+                        "        <NAME>test_genome</NAME>\n" +
+                        "        <PARTIAL>false</PARTIAL>\n" +
+                        "        <COVERAGE>1</COVERAGE>\n" +
+                        "        <PROGRAM>test_program</PROGRAM>\n" +
+                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+                        "      </SEQUENCE_ASSEMBLY>\n" +
+                        "    </ANALYSIS_TYPE>\n" +
+                        "    <FILES />\n" +
+                        "  </ANALYSIS>\n" +
+                        "</ANALYSIS_SET>\n");
+    }
+
+    @Test public void
+    testAnalysisXML_MolType()
+    {
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+        GenomeManifest manifest = initMockManifestReader(cli);
+        manifest.setMoleculeType("test_moltype");
+
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "  <ANALYSIS>\n" +
+                        "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                        "    <STUDY_REF accession=\"test_study\" />\n" +
+                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                        "    <ANALYSIS_TYPE>\n" +
+                        "      <SEQUENCE_ASSEMBLY>\n" +
+                        "        <NAME>test_genome</NAME>\n" +
+                        "        <PARTIAL>false</PARTIAL>\n" +
+                        "        <COVERAGE>1</COVERAGE>\n" +
+                        "        <PROGRAM>test_program</PROGRAM>\n" +
+                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+                        "        <MOL_TYPE>test_moltype</MOL_TYPE>\n" +
+                        "      </SEQUENCE_ASSEMBLY>\n" +
+                        "    </ANALYSIS_TYPE>\n" +
+                        "    <FILES />\n" +
+                        "  </ANALYSIS>\n" +
+                        "</ANALYSIS_SET>\n");
+    }
+
+    @Test public void
+    testAnalysisXML_Tpa()
+    {
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
+        GenomeManifest manifest = initMockManifestReader(cli);
+        manifest.setTpa(true);
+
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
@@ -132,22 +196,11 @@ GenomeAssemblyXmlTest
     }
 
     @Test public void
-    testAnalysisXML_AssemblyInfo_AssemblyTypeWithoutFiles()
+    testAnalysisXML_AssemblyType()
     {
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        String name = "test_genome";
-        cli.setName( name );
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
-
-        AssemblyInfoEntry info = new AssemblyInfoEntry();
-        cli.setAssemblyInfo( info );
-        info.setName( name );
-        info.setBiosampleId( "test_sample" );
-        info.setStudyId( "test_study" );
-        info.setCoverage( "1" );
-        info.setProgram( "test_program" );
-        info.setPlatform( "test_platform" );
-        info.setAssemblyType( "test_assembly_type");
+        GenomeManifest manifest = initMockManifestReader(cli);
+        manifest.setAssemblyType( "test_assembly_type");
 
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
@@ -174,41 +227,23 @@ GenomeAssemblyXmlTest
                         "</ANALYSIS_SET>\n");
     }
 
-
     @Test public void
-    testAnalysisXML_AssemblyInfo_WithFastaFile()
+    testAnalysisXML_FastaFile()
     {
-    	SubmissionOptions submissionOptions =  new SubmissionOptions();
-    	SubmissionFiles submissionFiles = new SubmissionFiles();
-        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
-    	SubmissionFile submissionFile = new SubmissionFile(FileType.FASTA,fastaFile.toFile());
-    	submissionFiles.addFile(submissionFile);
-    	submissionOptions.submissionFiles = Optional.of(submissionFiles);
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        String name = "test_genome";
-        cli.setName( name );
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setSubmissionOptions(submissionOptions);
-        cli.getParameters().setInputDir( fastaFile.getParent().toFile() );
-        AssemblyInfoEntry info = new AssemblyInfoEntry();
-        cli.setAssemblyInfo( info );
-        info.setName( name );
-        info.setBiosampleId( "test_sample" );
-        info.setStudyId( "test_study" );
-        info.setProgram( "test_program" );
-        info.setPlatform( "test_platform" );
-        info.setCoverage("1");
-        cli.setDescription( "some test description" );
+        GenomeManifest manifest = initMockManifestReader(cli);
+
+        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
+        manifest.files().add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile.toFile() ) );
+
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
-  
 
         WebinCliTestUtils.assertAnalysisXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
-                        "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
                         "    <STUDY_REF accession=\"test_study\" />\n" +
                         "    <SAMPLE_REF accession=\"test_sample\" />\n" +
                         "    <ANALYSIS_TYPE>\n" +
@@ -221,120 +256,66 @@ GenomeAssemblyXmlTest
                         "      </SEQUENCE_ASSEMBLY>\n" +
                         "    </ANALYSIS_TYPE>\n" +
                         "    <FILES>\n" +
-                        "      <FILE filename=\"webin-cli/genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
+                        "      <FILE filename=\"webin-cli/genome/" + NAME + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
                         "    </FILES>\n" +
                         "  </ANALYSIS>\n" +
                         "</ANALYSIS_SET>\n");
     }
 
     @Test public void
-    testAnalysisXML_Manifest_WithFastaFile()
+    testAnalysisXML_FastaFileAndAgpFile()
     {
-        String name = "test_genome";
-        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
-        Path inputDir = fastaFile.getParent();
-        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
-                "NAME\t" + name + "\n" +
-                        "SAMPLE\ttest_sample\n" +
-                        GenomeAssemblyManifestReader.Field.DESCRIPTION + " a description\n" +
-                        "STUDY\ttest_study\n" +
-                        "PROGRAM\ttest_program\n" +
-                        "PLATFORM\ttest_platform\n" +
-                        "COVERAGE\t1\n" +
-                        "FASTA\t" + fastaFile.getFileName() + "\n"
-        );
-
-        WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
-
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setMetadataServiceActive(false);
-        Sample sample = new Sample();
-        sample.setBioSampleId("test_sample");
-        cli.setSample(sample);
-        Study study = new Study();
-        study.setBioProjectId("test_study");
-        cli.setStudy(study);
+        GenomeManifest manifest = initMockManifestReader(cli);
 
-        try
-        {
-            cli.readManifest(parameters);
-        }
-        finally {
-            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
+        Path agpFile = WebinCliTestUtils.createGzippedTempFile("agp.gz", ">123\nACGT");
+        manifest.files().add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile.toFile() ) );
+        manifest.files().add( new SubmissionFile( GenomeManifest.FileType.AGP, agpFile.toFile() ) );
 
-            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
-            WebinCliTestUtils.assertAnalysisXml(analysisXml,
-                    "<ANALYSIS_SET>\n" +
-                            "  <ANALYSIS>\n" +
-                            "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
-                            "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
-                            "    <STUDY_REF accession=\"test_study\" />\n" +
-                            "    <SAMPLE_REF accession=\"test_sample\" />\n" +
-                            "    <ANALYSIS_TYPE>\n" +
-                            "      <SEQUENCE_ASSEMBLY>\n" +
-                            "        <NAME>test_genome</NAME>\n" +
-                            "        <PARTIAL>false</PARTIAL>\n" +
-                            "        <COVERAGE>1</COVERAGE>\n" +
-                            "        <PROGRAM>test_program</PROGRAM>\n" +
-                            "        <PLATFORM>test_platform</PLATFORM>\n" +
-                            "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n" +
-                            "      </SEQUENCE_ASSEMBLY>\n" +
-                            "    </ANALYSIS_TYPE>\n" +
-                            "    <FILES>\n" +
-                            "      <FILE filename=\"webin-cli/genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
-                            "    </FILES>\n" +
-                            "  </ANALYSIS>\n" +
-                            "</ANALYSIS_SET>\n");
-        }
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+                "<ANALYSIS_SET>\n" +
+                        "  <ANALYSIS>\n" +
+                        "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
+                        "    <STUDY_REF accession=\"test_study\" />\n" +
+                        "    <SAMPLE_REF accession=\"test_sample\" />\n" +
+                        "    <ANALYSIS_TYPE>\n" +
+                        "      <SEQUENCE_ASSEMBLY>\n" +
+                        "        <NAME>test_genome</NAME>\n" +
+                        "        <PARTIAL>false</PARTIAL>\n" +
+                        "        <COVERAGE>1</COVERAGE>\n" +
+                        "        <PROGRAM>test_program</PROGRAM>\n" +
+                        "        <PLATFORM>test_platform</PLATFORM>\n" +
+                        "      </SEQUENCE_ASSEMBLY>\n" +
+                        "    </ANALYSIS_TYPE>\n" +
+                        "    <FILES>\n" +
+                        "      <FILE filename=\"webin-cli/genome/" + NAME + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
+                        "      <FILE filename=\"webin-cli/genome/" + NAME + "/" + agpFile.getFileName() + "\" filetype=\"agp\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
+                        "    </FILES>\n" +
+                        "  </ANALYSIS>\n" +
+                        "</ANALYSIS_SET>\n");
     }
 
     @Test public void
-    testAnalysisXMLManifestWithSubmitterReference()
+    testAnalysisXML_AuthorsAndAddress()
     {
-        String name = "test_genome";
-        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
-        Path inputDir = fastaFile.getParent();
-        Path manifestFile = WebinCliTestUtils.createTempFile("manifest.txt", inputDir,
-                "NAME\t" + name + "\n" +
-                        "SAMPLE\ttest_sample\n" +
-                        GenomeAssemblyManifestReader.Field.DESCRIPTION + " a description\n" +
-                        "STUDY\ttest_study\n" +
-                        "PROGRAM\ttest_program\n" +
-                        "PLATFORM\ttest_platform\n" +
-                        "AUTHORS\ttest_author1,test_author2.\n" +
-                        "ADDRESS\tena,ebi,embl,UK\n" +
-                        "COVERAGE\t1\n" +
-                        "FASTA\t" + fastaFile.getFileName() + "\n"
-        );
-
-        WebinCliParameters parameters = AssemblyTestUtils.createWebinCliParameters(manifestFile, inputDir);
-
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setMetadataServiceActive(false);
-        Sample sample = new Sample();
-        sample.setBioSampleId("test_sample");
-        cli.setSample(sample);
-        Study study = new Study();
-        study.setBioProjectId("test_study");
-        cli.setStudy(study);
+        GenomeManifest manifest = initMockManifestReader(cli);
+        manifest.setAuthors( "test_author1,test_author2.");
+        manifest.setAddress( "ena,ebi,embl,UK");
 
-        try
-        {
-            cli.readManifest(parameters);
-        }
-        finally {
-            SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
 
-            String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
+        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-            WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertAnalysisXml(analysisXml,
                     "<ANALYSIS_SET>\n" +
                             "  <ANALYSIS>\n" +
                             "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
-                            "    <DESCRIPTION>" + cli.getDescription() + "</DESCRIPTION>\n" +
                             "    <STUDY_REF accession=\"test_study\" />\n" +
                             "    <SAMPLE_REF accession=\"test_sample\" />\n" +
                             "    <ANALYSIS_TYPE>\n" +
@@ -344,18 +325,12 @@ GenomeAssemblyXmlTest
                             "        <COVERAGE>1</COVERAGE>\n" +
                             "        <PROGRAM>test_program</PROGRAM>\n" +
                             "        <PLATFORM>test_platform</PLATFORM>\n" +
-                            "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n" +
                             "        <AUTHORS>test_author1,test_author2.</AUTHORS>\n"+
                             "        <ADDRESS>ena,ebi,embl,UK</ADDRESS>\n"+
                             "      </SEQUENCE_ASSEMBLY>\n" +
                             "    </ANALYSIS_TYPE>\n" +
-                            "    <FILES>\n" +
-                            "      <FILE filename=\"webin-cli/genome/" + name + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n" +
-                            "    </FILES>\n" +
+                            "    <FILES />\n" +
                             "  </ANALYSIS>\n" +
                             "</ANALYSIS_SET>\n");
-        }
     }
-
-
 }
