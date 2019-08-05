@@ -85,6 +85,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 				sourceUtils.addSourceQualifier(attribute.getName(), attribute.getValue(), sourceFeature);
 			}
 			sourceUtils.addExtraSourceQualifiers(sourceFeature, new TaxonHelperImpl(), manifest.getName());
+			submissionOptions.source = Optional.of( sourceFeature );
 		}
 
 		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FASTA, file.getFile() )));
