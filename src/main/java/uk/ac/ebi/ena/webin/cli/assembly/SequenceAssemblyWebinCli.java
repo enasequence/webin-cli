@@ -85,11 +85,8 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
             submissionOptions.source = Optional.of( sourceFeature );
         }
 
-        manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FASTA, file.getFile() )));
-        manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.AGP,file.getFile() )));
-        manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FLATFILE, file.getFile() )));
-        manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.CHROMOSOME_LIST, file.getFile() )));
-        manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.UNLOCALISED_LIST, file.getFile() )));
+        manifest.files().get(SequenceManifest.FileType.FLATFILE).forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FLATFILE, file.getFile() )));
+        manifest.files().get(SequenceManifest.FileType.TAB).forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.TSV,file.getFile() )));
 
         submissionOptions.assemblyInfoEntry = Optional.of( assemblyInfo );
         submissionOptions.isRemote = true;

@@ -94,11 +94,11 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, Ge
 			submissionOptions.source = Optional.of( sourceFeature );
 		}
 
-		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FASTA, file.getFile() )));
-		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.AGP,file.getFile() )));
-		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FLATFILE, file.getFile() )));
-		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.CHROMOSOME_LIST, file.getFile() )));
-		manifest.files().get().forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.UNLOCALISED_LIST, file.getFile() )));
+		manifest.files().get(GenomeManifest.FileType.FASTA).forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FASTA, file.getFile() )));
+		manifest.files().get(GenomeManifest.FileType.AGP).forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.AGP,file.getFile() )));
+		manifest.files().get(GenomeManifest.FileType.FLATFILE).forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.FLATFILE, file.getFile() )));
+		manifest.files().get(GenomeManifest.FileType.CHROMOSOME_LIST).forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.CHROMOSOME_LIST, file.getFile() )));
+		manifest.files().get(GenomeManifest.FileType.UNLOCALISED_LIST).forEach(file -> submissionFiles.addFile( new SubmissionFile( SubmissionFile.FileType.UNLOCALISED_LIST, file.getFile() )));
 
 		submissionOptions.assemblyInfoEntry = Optional.of( assemblyInfo );
 		submissionOptions.isRemote = true;
