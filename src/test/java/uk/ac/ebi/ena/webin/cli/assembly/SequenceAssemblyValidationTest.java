@@ -29,7 +29,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
 
 public class SequenceAssemblyValidationTest {
 
@@ -85,36 +85,34 @@ public class SequenceAssemblyValidationTest {
             return this;
         }
 
-        ManifestBuilder file(SequenceManifest.FileType fileType, String fileName) {
+        ManifestBuilder file(FileType fileType, String fileName) {
             return field(fileType.name(), fileName);
         }
 
-        ManifestBuilder gzipTempFile(String field, String fileName) {
-            return field(field, WebinCliTestUtils.createEmptyGzippedTempFile(
+        ManifestBuilder tempFile(FileType fileType, String fileName) {
+            return field(fileType.name(), WebinCliTestUtils.createEmptyGzippedTempFile(
                     fileName, inputDir.toPath()).getFileName().toString());
         }
 
-        ManifestBuilder gzipTempFlatfile(String fileName) {
-            return gzipTempFile("FLATFILE", fileName);
+        ManifestBuilder tempFile(FileType fileType) {
+            switch(fileType) {
+                case FLATFILE:
+                    return tempFile(fileType, ".dat.gz");
+                case TAB:
+                    return tempFile(fileType, ".tsv.gz");
+            }
+            throw new RuntimeException("Unknown file type");
         }
 
-        ManifestBuilder gzipTempTab(String fileName) {
-            return gzipTempFile("TAB", fileName);
-        }
-
-        ManifestBuilder gzipTempFlatfile() {
-            return gzipTempFile("FLATFILE", ".dat.gz");
-        }
-
-        ManifestBuilder gzipTempTab() {
-            return gzipTempFile("TAB", ".tsv.gz");
-        }
-
-        ManifestBuilder gzipTempFiles(
+        ManifestBuilder tempFiles(
                 boolean flatfile,
                 boolean tab) {
-            if (flatfile) gzipTempFlatfile();
-            if (tab) gzipTempTab();
+            if (flatfile) {
+                tempFile(FileType.FLATFILE);
+            }
+            if (tab) {
+                tempFile(FileType.TAB);
+            }
             return this;
         }
 
@@ -172,10 +170,10 @@ public class SequenceAssemblyValidationTest {
     testValidTsv() {
         for (String testTsvFile : VALID_TSV_FILES) {
             File file = WebinCliTestUtils.getFile("uk/ac/ebi/ena/webin/cli/template/" + testTsvFile);
-            Path manifestFile = new ManifestBuilder(tempInputDir).file(SequenceManifest.FileType.TAB, file.getPath()).build();
+            Path manifestFile = new ManifestBuilder(tempInputDir).file(FileType.TAB, file.getPath()).build();
             SequenceAssemblyWebinCli validator = initValidator(manifestFile, createValidator(tempInputDir));
             validator.validate();
-            assertThat(validator.getManifestReader().getManifest().files().get(SequenceManifest.FileType.TAB)).size().isOne();
+            assertThat(validator.getManifestReader().getManifest().files().get(FileType.TAB)).size().isOne();
         }
     }
 
@@ -184,15 +182,15 @@ public class SequenceAssemblyValidationTest {
     testFileGroup() {
         for (boolean flatfile : new boolean[]{false, true}) {
             for (boolean tab : new boolean[]{false, true}) {
-                Path manifestFile = new ManifestBuilder(tempInputDir).gzipTempFiles(flatfile, tab).build();
+                Path manifestFile = new ManifestBuilder(tempInputDir).tempFiles(flatfile, tab).build();
 
                 int cnt = (flatfile ? 1 : 0) + (tab ? 1 : 0);
 
                 if (cnt == 1) {
                     SequenceAssemblyWebinCli validator = initValidator(manifestFile, createValidator(tempInputDir));
                     SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
-                    assertThat(submissionFiles.get(SequenceManifest.FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
-                    assertThat(submissionFiles.get(SequenceManifest.FileType.TAB).size()).isEqualTo(tab ? 1 : 0);
+                    assertThat(submissionFiles.get(FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
+                    assertThat(submissionFiles.get(FileType.TAB).size()).isEqualTo(tab ? 1 : 0);
                 } else if (cnt == 0) {
                     SequenceAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
                     assertValidatorError(validator, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
@@ -209,10 +207,10 @@ public class SequenceAssemblyValidationTest {
     testFileSuffix() {
         Path manifests[] = new Path[]{
                 // Invalid suffix before .gz
-                new ManifestBuilder(tempInputDir).gzipTempTab(".INVALID.gz").build(),
+                new ManifestBuilder(tempInputDir).tempFile(FileType.TAB, ".INVALID.gz").build(),
                 // No .gz
-                new ManifestBuilder(tempInputDir).gzipTempFlatfile(".txt").build(),
-                new ManifestBuilder(tempInputDir).gzipTempTab(".tsv").build()};
+                new ManifestBuilder(tempInputDir).tempFile(FileType.FLATFILE,".txt").build(),
+                new ManifestBuilder(tempInputDir).tempFile(FileType.TAB, ".tsv").build()};
         Arrays.stream(manifests).forEach(manifest -> {
             SequenceAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
             assertValidatorError(validator, WebinCliMessage.Manifest.INVALID_FILE_SUFFIX_ERROR);
@@ -223,8 +221,8 @@ public class SequenceAssemblyValidationTest {
     public void
     testFileNoMoreThanOne() {
         Path manifests[] = new Path[]{
-                new ManifestBuilder(tempInputDir).gzipTempFlatfile().gzipTempFlatfile().build(),
-                new ManifestBuilder(tempInputDir).gzipTempTab().gzipTempTab().build()};
+                new ManifestBuilder(tempInputDir).tempFile(FileType.FLATFILE).tempFile(FileType.FLATFILE).build(),
+                new ManifestBuilder(tempInputDir).tempFile(FileType.TAB).tempFile(FileType.TAB).build()};
         Arrays.stream(manifests).forEach(manifest -> {
             SequenceAssemblyWebinCli validator = initValidatorThrows(manifest, createValidator(tempInputDir));
             assertValidatorError(validator, WebinCliMessage.Manifest.TOO_MANY_FIELDS_ERROR);
