@@ -176,6 +176,7 @@ public class GenomeAssemblyValidationTest {
 
     private GenomeAssemblyWebinCli initValidator(Path manifestFile, GenomeAssemblyWebinCli validator) {
         validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
+        validator.getManifestReader().getManifest().setSample(AssemblyTestUtils.getDefaultSample());
         return validator;
     }
 
@@ -419,7 +420,6 @@ public class GenomeAssemblyValidationTest {
                 .chromosomeList("valid_chromosome_list.txt.gz").build();
 
         GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
-        // AssemblyTestUtils.getHumanSample()
         initValidator(manifestFile, validator);
         SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
         assertThat(submissionFiles.get().size()).isEqualTo(3);
@@ -438,7 +438,6 @@ public class GenomeAssemblyValidationTest {
                 .chromosomeList("valid_chromosome_list.txt.gz").build();
 
         GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
-        // AssemblyTestUtils.getHumanSample()
         initValidator(manifestFile, validator);
         SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
         assertThat(submissionFiles.get().size()).isEqualTo(3);
@@ -490,7 +489,6 @@ public class GenomeAssemblyValidationTest {
                 .chromosomeList("invalid_chromosome_list_sequenceless.txt.gz").build();
 
         GenomeAssemblyWebinCli validator = createValidator(defaultInputDir);
-        // AssemblyTestUtils.getHumanSample()
         initValidator(manifestFile, validator);
         assertThatThrownBy(validator::validate).isInstanceOf(WebinCliException.class)
                 .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");
