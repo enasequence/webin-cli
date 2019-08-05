@@ -10,31 +10,26 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.embl.api.validation.submission.Context;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionOptions;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class SequenceAssemblyValidationTest {
 
@@ -81,13 +76,17 @@ public class SequenceAssemblyValidationTest {
         ManifestBuilder(File inputDir) {
             manifest =
                     "STUDY test\n" +
-                            "NAME test\n";
+                    "NAME test\n";
             this.inputDir = inputDir;
         }
 
         ManifestBuilder field(String field, String value) {
             manifest += field + "\t" + value + "\n";
             return this;
+        }
+
+        ManifestBuilder file(SequenceManifest.FileType fileType, String fileName) {
+            return field(fileType.name(), fileName);
         }
 
         ManifestBuilder gzipTempFile(String field, String fileName) {
@@ -132,37 +131,12 @@ public class SequenceAssemblyValidationTest {
         }
     }
 
-
     @Before
     public void
     before() {
         Locale.setDefault(Locale.UK);
         ValidationMessage.setDefaultMessageFormatter(ValidationMessage.TEXT_MESSAGE_FORMATTER_TRAILING_LINE_END);
         ValidationResult.setDefaultMessageFormatter(null);
-    }
-
-
-    private SequenceAssemblyWebinCli
-    createTsvValidator(File file, FileType fileType) {
-        SubmissionOptions options = new SubmissionOptions();
-        if (file != null) {
-            SubmissionFiles files = new SubmissionFiles();
-            SubmissionFile SubmissionFile = new SubmissionFile(fileType, file);
-            files.addFile(SubmissionFile);
-            options.submissionFiles = Optional.of(files);
-        }
-        options.assemblyInfoEntry = Optional.of(new AssemblyInfoEntry());
-        options.context = Optional.of(Context.sequence);
-        options.isFixMode = true;
-        options.isRemote = true;
-        SequenceAssemblyWebinCli validator = new SequenceAssemblyWebinCli();
-        validator.setTestMode(true);
-        validator.setStudy(new Study());
-        validator.setSubmitDir(submitDir);
-        validator.setValidationDir(validationDir);
-        validator.setProcessDir(processDir);
-        validator.setSubmissionOptions(options);
-        return validator;
     }
 
     private SequenceAssemblyWebinCli createValidator(File inputDir) {
@@ -173,13 +147,12 @@ public class SequenceAssemblyValidationTest {
         cli.setProcessDir(processDir);
         cli.setSubmitDir(submitDir);
         cli.setMetadataServiceActive(false);
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setStudy(new Study());
         return cli;
     }
 
     private SequenceAssemblyWebinCli initValidator(Path manifestFile, SequenceAssemblyWebinCli validator) {
         validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
+        validator.getManifestReader().getManifest().setSample(AssemblyTestUtils.getDefaultSample());
         return validator;
     }
 
@@ -199,8 +172,10 @@ public class SequenceAssemblyValidationTest {
     testValidTsv() {
         for (String testTsvFile : VALID_TSV_FILES) {
             File file = WebinCliTestUtils.getFile("uk/ac/ebi/ena/webin/cli/template/" + testTsvFile);
-            SequenceAssemblyWebinCli validator = createTsvValidator(file, FileType.TSV);
+            Path manifestFile = new ManifestBuilder(tempInputDir).file(SequenceManifest.FileType.TAB, file.getPath()).build();
+            SequenceAssemblyWebinCli validator = initValidator(manifestFile, createValidator(tempInputDir));
             validator.validate();
+            assertThat(validator.getManifestReader().getManifest().files().get(SequenceManifest.FileType.TAB)).size().isOne();
         }
     }
 
@@ -209,18 +184,15 @@ public class SequenceAssemblyValidationTest {
     testFileGroup() {
         for (boolean flatfile : new boolean[]{false, true}) {
             for (boolean tab : new boolean[]{false, true}) {
-                Path manifestFile = new ManifestBuilder(tempInputDir).gzipTempFiles(
-                        flatfile,
-                        tab).build();
+                Path manifestFile = new ManifestBuilder(tempInputDir).gzipTempFiles(flatfile, tab).build();
 
-                int cnt = (flatfile ? 1 : 0) +
-                        (tab ? 1 : 0);
+                int cnt = (flatfile ? 1 : 0) + (tab ? 1 : 0);
 
                 if (cnt == 1) {
                     SequenceAssemblyWebinCli validator = initValidator(manifestFile, createValidator(tempInputDir));
-                    SubmissionFiles submissionFiles = validator.getSubmissionOptions().submissionFiles.get();
-                    AssertionsForClassTypes.assertThat(submissionFiles.getFiles(FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
-                    AssertionsForClassTypes.assertThat(submissionFiles.getFiles(FileType.TSV).size()).isEqualTo(tab ? 1 : 0);
+                    SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
+                    assertThat(submissionFiles.get(SequenceManifest.FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
+                    assertThat(submissionFiles.get(SequenceManifest.FileType.TAB).size()).isEqualTo(tab ? 1 : 0);
                 } else if (cnt == 0) {
                     SequenceAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
                     assertValidatorError(validator, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
