@@ -102,7 +102,7 @@ GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
 			.required(Field.FASTA)
 			.build();
 
-	private GenomeManifest manifest = new GenomeManifest();
+	private final GenomeManifest manifest = new GenomeManifest();
 
 	public GenomeAssemblyManifestReader(SampleProcessor   sampleProcessor,
 										StudyProcessor    studyProcessor,
@@ -213,8 +213,6 @@ GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
     @Override public void
 	processManifest() 
 	{
-		manifest = new GenomeManifest();
-
 		String name = StringUtils.isBlank( getResult().getValue( Field.NAME ) ) ? getResult().getValue(Field.ASSEMBLYNAME ) : getResult().getValue( Field.NAME );
 		if( StringUtils.isBlank( name ) ) 
 		{

@@ -67,7 +67,7 @@ TranscriptomeAssemblyManifestReader extends SequenceManifestReader<Transcriptome
 		String ADDRESS          = "Author address";
 	}
 
-	private TranscriptomeManifest manifest = new TranscriptomeManifest();
+	private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
 	public TranscriptomeAssemblyManifestReader(SampleProcessor sampleProcessor,
 											   StudyProcessor  studyProcessor,
@@ -139,8 +139,6 @@ TranscriptomeAssemblyManifestReader extends SequenceManifestReader<Transcriptome
 	@Override public void
 	processManifest() 
 	{
-		manifest = new TranscriptomeManifest();
-
 		manifest.setName(getResult().getValue( Field.NAME ));
 		
 		if( StringUtils.isBlank( manifest.getName() ) )

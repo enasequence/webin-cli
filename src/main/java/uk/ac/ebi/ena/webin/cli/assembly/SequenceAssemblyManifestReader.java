@@ -54,7 +54,7 @@ SequenceAssemblyManifestReader extends SequenceManifestReader<SequenceManifest>
         String ADDRESS          = "Author address";
     }
 
-    private SequenceManifest manifest = new SequenceManifest();
+    private final SequenceManifest manifest = new SequenceManifest();
 
     public SequenceAssemblyManifestReader(StudyProcessor    studyProcessor,
                                           RunProcessor      runProcessor,
@@ -110,8 +110,6 @@ SequenceAssemblyManifestReader extends SequenceManifestReader<SequenceManifest>
     @Override public void
     processManifest() 
     {
-        manifest = new SequenceManifest();
-
         Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
         if (!authorAndAddress.isEmpty()) {
             if (authorAndAddress.size() == 2) {
