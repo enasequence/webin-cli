@@ -22,12 +22,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFile.FileType;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class TranscriptomeAssemblyValidationTest {
 
@@ -63,44 +62,44 @@ public class TranscriptomeAssemblyValidationTest {
             return this;
         }
 
-        ManifestBuilder file(FileType fileType, String fileName) {
+        ManifestBuilder file(TranscriptomeManifest.FileType fileType, String fileName) {
             return field(fileType.name(), fileName);
         }
 
         ManifestBuilder fasta(String fileName) {
-            return file(FileType.FASTA, fileName);
+            return file(TranscriptomeManifest.FileType.FASTA, fileName);
         }
 
         ManifestBuilder flatfile(String fileName) {
-            return file(FileType.FLATFILE, fileName);
+            return file(TranscriptomeManifest.FileType.FLATFILE, fileName);
         }
 
-        ManifestBuilder gzipTempFile(FileType fileType, String fileName) {
+        ManifestBuilder gzipTempFile(TranscriptomeManifest.FileType fileType, String fileName) {
             return file(fileType, WebinCliTestUtils.createEmptyGzippedTempFile(
                     fileName, inputDir.toPath()).getFileName().toString());
         }
 
         ManifestBuilder gzipTempFasta(String fileName) {
-            return gzipTempFile(FileType.FASTA, fileName);
+            return gzipTempFile(TranscriptomeManifest.FileType.FASTA, fileName);
         }
 
         ManifestBuilder gzipTempFlatfile(String fileName) {
-            return gzipTempFile(FileType.FLATFILE, fileName);
+            return gzipTempFile(TranscriptomeManifest.FileType.FLATFILE, fileName);
         }
 
         ManifestBuilder gzipTempFasta() {
-            return gzipTempFile(FileType.FASTA, ".fasta.gz");
+            return gzipTempFile(TranscriptomeManifest.FileType.FASTA, ".fasta.gz");
         }
 
         ManifestBuilder gzipTempFlatfile() {
-            return gzipTempFile(FileType.FLATFILE, ".dat.gz");
+            return gzipTempFile(TranscriptomeManifest.FileType.FLATFILE, ".dat.gz");
         }
 
         ManifestBuilder gzipTempFiles(
                 boolean fasta,
                 boolean flatfile) {
-            if (fasta) gzipTempFile(FileType.FASTA, ".fasta.gz");
-            if (flatfile) gzipTempFile(FileType.FLATFILE, ".dat.gz");
+            if (fasta) gzipTempFile(TranscriptomeManifest.FileType.FASTA, ".fasta.gz");
+            if (flatfile) gzipTempFile(TranscriptomeManifest.FileType.FLATFILE, ".dat.gz");
             return this;
         }
 
@@ -126,13 +125,12 @@ public class TranscriptomeAssemblyValidationTest {
         cli.setProcessDir(processDir);
         cli.setSubmitDir(submitDir);
         cli.setMetadataServiceActive(false);
-        cli.setSample(AssemblyTestUtils.getDefaultSample());
-        cli.setStudy(new Study());
         return cli;
     }
 
     private TranscriptomeAssemblyWebinCli initValidator(Path manifestFile, TranscriptomeAssemblyWebinCli validator) {
         validator.readManifest(AssemblyTestUtils.createWebinCliParameters(manifestFile.toFile(), validator.getInputDir()));
+        validator.getManifestReader().getManifest().setSample(AssemblyTestUtils.getDefaultSample());
         return validator;
     }
 
@@ -161,9 +159,9 @@ public class TranscriptomeAssemblyValidationTest {
 
                 if (cnt == 1) {
                     TranscriptomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(tempInputDir));
-                    SubmissionFiles submissionFiles = validator.getSubmissionOptions().submissionFiles.get();
-                    assertThat(submissionFiles.getFiles(FileType.FASTA).size()).isEqualTo(fasta ? 1 : 0);
-                    assertThat(submissionFiles.getFiles(FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
+                    SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
+                    assertThat(submissionFiles.get(TranscriptomeManifest.FileType.FASTA).size()).isEqualTo(fasta ? 1 : 0);
+                    assertThat(submissionFiles.get(TranscriptomeManifest.FileType.FLATFILE).size()).isEqualTo(flatfile ? 1 : 0);
                 } else if (cnt == 0) {
                     TranscriptomeAssemblyWebinCli validator = initValidatorThrows(manifestFile, createValidator(tempInputDir));
                     assertValidatorError(validator, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
@@ -209,8 +207,9 @@ public class TranscriptomeAssemblyValidationTest {
                 .fasta("valid_fasta.fasta.gz").build();
 
         TranscriptomeAssemblyWebinCli validator = initValidator(manifestFile, createValidator(defaultInputDir));
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles().size()).isEqualTo(1);
-        assertThat(validator.getSubmissionOptions().submissionFiles.get().getFiles(FileType.FASTA).size()).isOne();
+        SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
+        assertThat(submissionFiles.get().size()).isEqualTo(1);
+        assertThat(submissionFiles.get(TranscriptomeManifest.FileType.FASTA).size()).isOne();
         validator.validate();
     }
 }
