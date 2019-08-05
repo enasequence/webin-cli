@@ -89,12 +89,24 @@ public abstract class Manifest <FileType extends Enum<FileType>> {
         this.run = run;
     }
 
+    public void addRun(Run ... runs) {
+        for (Run run : runs) {
+            getRun().add(run);
+        }
+    }
+
     public List<Analysis> getAnalysis() {
         return analysis;
     }
 
     public void setAnalysis(List<Analysis> analysis) {
         this.analysis = analysis;
+    }
+
+    public void addAnalysis(Analysis ... analyses) {
+        for (Analysis analysis : analyses) {
+            getAnalysis().add(analysis);
+        }
     }
 
     public SubmissionFiles<FileType> getFiles() {

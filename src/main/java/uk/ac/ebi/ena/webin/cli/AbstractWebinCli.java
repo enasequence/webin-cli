@@ -79,12 +79,15 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         return description;
     }
 
-
     // TODO: remove
     public void 
     setDescription( String description )
     {
         this.description = description;
+    }
+
+    public void setManifestReader(M manifestReader) {
+        this.manifestReader = manifestReader;
     }
 
     protected abstract M createManifestReader();
@@ -96,7 +99,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     readManifest( WebinCliParameters parameters )
     {
         this.parameters = parameters;
-        this.manifestReader = createManifestReader();
+        setManifestReader(createManifestReader());
 
         this.validationDir = WebinCli.createOutputDir(parameters, ".");
 

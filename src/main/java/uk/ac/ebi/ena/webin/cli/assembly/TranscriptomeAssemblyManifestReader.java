@@ -25,7 +25,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class
-TranscriptomeAssemblyManifestReader extends SequenceManifestReader
+TranscriptomeAssemblyManifestReader extends SequenceManifestReader<TranscriptomeManifest>
 {
 	public interface
 	Field 

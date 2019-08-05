@@ -121,7 +121,7 @@ SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends A
             Element studyRefE = new Element( "STUDY_REF" );
             analysisE.addContent( studyRefE );
             studyRefE.setAttribute( "accession", manifest.getStudy().getBioProjectId() );
-			if( manifest.getSample().getBioSampleId() != null && !manifest.getSample().getBioSampleId().isEmpty() )
+			if( manifest.getSample() != null && manifest.getSample().getBioSampleId() != null && !manifest.getSample().getBioSampleId().isEmpty() )
             {
                 Element sampleRefE = new Element( "SAMPLE_REF" );
                 analysisE.addContent( sampleRefE );
