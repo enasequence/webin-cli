@@ -60,7 +60,7 @@ GenomeAssemblyXmlTest
     }
 
     @Test public void
-    testAnalysisXML()
+    testAnalysisXML_RunAndAnalysisRef()
     {
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
         GenomeManifest manifest = initMockManifestReader(cli);
