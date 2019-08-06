@@ -16,10 +16,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.model.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
 SampleProcessorTest

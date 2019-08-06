@@ -11,13 +11,13 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.model.reference.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.service.StudyService;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
 StudyProcessor implements ManifestFieldProcessor

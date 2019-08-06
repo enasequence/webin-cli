@@ -26,12 +26,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import uk.ac.ebi.ena.model.reference.Attribute;
+import uk.ac.ebi.ena.model.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
 SampleXmlService extends AbstractService

@@ -26,11 +26,11 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
 import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.embl.api.validation.submission.*;
+import uk.ac.ebi.ena.model.manifest.GenomeManifest;
+import uk.ac.ebi.ena.model.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, GenomeManifest>

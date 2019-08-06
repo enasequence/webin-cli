@@ -1,9 +1,9 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import uk.ac.ebi.ena.model.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.util.List;
 

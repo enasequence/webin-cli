@@ -15,12 +15,12 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import uk.ac.ebi.ena.model.file.SubmissionFile;
+import uk.ac.ebi.ena.model.file.SubmissionFiles;
+import uk.ac.ebi.ena.model.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 public class
 GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
@@ -254,7 +254,7 @@ GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
 
 		SubmissionFiles<GenomeManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(fastaFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(fastaFile -> submissionFiles.add( new SubmissionFile<>( GenomeManifest.FileType.FASTA, fastaFile ) ) );
 		getFiles( getInputDir(), getResult(), Field.AGP ).forEach(agpFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.AGP,agpFile ) ) );
 		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(flatFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.FLATFILE,flatFile ) ) );
 		getFiles( getInputDir(), getResult(), Field.CHROMOSOME_LIST ).forEach(chromosomeListFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.CHROMOSOME_LIST, chromosomeListFile ) ) );

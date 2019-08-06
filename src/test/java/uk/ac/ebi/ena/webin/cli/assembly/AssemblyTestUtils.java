@@ -13,9 +13,9 @@ package uk.ac.ebi.ena.webin.cli.assembly;
 import java.io.File;
 import java.nio.file.Path;
 
+import uk.ac.ebi.ena.model.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 class AssemblyTestUtils {
 

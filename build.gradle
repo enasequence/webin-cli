@@ -114,6 +114,7 @@ dependencies {
     implementation( group: 'org.apache.poi', name: 'poi', version: '4.0.1' )
     implementation( group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.1' )
 
+    implementation( group: 'uk.ac.ebi.ena.model', name: 'ena-models', version: '1.0-SNAPSHOT' )
 
     implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.2' )
     implementation( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )

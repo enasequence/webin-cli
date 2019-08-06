@@ -12,15 +12,15 @@ package uk.ac.ebi.ena.webin.cli.assembly;
 
 import java.util.Map;
 
+import uk.ac.ebi.ena.model.file.SubmissionFile;
+import uk.ac.ebi.ena.model.file.SubmissionFiles;
+import uk.ac.ebi.ena.model.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class
 SequenceAssemblyManifestReader extends SequenceManifestReader<SequenceManifest>
@@ -124,7 +124,7 @@ SequenceAssemblyManifestReader extends SequenceManifestReader<SequenceManifest>
 
         SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.TAB,fastaFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile<>( SequenceManifest.FileType.TAB,fastaFile ) ) );
 		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(flatFile->submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.FLATFILE,flatFile ) ) );
     }
 

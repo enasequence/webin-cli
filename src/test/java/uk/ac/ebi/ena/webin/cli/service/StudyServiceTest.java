@@ -15,10 +15,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 
+import uk.ac.ebi.ena.model.reference.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
 StudyServiceTest {

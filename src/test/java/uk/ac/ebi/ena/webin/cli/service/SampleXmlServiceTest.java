@@ -15,11 +15,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.junit.Test;
 
+import uk.ac.ebi.ena.model.reference.Attribute;
+import uk.ac.ebi.ena.model.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
 SampleXmlServiceTest {

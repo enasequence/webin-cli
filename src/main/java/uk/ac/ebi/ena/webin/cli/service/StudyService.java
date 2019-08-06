@@ -18,11 +18,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import uk.ac.ebi.ena.model.reference.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class StudyService extends AbstractService {
 
