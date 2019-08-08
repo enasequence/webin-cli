@@ -48,7 +48,7 @@ GenomeAssemblyXmlTest
         cli.setManifestReader(manifestReader);
 
         manifest.setName( NAME );
-        manifest.setSample(AssemblyTestUtils.getDefaultSample());
+        manifest.setSample(WebinCliTestUtils.getDefaultSample());
         manifest.getSample().setBioSampleId( "test_sample" );
         manifest.setStudy(new Study());
         manifest.getStudy().setBioProjectId( "test_study" );

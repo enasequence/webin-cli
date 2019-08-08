@@ -48,7 +48,7 @@ TranscriptomeAssemblyXmlTest {
 
         manifest.setName( NAME );
         manifest.setDescription( "test_description" );
-        manifest.setSample(AssemblyTestUtils.getDefaultSample());
+        manifest.setSample(WebinCliTestUtils.getDefaultSample());
         manifest.getSample().setBioSampleId( "test_sample" );
         manifest.setStudy(new Study());
         manifest.getStudy().setBioProjectId( "test_study" );

@@ -70,6 +70,9 @@ ManifestReader
     private final List<ManifestFileGroup> fileGroups;
     private ManifestReaderResult result;
     private ManifestReaderState state;
+    private boolean validateMandatory = true;
+    private boolean validateFileExist = true;
+    private boolean validateFileCount = true;
 
     public
     ManifestReader( List<ManifestFieldDefinition> fields )
@@ -244,7 +247,9 @@ ManifestReader
 
                     // Validate file exists.
 
-                    validateFileExists( inputDir, field );
+                    if (validateFileExist) {
+                        validateFileExists( inputDir, field );
+                    }
                 }
 
                 return field;
@@ -267,17 +272,20 @@ ManifestReader
 
         // Validate min count.
 
-        fields.stream()
-              .filter( field -> field.getMinCount() > 0 )
-              .forEach( minCountField -> {
-                  if( result.getFields()
-                            .stream()
-                            .filter( field -> field.getName().equals( minCountField.getName() ) )
-                            .count() < 1 )
-                  {
-                      error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, minCountField.getName() );
-                  }
-              } );
+        if (validateMandatory) {
+
+            fields.stream()
+                  .filter( field -> field.getMinCount() > 0 )
+                  .forEach( minCountField -> {
+                      if( result.getFields()
+                                .stream()
+                                .filter( field -> field.getName().equals( minCountField.getName() ) )
+                                .count() < 1 )
+                      {
+                          error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, minCountField.getName() );
+                      }
+                  } );
+        }
 
         // Validate max count.
 
@@ -296,7 +304,6 @@ ManifestReader
                                 String.valueOf( maxCountField.getMaxCount() ) );
                     }
                 } );
-
 
        // Validate and fix fields.
 
@@ -361,48 +368,50 @@ ManifestReader
         if( fileGroups == null || fileGroups.isEmpty() )
             return;
 
-        Map<String, Long> fileCountMap = result.getFields()
-                                               .stream()
-                                               .filter( field -> field.getDefinition().getType().equals( ManifestFieldType.FILE ) )
-                                               .collect( Collectors.groupingBy( ManifestFieldValue::getName, Collectors.counting() ) );
+        if (validateFileCount) {
 
-        if( fileCountMap == null || fileCountMap.isEmpty() )
-        {
-            error( WebinCliMessage.Manifest.NO_DATA_FILES_ERROR, getFileGroupText(fileGroups) );
-            return;
-        }
+            Map<String, Long> fileCountMap = result.getFields()
+                                                   .stream()
+                                                   .filter( field -> field.getDefinition().getType().equals( ManifestFieldType.FILE ) )
+                                                   .collect( Collectors.groupingBy( ManifestFieldValue::getName, Collectors.counting() ) );
 
-        next:
-        for (ManifestFileGroup fileGroup : fileGroups) {
-            for (ManifestFileCount fileCount : fileGroup.getFileCounts()) {
-                if (fileCountMap.get(fileCount.getFileType()) == null) {
-                    if (fileCount.getMinCount() > 0) {
-                        continue next; // Invalid because min is > 0.
-                    }
-                } else {
-                    long manifestFileCount = fileCountMap.get(fileCount.getFileType());
-                    if ((fileCount.getMaxCount() != null && fileCount.getMaxCount() < manifestFileCount) ||
-                        (fileCount.getMinCount() > manifestFileCount)) {
-                        continue next; // Invalid because larger than max or smaller than min.
-                    }
-                }
-            }
-
-            for( String manifestFileType : fileCountMap.keySet() )
+            if( fileCountMap == null || fileCountMap.isEmpty() )
             {
-                if( fileGroup.getFileCounts().stream()
-                     .filter( fileCount -> fileCount.getFileType().equals( manifestFileType ) )
-                     .count() < 1 )
-                {
-                    continue next; // Invalid because unmatched file type.
-                }
+                error( WebinCliMessage.Manifest.NO_DATA_FILES_ERROR, getFileGroupText(fileGroups) );
+                return;
             }
 
-            return; // Valid
+            next:
+            for (ManifestFileGroup fileGroup : fileGroups) {
+                for (ManifestFileCount fileCount : fileGroup.getFileCounts()) {
+                    if (fileCountMap.get(fileCount.getFileType()) == null) {
+                        if (fileCount.getMinCount() > 0) {
+                            continue next; // Invalid because min is > 0.
+                        }
+                    } else {
+                        long manifestFileCount = fileCountMap.get(fileCount.getFileType());
+                        if ((fileCount.getMaxCount() != null && fileCount.getMaxCount() < manifestFileCount) ||
+                            (fileCount.getMinCount() > manifestFileCount)) {
+                            continue next; // Invalid because larger than max or smaller than min.
+                        }
+                    }
+                }
+
+                for( String manifestFileType : fileCountMap.keySet() )
+                {
+                    if( fileGroup.getFileCounts().stream()
+                         .filter( fileCount -> fileCount.getFileType().equals( manifestFileType ) )
+                         .count() < 1 )
+                    {
+                        continue next; // Invalid because unmatched file type.
+                    }
+                }
+
+                return; // Valid
+            }
+
+            error( WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
         }
-
-        error( WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
-
     }
 
     private void validateFileCompression(String filePath) {
@@ -625,5 +634,29 @@ ManifestReader
     createValidateOrigin()
     {
         return new DefaultOrigin("File name: " + state.fileName);
+    }
+
+    public boolean isValidateMandatory() {
+        return validateMandatory;
+    }
+
+    public void setValidateMandatory(boolean validateMandatory) {
+        this.validateMandatory = validateMandatory;
+    }
+
+    public boolean isValidateFileExist() {
+        return validateFileExist;
+    }
+
+    public void setValidateFileExist(boolean validateFileExists) {
+        this.validateFileExist = validateFileExists;
+    }
+
+    public boolean isValidateFileCount() {
+        return validateFileCount;
+    }
+
+    public void setValidateFileCount(boolean validateFileCount) {
+        this.validateFileCount = validateFileCount;
     }
 }

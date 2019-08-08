@@ -214,9 +214,11 @@ GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
 	processManifest() 
 	{
 		String name = StringUtils.isBlank( getResult().getValue( Field.NAME ) ) ? getResult().getValue(Field.ASSEMBLYNAME ) : getResult().getValue( Field.NAME );
-		if( StringUtils.isBlank( name ) ) 
-		{
-			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
+		if (isValidateMandatory()) {
+			if( StringUtils.isBlank( name ) )
+			{
+				error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
+			}
 		}
 
 		Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);

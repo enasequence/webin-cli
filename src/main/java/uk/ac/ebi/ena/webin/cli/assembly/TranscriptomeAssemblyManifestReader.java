@@ -145,10 +145,12 @@ TranscriptomeAssemblyManifestReader extends SequenceManifestReader<Transcriptome
 		{
 			manifest.setName(getResult().getValue( Field.ASSEMBLYNAME ));
 		}
-		
-		if( StringUtils.isBlank( manifest.getName() ) )
-		{
-			error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
+
+		if (isValidateMandatory()) {
+			if( StringUtils.isBlank( manifest.getName() ) )
+			{
+				error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
+			}
 		}
 
 		manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
@@ -173,8 +175,8 @@ TranscriptomeAssemblyManifestReader extends SequenceManifestReader<Transcriptome
 
 		SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, fastaFile ) ) );
-		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, fastaFile ) ) );
+		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, file ) ) );
+		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, file) ) );
 	}
 
 

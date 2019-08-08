@@ -99,7 +99,10 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     readManifest( WebinCliParameters parameters )
     {
         this.parameters = parameters;
-        setManifestReader(createManifestReader());
+        this.manifestReader = createManifestReader();
+        this.manifestReader.setValidateMandatory(parameters.isValidateManifestMandatory());
+        this.manifestReader.setValidateFileExist(parameters.isValidateManifestFileExist());
+        this.manifestReader.setValidateFileCount(parameters.isValidateManifestFileCount());
 
         this.validationDir = WebinCli.createOutputDir(parameters, ".");
 
@@ -112,13 +115,15 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         {
             readManifest( getParameters().getInputDir().toPath(), manifestFile );
 
-            if (!StringUtils.isBlank(manifestReader.getName())) {
-                setName();
-                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.VALIDATE_DIR );
-                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.PROCESS_DIR );
-                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.SUBMIT_DIR );
-            } else {
-                throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
+            if (parameters.isCreateOutputDirs()) {
+                if (!StringUtils.isBlank(manifestReader.getName())) {
+                    setName();
+                    this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.VALIDATE_DIR );
+                    this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.PROCESS_DIR );
+                    this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.SUBMIT_DIR );
+                } else {
+                    throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
+                }
             }
         } catch (WebinCliException ex) {
             throw ex;

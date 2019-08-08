@@ -30,7 +30,11 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.junit.Assert;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class WebinCliTestUtils {
 
@@ -74,12 +78,6 @@ public class WebinCliTestUtils {
     createTempFile(String fileName, Path folder, String contents) {
         return createTempFile(fileName, folder, false, contents);
     }
-
-    public static Path
-    createEmptyGzippedTempFile(String fileName, Path folder) {
-        return createTempFile(fileName, folder, true, " ");
-    }
-
 
     public static Path
     createGzippedTempFile(String fileName, String contents) {
@@ -246,5 +244,27 @@ public class WebinCliTestUtils {
         String password = System.getenv( "webin-cli-password" );
         Assert.assertNotNull( "please set up environment variable: webin-cli-password", password);
         return password;
+    }
+
+    public static Sample getDefaultSample() {
+        Sample sample = new Sample();
+        sample.setOrganism("Quercus robur");
+        return sample;
+    }
+
+    public static File resourceDir(String dir) {
+      try {
+        ResourcePatternResolver resolver =
+            new PathMatchingResourcePatternResolver(WebinCliTestUtils.class.getClassLoader());
+        Resource[] resources = resolver.getResources("classpath*:" + dir + "/*");
+        for (Resource resource : resources) {
+          if (resource.getFile().getAbsolutePath().contains("resources")) {
+            return resource.getFile().getParentFile();
+          }
+        }
+        return null;
+      } catch (IOException ex) {
+        throw new RuntimeException(ex);
+      }
     }
 }

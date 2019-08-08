@@ -21,6 +21,10 @@ public class WebinCliParameters
     private File inputDir = new File( "." );
     private String centerName;
     private boolean testMode;
+    private boolean createOutputDirs = true;
+    private boolean validateManifestMandatory = true;
+    private boolean validateManifestFileExist = true;
+    private boolean validateManifestFileCount = true;
 
     public File getManifestFile() {
         return manifestFile;
@@ -76,5 +80,37 @@ public class WebinCliParameters
 
     public void setTestMode(boolean testMode) {
         this.testMode = testMode;
+    }
+
+    public boolean isCreateOutputDirs() {
+        return createOutputDirs;
+    }
+
+    public void setCreateOutputDirs(boolean createOutputDirs) {
+        this.createOutputDirs = createOutputDirs;
+    }
+
+    public boolean isValidateManifestMandatory() {
+        return validateManifestMandatory;
+    }
+
+    public void setValidateManifestMandatory(boolean validateManifestMandatory) {
+        this.validateManifestMandatory = validateManifestMandatory;
+    }
+
+    public boolean isValidateManifestFileExist() {
+        return validateManifestFileExist;
+    }
+
+    public void setValidateManifestFileExist(boolean validateManifestFileExist) {
+        this.validateManifestFileExist = validateManifestFileExist;
+    }
+
+    public boolean isValidateManifestFileCount() {
+        return validateManifestFileCount;
+    }
+
+    public void setValidateManifestFileCount(boolean validateManifestFileCount) {
+        this.validateManifestFileCount = validateManifestFileCount;
     }
 }
