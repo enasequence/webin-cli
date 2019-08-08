@@ -14,15 +14,15 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.ena.model.file.SubmissionFile;
-import uk.ac.ebi.ena.model.file.SubmissionFiles;
-import uk.ac.ebi.ena.model.manifest.TranscriptomeManifest;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class
 TranscriptomeAssemblyManifestReader extends SequenceManifestReader<TranscriptomeManifest>

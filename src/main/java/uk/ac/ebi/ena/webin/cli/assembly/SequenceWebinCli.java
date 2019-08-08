@@ -30,9 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.ena.model.manifest.Manifest;
-import uk.ac.ebi.ena.model.reference.Analysis;
-import uk.ac.ebi.ena.model.reference.Run;
 import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -42,6 +39,9 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public abstract class 
 SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends AbstractWebinCli<R>

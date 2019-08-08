@@ -26,11 +26,11 @@ import uk.ac.ebi.embl.api.validation.ValidationEngineException;
 import uk.ac.ebi.embl.api.validation.helper.MasterSourceFeatureUtils;
 import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.embl.api.validation.submission.*;
-import uk.ac.ebi.ena.model.manifest.TranscriptomeManifest;
-import uk.ac.ebi.ena.model.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifestReader, TranscriptomeManifest> {

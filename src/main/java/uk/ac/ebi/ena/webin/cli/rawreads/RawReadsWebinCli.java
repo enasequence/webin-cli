@@ -41,8 +41,6 @@ import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.model.reference.Sample;
-import uk.ac.ebi.ena.model.reference.Study;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.BamScanner;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.FastqScanner;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
@@ -63,6 +61,8 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class 
 RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>

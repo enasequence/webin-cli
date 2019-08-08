@@ -16,13 +16,13 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.model.file.SubmissionFile;
-import uk.ac.ebi.ena.model.manifest.SequenceManifest;
-import uk.ac.ebi.ena.model.reference.Analysis;
-import uk.ac.ebi.ena.model.reference.Run;
-import uk.ac.ebi.ena.model.reference.Study;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -97,7 +97,7 @@ SequenceAssemblyXmlTest
         SequenceManifest manifest = initMockManifestReader(cli);
 
         Path flatFile = WebinCliTestUtils.createGzippedTempFile( "flatfile.dat.gz", "ID   ;" );
-        manifest.files().add( new SubmissionFile<>( SequenceManifest.FileType.FLATFILE, flatFile.toFile() ) );
+        manifest.files().add( new SubmissionFile( SequenceManifest.FileType.FLATFILE, flatFile.toFile() ) );
 
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
 

@@ -22,11 +22,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.ena.model.file.SubmissionFiles;
-import uk.ac.ebi.ena.model.manifest.GenomeManifest.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
 
 public class GenomeAssemblyValidationTest {
 

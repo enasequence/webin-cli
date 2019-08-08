@@ -107,14 +107,13 @@ dependencies {
     implementation( "commons-net:commons-net:3.4" )
     implementation( group: 'org.fusesource.jansi', name: 'jansi', version: '1.18' )
     implementation( 'info.picocli:picocli:3.9.1' )
-    implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.30' )
+    implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.25' )
     implementation( "org.jdom:jdom:2.0.2" )
 
     // implementation(group: 'com.opencsv', name: 'opencsv', version: '4.5')
     implementation( group: 'org.apache.poi', name: 'poi', version: '4.0.1' )
     implementation( group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.1' )
 
-    implementation( group: 'uk.ac.ebi.ena.model', name: 'ena-models', version: '1.0.0' )
 
     implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.2' )
     implementation( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
