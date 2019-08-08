@@ -109,6 +109,7 @@ dependencies {
     implementation( 'info.picocli:picocli:3.9.1' )
     implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.25' )
     implementation( "org.jdom:jdom:2.0.2" )
+    implementation( group: 'uk.ac.ebi.ena.webin-cli', name: 'webin-cli-validator', version: '1.0.1' )
 
     // implementation(group: 'com.opencsv', name: 'opencsv', version: '4.5')
     implementation( group: 'org.apache.poi', name: 'poi', version: '4.0.1' )
