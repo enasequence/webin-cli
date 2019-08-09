@@ -36,7 +36,7 @@ public class TranscriptomeAssemblyValidationTest {
 
   private static final ValidatorBuilder<TranscriptomeAssemblyWebinCli> validatorBuilder =
       new ValidatorBuilder(TranscriptomeAssemblyWebinCli.class)
-          .metadataServiceActive(false)
+          .manifestMetadataProcessors(false)
           .sample(WebinCliTestUtils.getDefaultSample());
 
   @Before

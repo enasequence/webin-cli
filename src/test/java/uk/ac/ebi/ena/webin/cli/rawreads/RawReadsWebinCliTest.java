@@ -83,7 +83,7 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive(false);
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -101,7 +101,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nBAM file2.bam" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive(false);
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -119,7 +119,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file1.cram\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive(false);
+        parameters.setManifestMetadataProcessors(false);
 
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
@@ -138,7 +138,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
 
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
@@ -157,7 +157,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
 
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
@@ -176,7 +176,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ yoba.fastq.gz.bz2 PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -194,7 +194,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ " + createOutputFolder() + " PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -212,7 +212,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -234,7 +234,7 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -252,7 +252,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive(false);
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -288,7 +288,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
 
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
@@ -326,7 +326,7 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
@@ -348,7 +348,7 @@ RawReadsWebinCliTest
                                                  + Field.DESCRIPTION + " description text" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.getSubmissionBundle();
@@ -393,7 +393,7 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
     }
@@ -428,7 +428,7 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
 
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
 
         rr.readManifest( parameters );
         
@@ -457,7 +457,7 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
         rr.prepareSubmissionBundle();
@@ -482,7 +482,7 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
     }
@@ -503,7 +503,7 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
     }
@@ -523,7 +523,7 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
         rr.prepareSubmissionBundle();
@@ -551,7 +551,7 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
         rr.prepareSubmissionBundle();
@@ -584,7 +584,7 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
     }
@@ -603,7 +603,7 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         try
         {
@@ -630,7 +630,7 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         try
         {
@@ -657,7 +657,7 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setOutputDir( createOutputFolder() );
-        rr.setMetadataServiceActive( false );
+        parameters.setManifestMetadataProcessors(false);
         rr.readManifest( parameters );
         rr.validate();
     }

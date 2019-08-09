@@ -42,7 +42,7 @@ import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 
-public class SubmitService extends AbstractService {
+public class SubmitService extends WebinService {
 
     private final static String RECEIPT_XML = "receipt.xml";
     private final String submitDir;

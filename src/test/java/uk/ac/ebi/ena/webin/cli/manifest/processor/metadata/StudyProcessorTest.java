@@ -8,7 +8,7 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.manifest.processor;
+package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
 
@@ -19,40 +19,40 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
-SampleProcessorTest
+StudyProcessorTest
 {
     private final WebinCliParameters parameters = new WebinCliParameters();
 
     @Before public void
-    before() {
+    before() 
+    {
         parameters.setUsername( System.getenv( "webin-cli-username" ) );
         parameters.setPassword( System.getenv( "webin-cli-password" ) );
         parameters.setTestMode( true );
-
-        Assert.assertNotNull("webin-cli-username is null", parameters.getUsername());
     }
 
     
-    @Test public void 
+    @Test public void
     testCorrect()
     {
-        SampleProcessor processor = new SampleProcessor( parameters, (Sample sample) -> Assert.assertEquals( "SAMEA749881", sample.getBioSampleId() ) );
-        
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "ERS000002" );
+        StudyProcessor processor = new StudyProcessor( parameters, (Study study) -> Assert.assertEquals( "PRJNA28545", study.getBioProjectId() ) );
+
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "STUDY", "SRP000392" );
         Assert.assertTrue( processor.process( fieldValue ).isValid() );
-        Assert.assertEquals( "SAMEA749881", fieldValue.getValue() );
+        Assert.assertEquals( "PRJNA28545", fieldValue.getValue() );
     }
 
-    
-    @Test public void 
+
+    @Test public void
     testIncorrect()
     {
-        SampleProcessor processor = new SampleProcessor( parameters, Assert::assertNull );
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "SRP000392" );
-        Assert.assertFalse( processor.process(fieldValue).isValid() );
-        Assert.assertEquals( "SRP000392", fieldValue.getValue() );
+        StudyProcessor processor = new StudyProcessor( parameters, Assert::assertNull );
+
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "STUDY", "ERS000002" );
+        Assert.assertFalse( processor.process( fieldValue ).isValid() );
+        Assert.assertEquals( "ERS000002", fieldValue.getValue() );
     }
 }

@@ -41,7 +41,7 @@ public class GenomeAssemblyValidationTest {
 
   private static final ValidatorBuilder<GenomeAssemblyWebinCli> validatorBuilder =
           new ValidatorBuilder(GenomeAssemblyWebinCli.class)
-                  .metadataServiceActive(false)
+                  .manifestMetadataProcessors(false)
                   .sample(getDefaultSample());
 
   @Before

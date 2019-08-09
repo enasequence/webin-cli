@@ -23,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class
-RunService extends AbstractService 
+RunService extends WebinService
 {
 
     protected 
@@ -34,7 +34,7 @@ RunService extends AbstractService
 
     
     public static class 
-    Builder extends AbstractBuilder<RunService> 
+    Builder extends AbstractBuilder<RunService>
     {
         @Override public RunService 
         build()

@@ -18,6 +18,9 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.AnalysisProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.RunProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
@@ -56,8 +59,8 @@ SequenceAssemblyManifestReader extends SequenceManifestReader<SequenceManifest>
 
     private final SequenceManifest manifest = new SequenceManifest();
 
-    public SequenceAssemblyManifestReader(StudyProcessor    studyProcessor,
-                                          RunProcessor      runProcessor,
+    public SequenceAssemblyManifestReader(StudyProcessor studyProcessor,
+                                          RunProcessor runProcessor,
                                           AnalysisProcessor analysisProcessor )
     {
         super(

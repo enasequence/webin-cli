@@ -8,7 +8,7 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.manifest.processor;
+package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
 
@@ -40,7 +40,7 @@ AnalysisProcessorTest
     testCorrect()
     {
         final String analysis_id = "ERZ690501";
-        AnalysisProcessor processor = new AnalysisProcessor( parameters, 
+        AnalysisProcessor processor = new AnalysisProcessor( parameters,
                                                             ( e ) -> {
                                                                 Assert.assertEquals( 1, e.size() );
                                                                 Assert.assertEquals( analysis_id, e.get( 0 ).getAnalysisId() ); 

@@ -20,6 +20,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
@@ -70,10 +71,10 @@ TranscriptomeAssemblyManifestReader extends SequenceManifestReader<Transcriptome
 	private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
 	public TranscriptomeAssemblyManifestReader(SampleProcessor sampleProcessor,
-											   StudyProcessor  studyProcessor,
-											   SampleXmlProcessor sampleXmlProcessor,
-											   RunProcessor    runProcessor,
-											   AnalysisProcessor analysisProcessor )
+                                               StudyProcessor studyProcessor,
+                                               SampleXmlProcessor sampleXmlProcessor,
+                                               RunProcessor runProcessor,
+                                               AnalysisProcessor analysisProcessor )
 	{
 		super(
 				// Fields.

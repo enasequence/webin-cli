@@ -26,11 +26,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class ValidatorBuilder<T extends SequenceWebinCli> {
   private final Class<T> validatorClass;
-  private boolean metadataServiceActive = true;
   private boolean createOutputDirs = true;
-  private boolean validateManifestMandatory = true;
-  private boolean validateManifestFileExists = true;
-  private boolean validateManifestFileCount = true;
+  private boolean manifestMetadataProcessors = true;
+  private boolean manifestValidateMandatory = true;
+  private boolean manifestValidateFileExists = true;
+  private boolean manifestValidateFileCount = true;
   private Study study;
   private Sample sample;
 
@@ -45,23 +45,23 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     return this;
   }
 
-  public ValidatorBuilder metadataServiceActive(boolean metadataServiceActive) {
-    this.metadataServiceActive = metadataServiceActive;
+  public ValidatorBuilder manifestMetadataProcessors(boolean metadataServiceActive) {
+    this.manifestMetadataProcessors = metadataServiceActive;
     return this;
   }
 
-  public ValidatorBuilder validateManifestMandatory(boolean validateManifestMandatory) {
-    this.validateManifestMandatory = validateManifestMandatory;
+  public ValidatorBuilder manifestValidateMandatory(boolean manifestValidateMandatory) {
+    this.manifestValidateMandatory = manifestValidateMandatory;
     return this;
   }
 
-  public ValidatorBuilder validateManifestFileExists(boolean validateManifestFileExists) {
-    this.validateManifestFileExists = validateManifestFileExists;
+  public ValidatorBuilder manifestValidateFileExists(boolean manifestValidateFileExists) {
+    this.manifestValidateFileExists = manifestValidateFileExists;
     return this;
   }
 
-  public ValidatorBuilder validateManifestFileCount(boolean validateManifestFileCount) {
-    this.validateManifestFileCount = validateManifestFileCount;
+  public ValidatorBuilder manifestValidateFileCount(boolean manifestValidateFileCount) {
+    this.manifestValidateFileCount = manifestValidateFileCount;
     return this;
   }
 
@@ -87,7 +87,6 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     validator.setValidationDir(WebinCliTestUtils.createTempDir());
     validator.setProcessDir(WebinCliTestUtils.createTempDir());
     validator.setSubmitDir(WebinCliTestUtils.createTempDir());
-    validator.setMetadataServiceActive(metadataServiceActive);
     return validator;
   }
 
@@ -105,9 +104,10 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
   private WebinCliParameters createParameters(File manifestFile, File inputDir) {
     WebinCliParameters parameters = createWebinCliParameters(manifestFile, inputDir);
     parameters.setCreateOutputDirs(createOutputDirs);
-    parameters.setValidateManifestMandatory(validateManifestMandatory);
-    parameters.setValidateManifestFileExist(validateManifestFileExists);
-    parameters.setValidateManifestFileCount(validateManifestFileCount);
+    parameters.setManifestMetadataProcessors(manifestMetadataProcessors);
+    parameters.setManifestValidateMandatory(manifestValidateMandatory);
+    parameters.setManifestValidateFileExist(manifestValidateFileExists);
+    parameters.setManifestValidateFileCount(manifestValidateFileCount);
     return parameters;
   }
 

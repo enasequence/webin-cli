@@ -44,9 +44,9 @@ public class ManifestFileCountTest {
       this.validatorBuilder =
           new ValidatorBuilder<>(validatorClass)
               .createOutputDirs(false)
-              .metadataServiceActive(false)
-              .validateManifestMandatory(false)
-              .validateManifestFileExists(false);
+              .manifestMetadataProcessors(false)
+              .manifestValidateMandatory(false)
+              .manifestValidateFileExists(false);
     }
 
     public CountTest add(FileType... validFileGroup) {

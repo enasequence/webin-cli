@@ -22,9 +22,11 @@ public class WebinCliParameters
     private String centerName;
     private boolean testMode;
     private boolean createOutputDirs = true;
-    private boolean validateManifestMandatory = true;
-    private boolean validateManifestFileExist = true;
-    private boolean validateManifestFileCount = true;
+
+    private boolean manifestMetadataProcessors = true;
+    private boolean manifestValidateMandatory = true;
+    private boolean manifestValidateFileExist = true;
+    private boolean manifestValidateFileCount = true;
 
     public File getManifestFile() {
         return manifestFile;
@@ -90,27 +92,35 @@ public class WebinCliParameters
         this.createOutputDirs = createOutputDirs;
     }
 
-    public boolean isValidateManifestMandatory() {
-        return validateManifestMandatory;
+    public boolean isManifestMetadataProcessors() {
+        return manifestMetadataProcessors;
     }
 
-    public void setValidateManifestMandatory(boolean validateManifestMandatory) {
-        this.validateManifestMandatory = validateManifestMandatory;
+    public void setManifestMetadataProcessors(boolean manifestMetadataProcessors) {
+        this.manifestMetadataProcessors = manifestMetadataProcessors;
     }
 
-    public boolean isValidateManifestFileExist() {
-        return validateManifestFileExist;
+    public boolean isManifestValidateMandatory() {
+        return manifestValidateMandatory;
     }
 
-    public void setValidateManifestFileExist(boolean validateManifestFileExist) {
-        this.validateManifestFileExist = validateManifestFileExist;
+    public void setManifestValidateMandatory(boolean manifestValidateMandatory) {
+        this.manifestValidateMandatory = manifestValidateMandatory;
     }
 
-    public boolean isValidateManifestFileCount() {
-        return validateManifestFileCount;
+    public boolean isManifestValidateFileExist() {
+        return manifestValidateFileExist;
     }
 
-    public void setValidateManifestFileCount(boolean validateManifestFileCount) {
-        this.validateManifestFileCount = validateManifestFileCount;
+    public void setManifestValidateFileExist(boolean manifestValidateFileExist) {
+        this.manifestValidateFileExist = manifestValidateFileExist;
+    }
+
+    public boolean isManifestValidateFileCount() {
+        return manifestValidateFileCount;
+    }
+
+    public void setManifestValidateFileCount(boolean manifestValidateFileCount) {
+        this.manifestValidateFileCount = manifestValidateFileCount;
     }
 }

@@ -14,29 +14,29 @@ public class ManifestFileSuffixTest {
       genomeValidatorBuilder =
           new ValidatorBuilder(GenomeAssemblyWebinCli.class)
               .createOutputDirs(false)
-              .metadataServiceActive(false)
-              .validateManifestMandatory(false)
-              .validateManifestFileExists(false)
-              .validateManifestFileCount(false);
+              .manifestMetadataProcessors(false)
+              .manifestValidateMandatory(false)
+              .manifestValidateFileExists(false)
+              .manifestValidateFileCount(false);
 
     private static final ValidatorBuilder<TranscriptomeAssemblyWebinCli>
             transcriptomeValidatorBuilder =
             new ValidatorBuilder(TranscriptomeAssemblyWebinCli.class)
                     .createOutputDirs(false)
-                    .metadataServiceActive(false)
-                    .validateManifestMandatory(false)
-                    .validateManifestFileExists(false)
-                    .validateManifestFileCount(false);
+                    .manifestMetadataProcessors(false)
+                    .manifestValidateMandatory(false)
+                    .manifestValidateFileExists(false)
+                    .manifestValidateFileCount(false);
 
 
     private static final ValidatorBuilder<SequenceAssemblyWebinCli>
             sequenceValidatorBuilder =
             new ValidatorBuilder(SequenceAssemblyWebinCli.class)
                     .createOutputDirs(false)
-                    .metadataServiceActive(false)
-                    .validateManifestMandatory(false)
-                    .validateManifestFileExists(false)
-                    .validateManifestFileCount(false);
+                    .manifestMetadataProcessors(false)
+                    .manifestValidateMandatory(false)
+                    .manifestValidateFileExists(false)
+                    .manifestValidateFileCount(false);
 
     private static <FileType extends Enum<FileType>> void invalidSuffix(
             ValidatorBuilder validatorBuilder, FileType fileType, String fileName) {

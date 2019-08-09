@@ -28,9 +28,7 @@ import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.embl.api.validation.submission.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.AnalysisProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.RunProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
@@ -43,11 +41,11 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     }
 
     @Override
-    protected SequenceAssemblyManifestReader createManifestReader() {
+    protected SequenceAssemblyManifestReader createManifestReader(MetadataProcessorFactory metadataProcessorFactory) {
         return new SequenceAssemblyManifestReader(
-                isMetadataServiceActive(MetadataService.STUDY)    ? new StudyProcessor( getParameters() ) : null,
-                isMetadataServiceActive(MetadataService.RUN)      ? new RunProcessor( getParameters() ) : null,
-                isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters() ) : null );
+                metadataProcessorFactory.createStudyProcessor( getParameters() ),
+                metadataProcessorFactory.createRunProcessor( getParameters() ) ,
+                metadataProcessorFactory.createAnalysisProcessor( getParameters() ) );
     }
 
     @Override

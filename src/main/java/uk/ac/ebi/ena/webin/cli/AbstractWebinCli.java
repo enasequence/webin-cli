@@ -15,22 +15,21 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.EnumSet;
 
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
-public abstract class 
+public abstract class
 AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
 {
-
-    private String name; 
+    private String name;
     private WebinCliParameters parameters = new WebinCliParameters();
 
     private boolean testMode;
@@ -41,46 +40,18 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     private File processDir;
     private File submitDir;
 
-
-    // MetadataService
-
-    private final EnumSet<MetadataService> activeMetadataService = EnumSet.allOf(MetadataService.class);
-
-    @Override
-    public boolean isMetadataServiceActive(AbstractWebinCli.MetadataService metadataService) {
-        return activeMetadataService.contains(metadataService);
-    }
-
-    @Override
-    public void setMetadataServiceActive(AbstractWebinCli.MetadataService metadataService, boolean isActive) {
-        if (isActive) {
-            activeMetadataService.add(metadataService);
-        }
-        else {
-            activeMetadataService.remove(metadataService);
-        }
-    }
-
-    @Override
-    public void setMetadataServiceActive(boolean isActive) {
-        for (MetadataService metadataService: MetadataService.values()) {
-            setMetadataServiceActive(metadataService, isActive);
-        }
-    }
-
-
     // TODO: remove
     private String description;
 
     // TODO: remove
-    public String 
+    public String
     getDescription()
     {
         return description;
     }
 
     // TODO: remove
-    public void 
+    public void
     setDescription( String description )
     {
         this.description = description;
@@ -90,7 +61,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         this.manifestReader = manifestReader;
     }
 
-    protected abstract M createManifestReader();
+    protected abstract M createManifestReader(MetadataProcessorFactory metadataProcessorFactory);
 
     protected abstract void readManifest(Path inputDir, File manifestFile);
 
@@ -99,12 +70,18 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     readManifest( WebinCliParameters parameters )
     {
         this.parameters = parameters;
-        this.manifestReader = createManifestReader();
-        this.manifestReader.setValidateMandatory(parameters.isValidateManifestMandatory());
-        this.manifestReader.setValidateFileExist(parameters.isValidateManifestFileExist());
-        this.manifestReader.setValidateFileCount(parameters.isValidateManifestFileCount());
 
-        this.validationDir = WebinCli.createOutputDir(parameters, ".");
+        MetadataProcessorFactory metadataProcessorFactory = new MetadataProcessorFactory();
+        metadataProcessorFactory.setActive(parameters.isManifestMetadataProcessors());
+        this.manifestReader = createManifestReader(metadataProcessorFactory);
+
+        this.manifestReader.setValidateMandatory(parameters.isManifestValidateMandatory());
+        this.manifestReader.setValidateFileExist(parameters.isManifestValidateFileExist());
+        this.manifestReader.setValidateFileCount(parameters.isManifestValidateFileCount());
+
+        if (parameters.isCreateOutputDirs()) {
+            this.validationDir = WebinCli.createOutputDir(parameters, ".");
+        }
 
         File manifestFile = getParameters().getManifestFile();
         File reportFile = getReportFile(manifestFile.getName() );
@@ -241,26 +218,25 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     {
         this.name = name;
     }
-    
-    
-    public boolean 
+
+
+    public boolean
     getTestMode()
     {
         return this.testMode;
     }
 
-    
+
     public void
     setTestMode( boolean test_mode )
     {
         this.testMode = test_mode;
     }
 
-    
-    public Path 
+
+    public Path
     getUploadRoot()
     {
     	return Paths.get( getTestMode() ? "webin-cli-test" : "webin-cli" );
     }
-    
 }

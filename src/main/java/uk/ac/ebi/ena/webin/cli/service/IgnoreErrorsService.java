@@ -21,7 +21,7 @@ import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 
 public class 
-IgnoreErrorsService extends AbstractService {
+IgnoreErrorsService extends WebinService {
 
     protected
     IgnoreErrorsService( AbstractBuilder<IgnoreErrorsService> builder )

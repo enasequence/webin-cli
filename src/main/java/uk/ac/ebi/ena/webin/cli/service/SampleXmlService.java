@@ -34,7 +34,7 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
-SampleXmlService extends AbstractService
+SampleXmlService extends WebinService
 {
     protected SampleXmlService(AbstractBuilder<SampleXmlService> builder )
     {

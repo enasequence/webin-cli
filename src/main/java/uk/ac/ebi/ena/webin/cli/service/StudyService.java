@@ -24,7 +24,7 @@ import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
-public class StudyService extends AbstractService {
+public class StudyService extends WebinService {
 
     protected 
     StudyService( AbstractBuilder<StudyService> builder )

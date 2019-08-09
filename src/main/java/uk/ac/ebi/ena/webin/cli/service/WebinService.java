@@ -11,17 +11,17 @@
 package uk.ac.ebi.ena.webin.cli.service;
 
 public class
-AbstractService {
-    private final static String webinRestUriTest = "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/";
-    private final static String webinRestUriProd = "https://www.ebi.ac.uk/ena/submit/drop-box/";
+WebinService {
+    private final static String TEST_URL = "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/";
+    private final static String PRODUCTION_URL = "https://www.ebi.ac.uk/ena/submit/drop-box/";
     private final String userName;
     private final String password;
     private final boolean test;
 
     final String getWebinRestUri(String uri, boolean test) {
         return (test) ?
-                webinRestUriTest + uri :
-                webinRestUriProd + uri;
+                TEST_URL + uri :
+                PRODUCTION_URL + uri;
     }
 
     public abstract static class
@@ -63,7 +63,7 @@ AbstractService {
         return this.userName;
     }
 
-    protected AbstractService(AbstractBuilder<?> builder) {
+    protected WebinService(AbstractBuilder<?> builder) {
         this.userName = builder.userName;
         this.password = builder.password;
         this.test = builder.test;

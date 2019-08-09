@@ -17,7 +17,7 @@ import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 
 public class 
-VersionService extends AbstractService
+VersionService extends WebinService
 {
     public static class 
     Builder extends AbstractBuilder<VersionService> {

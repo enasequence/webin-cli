@@ -23,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class
-AnalysisService extends AbstractService 
+AnalysisService extends WebinService
 {
 
     protected 
@@ -34,7 +34,7 @@ AnalysisService extends AbstractService
 
     
     public static class 
-    Builder extends AbstractBuilder<AnalysisService> 
+    Builder extends AbstractBuilder<AnalysisService>
     {
         @Override public AnalysisService 
         build()

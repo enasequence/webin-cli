@@ -32,7 +32,7 @@ public class SequenceAssemblyValidationTest {
 
   private static final ValidatorBuilder<SequenceAssemblyWebinCli> validatorBuilder =
       new ValidatorBuilder(SequenceAssemblyWebinCli.class)
-          .metadataServiceActive(false)
+          .manifestMetadataProcessors(false)
           .sample(getDefaultSample());
 
   @Before

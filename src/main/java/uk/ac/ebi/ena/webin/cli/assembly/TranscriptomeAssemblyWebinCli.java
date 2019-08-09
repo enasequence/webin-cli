@@ -28,7 +28,7 @@ import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.embl.api.validation.submission.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
@@ -40,14 +40,13 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		return WebinCliContext.transcriptome;
 	}
 
-	@Override protected TranscriptomeAssemblyManifestReader createManifestReader()
-	{
+	@Override protected TranscriptomeAssemblyManifestReader createManifestReader(MetadataProcessorFactory metadataProcessorFactory) {
 		return new TranscriptomeAssemblyManifestReader(
-				isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters()) : null,
-				isMetadataServiceActive(MetadataService.STUDY)  ? new StudyProcessor(getParameters()) : null,
-				isMetadataServiceActive(MetadataService.SAMPLE_XML) ? new SampleXmlProcessor(getParameters() ):null,
-				isMetadataServiceActive(MetadataService.RUN)    ? new RunProcessor( getParameters() ) : null,
-				isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters() ) : null );
+				metadataProcessorFactory.createSampleProcessor(getParameters()),
+				metadataProcessorFactory.createStudyProcessor(getParameters()),
+				metadataProcessorFactory.createSampleXmlProcessor(getParameters()),
+				metadataProcessorFactory.createRunProcessor( getParameters() ),
+				metadataProcessorFactory.createAnalysisProcessor( getParameters() ));
 	}
 
 	@Override

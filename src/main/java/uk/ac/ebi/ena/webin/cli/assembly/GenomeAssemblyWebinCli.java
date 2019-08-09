@@ -28,7 +28,7 @@ import uk.ac.ebi.embl.api.validation.helper.taxon.TaxonHelperImpl;
 import uk.ac.ebi.embl.api.validation.submission.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
@@ -42,14 +42,14 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, Ge
 	}
 
 	@Override protected GenomeAssemblyManifestReader
-	createManifestReader()
+	createManifestReader(MetadataProcessorFactory metadataProcessorFactory)
 	{
 		return new GenomeAssemblyManifestReader(
-				isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor( getParameters() ) : null,
-				isMetadataServiceActive(MetadataService.STUDY) ? new StudyProcessor( getParameters() ) : null,
-				isMetadataServiceActive(MetadataService.RUN) ? new RunProcessor( getParameters() ) : null,
-				isMetadataServiceActive(MetadataService.ANALYSIS) ? new AnalysisProcessor( getParameters() ) : null,
-				isMetadataServiceActive(MetadataService.SAMPLE_XML) ? new SampleXmlProcessor( getParameters() ) : null );
+				metadataProcessorFactory.createSampleProcessor( getParameters() ),
+				metadataProcessorFactory.createStudyProcessor( getParameters() ),
+				metadataProcessorFactory.createRunProcessor( getParameters() ),
+				metadataProcessorFactory.createAnalysisProcessor( getParameters() ),
+				metadataProcessorFactory.createSampleXmlProcessor( getParameters() ) );
 	}
 
 	@Override

@@ -54,8 +54,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.SampleProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
@@ -84,13 +83,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
     }
 
     @Override
-    protected RawReadsManifest createManifestReader() {
-
-        // Create manifest parser which will also set the sample and study fields.
-
+    protected RawReadsManifest createManifestReader(MetadataProcessorFactory metadataProcessorFactory) {
         return new RawReadsManifest(
-                isMetadataServiceActive(MetadataService.SAMPLE) ? new SampleProcessor(getParameters(), (Sample sample) -> this.sampleId = sample.getBioSampleId()) : null,
-                isMetadataServiceActive(MetadataService.STUDY) ? new StudyProcessor(getParameters(), (Study study) -> this.studyId = study.getBioProjectId()) : null);
+             metadataProcessorFactory.createSampleProcessor(getParameters(), (Sample sample) -> this.sampleId = sample.getBioSampleId()),
+             metadataProcessorFactory.createStudyProcessor(getParameters(), (Study study) -> this.studyId = study.getBioProjectId()));
     }
 
     @Override

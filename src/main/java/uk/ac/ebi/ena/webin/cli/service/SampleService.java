@@ -22,7 +22,7 @@ import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class 
-SampleService extends AbstractService 
+SampleService extends WebinService
 {
     protected 
     SampleService( AbstractBuilder<SampleService> builder )
