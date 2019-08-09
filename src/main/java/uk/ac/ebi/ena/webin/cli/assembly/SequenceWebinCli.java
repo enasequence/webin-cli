@@ -10,6 +10,27 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
+import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -21,27 +42,6 @@ import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
-
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public abstract class 
 SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends AbstractWebinCli<R>
@@ -209,8 +209,6 @@ SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends A
         return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
 
-    protected abstract void validate(File reportDir, File processDir) throws WebinCliException, ValidationEngineException;
-   
     @Override public void
     validate() throws WebinCliException
     {
@@ -239,20 +237,16 @@ SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends A
             log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
         }
 
-        try
-        {
-            validate(getValidationDir(), getProcessDir());
-
-        } catch( ValidationEngineException ex )
-        {
-            switch( ex.getErrorType() )
-            {
-                case VALIDATION_ERROR:
-                    throw WebinCliException.validationError( ex );
-
-                default:
-                    throw WebinCliException.systemError( ex );
-            }
+        manifest.setReportDir(getValidationDir());
+        manifest.setProcessDir(getProcessDir());
+        ValidationResponse response;
+        try {
+            response = new SubmissionValidator().validate(manifest);
+        } catch (RuntimeException ex) {
+            throw WebinCliException.systemError(ex);
+        }
+        if(response != null && response.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
+            throw WebinCliException.validationError(response.getFirstMessage());
         }
     }
 
