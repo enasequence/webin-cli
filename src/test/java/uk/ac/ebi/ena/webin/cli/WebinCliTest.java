@@ -221,8 +221,8 @@ WebinCliTest
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileforAgp.txt", inputDir, true, ".gz" );
-        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileAgp.txt", inputDir, true, ".agp.gz" );
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfile.dat.gz", inputDir, false );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_agp.agp.gz", inputDir, false );
         Path infofile =  WebinCliTestUtils.createTempFile("info.txt", inputDir, getGenomeManifestFields(name));
 
         testWebinCli( WebinCliContext.genome,
@@ -242,8 +242,8 @@ WebinCliTest
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileforAgp.txt", inputDir, true, ".gz" );
-        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfileAgp.txt", inputDir, true, ".agp.gz" );
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfile.dat.gz", inputDir, false );
+        Path agpfile  = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_agp.agp.gz", inputDir, false );
 
         testWebinCli( WebinCliContext.genome,
                       inputDir,
@@ -261,7 +261,7 @@ WebinCliTest
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.txt", inputDir, true, ".gz" );
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir, false);
 
         try {
             testWebinCli(WebinCliContext.genome,
@@ -287,7 +287,7 @@ WebinCliTest
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_fasta_primary_metagenome.fasta.gz", inputDir, false );
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_fasta.fasta.gz", inputDir, false );
 
         try {
 
@@ -310,7 +310,7 @@ WebinCliTest
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_fasta_primary_metagenome.fasta.gz", inputDir, false );
+        Path fastafile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/valid_fasta.fasta.gz", inputDir, false );
 
         try {
 
@@ -369,7 +369,7 @@ WebinCliTest
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.txt", inputDir, true, ".gz" );
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir, false );
 
         try {
             testWebinCli( WebinCliContext.sequence,
@@ -431,7 +431,7 @@ WebinCliTest
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path outputDir = WebinCliTestUtils.createTempDir().toPath();
 
-        Path flatfile = WebinCliTestUtils.createTempFileFromResource( "uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.txt", inputDir, true, ".gz" );
+        Path flatfile = WebinCliTestUtils.createTempFileFromResource("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir, false );
 
         try {
             testWebinCli(WebinCliContext.transcriptome,

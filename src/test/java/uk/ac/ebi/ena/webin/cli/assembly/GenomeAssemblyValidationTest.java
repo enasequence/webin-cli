@@ -71,7 +71,7 @@ public class GenomeAssemblyValidationTest {
                 "Biologische Anstalt Helgoland, Alfred-Wegener-Institut, Helmholtz "
                     + "Zentrum für Polar- und Meeresforschung, Kurpromenade 27498 Helgoland, Germany")
             .field(GenomeAssemblyManifestReader.Field.AUTHORS, "Kirstein   Ivan, Wichels Alfred..;")
-            .file(FileType.FLATFILE, "valid_flatfile.txt.gz")
+            .file(FileType.FLATFILE, "valid_flatfile.dat.gz")
             .build();
 
     GenomeAssemblyWebinCli validator =
@@ -85,7 +85,7 @@ public class GenomeAssemblyValidationTest {
   @Test
   public void testValidFlatFile() {
     File manifestFile =
-        manifestBuilder().file(FileType.FLATFILE, "valid_flatfile.txt.gz").build();
+        manifestBuilder().file(FileType.FLATFILE, "valid_flatfile.dat.gz").build();
 
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
@@ -116,7 +116,7 @@ public class GenomeAssemblyValidationTest {
   public void testValidFlatFileAndAgp() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FLATFILE, "valid_flatfile.txt.gz")
+            .file(FileType.FLATFILE, "valid_flatfile.dat.gz")
             .file(FileType.AGP, "valid_agp.agp.gz")
             .build();
 
@@ -152,7 +152,7 @@ public class GenomeAssemblyValidationTest {
   public void testValidFlatFileAndAgpAndChromosomeList() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FLATFILE, "valid_flatfile.txt.gz")
+            .file(FileType.FLATFILE, "valid_flatfile.dat.gz")
             .file(FileType.AGP, "valid_agp.agp.gz")
             .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
@@ -182,7 +182,7 @@ public class GenomeAssemblyValidationTest {
   @Test
   public void testInvalidFlatFile() {
     File manifestFile =
-        manifestBuilder().file(FileType.FLATFILE, "invalid_flatfile.txt.gz").build();
+        manifestBuilder().file(FileType.FLATFILE, "invalid_flatfile.dat.gz").build();
 
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
