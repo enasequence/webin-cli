@@ -11,7 +11,9 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import uk.ac.ebi.embl.api.validation.ValidationResult;
@@ -51,7 +53,8 @@ AnalysisProcessor implements ManifestFieldProcessor
     {
         String value = fieldValue.getValue();
         String[] ids = value.split( ", *" );
-        List<Analysis> analysis_list = new ArrayList<Analysis>( ids.length );
+        Set<String> idsSet = new HashSet<>();
+        List<Analysis> analysis_list = new ArrayList<>( ids.length );
         ValidationResult result    = new ValidationResult();
         
         for( String a : ids )
@@ -59,7 +62,8 @@ AnalysisProcessor implements ManifestFieldProcessor
             String id = a.trim();
             if( id.isEmpty() )
                 continue;
-
+            if(!idsSet.add(id))
+                continue;
             try
             {
                 AnalysisService analysisService = new AnalysisService.Builder()

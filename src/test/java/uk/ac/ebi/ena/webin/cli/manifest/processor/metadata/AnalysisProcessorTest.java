@@ -57,14 +57,15 @@ AnalysisProcessorTest
     {
         AnalysisProcessor processor = new AnalysisProcessor( parameters, 
                                                              ( e ) -> {
-                                                                 Assert.assertEquals( 2, e.size() );
+                                                                 Assert.assertEquals( 3, e.size() );
                                                                  Assert.assertEquals( "ERZ690501", e.get( 0 ).getAnalysisId() );
                                                                  Assert.assertEquals( "ERZ690500", e.get( 1 ).getAnalysisId() );
+                                                                 Assert.assertEquals( "ERZ690502", e.get( 2 ).getAnalysisId() );
                                                              } );
 
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "ERZ690501, ERZ690500" );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "ERZ690501, ERZ690500, ERZ690500, ERZ690502" );
         Assert.assertTrue( processor.process( fieldValue ).isValid() );
-        Assert.assertEquals( "ERZ690501, ERZ690500", fieldValue.getValue() );
+        Assert.assertEquals( "ERZ690501, ERZ690500, ERZ690502", fieldValue.getValue() );
     }
 
     

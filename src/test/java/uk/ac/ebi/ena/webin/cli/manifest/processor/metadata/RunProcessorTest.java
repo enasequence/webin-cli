@@ -62,7 +62,7 @@ RunProcessorTest
                                                            Assert.assertEquals( "ERR2836763", e.get( 2 ).getRunId() ); 
                                                        } );
 
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "ERR2836765, ERR2836764, ERR2836763" /*"ena-RUN-UNIVERSITY OF MINNESOTA-11-10-2018-17:17:11:460-400"*/ );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "ERR2836765, ERR2836764, ERR2836763,ERR2836763" /*"ena-RUN-UNIVERSITY OF MINNESOTA-11-10-2018-17:17:11:460-400"*/ );
         Assert.assertTrue( processor.process( fieldValue ).isValid() );
         Assert.assertEquals( "ERR2836765, ERR2836764, ERR2836763", fieldValue.getValue() );
     }

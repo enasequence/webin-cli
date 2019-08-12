@@ -10,8 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import uk.ac.ebi.embl.api.validation.ValidationResult;
@@ -52,7 +51,8 @@ RunProcessor implements ManifestFieldProcessor
         ValidationResult result = new ValidationResult();
         String value = fieldValue.getValue();
         String[] ids = value.split( ", *" );
-        List<Run> run_list = new ArrayList<Run>( ids.length );
+        Set<String> idsSet = new HashSet<>();
+        List<Run> run_list = new ArrayList<>( ids.length );
         
         for( String r : ids )
         {
@@ -60,6 +60,8 @@ RunProcessor implements ManifestFieldProcessor
             if( id.isEmpty() )
                 continue;
 
+            if(!idsSet.add(id))
+                continue;
             try
             {
                 RunService runService = new RunService.Builder()
