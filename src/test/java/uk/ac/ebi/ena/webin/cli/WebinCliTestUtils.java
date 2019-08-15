@@ -70,8 +70,8 @@ public class WebinCliTestUtils {
     }
 
     public static Path
-    createTempFile(String fileName, String contents) {
-        return createTempFile(fileName, null, false, contents);
+    createTempFile(Path folder, String contents) {
+        return createTempFile(null, folder, false, contents);
     }
 
     public static Path
@@ -85,7 +85,7 @@ public class WebinCliTestUtils {
     }
 
 
-    private static Path
+    public static Path
     createTempFile(String fileName, Path folder, boolean compress, String contents)
     {
         try {
@@ -114,8 +114,12 @@ public class WebinCliTestUtils {
         }
     }
 
-
     public static Path
+    createTempFileFromResource( String resource, Path folder ) {
+        return createTempFileFromResource(resource, folder, false);
+    }
+
+        public static Path
     createTempFileFromResource( String resource, Path folder, boolean compress, String...suffix ) {
         try {
             URL url = WebinCliTestUtils.class.getClassLoader().getResource( resource );

@@ -257,7 +257,7 @@ SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends A
     {
         try
         {
-            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDir( getName() ) ) );
+            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getName() ) ) );
             
             List<File> uploadFileList = getManifest().files().files();
             List<Element> fileElements = createXmlFileElements( uploadDir );

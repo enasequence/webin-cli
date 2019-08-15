@@ -16,6 +16,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 

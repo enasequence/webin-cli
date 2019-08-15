@@ -300,7 +300,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifest>
             List<RawReadsFile> files = getManifestReader().getRawReadFiles();
             
             List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
-            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDir( getName() ) ) );
+            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getName() ) ) );
             files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
             files.forEach( e -> {
                 try

@@ -15,6 +15,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;

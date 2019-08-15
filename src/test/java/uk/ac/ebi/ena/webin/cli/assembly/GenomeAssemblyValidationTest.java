@@ -21,6 +21,7 @@ import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;

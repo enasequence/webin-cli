@@ -35,8 +35,6 @@ import ch.qos.logback.core.OutputStreamAppender;
 import picocli.CommandLine;
 
 import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException;
-import uk.ac.ebi.embl.api.validation.ValidationEngineException.ReportErrorType;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
@@ -106,16 +104,7 @@ public class WebinCli {
                     return VALIDATION_ERROR;
             }
             
-        } catch( ValidationEngineException e ) 
-        {
-            log.error( e.getMessage(), e );
-
-            if(ReportErrorType.SYSTEM_ERROR.equals(e.getErrorType()))
-                return SYSTEM_ERROR;
-            else
-                return USER_ERROR;
-            
-        } catch( Throwable e ) 
+        } catch( Throwable e )
         {
             log.error( e.getMessage(), e );
             return SYSTEM_ERROR;
@@ -179,14 +168,21 @@ public class WebinCli {
 	}
 
 	void
-	execute(WebinCliParameters parameters) throws Exception
+	execute(WebinCliParameters parameters)
 	{
 		context = params.context;
 
 		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
 
-		AbstractWebinCli<?> validator = context.getValidatorClass().newInstance();
+		AbstractWebinCli<?> validator;
+		try {
+			validator = context.getValidatorClass().newInstance();
+		}
+		catch (InstantiationException | IllegalAccessException ex) {
+			throw new RuntimeException(ex);
+		}
+
 		validator.setTestMode( params.test );
 		validator.readManifest( parameters );
 
@@ -427,7 +423,7 @@ public class WebinCli {
 			throw WebinCliException.systemError( WebinCliMessage.Cli.MISSING_OUTPUT_DIR_ERROR.format());
 		}
 
-		String[] safeDirs = getSafeOutputDir(dirs);
+		String[] safeDirs = getSafeOutputDirs(dirs);
 
 		Path p;
 
@@ -445,16 +441,23 @@ public class WebinCli {
 
 		return dir;
 	}
-	
+
+
+	public static String
+	getSafeOutputDir(String dir )
+	{
+		return dir
+				.replaceAll( "[^a-zA-Z0-9-_\\.]", "_" )
+				.replaceAll( "_+", "_" )
+				.replaceAll( "^_+(?=[^_])","" )
+				.replaceAll( "(?<=[^_])_+$", "" );
+	}
 
 	public static String[]
-	getSafeOutputDir( String ... dirs ) 
+	getSafeOutputDirs(String ... dirs )
 	{
 		return Arrays.stream( dirs )
-		             .map( str -> str.replaceAll( "[^a-zA-Z0-9-_\\.]", "_" ) )
-		             .map( str -> str.replaceAll( "_+", "_" ) )
-		             .map( str -> str.replaceAll( "^_+(?=[^_])", "" ) )
-		             .map( str -> str.replaceAll( "(?<=[^_])_+$", "" ) )
+		             .map( dir -> getSafeOutputDir(dir) )
 		             .toArray( String[]::new );
 	}
 }

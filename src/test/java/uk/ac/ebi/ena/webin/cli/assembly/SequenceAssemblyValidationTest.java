@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
 
 public class SequenceAssemblyValidationTest {

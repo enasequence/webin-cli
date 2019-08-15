@@ -1,6 +1,7 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import org.junit.Test;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;

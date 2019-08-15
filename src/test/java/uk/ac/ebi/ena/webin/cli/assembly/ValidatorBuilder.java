@@ -90,7 +90,7 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     return validator;
   }
 
-  private WebinCliParameters createWebinCliParameters(File manifestFile, File inputDir) {
+  private WebinCliParameters createParameters(File manifestFile, File inputDir) {
     WebinCliParameters parameters = new WebinCliParameters();
     parameters.setManifestFile(manifestFile);
     parameters.setInputDir(inputDir);
@@ -98,11 +98,6 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     parameters.setUsername(System.getenv("webin-cli-username"));
     parameters.setPassword(System.getenv("webin-cli-password"));
     parameters.setTestMode(true);
-    return parameters;
-  }
-
-  private WebinCliParameters createParameters(File manifestFile, File inputDir) {
-    WebinCliParameters parameters = createWebinCliParameters(manifestFile, inputDir);
     parameters.setCreateOutputDirs(createOutputDirs);
     parameters.setManifestMetadataProcessors(manifestMetadataProcessors);
     parameters.setManifestValidateMandatory(manifestValidateMandatory);
