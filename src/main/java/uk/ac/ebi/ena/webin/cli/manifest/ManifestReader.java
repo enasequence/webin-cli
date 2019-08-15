@@ -66,30 +66,44 @@ ManifestReader
         int lineNo = 0;
     }
 
+    private final ManifestReaderParameters parameters;
     private final List<ManifestFieldDefinition> fields;
     private final List<ManifestFileGroup> fileGroups;
     private ManifestReaderResult result;
     private ManifestReaderState state;
-    private boolean validateMandatory = true;
-    private boolean validateFileExist = true;
-    private boolean validateFileCount = true;
+
+
+    public static final ManifestReaderParameters DEFAULT_PARAMETERS =  new ManifestReaderParameters() {
+        public boolean isManifestValidateMandatory() {
+            return true;
+        }
+        public boolean isManifestValidateFileExist() {
+            return true;
+        }
+        public boolean isManifestValidateFileCount() {
+            return true;
+        }
+    };
 
     public
-    ManifestReader( List<ManifestFieldDefinition> fields )
+    ManifestReader( ManifestReaderParameters parameters,
+                    List<ManifestFieldDefinition> fields )
     {
+        this.parameters = parameters;
         this.fields = fields;
         this.fileGroups = null;
     }
 
 
     public
-    ManifestReader( List<ManifestFieldDefinition> fields,
+    ManifestReader( ManifestReaderParameters parameters,
+                    List<ManifestFieldDefinition> fields,
                     List<ManifestFileGroup> fileGroups)
     {
+        this.parameters = parameters;
         this.fields = fields;
         this.fileGroups = fileGroups;
     }
-
 
     public final Path
     getInputDir()
@@ -247,7 +261,7 @@ ManifestReader
 
                     // Validate file exists.
 
-                    if (validateFileExist) {
+                    if (parameters.isManifestValidateFileExist()) {
                         validateFileExists( inputDir, field );
                     }
                 }
@@ -272,7 +286,7 @@ ManifestReader
 
         // Validate min count.
 
-        if (validateMandatory) {
+        if (parameters.isManifestValidateMandatory()) {
 
             fields.stream()
                   .filter( field -> field.getMinCount() > 0 )
@@ -368,7 +382,7 @@ ManifestReader
         if( fileGroups == null || fileGroups.isEmpty() )
             return;
 
-        if (validateFileCount) {
+        if (parameters.isManifestValidateFileCount()) {
 
             Map<String, Long> fileCountMap = result.getFields()
                                                    .stream()
@@ -629,34 +643,13 @@ ManifestReader
         return new DefaultOrigin("File name: " + state.fileName + ", line number: " + state.lineNo);
     }
 
-
     private Origin
     createValidateOrigin()
     {
         return new DefaultOrigin("File name: " + state.fileName);
     }
 
-    public boolean isValidateMandatory() {
-        return validateMandatory;
-    }
-
-    public void setValidateMandatory(boolean validateMandatory) {
-        this.validateMandatory = validateMandatory;
-    }
-
-    public boolean isValidateFileExist() {
-        return validateFileExist;
-    }
-
-    public void setValidateFileExist(boolean validateFileExists) {
-        this.validateFileExist = validateFileExists;
-    }
-
-    public boolean isValidateFileCount() {
-        return validateFileCount;
-    }
-
-    public void setValidateFileCount(boolean validateFileCount) {
-        this.validateFileCount = validateFileCount;
+    public ManifestReaderParameters getParameters() {
+        return parameters;
     }
 }

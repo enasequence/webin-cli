@@ -15,11 +15,11 @@ import java.util.List;
 public class TestManifestReader extends ManifestReader {
 
     public TestManifestReader(List<ManifestFieldDefinition> fields) {
-        super(fields);
+        super(DEFAULT_PARAMETERS, fields);
     }
 
     public TestManifestReader(List<ManifestFieldDefinition> fields, List<ManifestFileGroup> fileGroups) {
-        super(fields, fileGroups);
+        super(DEFAULT_PARAMETERS, fields, fileGroups);
     }
 
     @Override

@@ -250,8 +250,6 @@ public class WebinCli {
 
         try 
         {
-            AssemblyInfoEntry aie = new AssemblyInfoEntry();
-            aie.setName( "NAME" );
             SubmitService submitService = new SubmitService.Builder()
                                                            .setSubmitDir( bundle.getSubmitDirectory().getPath() )
                                                            .setUserName( params.userName )

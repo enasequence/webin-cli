@@ -24,22 +24,13 @@ import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.AsciiOffset;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
 
 public class
-RawReadsManifest extends ManifestReader {
+RawReadsManifestReader extends ManifestReader {
 
     public interface Field {
         String NAME = "NAME";
@@ -115,16 +106,19 @@ RawReadsManifest extends ManifestReader {
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
 
-
-    public RawReadsManifest() {
-        this(null, null);
+    public static RawReadsManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
+        return new RawReadsManifestReader(
+                parameters,
+               factory.createSampleProcessor(),
+               factory.createStudyProcessor());
     }
 
-
-    public 
-    RawReadsManifest(SampleProcessor sampleProcessor, StudyProcessor studyProcessor) 
+    private RawReadsManifestReader(
+            ManifestReaderParameters parameters,
+            SampleProcessor sampleProcessor,
+            StudyProcessor studyProcessor)
     {
-        super(
+        super(parameters,
                 // Fields.
                 new ManifestFieldDefinition.Builder()
                        .meta().required().name(Field.NAME).desc(Description.NAME).and()
@@ -156,7 +150,6 @@ RawReadsManifest extends ManifestReader {
                         .build()
         );
     }
-
 
     private static ManifestFieldProcessor[] getFastqProcessors() {
         return new ManifestFieldProcessor[]{

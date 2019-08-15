@@ -17,6 +17,7 @@ import java.util.List;
 import org.jdom2.Element;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
@@ -27,13 +28,8 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		return WebinCliContext.transcriptome;
 	}
 
-	@Override protected TranscriptomeAssemblyManifestReader createManifestReader(MetadataProcessorFactory metadataProcessorFactory) {
-		return new TranscriptomeAssemblyManifestReader(
-				metadataProcessorFactory.createSampleProcessor(getParameters()),
-				metadataProcessorFactory.createStudyProcessor(getParameters()),
-				metadataProcessorFactory.createSampleXmlProcessor(getParameters()),
-				metadataProcessorFactory.createRunProcessor( getParameters() ),
-				metadataProcessorFactory.createAnalysisProcessor( getParameters() ));
+	@Override protected TranscriptomeAssemblyManifestReader createManifestReader() {
+		return TranscriptomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
 	}
 
 	@Override Element

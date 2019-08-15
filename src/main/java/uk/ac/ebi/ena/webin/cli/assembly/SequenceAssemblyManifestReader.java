@@ -13,10 +13,7 @@ package uk.ac.ebi.ena.webin.cli.assembly;
 import java.util.Map;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.AnalysisProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.RunProcessor;
@@ -26,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class
-SequenceAssemblyManifestReader extends SequenceManifestReader<SequenceManifest>
+SequenceAssemblyManifestReader extends SequenceManifestReaderEx<SequenceManifest>
 {
     public interface 
     Field 
@@ -59,11 +56,21 @@ SequenceAssemblyManifestReader extends SequenceManifestReader<SequenceManifest>
 
     private final SequenceManifest manifest = new SequenceManifest();
 
-    public SequenceAssemblyManifestReader(StudyProcessor studyProcessor,
-                                          RunProcessor runProcessor,
-                                          AnalysisProcessor analysisProcessor )
+    public static SequenceAssemblyManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
+        return new SequenceAssemblyManifestReader(
+                parameters,
+                factory.createStudyProcessor(),
+                factory.createRunProcessor(),
+                factory.createAnalysisProcessor());
+    }
+
+    private SequenceAssemblyManifestReader(
+            ManifestReaderParameters parameters,
+            StudyProcessor studyProcessor,
+            RunProcessor runProcessor,
+            AnalysisProcessor analysisProcessor )
     {
-        super(
+        super(parameters,
                 // Fields.
                 new ManifestFieldDefinition.Builder()
                     .meta().required().name( Field.NAME         ).desc( Description.NAME         ).and()

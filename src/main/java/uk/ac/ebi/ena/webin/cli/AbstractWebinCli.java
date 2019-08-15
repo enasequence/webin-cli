@@ -61,7 +61,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         this.manifestReader = manifestReader;
     }
 
-    protected abstract M createManifestReader(MetadataProcessorFactory metadataProcessorFactory);
+    protected abstract M createManifestReader();
 
     protected abstract void readManifest(Path inputDir, File manifestFile);
 
@@ -71,17 +71,9 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     {
         this.parameters = parameters;
 
-        MetadataProcessorFactory metadataProcessorFactory = new MetadataProcessorFactory();
-        metadataProcessorFactory.setActive(parameters.isManifestMetadataProcessors());
-        this.manifestReader = createManifestReader(metadataProcessorFactory);
+        this.manifestReader = createManifestReader();
 
-        this.manifestReader.setValidateMandatory(parameters.isManifestValidateMandatory());
-        this.manifestReader.setValidateFileExist(parameters.isManifestValidateFileExist());
-        this.manifestReader.setValidateFileCount(parameters.isManifestValidateFileCount());
-
-        if (parameters.isCreateOutputDirs()) {
-            this.validationDir = WebinCli.createOutputDir(parameters, ".");
-        }
+        this.validationDir = WebinCli.createOutputDir(parameters, ".");
 
         File manifestFile = getParameters().getManifestFile();
         File reportFile = getReportFile(manifestFile.getName() );
@@ -92,15 +84,13 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         {
             readManifest( getParameters().getInputDir().toPath(), manifestFile );
 
-            if (parameters.isCreateOutputDirs()) {
-                if (!StringUtils.isBlank(manifestReader.getName())) {
-                    setName();
-                    this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.VALIDATE_DIR );
-                    this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.PROCESS_DIR );
-                    this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.SUBMIT_DIR );
-                } else {
-                    throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
-                }
+            if (!StringUtils.isBlank(manifestReader.getName())) {
+                setName();
+                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.VALIDATE_DIR );
+                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.PROCESS_DIR );
+                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.SUBMIT_DIR );
+            } else {
+                throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
             }
         } catch (WebinCliException ex) {
             throw ex;

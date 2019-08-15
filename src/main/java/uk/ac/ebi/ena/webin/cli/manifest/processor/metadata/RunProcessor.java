@@ -16,27 +16,27 @@ import java.util.stream.Collectors;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.RunService;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class
 RunProcessor implements ManifestFieldProcessor
 {
-    private final WebinCliParameters parameters;
+    private final MetadataProcessorParameters parameters;
     private ManifestFieldProcessor.Callback<List<Run>> callback;
 
     public
-    RunProcessor( WebinCliParameters parameters, ManifestFieldProcessor.Callback<List<Run>> callback )
+    RunProcessor(MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<List<Run>> callback )
     {
         this.parameters = parameters;
         this.callback = callback;
     }
 
     public
-    RunProcessor( WebinCliParameters parameters )
+    RunProcessor( MetadataProcessorParameters parameters )
     {
         this.parameters = parameters;
     }

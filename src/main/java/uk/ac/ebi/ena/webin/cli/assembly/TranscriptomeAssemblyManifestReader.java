@@ -15,10 +15,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -26,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class
-TranscriptomeAssemblyManifestReader extends SequenceManifestReader<TranscriptomeManifest>
+TranscriptomeAssemblyManifestReader extends SequenceManifestReaderEx<TranscriptomeManifest>
 {
 	public interface
 	Field 
@@ -70,13 +67,25 @@ TranscriptomeAssemblyManifestReader extends SequenceManifestReader<Transcriptome
 
 	private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
-	public TranscriptomeAssemblyManifestReader(SampleProcessor sampleProcessor,
-                                               StudyProcessor studyProcessor,
-                                               SampleXmlProcessor sampleXmlProcessor,
-                                               RunProcessor runProcessor,
-                                               AnalysisProcessor analysisProcessor )
+	public static TranscriptomeAssemblyManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
+		return new TranscriptomeAssemblyManifestReader(
+				parameters,
+				factory.createSampleProcessor(),
+				factory.createStudyProcessor(),
+				factory.createSampleXmlProcessor(),
+				factory.createRunProcessor(),
+				factory.createAnalysisProcessor());
+	}
+
+	private TranscriptomeAssemblyManifestReader(
+			ManifestReaderParameters parameters,
+			SampleProcessor sampleProcessor,
+		    StudyProcessor studyProcessor,
+		    SampleXmlProcessor sampleXmlProcessor,
+		    RunProcessor runProcessor,
+		    AnalysisProcessor analysisProcessor )
 	{
-		super(
+		super(parameters,
 				// Fields.
 				new ManifestFieldDefinition.Builder()
 					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
@@ -147,7 +156,7 @@ TranscriptomeAssemblyManifestReader extends SequenceManifestReader<Transcriptome
 			manifest.setName(getResult().getValue( Field.ASSEMBLYNAME ));
 		}
 
-		if (isValidateMandatory()) {
+		if (getParameters().isManifestValidateMandatory()) {
 			if( StringUtils.isBlank( manifest.getName() ) )
 			{
 				error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );

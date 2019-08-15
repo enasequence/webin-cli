@@ -23,6 +23,13 @@ public class ManifestBuilder {
     return this;
   }
 
+  public ManifestBuilder manifest(ManifestBuilder manifest) {
+    if (manifest != null) {
+      this.manifest += manifest;
+    }
+    return this;
+  }
+
   public ManifestBuilder field(String field, String value) {
     if (field != null && value != null) {
       manifest += field + "\t" + value + "\n";

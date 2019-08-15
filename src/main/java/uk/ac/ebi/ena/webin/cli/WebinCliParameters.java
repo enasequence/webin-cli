@@ -10,9 +10,11 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
+
 import java.io.File;
 
-public class WebinCliParameters
+public class WebinCliParameters implements MetadataProcessorParameters
 {
     private File manifestFile;
     private String username;
@@ -21,12 +23,8 @@ public class WebinCliParameters
     private File inputDir = new File( "." );
     private String centerName;
     private boolean testMode;
-    private boolean createOutputDirs = true;
 
-    private boolean manifestMetadataProcessors = true;
-    private boolean manifestValidateMandatory = true;
-    private boolean manifestValidateFileExist = true;
-    private boolean manifestValidateFileCount = true;
+    private boolean metadataProcessorsActive = true;
 
     public File getManifestFile() {
         return manifestFile;
@@ -84,43 +82,11 @@ public class WebinCliParameters
         this.testMode = testMode;
     }
 
-    public boolean isCreateOutputDirs() {
-        return createOutputDirs;
+    public boolean isMetadataProcessorsActive() {
+        return metadataProcessorsActive;
     }
 
-    public void setCreateOutputDirs(boolean createOutputDirs) {
-        this.createOutputDirs = createOutputDirs;
-    }
-
-    public boolean isManifestMetadataProcessors() {
-        return manifestMetadataProcessors;
-    }
-
-    public void setManifestMetadataProcessors(boolean manifestMetadataProcessors) {
-        this.manifestMetadataProcessors = manifestMetadataProcessors;
-    }
-
-    public boolean isManifestValidateMandatory() {
-        return manifestValidateMandatory;
-    }
-
-    public void setManifestValidateMandatory(boolean manifestValidateMandatory) {
-        this.manifestValidateMandatory = manifestValidateMandatory;
-    }
-
-    public boolean isManifestValidateFileExist() {
-        return manifestValidateFileExist;
-    }
-
-    public void setManifestValidateFileExist(boolean manifestValidateFileExist) {
-        this.manifestValidateFileExist = manifestValidateFileExist;
-    }
-
-    public boolean isManifestValidateFileCount() {
-        return manifestValidateFileCount;
-    }
-
-    public void setManifestValidateFileCount(boolean manifestValidateFileCount) {
-        this.manifestValidateFileCount = manifestValidateFileCount;
+    public void setMetadataProcessorsActive(boolean metadataProcessorsActive) {
+        this.metadataProcessorsActive = metadataProcessorsActive;
     }
 }

@@ -14,28 +14,29 @@ import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyManifestReader;
 import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyManifestReader;
 import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
 
 public enum SpreadsheetContext {
 
     GENOME(
-            new GenomeAssemblyManifestReader( null, null, null, null, null ),
+            GenomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
             "genome",
             "Additionally, primary and binned metagenomes must have " +
             ManifestReader.getFileGroupText( GenomeAssemblyManifestReader.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
     ),
     TRANSCRIPTOME(
-            new TranscriptomeAssemblyManifestReader( null, null, null, null, null ),
+            TranscriptomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
             "transcriptome",
             null
     ),
     SEQUENCE(
-            new SequenceAssemblyManifestReader( null, null, null ),
+            SequenceAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
             "sequence",
             null
     ),
     READ(
-            new RawReadsManifest( null, null ),
+            RawReadsManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
             "read",
             null
     );

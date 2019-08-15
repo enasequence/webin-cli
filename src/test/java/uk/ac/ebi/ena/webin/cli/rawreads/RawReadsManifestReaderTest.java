@@ -28,12 +28,18 @@ import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest.Field;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader.Field;
 
-public class 
-RawReadsManifestTest
+public class
+RawReadsManifestReaderTest
 {
+    private static RawReadsManifestReader createManifestReader() {
+        return RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null));
+    }
+
     @Before public void
     before()
     {
@@ -48,17 +54,17 @@ RawReadsManifestTest
     {
         Path inputDir = Paths.get( "." );
 
-        RawReadsFile file = RawReadsManifest.createReadFile(inputDir,
+        RawReadsFile file = RawReadsManifestReader.createReadFile(inputDir,
                 ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.FASTQ, "file.fastq"));
         Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
 
-        file = RawReadsManifest.createReadFile(inputDir,
+        file = RawReadsManifestReader.createReadFile(inputDir,
                 ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.BAM, "file.bam"));
         Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
 
-        file = RawReadsManifest.createReadFile(inputDir,
+        file = RawReadsManifestReader.createReadFile(inputDir,
                 ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.CRAM, "file.cram"));
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
@@ -83,7 +89,7 @@ RawReadsManifestTest
                                 + Field.DESCRIPTION       + " " + descr + "\n"
                                 + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
         Assert.assertNull( rm.getStudyId() );
         Assert.assertNull( rm.getSampleId() );
         Assert.assertNull( rm.getPlatform() );
@@ -138,7 +144,7 @@ RawReadsManifestTest
                                 + "BAM " + Files.createTempFile( inf.getParent(), "TEMP", "FILE" ).getFileName() ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
 
         Assert.assertNull( rm.getStudyId() );
         Assert.assertNull( rm.getSampleId() );
@@ -177,7 +183,7 @@ RawReadsManifestTest
                                 ( Field.PLATFORM + " illumina\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
 
         Assert.assertNull( rm.getPlatform() );
         Assert.assertNull( rm.getInstrument() );
@@ -196,7 +202,7 @@ RawReadsManifestTest
                 Field.INSTRUMENT + " unspecifieD\n" ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
 
         Assert.assertNull( rm.getPlatform() );
         Assert.assertNull( rm.getInstrument() );
@@ -215,7 +221,7 @@ RawReadsManifestTest
                                 + Field.INSTRUMENT + " 454 GS FLX Titanium\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
 
         Assert.assertNull( rm.getPlatform() );
         Assert.assertNull( rm.getInstrument() );
@@ -234,7 +240,7 @@ RawReadsManifestTest
                                 ( "" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
 
         Assert.assertNull( rm.getPlatform() );
         Assert.assertNull( rm.getInstrument() );
@@ -253,7 +259,7 @@ RawReadsManifestTest
                 ( Field.INSTRUMENT + " unspecifieD\n" ).getBytes(),
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
 
         Assert.assertNull( rm.getPlatform() );
         Assert.assertNull( rm.getInstrument() );
@@ -281,7 +287,7 @@ RawReadsManifestTest
                                 + Field.NAME              + " SOME-FANCY-NAME\n "
                                 + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-        RawReadsManifest rm = new RawReadsManifest();
+        RawReadsManifestReader rm = createManifestReader();
         rm.readManifest( Paths.get( "." ), man.toFile() );
         Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.INVALID_POSITIVE_INTEGER_ERROR.key(), Severity.ERROR));
     }

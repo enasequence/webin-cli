@@ -26,42 +26,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class ValidatorBuilder<T extends SequenceWebinCli> {
   private final Class<T> validatorClass;
-  private boolean createOutputDirs = true;
   private boolean manifestMetadataProcessors = true;
-  private boolean manifestValidateMandatory = true;
-  private boolean manifestValidateFileExists = true;
-  private boolean manifestValidateFileCount = true;
   private Study study;
   private Sample sample;
-
-  private static final File TEMP_INPUT_DIR = WebinCliTestUtils.createTempDir();
 
   public ValidatorBuilder(Class<T> validatorClass) {
     this.validatorClass = validatorClass;
   }
 
-  public ValidatorBuilder createOutputDirs(boolean createOutputDirs) {
-    this.createOutputDirs = createOutputDirs;
-    return this;
-  }
-
   public ValidatorBuilder manifestMetadataProcessors(boolean metadataServiceActive) {
     this.manifestMetadataProcessors = metadataServiceActive;
-    return this;
-  }
-
-  public ValidatorBuilder manifestValidateMandatory(boolean manifestValidateMandatory) {
-    this.manifestValidateMandatory = manifestValidateMandatory;
-    return this;
-  }
-
-  public ValidatorBuilder manifestValidateFileExists(boolean manifestValidateFileExists) {
-    this.manifestValidateFileExists = manifestValidateFileExists;
-    return this;
-  }
-
-  public ValidatorBuilder manifestValidateFileCount(boolean manifestValidateFileCount) {
-    this.manifestValidateFileCount = manifestValidateFileCount;
     return this;
   }
 
@@ -98,16 +72,8 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     parameters.setUsername(System.getenv("webin-cli-username"));
     parameters.setPassword(System.getenv("webin-cli-password"));
     parameters.setTestMode(true);
-    parameters.setCreateOutputDirs(createOutputDirs);
-    parameters.setManifestMetadataProcessors(manifestMetadataProcessors);
-    parameters.setManifestValidateMandatory(manifestValidateMandatory);
-    parameters.setManifestValidateFileExist(manifestValidateFileExists);
-    parameters.setManifestValidateFileCount(manifestValidateFileCount);
+    parameters.setMetadataProcessorsActive(manifestMetadataProcessors);
     return parameters;
-  }
-
-  public T readManifest(File manifestFile) {
-    return readManifest(manifestFile, TEMP_INPUT_DIR);
   }
 
   public T readManifest(File manifestFile, File inputDir) {
@@ -121,10 +87,6 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
       validator.getManifestReader().getManifest().setStudy(study);
     }
     return validator;
-  }
-
-  public T readManifestThrows(File manifestFile, WebinCliMessage message) {
-    return readManifestThrows(manifestFile, TEMP_INPUT_DIR, message);
   }
 
   public T readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {

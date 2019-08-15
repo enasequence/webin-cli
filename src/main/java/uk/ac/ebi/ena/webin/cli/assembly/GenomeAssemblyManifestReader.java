@@ -24,7 +24,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 public class
-GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
+GenomeAssemblyManifestReader extends SequenceManifestReaderEx<GenomeManifest> {
 
 	public interface
 	Field 
@@ -105,13 +105,25 @@ GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
 
 	private final GenomeManifest manifest = new GenomeManifest();
 
-	public GenomeAssemblyManifestReader(SampleProcessor sampleProcessor,
-										StudyProcessor studyProcessor,
-										RunProcessor runProcessor,
-										AnalysisProcessor analysisProcessor,
-										SampleXmlProcessor sampleXmlProcessor)
+	public static GenomeAssemblyManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
+		return new GenomeAssemblyManifestReader(
+			parameters,
+			factory.createSampleProcessor(),
+			factory.createStudyProcessor(),
+			factory.createRunProcessor(),
+			factory.createAnalysisProcessor(),
+			factory.createSampleXmlProcessor());
+	}
+
+	private GenomeAssemblyManifestReader(
+			ManifestReaderParameters parameters,
+			SampleProcessor sampleProcessor,
+			StudyProcessor studyProcessor,
+			RunProcessor runProcessor,
+			AnalysisProcessor analysisProcessor,
+			SampleXmlProcessor sampleXmlProcessor)
 	{
-		super(
+		super( parameters,
 				// Fields.
 				new ManifestFieldDefinition.Builder()
 					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
@@ -215,7 +227,7 @@ GenomeAssemblyManifestReader extends SequenceManifestReader<GenomeManifest> {
 	processManifest() 
 	{
 		String name = StringUtils.isBlank( getResult().getValue( Field.NAME ) ) ? getResult().getValue(Field.ASSEMBLYNAME ) : getResult().getValue( Field.NAME );
-		if (isValidateMandatory()) {
+		if (getParameters().isManifestValidateMandatory()) {
 			if( StringUtils.isBlank( name ) )
 			{
 				error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );

@@ -1,7 +1,7 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import org.mockito.Mockito;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MetadataProcessorFactoryTest {
@@ -9,29 +9,38 @@ public class MetadataProcessorFactoryTest {
     @Test
     public void
     testActive() {
-        MetadataProcessorFactory factory = new MetadataProcessorFactory();
-        assertThat(factory.createSampleProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createStudyProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createSampleXmlProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createAnalysisProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createRunProcessor(new WebinCliParameters())).isNotNull();
-        factory.setActive(true);
-        assertThat(factory.createSampleProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createStudyProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createSampleXmlProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createAnalysisProcessor(new WebinCliParameters())).isNotNull();
-        assertThat(factory.createRunProcessor(new WebinCliParameters())).isNotNull();
+        MetadataProcessorParameters parameters = Mockito.mock(MetadataProcessorParameters.class);
+        Mockito.when(parameters.isMetadataProcessorsActive()).thenReturn(true);
+        MetadataProcessorFactory factory = new MetadataProcessorFactory(parameters);
+        assertThat(factory.createSampleProcessor()).isNotNull();
+        assertThat(factory.createStudyProcessor()).isNotNull();
+        assertThat(factory.createSampleXmlProcessor()).isNotNull();
+        assertThat(factory.createAnalysisProcessor()).isNotNull();
+        assertThat(factory.createRunProcessor()).isNotNull();
     }
 
     @Test
     public void
     testInactive() {
-        MetadataProcessorFactory factory = new MetadataProcessorFactory();
-        factory.setActive(false);
-        assertThat(factory.createSampleProcessor(new WebinCliParameters())).isNull();
-        assertThat(factory.createStudyProcessor(new WebinCliParameters())).isNull();
-        assertThat(factory.createSampleXmlProcessor(new WebinCliParameters())).isNull();
-        assertThat(factory.createAnalysisProcessor(new WebinCliParameters())).isNull();
-        assertThat(factory.createRunProcessor(new WebinCliParameters())).isNull();
+        MetadataProcessorParameters parameters = Mockito.mock(MetadataProcessorParameters.class);
+        Mockito.when(parameters.isMetadataProcessorsActive()).thenReturn(false);
+        MetadataProcessorFactory factory = new MetadataProcessorFactory(parameters);
+        assertThat(factory.createSampleProcessor()).isNull();
+        assertThat(factory.createStudyProcessor()).isNull();
+        assertThat(factory.createSampleXmlProcessor()).isNull();
+        assertThat(factory.createAnalysisProcessor()).isNull();
+        assertThat(factory.createRunProcessor()).isNull();
+    }
+
+    @Test
+    public void
+    testNull() {
+        MetadataProcessorParameters parameters = null;
+        MetadataProcessorFactory factory = new MetadataProcessorFactory(parameters);
+        assertThat(factory.createSampleProcessor()).isNull();
+        assertThat(factory.createStudyProcessor()).isNull();
+        assertThat(factory.createSampleXmlProcessor()).isNull();
+        assertThat(factory.createAnalysisProcessor()).isNull();
+        assertThat(factory.createRunProcessor()).isNull();
     }
 }

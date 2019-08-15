@@ -10,65 +10,60 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class MetadataProcessorFactory {
 
-  private boolean active = true;
+  private MetadataProcessorParameters parameters;
+  private SampleProcessor.Callback<Sample> sampleProcessorCallback;
+  private StudyProcessor.Callback<Study> studyProcessorCallback;
 
-  public SampleProcessor createSampleProcessor(WebinCliParameters parameters ) {
-    if (active) {
-      return new SampleProcessor(parameters);
+  public MetadataProcessorFactory(MetadataProcessorParameters parameters) {
+    this.parameters = parameters;
+  }
+
+  public SampleProcessor createSampleProcessor() {
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
+      return new SampleProcessor(parameters, sampleProcessorCallback);
     }
     return null;
   }
 
-  public StudyProcessor createStudyProcessor(WebinCliParameters parameters ) {
-    if (active) {
-      return new StudyProcessor(parameters);
+  public StudyProcessor createStudyProcessor() {
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
+      return new StudyProcessor(parameters, studyProcessorCallback);
     }
     return null;
   }
 
-  public SampleXmlProcessor createSampleXmlProcessor(WebinCliParameters parameters ) {
-    if (active) {
+  public SampleXmlProcessor createSampleXmlProcessor() {
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
       return new SampleXmlProcessor(parameters);
     }
     return null;
   }
-  
-  public RunProcessor createRunProcessor(WebinCliParameters parameters ) {
-    if (active) {
+
+  public RunProcessor createRunProcessor() {
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
       return new RunProcessor(parameters);
     }
     return null;
   }
-  
-  public AnalysisProcessor createAnalysisProcessor(WebinCliParameters parameters ) {
-    if (active) {
+
+  public AnalysisProcessor createAnalysisProcessor() {
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
       return new AnalysisProcessor(parameters);
     }
     return null;
   }
 
-  public SampleProcessor createSampleProcessor(WebinCliParameters parameters, SampleProcessor.Callback<Sample> callback) {
-    if (active) {
-      return new SampleProcessor(parameters, callback);
-    }
-    return null;
+  public void setSampleProcessorCallback(SampleProcessor.Callback<Sample> sampleProcessorCallback) {
+    this.sampleProcessorCallback = sampleProcessorCallback;
   }
 
-  public StudyProcessor createStudyProcessor(WebinCliParameters parameters, StudyProcessor.Callback<Study> callback ) {
-    if (active) {
-      return new StudyProcessor(parameters, callback);
-    }
-    return null;
-  }
-
-  public void setActive(boolean active) {
-    this.active = active;
+  public void setStudyProcessorCallback(StudyProcessor.Callback<Study> studyProcessorCallback) {
+    this.studyProcessorCallback = studyProcessorCallback;
   }
 }

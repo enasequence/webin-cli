@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.assembly;
 
 import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
@@ -29,14 +30,9 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, Ge
 	}
 
 	@Override protected GenomeAssemblyManifestReader
-	createManifestReader(MetadataProcessorFactory metadataProcessorFactory)
+	createManifestReader()
 	{
-		return new GenomeAssemblyManifestReader(
-				metadataProcessorFactory.createSampleProcessor( getParameters() ),
-				metadataProcessorFactory.createStudyProcessor( getParameters() ),
-				metadataProcessorFactory.createRunProcessor( getParameters() ),
-				metadataProcessorFactory.createAnalysisProcessor( getParameters() ),
-				metadataProcessorFactory.createSampleXmlProcessor( getParameters() ) );
+		return GenomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
 	}
 
 	@Override Element

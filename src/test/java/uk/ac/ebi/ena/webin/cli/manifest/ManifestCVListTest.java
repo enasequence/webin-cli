@@ -13,7 +13,7 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifest;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
 
 public class 
 ManifestCVListTest
@@ -46,7 +46,7 @@ ManifestCVListTest
     @Test public void 
     testFromResource()
     {
-        ManifestCVList cvList = RawReadsManifest.CV_INSTRUMENT;
+        ManifestCVList cvList = RawReadsManifestReader.CV_INSTRUMENT;
 
         Assert.assertTrue( cvList.contains("unspecified") );
         Assert.assertTrue( cvList.contains("UNSPECIFIED") );

@@ -44,7 +44,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public abstract class 
-SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends AbstractWebinCli<R>
+SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends AbstractWebinCli<R>
 {
     private static final String DIGEST_NAME = "MD5";
     protected final static String ANALYSIS_XML = "analysis.xml";
@@ -69,7 +69,7 @@ SequenceWebinCli<R extends SequenceManifestReader, M extends Manifest> extends A
     }
 
     private M getManifest() {
-        SequenceManifestReader<M> manifestReader = getManifestReader();
+        SequenceManifestReaderEx<M> manifestReader = getManifestReader();
         if (manifestReader != null) {
             return manifestReader.getManifest();
         }

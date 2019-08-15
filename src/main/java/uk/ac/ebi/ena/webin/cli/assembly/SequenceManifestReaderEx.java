@@ -1,19 +1,15 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileGroup;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.util.List;
 
-public abstract class SequenceManifestReader<M extends Manifest> extends ManifestReader
+public abstract class SequenceManifestReaderEx<M extends Manifest> extends ManifestReader implements ManifestReaderEx<M>
 {
-    public SequenceManifestReader(List<ManifestFieldDefinition> fields, List<ManifestFileGroup> fileGroups) {
-        super(fields, fileGroups);
+    public SequenceManifestReaderEx(ManifestReaderParameters parameters, List<ManifestFieldDefinition> fields, List<ManifestFileGroup> fileGroups) {
+        super(parameters, fields, fileGroups);
     }
-
-    public abstract M getManifest();
 
     // TODO: remove
     @Override
