@@ -23,9 +23,8 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifestReader, TranscriptomeManifest> {
 
-	@Override
-	public WebinCliContext getContext() {
-		return WebinCliContext.transcriptome;
+	public TranscriptomeAssemblyWebinCli() {
+		super(WebinCliContext.transcriptome);
 	}
 
 	@Override protected TranscriptomeAssemblyManifestReader createManifestReader() {

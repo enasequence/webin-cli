@@ -24,9 +24,8 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyManifestReader, SequenceManifest> {
 
-    @Override
-    public WebinCliContext getContext() {
-        return WebinCliContext.sequence;
+    public SequenceAssemblyWebinCli() {
+        super(WebinCliContext.sequence);
     }
 
     @Override

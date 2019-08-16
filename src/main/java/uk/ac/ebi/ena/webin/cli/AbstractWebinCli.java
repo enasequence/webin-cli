@@ -21,7 +21,6 @@ import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
@@ -29,6 +28,7 @@ import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 public abstract class
 AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
 {
+    private final WebinCliContext context;
     private String name;
     private WebinCliParameters parameters = new WebinCliParameters();
 
@@ -39,6 +39,15 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     private File validationDir;
     private File processDir;
     private File submitDir;
+
+
+    public AbstractWebinCli(WebinCliContext context) {
+        this.context = context;
+    }
+
+    public WebinCliContext getContext() {
+        return context;
+    }
 
     // TODO: remove
     private String description;
@@ -86,9 +95,9 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
 
             if (!StringUtils.isBlank(manifestReader.getName())) {
                 setName();
-                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.VALIDATE_DIR );
-                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.PROCESS_DIR );
-                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( getContext() ), getName(), WebinCliConfig.SUBMIT_DIR );
+                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getName(), WebinCliConfig.VALIDATE_DIR );
+                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getName(), WebinCliConfig.PROCESS_DIR );
+                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getName(), WebinCliConfig.SUBMIT_DIR );
             } else {
                 throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
             }
@@ -147,7 +156,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     }
 
     public String getAlias () {
-        String alias = "webin-" + getContext().name() + "-" + getName();
+        String alias = "webin-" + context.name() + "-" + getName();
         return alias;
     }
 

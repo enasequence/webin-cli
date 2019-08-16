@@ -23,10 +23,8 @@ import java.util.List;
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, GenomeManifest>
 {
-	@Override public WebinCliContext
-	getContext() 
-	{
-		return WebinCliContext.genome;
+	public GenomeAssemblyWebinCli() {
+		super(WebinCliContext.genome);
 	}
 
 	@Override protected GenomeAssemblyManifestReader

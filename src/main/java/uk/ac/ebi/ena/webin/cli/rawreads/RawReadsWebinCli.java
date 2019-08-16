@@ -78,9 +78,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
 
     private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCli.class);
 
-    @Override
-    public WebinCliContext getContext() {
-        return WebinCliContext.reads;
+    public RawReadsWebinCli() {
+        super(WebinCliContext.reads);
     }
 
     @Override
