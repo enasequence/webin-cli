@@ -33,6 +33,11 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
         return SequenceAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
     }
 
+    @Override
+    protected String getTitle() {
+        return "Sequence assembly: " + getName();
+    }
+
     @Override Element
     createXmlAnalysisTypeElement()
     {

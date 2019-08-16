@@ -95,6 +95,8 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         return e;
     }
 
+    protected abstract String getTitle();
+
     private String
     createAnalysisXml( List<Element> fileElements, String centerName )
     {
@@ -102,7 +104,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
 
         try
         {
-            String full_name = getContext().getXmlTitle( getName() );
+            String title = getTitle();
 
             Element analysisSetE = new Element( "ANALYSIS_SET" );
             Element analysisE = new Element( "ANALYSIS" );
@@ -114,7 +116,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
             if( null != centerName && !centerName.isEmpty() )
                 analysisE.setAttribute( "center_name", centerName );
             
-            analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            analysisE.addContent( new Element( "TITLE" ).setText( title ) );
             
             if( null != manifest.getDescription() && !manifest.getDescription().isEmpty() )
                 analysisE.addContent( new Element( "DESCRIPTION" ).setText( manifest.getDescription() ) );

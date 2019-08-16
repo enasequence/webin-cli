@@ -31,6 +31,11 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		return TranscriptomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
 	}
 
+	@Override
+	protected String getTitle() {
+		return "Transcriptome assembly: " + getName();
+	}
+
 	@Override Element
 	createXmlAnalysisTypeElement()
 	{

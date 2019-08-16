@@ -33,6 +33,11 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, Ge
 		return GenomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
 	}
 
+	@Override
+	protected String getTitle() {
+		return "Genome assembly: " + getName();
+	}
+
 	@Override Element
 	createXmlAnalysisTypeElement()
 	{

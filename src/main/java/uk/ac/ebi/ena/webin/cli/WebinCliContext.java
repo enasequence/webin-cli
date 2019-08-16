@@ -17,30 +17,18 @@ import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
 
 public enum
 WebinCliContext {
-    sequence("Sequence assembly: %s",
-            SequenceAssemblyWebinCli.class),
+    sequence(SequenceAssemblyWebinCli.class),
 
-    transcriptome("Transcriptome assembly: %s",
-            TranscriptomeAssemblyWebinCli.class),
+    transcriptome(TranscriptomeAssemblyWebinCli.class),
 
-    genome("Genome assembly: %s",
-            GenomeAssemblyWebinCli.class),
+    genome(GenomeAssemblyWebinCli.class),
 
-    reads("Raw reads: %s",
-            RawReadsWebinCli.class);
+    reads(RawReadsWebinCli.class);
 
-    private final String xmlTitle;
     private final Class<? extends AbstractWebinCli> validatorClass;
 
-    WebinCliContext(String xmlTitle,
-                    Class<? extends AbstractWebinCli> validatorClass) {
-        this.xmlTitle = xmlTitle;
+    WebinCliContext(Class<? extends AbstractWebinCli> validatorClass) {
         this.validatorClass = validatorClass;
-    }
-
-    public String
-    getXmlTitle(String name) {
-        return String.format(this.xmlTitle, name);
     }
 
     public Class<? extends AbstractWebinCli>
