@@ -27,6 +27,7 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
@@ -48,6 +49,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
 {
     private static final String DIGEST_NAME = "MD5";
     protected final static String ANALYSIS_XML = "analysis.xml";
+    private static final String ERROR_FILE = "webin-cli.report";
 
     private static final Logger log = LoggerFactory.getLogger(SequenceWebinCli.class);
 
@@ -236,8 +238,12 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         catch (RuntimeException ex) {
             log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
         }
-
-        manifest.setReportDir(getValidationDir());
+        if(!manifest.getFiles().get().isEmpty()) {
+            for (SubmissionFile subFile : (List<SubmissionFile>) manifest.getFiles().get()) {
+                subFile.setReportFile(Paths.get(getValidationDir().getPath()).resolve(subFile.getFile().getName() + ".report").toFile());
+            }
+        }
+        manifest.setReportFile(Paths.get(getValidationDir().getPath()).resolve(ERROR_FILE).toFile());
         manifest.setProcessDir(getProcessDir());
         ValidationResponse response;
         try {
