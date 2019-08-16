@@ -78,9 +78,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
 
     private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCli.class);
 
-    @Override
-    public WebinCliContext getContext() {
-        return WebinCliContext.reads;
+    public RawReadsWebinCli() {
+        super(WebinCliContext.reads);
     }
 
     @Override
@@ -344,23 +343,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
         }
     }
 
-/*
-    <RUN_SET>
-    <RUN alias="" center_name="" run_center="blah">
-        <EXPERIMENT_REF refname="" />
-        <DATA_BLOCK>
-            <FILES>
-                <FILE filename="test_forward.fastq.gz" filetype="fastq" checksum="5aeca824118be49da0982bef9b57e689" checksum_method="MD5" quality_scoring_system="phred" ascii_offset="!" quality_encoding="ascii">
-                    <READ_LABEL>F</READ_LABEL>
-                </FILE>
-                <FILE filename="test_reverse.fastq.gz" filetype="fastq" checksum="216e1803c0f22825caa58aa3622a0be5" checksum_method="MD5" quality_scoring_system="phred" ascii_offset="!" quality_encoding="ascii">
-                    <READ_LABEL>R</READ_LABEL>
-                </FILE>
-            </FILES>
-        </DATA_BLOCK>
-    </RUN>
-    </RUN_SET>
-*/
+    private String getTitle() {
+        return "Raw reads: " + getName();
+    }
 
     private String
     createExperimentXml(String experiment_ref, String centerName, boolean is_paired, String design_description)
@@ -377,7 +362,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
                 
         try 
         {
-            String full_name = WebinCliContext.reads.getXmlTitle( getName() );
+            String full_name = getTitle();
             Element experimentSetE = new Element( "EXPERIMENT_SET" );
             Element experimentE = new Element( "EXPERIMENT" );
             experimentSetE.addContent( experimentE );
@@ -470,7 +455,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
     {
         try 
         {
-            String full_name = WebinCliContext.reads.getXmlTitle( getName() );
+            String full_name = getTitle();
             Element runSetE = new Element( "RUN_SET" );
             Element runE = new Element( "RUN" );
             runSetE.addContent( runE );

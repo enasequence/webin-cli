@@ -15,11 +15,6 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 public interface WebinCliWrapper {
 
     /**
-     * Get the submission context.
-     */
-    WebinCliContext getContext();
-
-    /**
      * Read the submission manifest.
      */
     void readManifest(WebinCliParameters parameters );

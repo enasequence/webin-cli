@@ -23,13 +23,17 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifestReader, TranscriptomeManifest> {
 
-	@Override
-	public WebinCliContext getContext() {
-		return WebinCliContext.transcriptome;
+	public TranscriptomeAssemblyWebinCli() {
+		super(WebinCliContext.transcriptome);
 	}
 
 	@Override protected TranscriptomeAssemblyManifestReader createManifestReader() {
 		return TranscriptomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
+	}
+
+	@Override
+	protected String getTitle() {
+		return "Transcriptome assembly: " + getName();
 	}
 
 	@Override Element
@@ -37,17 +41,17 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	{
 		TranscriptomeManifest manifest = getManifestReader().getManifest();
 
-		Element typeE = new Element( WebinCliContext.transcriptome.getXmlElement() );
-		typeE.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
-		typeE.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
-		typeE.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
+		Element element = new Element( "TRANSCRIPTOME_ASSEMBLY" );
+		element.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
+		element.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
+		element.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
 		if ( manifest.isTpa())
-			typeE.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
+			element.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
 		if (null != manifest.getAuthors() && null != manifest.getAddress()) {
-			typeE.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
-			typeE.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
+			element.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
+			element.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
 		}
-		return typeE;
+		return element;
 	}
 
 	@Override

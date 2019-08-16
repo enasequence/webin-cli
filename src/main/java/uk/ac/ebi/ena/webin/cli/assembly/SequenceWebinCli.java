@@ -17,10 +17,7 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
@@ -53,7 +50,11 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
 
     private static final Logger log = LoggerFactory.getLogger(SequenceWebinCli.class);
 
-    public void 
+    public SequenceWebinCli(WebinCliContext context) {
+        super(context);
+    }
+
+    public void
     setInputDir( File inputDir )
     {
         getParameters().setInputDir( inputDir );
@@ -96,6 +97,8 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         return e;
     }
 
+    protected abstract String getTitle();
+
     private String
     createAnalysisXml( List<Element> fileElements, String centerName )
     {
@@ -103,7 +106,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
 
         try
         {
-            String full_name = getContext().getXmlTitle( getName() );
+            String title = getTitle();
 
             Element analysisSetE = new Element( "ANALYSIS_SET" );
             Element analysisE = new Element( "ANALYSIS" );
@@ -115,7 +118,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
             if( null != centerName && !centerName.isEmpty() )
                 analysisE.setAttribute( "center_name", centerName );
             
-            analysisE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            analysisE.addContent( new Element( "TITLE" ).setText( title ) );
             
             if( null != manifest.getDescription() && !manifest.getDescription().isEmpty() )
                 analysisE.addContent( new Element( "DESCRIPTION" ).setText( manifest.getDescription() ) );
