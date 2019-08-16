@@ -38,30 +38,30 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, Ge
 	{
 		GenomeManifest manifest = getManifestReader().getManifest();
 
-		Element typeE = new Element( WebinCliContext.genome.getXmlElement() );
+		Element element = new Element( "SEQUENCE_ASSEMBLY" );
 
-		typeE.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
+		element.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
 		if( null != manifest.getAssemblyType() && !manifest.getAssemblyType().isEmpty() )
-			typeE.addContent( createXmlTextElement( "TYPE", manifest.getAssemblyType()));
-		typeE.addContent( createXmlTextElement( "PARTIAL", String.valueOf( Boolean.FALSE ) ) ); //as per SraAnalysisParser.setAssemblyInfo
-		typeE.addContent( createXmlTextElement( "COVERAGE", manifest.getCoverage() ) );
-		typeE.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
-		typeE.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
+			element.addContent( createXmlTextElement( "TYPE", manifest.getAssemblyType()));
+		element.addContent( createXmlTextElement( "PARTIAL", String.valueOf( Boolean.FALSE ) ) ); //as per SraAnalysisParser.setAssemblyInfo
+		element.addContent( createXmlTextElement( "COVERAGE", manifest.getCoverage() ) );
+		element.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
+		element.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
 
 		if( null != manifest.getMinGapLength() )
-			typeE.addContent( createXmlTextElement( "MIN_GAP_LENGTH", String.valueOf( manifest.getMinGapLength() ) ) );
+			element.addContent( createXmlTextElement( "MIN_GAP_LENGTH", String.valueOf( manifest.getMinGapLength() ) ) );
 
 		if( null != manifest.getMoleculeType() && !manifest.getMoleculeType().isEmpty() )
-			typeE.addContent( createXmlTextElement( "MOL_TYPE", manifest.getMoleculeType() ) );
+			element.addContent( createXmlTextElement( "MOL_TYPE", manifest.getMoleculeType() ) );
 
 		if( manifest.isTpa() )
-			typeE.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
+			element.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
 		if (null != manifest.getAuthors() && null != manifest.getAddress()) {
-			typeE.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
-			typeE.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
+			element.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
+			element.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
 		}
 
-		return typeE;
+		return element;
 	}
 
 	@Override

@@ -38,13 +38,13 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
     {
         SequenceManifest manifest = getManifestReader().getManifest();
 
+        Element element = new Element("SEQUENCE_FLATFILE");
         if (null != manifest.getAuthors() && null != manifest.getAddress()) {
-            Element typeE = new Element(WebinCliContext.sequence.getXmlElement());
-            typeE.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
-            typeE.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
-            return typeE;
+            element.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
+            element.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
+            return element;
         }
-        return new Element(WebinCliContext.sequence.getXmlElement());
+        return element;
     }
 
     @Override

@@ -36,17 +36,17 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 	{
 		TranscriptomeManifest manifest = getManifestReader().getManifest();
 
-		Element typeE = new Element( WebinCliContext.transcriptome.getXmlElement() );
-		typeE.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
-		typeE.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
-		typeE.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
+		Element element = new Element( "TRANSCRIPTOME_ASSEMBLY" );
+		element.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
+		element.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
+		element.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
 		if ( manifest.isTpa())
-			typeE.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
+			element.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
 		if (null != manifest.getAuthors() && null != manifest.getAddress()) {
-			typeE.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
-			typeE.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
+			element.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
+			element.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
 		}
-		return typeE;
+		return element;
 	}
 
 	@Override
