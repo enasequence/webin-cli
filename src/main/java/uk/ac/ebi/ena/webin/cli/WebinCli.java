@@ -177,7 +177,6 @@ public class WebinCli {
 
 		AbstractWebinCli<?> validator = context.createValidator(parameters);
 
-		validator.setTestMode( params.test );
 		validator.readManifest( );
 
 		if (params.validate || validator.getSubmissionBundle() == null) {

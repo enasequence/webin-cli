@@ -53,7 +53,9 @@ TranscriptomeAssemblyXmlTest {
         TranscriptomeAssemblyManifestReader manifestReader = mock(TranscriptomeAssemblyManifestReader.class);
         when(manifestReader.getManifest()).thenReturn(manifest);
 
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli( new WebinCliParameters(), manifestReader );
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setTestMode(false);
+        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli( parameters, manifestReader );
         cli.setName( NAME );
         return cli;
     }

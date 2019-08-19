@@ -26,6 +26,9 @@ public class WebinCliParameters implements MetadataProcessorParameters
 
     private boolean metadataProcessorsActive = true;
 
+    public WebinCliParameters() {
+    }
+
     public File getManifestFile() {
         return manifestFile;
     }

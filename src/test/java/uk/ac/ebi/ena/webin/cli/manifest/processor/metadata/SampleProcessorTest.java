@@ -13,10 +13,10 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
@@ -24,18 +24,8 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 public class
 SampleProcessorTest
 {
-    private final WebinCliParameters parameters = new WebinCliParameters();
+    private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
 
-    @Before public void
-    before() {
-        parameters.setUsername( System.getenv( "webin-cli-username" ) );
-        parameters.setPassword( System.getenv( "webin-cli-password" ) );
-        parameters.setTestMode( true );
-
-        Assert.assertNotNull("webin-cli-username is null", parameters.getUsername());
-    }
-
-    
     @Test public void 
     testCorrect()
     {

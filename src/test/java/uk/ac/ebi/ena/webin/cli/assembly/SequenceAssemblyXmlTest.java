@@ -50,7 +50,9 @@ SequenceAssemblyXmlTest
         SequenceAssemblyManifestReader manifestReader = mock(SequenceAssemblyManifestReader.class);
         when(manifestReader.getManifest()).thenReturn(manifest);
 
-        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli(new WebinCliParameters(), manifestReader);
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setTestMode(false);
+        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli(parameters, manifestReader);
         cli.setName( NAME );
         return cli;
     }

@@ -233,7 +233,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
                     .setCredentials(getParameters().getUsername(),
                             getParameters().getPassword())
-                    .setTest(getTestMode())
+                    .setTest(getParameters().isTestMode())
                     .build();
 
             manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getName()));

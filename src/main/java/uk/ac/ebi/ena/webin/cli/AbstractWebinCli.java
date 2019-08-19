@@ -34,7 +34,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
 
     private String name;
 
-    private boolean testMode;
     private File validationDir;
     private File processDir;
     private File submitDir;
@@ -210,23 +209,9 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     }
 
 
-    public boolean
-    getTestMode()
-    {
-        return this.testMode;
-    }
-
-
-    public void
-    setTestMode( boolean test_mode )
-    {
-        this.testMode = test_mode;
-    }
-
-
     public Path
     getUploadRoot()
     {
-    	return Paths.get( getTestMode() ? "webin-cli-test" : "webin-cli" );
+    	return Paths.get( this.parameters.isTestMode() ? "webin-cli-test" : "webin-cli" );
     }
 }

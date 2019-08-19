@@ -38,6 +38,14 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class WebinCliTestUtils {
 
+    public static WebinCliParameters createTestWebinCliParameters() {
+         WebinCliParameters parameters = new WebinCliParameters();
+         parameters.setUsername( System.getenv( "webin-cli-username" ) );
+         parameters.setPassword( System.getenv( "webin-cli-password" ) );
+         parameters.setTestMode( true );
+         return parameters;
+    }
+
     public static File
     createTempDir()
     {

@@ -13,29 +13,20 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
 public class
 RunProcessorTest
 {
-    private final WebinCliParameters parameters = new WebinCliParameters();
+    private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
 
-    @Before public void
-    before() 
-    {
-        parameters.setUsername( System.getenv( "webin-cli-username" ) );
-        parameters.setPassword( System.getenv( "webin-cli-password" ) );
-        parameters.setTestMode( true );
-    }
-
-    
     @Test public void
     testCorrect()
     {

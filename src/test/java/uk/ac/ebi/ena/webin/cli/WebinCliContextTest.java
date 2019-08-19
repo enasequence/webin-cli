@@ -18,7 +18,7 @@ public class WebinCliContextTest {
 
   @Test
   public void testCreateValidator() {
-    WebinCliParameters parameters = new WebinCliParameters();
+    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     for (WebinCliContext context : WebinCliContext.values()) {
       assertThat(context.createValidator(parameters)).isInstanceOf(context.getValidatorClass());
     }
