@@ -34,7 +34,7 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, Ge
 
 	@Override
 	protected String getTitle() {
-		return "Genome assembly: " + getName();
+		return "Genome assembly: " + getSubmissionName();
 	}
 
 	@Override Element

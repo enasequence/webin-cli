@@ -53,11 +53,11 @@ GenomeAssemblyXmlTest
 
         GenomeAssemblyManifestReader manifestReader = mock(GenomeAssemblyManifestReader.class);
         when(manifestReader.getManifest()).thenReturn(manifest);
+        when(manifestReader.getName()).thenReturn(NAME);
 
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setTestMode(false);
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli(parameters, manifestReader);
-        cli.setName( NAME );
         return cli;
     }
 

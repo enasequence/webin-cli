@@ -295,7 +295,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
             List<RawReadsFile> files = getManifestReader().getRawReadFiles();
             
             List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
-            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getName() ) ) );
+            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getSubmissionName() ) ) );
             files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
             files.forEach( e -> {
                 try
@@ -337,7 +337,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
     }
 
     private String getTitle() {
-        return "Raw reads: " + getName();
+        return "Raw reads: " + getSubmissionName();
     }
 
     private String

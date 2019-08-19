@@ -52,11 +52,11 @@ TranscriptomeAssemblyXmlTest {
 
         TranscriptomeAssemblyManifestReader manifestReader = mock(TranscriptomeAssemblyManifestReader.class);
         when(manifestReader.getManifest()).thenReturn(manifest);
+        when(manifestReader.getName()).thenReturn(NAME);
 
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setTestMode(false);
         TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli( parameters, manifestReader );
-        cli.setName( NAME );
         return cli;
     }
 

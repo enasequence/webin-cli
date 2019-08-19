@@ -32,8 +32,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     private final WebinCliParameters parameters;
     private final M manifestReader;
 
-    private String name;
-
     private File validationDir;
     private File processDir;
     private File submitDir;
@@ -82,12 +80,10 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         try
         {
             readManifest( getParameters().getInputDir().toPath(), manifestFile );
-
             if (!StringUtils.isBlank(manifestReader.getName())) {
-                setName();
-                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getName(), WebinCliConfig.VALIDATE_DIR );
-                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getName(), WebinCliConfig.PROCESS_DIR );
-                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getName(), WebinCliConfig.SUBMIT_DIR );
+                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getSubmissionName(), WebinCliConfig.VALIDATE_DIR );
+                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getSubmissionName(), WebinCliConfig.PROCESS_DIR );
+                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getSubmissionName(), WebinCliConfig.SUBMIT_DIR );
             } else {
                 throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
             }
@@ -96,7 +92,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         } catch (Exception ex) {
             throw WebinCliException.systemError(ex, WebinCliMessage.Cli.INIT_ERROR.format(ex.getMessage()));
         } finally {
-            setName();
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
                 ValidationMessageLogger.log(manifestReader.getValidationResult());
                 try (ValidationMessageReporter reporter = new ValidationMessageReporter(reportFile)) {
@@ -107,12 +102,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
 
         if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
             throw WebinCliException.userError( WebinCliMessage.Manifest.INVALID_MANIFEST_FILE_ERROR.format(reportFile.getPath()) );
-        }
-    }
-
-    private void setName() {
-        if (manifestReader.getName() != null) {
-            this.name = manifestReader.getName().trim().replaceAll("\\s+", "_");
         }
     }
 
@@ -146,7 +135,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     }
 
     public String getAlias () {
-        String alias = "webin-" + context.name() + "-" + getName();
+        String alias = "webin-" + context.name() + "-" + getSubmissionName();
         return alias;
     }
 
@@ -194,20 +183,19 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         return this.parameters;
     }
 
-
+    /** Returns the submission name. It is the name from the manifest with multiple whitespaces replaced
+     * by a single underscore.
+     * @return
+     */
     public String
-    getName()
+    getSubmissionName()
     {
+        String name = manifestReader.getName();
+        if (name != null) {
+            return name.trim().replaceAll("\\s+", "_");
+        }
         return name;
     }
-
-
-    public void
-    setName( String name )
-    {
-        this.name = name;
-    }
-
 
     public Path
     getUploadRoot()

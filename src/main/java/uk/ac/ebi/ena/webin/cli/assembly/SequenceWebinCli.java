@@ -236,7 +236,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
                     .setTest(getParameters().isTestMode())
                     .build();
 
-            manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getName()));
+            manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName()));
         }
         catch (RuntimeException ex) {
             log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
@@ -266,7 +266,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
     {
         try
         {
-            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getName() ) ) );
+            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getSubmissionName() ) ) );
             
             List<File> uploadFileList = getManifest().files().files();
             List<Element> fileElements = createXmlFileElements( uploadDir );

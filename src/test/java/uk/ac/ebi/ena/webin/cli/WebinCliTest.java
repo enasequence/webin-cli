@@ -26,6 +26,9 @@ public class WebinCliTest {
 
   @Test
   public void testGetSafeOutputDir() {
+    assertThat("A_aZ").isEqualTo(getSafeOutputDir("A aZ"));
+    assertThat("A_a_Z").isEqualTo(getSafeOutputDir("A a Z"));
+    assertThat("A_a_Z").isEqualTo(getSafeOutputDir("A  a   Z"));
     assertThat("AaZ").isEqualTo(getSafeOutputDir("AaZ"));
     assertThat("A_AA").isEqualTo(getSafeOutputDir("A&AA"));
     assertThat("A.AA").isEqualTo(getSafeOutputDir("A.AA"));

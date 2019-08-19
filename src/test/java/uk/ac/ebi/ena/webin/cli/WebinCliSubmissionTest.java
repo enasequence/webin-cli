@@ -119,7 +119,7 @@ public class WebinCliSubmissionTest {
     Path reportFile =
         outputDir
             .resolve(context.name())
-            .resolve(name)
+            .resolve(WebinCli.getSafeOutputDir(name))
             .resolve("validate")
             .resolve(dataFile.getFileName().toString() + ".report");
     assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);

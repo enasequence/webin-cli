@@ -149,7 +149,7 @@ public class WebinCliTestUtils {
 
     public static String
     createName() {
-        return String.format( "TEST-NAME-%X", System.currentTimeMillis() );
+        return String.format( "TEST %X", System.currentTimeMillis() );
     }
 
     public static String

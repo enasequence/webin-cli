@@ -35,7 +35,7 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
 
     @Override
     protected String getTitle() {
-        return "Sequence assembly: " + getName();
+        return "Sequence assembly: " + getSubmissionName();
     }
 
     @Override Element

@@ -35,7 +35,7 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 
 	@Override
 	protected String getTitle() {
-		return "Transcriptome assembly: " + getName();
+		return "Transcriptome assembly: " + getSubmissionName();
 	}
 
 	@Override Element
