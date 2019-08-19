@@ -16,6 +16,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -38,27 +39,28 @@ SequenceAssemblyXmlTest
 
     private static final String NAME = "test_sequence";
 
-    private SequenceManifest initMockManifestReader(SequenceAssemblyWebinCli cli) {
-        cli.setName( NAME );
 
+    private SequenceAssemblyWebinCli init() {
         SequenceManifest manifest = new SequenceManifest();
-        SequenceAssemblyManifestReader manifestReader = mock(SequenceAssemblyManifestReader.class);
-        when(manifestReader.getManifest()).thenReturn(manifest);
-        cli.setManifestReader(manifestReader);
-
         manifest.setName( NAME );
         manifest.setStudy(new Study());
         manifest.getStudy().setBioProjectId( "test_study" );
         manifest.setDescription( "test_description" );
 
-        return manifest;
+        SequenceAssemblyManifestReader manifestReader = mock(SequenceAssemblyManifestReader.class);
+        when(manifestReader.getManifest()).thenReturn(manifest);
+
+        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli(new WebinCliParameters(), manifestReader);
+        cli.setName( NAME );
+        return cli;
     }
 
     @Test public void
     testAnalysisXML_RunAndAnalysisRef()
     {
-        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
-        SequenceManifest manifest = initMockManifestReader(cli);
+        SequenceAssemblyWebinCli cli = init();
+        SequenceManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.addAnalysis(
                 new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
                 new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) );
@@ -91,8 +93,8 @@ SequenceAssemblyXmlTest
     @Test public void
     testAnalysisXML_FlatFile()
     {
-        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
-        SequenceManifest manifest = initMockManifestReader(cli);
+        SequenceAssemblyWebinCli cli = init();
+        SequenceManifest manifest = cli.getManifestReader().getManifest();
 
         Path flatFile = WebinCliTestUtils.createGzippedTempFile( "flatfile.dat.gz", "ID   ;" );
         manifest.files().add( new SubmissionFile( SequenceManifest.FileType.FLATFILE, flatFile.toFile() ) );
@@ -120,8 +122,9 @@ SequenceAssemblyXmlTest
     @Test public void
     testAnalysisXML_AuthorsAndAddress()
     {
-        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli();
-        SequenceManifest manifest = initMockManifestReader(cli);
+        SequenceAssemblyWebinCli cli = init();
+        SequenceManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.setAuthors( "test_author1,test_author2.");
         manifest.setAddress( "ena,ebi,embl,UK");
 

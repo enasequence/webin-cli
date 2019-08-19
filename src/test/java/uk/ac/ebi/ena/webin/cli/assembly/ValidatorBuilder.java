@@ -11,10 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
@@ -49,13 +46,8 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     return this;
   }
 
-  private T createValidator(File inputDir) {
-    T validator;
-    try {
-      validator = validatorClass.newInstance();
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
+  private T createValidator(File inputDir, WebinCliParameters parameters) {
+    T validator = WebinCliContext.createValidator(validatorClass, parameters);
     validator.setTestMode(true);
     validator.setInputDir(inputDir);
     validator.setValidationDir(WebinCliTestUtils.createTempDir());
@@ -77,9 +69,8 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
   }
 
   public T readManifest(File manifestFile, File inputDir) {
-    T validator = createValidator(inputDir);
-    WebinCliParameters parameters = createParameters(manifestFile, validator.getInputDir());
-    validator.readManifest(parameters);
+    T validator = createValidator(inputDir, createParameters(manifestFile, inputDir));
+    validator.readManifest();
     if (sample != null) {
       validator.getManifestReader().getManifest().setSample(sample);
     }
@@ -90,10 +81,9 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
   }
 
   public T readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
-    T validator = createValidator(inputDir);
-    WebinCliParameters parameters = createParameters(manifestFile, validator.getInputDir());
+    T validator = createValidator(inputDir, createParameters(manifestFile, inputDir));
     assertThatThrownBy(
-            () -> validator.readManifest(parameters),
+            () -> validator.readManifest(),
             "Expected WebinCliException to be thrown: " + message.key())
         .isInstanceOf(WebinCliException.class);
     assertThat(

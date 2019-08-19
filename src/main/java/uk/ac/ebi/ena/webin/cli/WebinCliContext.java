@@ -18,11 +18,8 @@ import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
 public enum
 WebinCliContext {
     sequence(SequenceAssemblyWebinCli.class),
-
     transcriptome(TranscriptomeAssemblyWebinCli.class),
-
     genome(GenomeAssemblyWebinCli.class),
-
     reads(RawReadsWebinCli.class);
 
     private final Class<? extends AbstractWebinCli> validatorClass;
@@ -35,4 +32,18 @@ WebinCliContext {
     getValidatorClass() {
         return this.validatorClass;
     }
+
+    public AbstractWebinCli createValidator(WebinCliParameters parameters) {
+        return createValidator(validatorClass, parameters);
+    }
+
+    public static <T extends AbstractWebinCli> T createValidator(Class<T> validatorClass, WebinCliParameters parameters) {
+        try {
+            return validatorClass.getConstructor(WebinCliParameters.class).newInstance(parameters);
+        }
+        catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
 }

@@ -11,14 +11,10 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class MetadataProcessorFactory {
 
   private MetadataProcessorParameters parameters;
-  private SampleProcessor.Callback<Sample> sampleProcessorCallback;
-  private StudyProcessor.Callback<Study> studyProcessorCallback;
 
   public MetadataProcessorFactory(MetadataProcessorParameters parameters) {
     this.parameters = parameters;
@@ -26,14 +22,14 @@ public class MetadataProcessorFactory {
 
   public SampleProcessor createSampleProcessor() {
     if (parameters != null && parameters.isMetadataProcessorsActive()) {
-      return new SampleProcessor(parameters, sampleProcessorCallback);
+      return new SampleProcessor(parameters);
     }
     return null;
   }
 
   public StudyProcessor createStudyProcessor() {
     if (parameters != null && parameters.isMetadataProcessorsActive()) {
-      return new StudyProcessor(parameters, studyProcessorCallback);
+      return new StudyProcessor(parameters);
     }
     return null;
   }
@@ -57,13 +53,5 @@ public class MetadataProcessorFactory {
       return new AnalysisProcessor(parameters);
     }
     return null;
-  }
-
-  public void setSampleProcessorCallback(SampleProcessor.Callback<Sample> sampleProcessorCallback) {
-    this.sampleProcessorCallback = sampleProcessorCallback;
-  }
-
-  public void setStudyProcessorCallback(StudyProcessor.Callback<Study> studyProcessorCallback) {
-    this.studyProcessorCallback = studyProcessorCallback;
   }
 }

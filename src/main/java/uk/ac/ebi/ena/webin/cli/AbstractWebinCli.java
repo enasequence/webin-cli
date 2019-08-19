@@ -29,20 +29,21 @@ public abstract class
 AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
 {
     private final WebinCliContext context;
+    private final WebinCliParameters parameters;
+    private final M manifestReader;
+
     private String name;
-    private WebinCliParameters parameters = new WebinCliParameters();
 
     private boolean testMode;
-
-    private M manifestReader;
-
     private File validationDir;
     private File processDir;
     private File submitDir;
 
 
-    public AbstractWebinCli(WebinCliContext context) {
+    public AbstractWebinCli(WebinCliContext context, WebinCliParameters parameters, M manifestReader) {
         this.context = context;
+        this.parameters = parameters;
+        this.manifestReader = manifestReader;
     }
 
     public WebinCliContext getContext() {
@@ -66,22 +67,12 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         this.description = description;
     }
 
-    public void setManifestReader(M manifestReader) {
-        this.manifestReader = manifestReader;
-    }
-
-    protected abstract M createManifestReader();
-
     protected abstract void readManifest(Path inputDir, File manifestFile);
 
     @Override
     public final void
-    readManifest( WebinCliParameters parameters )
+    readManifest()
     {
-        this.parameters = parameters;
-
-        this.manifestReader = createManifestReader();
-
         this.validationDir = WebinCli.createOutputDir(parameters, ".");
 
         File manifestFile = getParameters().getManifestFile();

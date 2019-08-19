@@ -25,13 +25,6 @@ import java.util.UUID;
 public class WebinCliTest {
 
   @Test
-  public void testContext() throws InstantiationException, IllegalAccessException {
-    for (WebinCliContext context : WebinCliContext.values()) {
-      assertThat(context.getValidatorClass().newInstance().getContext()).isEqualTo(context);
-    }
-  }
-
-  @Test
   public void testGetSafeOutputDir() {
     assertThat("AaZ").isEqualTo(getSafeOutputDir("AaZ"));
     assertThat("A_AA").isEqualTo(getSafeOutputDir("A&AA"));

@@ -16,6 +16,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -38,14 +39,8 @@ TranscriptomeAssemblyXmlTest {
 
     private static final String NAME = "test_transcriptome";
 
-    private TranscriptomeManifest initMockManifestReader(TranscriptomeAssemblyWebinCli cli) {
-        cli.setName( NAME );
-
+    private TranscriptomeAssemblyWebinCli init() {
         TranscriptomeManifest manifest = new TranscriptomeManifest();
-        TranscriptomeAssemblyManifestReader manifestReader = mock(TranscriptomeAssemblyManifestReader.class);
-        when(manifestReader.getManifest()).thenReturn(manifest);
-        cli.setManifestReader(manifestReader);
-
         manifest.setName( NAME );
         manifest.setDescription( "test_description" );
         manifest.setSample(WebinCliTestUtils.getDefaultSample());
@@ -55,13 +50,19 @@ TranscriptomeAssemblyXmlTest {
         manifest.setProgram( "test_program" );
         manifest.setPlatform( "test_platform" );
 
-        return manifest;
+        TranscriptomeAssemblyManifestReader manifestReader = mock(TranscriptomeAssemblyManifestReader.class);
+        when(manifestReader.getManifest()).thenReturn(manifest);
+
+        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli( new WebinCliParameters(), manifestReader );
+        cli.setName( NAME );
+        return cli;
     }
 
     @Test public void
     testAnalysisXML_AnalysisAndRunRef() {
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
-        TranscriptomeManifest manifest = initMockManifestReader(cli);
+        TranscriptomeAssemblyWebinCli cli = init();
+        TranscriptomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.addAnalysis(
                 new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
                 new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) );
@@ -98,8 +99,9 @@ TranscriptomeAssemblyXmlTest {
 
     @Test public void
     testAnalysisXML_Tpa() {
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
-        TranscriptomeManifest manifest = initMockManifestReader(cli);
+        TranscriptomeAssemblyWebinCli cli = init();
+        TranscriptomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.setTpa(true);
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
 
@@ -128,8 +130,8 @@ TranscriptomeAssemblyXmlTest {
     @Test public void
     testAnalysisXML_FastaFile()
     {
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
-        TranscriptomeManifest manifest = initMockManifestReader(cli);
+        TranscriptomeAssemblyWebinCli cli = init();
+        TranscriptomeManifest manifest = cli.getManifestReader().getManifest();
 
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, fastaFile.toFile() ) );
@@ -162,8 +164,8 @@ TranscriptomeAssemblyXmlTest {
     @Test
     public void
     testAnalysisXML_FlatFile() {
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli();
-        TranscriptomeManifest manifest = initMockManifestReader(cli);
+        TranscriptomeAssemblyWebinCli cli = init();
+        TranscriptomeManifest manifest = cli.getManifestReader().getManifest();
 
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile() ) );

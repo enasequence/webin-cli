@@ -48,8 +48,8 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
 
     private static final Logger log = LoggerFactory.getLogger(SequenceWebinCli.class);
 
-    public SequenceWebinCli(WebinCliContext context) {
-        super(context);
+    public SequenceWebinCli(WebinCliContext context, WebinCliParameters parameters, R manifestReader) {
+        super(context, parameters, manifestReader);
     }
 
     public void

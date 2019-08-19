@@ -49,11 +49,7 @@ import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage.ScannerErrorMessage;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.refs.CramReferenceInfo;
-import uk.ac.ebi.ena.webin.cli.AbstractWebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
@@ -78,17 +74,14 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
 
     private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCli.class);
 
-    public RawReadsWebinCli() {
-        super(WebinCliContext.reads);
+    public RawReadsWebinCli(WebinCliParameters parameters) {
+        this(parameters, RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )));
     }
 
-    @Override
-    protected RawReadsManifestReader createManifestReader() {
-        MetadataProcessorFactory factory = new MetadataProcessorFactory( getParameters() );
-        factory.setSampleProcessorCallback( (Sample sample) -> this.sampleId = sample.getBioSampleId() );
-        factory.setStudyProcessorCallback( (Study study) -> this.studyId = study.getBioProjectId() );
-        RawReadsManifestReader manifestReader = RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, factory);
-        return manifestReader;
+    public RawReadsWebinCli(WebinCliParameters parameters, RawReadsManifestReader manifestReader) {
+        super(WebinCliContext.reads, parameters, manifestReader);
+        manifestReader.setSampleProcessorCallback( (Sample sample) -> this.sampleId = sample.getBioSampleId() );
+        manifestReader.setStudyProcessorCallback( (Study study) -> this.studyId = study.getBioProjectId() );
     }
 
     @Override
