@@ -23,11 +23,11 @@ public class AbstractWebinCliTest {
     @Test
     public void
     testGetAlias() {
-        GenomeAssemblyWebinCli genomeAssemblyWebinCli = new GenomeAssemblyWebinCli();
+        GenomeAssemblyWebinCli genomeAssemblyWebinCli = new GenomeAssemblyWebinCli( new WebinCliParameters() );
         genomeAssemblyWebinCli.setName("TEST_NAME");
         assertEquals("webin-genome-TEST_NAME", genomeAssemblyWebinCli.getAlias());
 
-        TranscriptomeAssemblyWebinCli transcriptomeAssemblyWebinCli = new TranscriptomeAssemblyWebinCli();
+        TranscriptomeAssemblyWebinCli transcriptomeAssemblyWebinCli = new TranscriptomeAssemblyWebinCli( new WebinCliParameters() );
         transcriptomeAssemblyWebinCli.setName("TEST_NAME");
         assertEquals("webin-transcriptome-TEST_NAME", transcriptomeAssemblyWebinCli.getAlias());
 
@@ -35,7 +35,7 @@ public class AbstractWebinCliTest {
 //        sequenceAssemblyWebinCli.setName("TEST_NAME");
 //        assertEquals("webin-sequence-TEST_NAME", sequenceAssemblyWebinCli.getAlias());
 
-        RawReadsWebinCli rawReadsWebinCli = new RawReadsWebinCli();
+        RawReadsWebinCli rawReadsWebinCli = new RawReadsWebinCli( new WebinCliParameters() );
         rawReadsWebinCli.setName("TEST_NAME");
         assertEquals("webin-reads-TEST_NAME", rawReadsWebinCli.getAlias());
     }

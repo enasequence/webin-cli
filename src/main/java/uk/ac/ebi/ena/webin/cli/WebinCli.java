@@ -175,16 +175,10 @@ public class WebinCli {
 		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
 
-		AbstractWebinCli<?> validator;
-		try {
-			validator = context.getValidatorClass().newInstance();
-		}
-		catch (InstantiationException | IllegalAccessException ex) {
-			throw new RuntimeException(ex);
-		}
+		AbstractWebinCli<?> validator = context.createValidator(parameters);
 
 		validator.setTestMode( params.test );
-		validator.readManifest( parameters );
+		validator.readManifest( );
 
 		if (params.validate || validator.getSubmissionBundle() == null) {
 			doValidation(validator);

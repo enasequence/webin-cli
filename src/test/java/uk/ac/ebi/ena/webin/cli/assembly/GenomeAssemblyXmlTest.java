@@ -16,6 +16,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -39,14 +40,8 @@ GenomeAssemblyXmlTest
 
     private static final String NAME = "test_genome";
 
-    private GenomeManifest initMockManifestReader(GenomeAssemblyWebinCli cli) {
-        cli.setName( NAME );
-
+    private GenomeAssemblyWebinCli init() {
         GenomeManifest manifest = new GenomeManifest();
-        GenomeAssemblyManifestReader manifestReader = mock(GenomeAssemblyManifestReader.class);
-        when(manifestReader.getManifest()).thenReturn(manifest);
-        cli.setManifestReader(manifestReader);
-
         manifest.setName( NAME );
         manifest.setSample(WebinCliTestUtils.getDefaultSample());
         manifest.getSample().setBioSampleId( "test_sample" );
@@ -56,14 +51,20 @@ GenomeAssemblyXmlTest
         manifest.setProgram( "test_program" );
         manifest.setPlatform( "test_platform" );
 
-        return manifest;
+        GenomeAssemblyManifestReader manifestReader = mock(GenomeAssemblyManifestReader.class);
+        when(manifestReader.getManifest()).thenReturn(manifest);
+
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli(new WebinCliParameters(), manifestReader);
+        cli.setName( NAME );
+        return cli;
     }
 
     @Test public void
     testAnalysisXML_RunAndAnalysisRef()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.addAnalysis(
                 new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
                 new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) );
@@ -102,8 +103,9 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_Description()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.setDescription("test_description");
 
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
@@ -134,8 +136,9 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_MolType()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.setMoleculeType("test_moltype");
 
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
@@ -166,8 +169,9 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_Tpa()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.setTpa(true);
 
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
@@ -198,8 +202,9 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_AssemblyType()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.setAssemblyType( "test_assembly_type");
 
         SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
@@ -230,8 +235,8 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_FastaFile()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
 
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile.toFile() ) );
@@ -265,8 +270,8 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_FastaFileAndAgpFile()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
 
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
         Path agpFile = WebinCliTestUtils.createGzippedTempFile("agp.gz", ">123\nACGT");
@@ -303,8 +308,9 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_AuthorsAndAddress()
     {
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli();
-        GenomeManifest manifest = initMockManifestReader(cli);
+        GenomeAssemblyWebinCli cli = init();
+        GenomeManifest manifest = cli.getManifestReader().getManifest();
+
         manifest.setAuthors( "test_author1,test_author2.");
         manifest.setAddress( "ena,ebi,embl,UK");
 

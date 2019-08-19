@@ -17,6 +17,7 @@ import java.util.List;
 import org.jdom2.Element;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
@@ -24,13 +25,12 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyManifestReader, SequenceManifest> {
 
-    public SequenceAssemblyWebinCli() {
-        super(WebinCliContext.sequence);
+    public SequenceAssemblyWebinCli(WebinCliParameters parameters) {
+        this(parameters, SequenceAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )));
     }
 
-    @Override
-    protected SequenceAssemblyManifestReader createManifestReader() {
-        return SequenceAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
+    public SequenceAssemblyWebinCli(WebinCliParameters parameters, SequenceAssemblyManifestReader manifestReader) {
+        super(WebinCliContext.sequence, parameters, manifestReader);
     }
 
     @Override

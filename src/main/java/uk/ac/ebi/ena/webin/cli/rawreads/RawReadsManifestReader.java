@@ -28,6 +28,8 @@ import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
 RawReadsManifestReader extends ManifestReader {
@@ -106,6 +108,10 @@ RawReadsManifestReader extends ManifestReader {
     private AsciiOffset asciiOffset;
     private List<RawReadsFile> files;
 
+    // TODO remove
+    private final SampleProcessor sampleProcessor;
+    private final StudyProcessor studyProcessor;
+
     public static RawReadsManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
         return new RawReadsManifestReader(
                 parameters,
@@ -149,6 +155,22 @@ RawReadsManifestReader extends ManifestReader {
                         .required(Field.BAM)
                         .build()
         );
+        this.sampleProcessor = sampleProcessor;
+        this.studyProcessor = studyProcessor;
+    }
+
+    // TODO remove
+    public void setSampleProcessorCallback(SampleProcessor.Callback<Sample> sampleProcessorCallback) {
+        if (sampleProcessor != null) {
+            sampleProcessor.setCallback(sampleProcessorCallback);
+        }
+    }
+
+    // TODO remove
+    public void setStudyProcessorCallback(StudyProcessor.Callback<Study> studyProcessorCallback) {
+        if (studyProcessor != null) {
+            studyProcessor.setCallback(studyProcessorCallback);
+        }
     }
 
     private static ManifestFieldProcessor[] getFastqProcessors() {

@@ -10,27 +10,17 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import org.junit.Test;
 
-public interface WebinCliWrapper {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    /**
-     * Read the submission manifest.
-     */
-    void readManifest();
+public class WebinCliContextTest {
 
-    /**
-     * Validate the submission.
-     * */
-    void validate() throws WebinCliException;
-
-    /**
-     * Prepare the submission bundle.
-     * */
-    void prepareSubmissionBundle();
-
-    /**
-     * Get the submission bundle.
-     * */
-    SubmissionBundle getSubmissionBundle();
+  @Test
+  public void testCreateValidator() {
+    WebinCliParameters parameters = new WebinCliParameters();
+    for (WebinCliContext context : WebinCliContext.values()) {
+      assertThat(context.createValidator(parameters)).isInstanceOf(context.getValidatorClass());
+    }
+  }
 }

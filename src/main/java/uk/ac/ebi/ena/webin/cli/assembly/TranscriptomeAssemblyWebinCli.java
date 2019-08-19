@@ -17,19 +17,21 @@ import java.util.List;
 import org.jdom2.Element;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeAssemblyManifestReader, TranscriptomeManifest> {
 
-	public TranscriptomeAssemblyWebinCli() {
-		super(WebinCliContext.transcriptome);
+	public TranscriptomeAssemblyWebinCli(WebinCliParameters parameters) {
+		this(parameters, TranscriptomeAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )));
 	}
 
-	@Override protected TranscriptomeAssemblyManifestReader createManifestReader() {
-		return TranscriptomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( getParameters()) );
+	public TranscriptomeAssemblyWebinCli(WebinCliParameters parameters, TranscriptomeAssemblyManifestReader manifestReader) {
+		super(WebinCliContext.transcriptome, parameters, manifestReader);
 	}
+
 
 	@Override
 	protected String getTitle() {
