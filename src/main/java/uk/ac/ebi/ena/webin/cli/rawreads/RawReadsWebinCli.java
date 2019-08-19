@@ -95,8 +95,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
         if (StringUtils.isBlank(sampleId)) {
             sampleId = getManifestReader().getSampleId();
         }
-        
-        setDescription( getManifestReader().getDescription() );
     }
 
 

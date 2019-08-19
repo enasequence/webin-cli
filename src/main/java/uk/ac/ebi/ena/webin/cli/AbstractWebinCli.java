@@ -36,7 +36,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     private File processDir;
     private File submitDir;
 
-
     public AbstractWebinCli(WebinCliContext context, WebinCliParameters parameters, M manifestReader) {
         this.context = context;
         this.parameters = parameters;
@@ -47,22 +46,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         return context;
     }
 
-    // TODO: remove
-    private String description;
-
-    // TODO: remove
-    public String
-    getDescription()
-    {
-        return description;
-    }
-
-    // TODO: remove
-    public void
-    setDescription( String description )
-    {
-        this.description = description;
-    }
 
     protected abstract void readManifest(Path inputDir, File manifestFile);
 
@@ -144,11 +127,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
     {
         return new File( getSubmitDir(), WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX).getPath();
     }
-
-
-
-
-
 
     protected File
     getReportFile( String filename )

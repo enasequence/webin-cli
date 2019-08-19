@@ -84,7 +84,6 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
     readManifest( Path inputDir, File manifestFile )
     {
         getManifestReader().readManifest( inputDir, manifestFile );
-        setDescription( getManifestReader().getManifest().getDescription() );
     }
 
     abstract Element createXmlAnalysisTypeElement();
