@@ -43,6 +43,7 @@ public class WebinCliTestUtils {
          parameters.setUsername( System.getenv( "webin-cli-username" ) );
          parameters.setPassword( System.getenv( "webin-cli-password" ) );
          parameters.setTestMode( true );
+         parameters.setOutputDir(WebinCliTestUtils.createTempDir());
          return parameters;
     }
 
@@ -185,23 +186,6 @@ public class WebinCliTestUtils {
             return Paths.get(url.toURI());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-
-    public static SubmissionBundle
-    prepareSubmissionBundle(AbstractWebinCli<?> cli) {
-        try {
-            cli.getParameters().setManifestFile( File.createTempFile( "test", "test" ) );
-            File submitDir = createTempDir();
-            cli.setSubmitDir( submitDir );
-            cli.prepareSubmissionBundle();
-            SubmissionBundle submissionBundle = cli.getSubmissionBundle();
-            Assert.assertTrue(Files.isSameFile(submissionBundle.getSubmitDirectory().toPath(), submitDir.toPath()));
-            return submissionBundle;
-        }
-        catch (IOException ex) {
-            throw new RuntimeException(ex);
         }
     }
 

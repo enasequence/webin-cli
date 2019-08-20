@@ -51,7 +51,8 @@ SequenceAssemblyXmlTest
         when(manifestReader.getManifest()).thenReturn(manifest);
         when(manifestReader.getName()).thenReturn(NAME);
 
-        WebinCliParameters parameters = new WebinCliParameters();
+        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+        parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
         SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli(parameters, manifestReader);
         return cli;
@@ -70,7 +71,8 @@ SequenceAssemblyXmlTest
                 new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
                 new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
@@ -101,7 +103,8 @@ SequenceAssemblyXmlTest
         Path flatFile = WebinCliTestUtils.createGzippedTempFile( "flatfile.dat.gz", "ID   ;" );
         manifest.files().add( new SubmissionFile( SequenceManifest.FileType.FLATFILE, flatFile.toFile() ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
@@ -130,7 +133,8 @@ SequenceAssemblyXmlTest
         manifest.setAuthors( "test_author1,test_author2.");
         manifest.setAddress( "ena,ebi,embl,UK");
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 

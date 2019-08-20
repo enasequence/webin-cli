@@ -66,138 +66,135 @@ RawReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "FASTQ " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
-    
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     manifestTwoBAMs() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nBAM file2.bam" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nBAM file2.bam" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
-    
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     manifestTwoCRAMs() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file1.cram\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file1.cram\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
         parameters.setMetadataProcessorsActive(false);
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
-    
+
     @Test( expected = WebinCliException.class ) public void
     manifestMixingFormats() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
-    
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     manifestNoFiles() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
-    
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     manifestDoesFileNotExist() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ yoba.fastq.gz.bz2 PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ yoba.fastq.gz.bz2 PHRED_33" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
-    
+
     @Test( expected = WebinCliException.class ) public void
     manifestFileIsDirectory() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ " + createOutputFolder() + " PHRED_33" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ " + createOutputFolder() + " PHRED_33" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
-    
+
     @Test( expected = WebinCliException.class ) public void
     manifestNoPath() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
-    
+
     @Test( expected = WebinCliException.class ) public void
     manifestNonASCIIPath() throws IOException {
         URL url = RawReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/webin/cli/rawreads/MG23S_431.fastq.gz" );
@@ -206,103 +203,103 @@ RawReadsWebinCliTest
         Path file = Files.write( Files.createTempFile( "FILE", "Š.fq.gz" ), Files.readAllBytes( gz.toPath() ), StandardOpenOption.TRUNCATE_EXISTING );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
-    
+
     @Test( expected = WebinCliException.class ) public void
     manifestFastqNoScoring() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
-    
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     manifestBAMScoring() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM PHRED_33 file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM PHRED_33 file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
-    
+
     @Test( expected = WebinCliException.class ) public void
     manifestBAMCompression() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
-   
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     manifestCRAMScoring() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
-    
+
     @Test( expected = WebinCliException.class ) public void
     manifestCRAMCompression() throws IOException
     {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -314,18 +311,18 @@ RawReadsWebinCliTest
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "BAM " + file + "\n" 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart() + "BAM " + file + "\n"
                                                  + Field.DESCRIPTION + " description text" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.getSubmissionBundle();
+        SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
-        WebinCliTestUtils.assertAnalysisXml( new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 ), 
+        WebinCliTestUtils.assertAnalysisXml( new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 ),
        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       + "<EXPERIMENT_SET>\n"
       + " <EXPERIMENT alias=\"webin-reads-SOME-FANCY-NAME\">\n"
@@ -352,7 +349,7 @@ RawReadsWebinCliTest
       + "</EXPERIMENT_SET>" );
     }
 
-    
+
     @Test public void
     testCorrectBAM() throws IOException
     {
@@ -360,17 +357,17 @@ RawReadsWebinCliTest
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart() + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
     }
 
-    
+
     private String
     getInfoPart()
     {
@@ -384,8 +381,8 @@ RawReadsWebinCliTest
                 + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
                 + Field.NAME              + " SOME-FANCY-NAME\n ";
     }
-    
-    
+
+
     @Test public void
     testIncorrectBAM() throws IOException
     {
@@ -393,22 +390,22 @@ RawReadsWebinCliTest
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( getInfoPart()
-                                                 + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ), 
+                                                 + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
 
         parameters.setMetadataProcessorsActive(false);
 
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        
+
         try
         {
-            rr.validate();
+            rr.validateSubmission();
             fail( "Should not validate correctly" );
-            
+
         } catch( WebinCliException wce )
         {
             Assert.assertEquals("Result file should exist", 1, rr.getValidationDir().list(
@@ -416,7 +413,7 @@ RawReadsWebinCliTest
         }
     }
 
-    
+
     @Test public void
     testCorrectFastq() throws IOException
     {
@@ -427,18 +424,18 @@ RawReadsWebinCliTest
         parameters.setManifestFile( Files.write( WebinCliTestUtils.createEmptyTempFile(),
                                                  ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
         rr.prepareSubmissionBundle();
-        String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        String lines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( lines.contains( "<SINGLE />" ) );
     }
-    
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     sameFilePairedFastq() throws IOException
     {
@@ -446,19 +443,19 @@ RawReadsWebinCliTest
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart()
                                                  + "FASTQ " + file + "\n"
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
     }
-    
-    
+
+
     @Test( expected = WebinCliException.class ) public void
     samePairedFastq() throws IOException
     {
@@ -466,19 +463,19 @@ RawReadsWebinCliTest
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart()
                                                  + "FASTQ " + file + "\n"
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
     }
-    
-    
+
+
     @Test public void
     pairedFastq() throws IOException
     {
@@ -486,22 +483,22 @@ RawReadsWebinCliTest
         Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart()
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
         rr.prepareSubmissionBundle();
-        String lines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        String lines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( lines.contains( "<PAIRED" ) );
     }
-    
-    
+
+
     @Test public void
     fastqPair() throws IOException
     {
@@ -512,23 +509,23 @@ RawReadsWebinCliTest
 
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() 
-                                                 + "FASTQ " + file1 + "\n" 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart()
+                                                 + "FASTQ " + file1 + "\n"
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
         rr.prepareSubmissionBundle();
-        String rlines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        String rlines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                     StandardCharsets.UTF_8 );
         Assert.assertTrue( rlines.contains( file1.getFileName().toString() ) );
         Assert.assertTrue( rlines.contains( file2.getFileName().toString() ) );
         
-        String elines = new String( Files.readAllBytes( rr.getSubmissionBundle().getXMLFileList().stream().filter( e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        String elines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( elines.contains( "<PAIRED" ) );
     }
@@ -549,11 +546,11 @@ RawReadsWebinCliTest
                                                  + "FASTQ " + file1 + "\n" 
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
     }
 
     
@@ -568,13 +565,13 @@ RawReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "FASTQ " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         try
         {
-            rr.validate();
+            rr.validateSubmission();
             fail( "Should validate incorrectly" );
             
         } catch( WebinCliException wce )
@@ -595,13 +592,13 @@ RawReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
         try
         {
-            rr.validate();
+            rr.validateSubmission();
             fail( "Should validate incorrectly" );
             
         } catch( WebinCliException wce )
@@ -622,11 +619,11 @@ RawReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
                                                  ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setOutputDir( createOutputFolder() );
+        
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
-        rr.validate();
+        rr.validateSubmission();
     }
 
     

@@ -60,7 +60,7 @@ public class GenomeAssemblyValidationTest {
     SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
-    validator.validate();
+    validator.validateSubmission();
   }
 
   @Test
@@ -80,7 +80,7 @@ public class GenomeAssemblyValidationTest {
     SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
-    validator.validate();
+    validator.validateSubmission();
   }
 
   @Test
@@ -93,7 +93,7 @@ public class GenomeAssemblyValidationTest {
     SubmissionFiles submissionFiles = validator.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
-    validator.validate();
+    validator.validateSubmission();
   }
 
   @Test
@@ -110,7 +110,7 @@ public class GenomeAssemblyValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
-    validator.validate();
+    validator.validateSubmission();
   }
 
   @Test
@@ -127,7 +127,7 @@ public class GenomeAssemblyValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
-    validator.validate();
+    validator.validateSubmission();
   }
 
   @Test
@@ -146,7 +146,7 @@ public class GenomeAssemblyValidationTest {
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
     assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
-    validator.validate();
+    validator.validateSubmission();
   }
 
   @Test
@@ -165,7 +165,7 @@ public class GenomeAssemblyValidationTest {
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
     assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
-    validator.validate();
+    validator.validateSubmission();
   }
 
   @Test
@@ -175,7 +175,7 @@ public class GenomeAssemblyValidationTest {
 
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
-    assertThatThrownBy(validator::validate)
+    assertThatThrownBy(validator::validateSubmission)
         .isInstanceOf(WebinCliException.class)
         .hasMessageContaining("fasta file validation failed");
   }
@@ -187,7 +187,7 @@ public class GenomeAssemblyValidationTest {
 
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
-    assertThatThrownBy(validator::validate)
+    assertThatThrownBy(validator::validateSubmission)
         .isInstanceOf(WebinCliException.class)
         .hasMessageContaining("flatfile file validation failed");
   }
@@ -202,7 +202,7 @@ public class GenomeAssemblyValidationTest {
 
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
-    assertThatThrownBy(validator::validate)
+    assertThatThrownBy(validator::validateSubmission)
         .isInstanceOf(WebinCliException.class)
         .hasMessageContaining("agp file validation failed");
   }
@@ -217,7 +217,7 @@ public class GenomeAssemblyValidationTest {
 
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
-    assertThatThrownBy(validator::validate)
+    assertThatThrownBy(validator::validateSubmission)
         .isInstanceOf(WebinCliException.class)
         .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");
   }

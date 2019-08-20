@@ -11,10 +11,10 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -22,11 +22,10 @@ import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 public abstract class
-AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
+AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
 {
     private final WebinCliContext context;
     private final WebinCliParameters parameters;
@@ -42,34 +41,25 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         this.manifestReader = manifestReader;
     }
 
-    public WebinCliContext getContext() {
-        return context;
-    }
+    protected abstract void readManifestForContext();
 
+    protected abstract void validateSubmissionForContext();
 
-    protected abstract void readManifest(Path inputDir, File manifestFile);
+    protected abstract void prepareSubmissionBundleForContext(
+            Path uploadDir,
+            List<File> uploadFileList,
+            List<SubmissionBundle.SubmissionXMLFile> xmlFileList);
 
     @Override
-    public final void
-    readManifest()
-    {
-        this.validationDir = WebinCli.createOutputDir(parameters, ".");
+    public final void readManifest() {
+        this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
 
         File manifestFile = getParameters().getManifestFile();
-        File reportFile = getReportFile(manifestFile.getName() );
+        File manifestReportFile = getReportFile(manifestFile.getName());
+        manifestReportFile.delete();
 
-        reportFile.delete();
-
-        try
-        {
-            readManifest( getParameters().getInputDir().toPath(), manifestFile );
-            if (!StringUtils.isBlank(manifestReader.getName())) {
-                this.validationDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getSubmissionName(), WebinCliConfig.VALIDATE_DIR );
-                this.processDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getSubmissionName(), WebinCliConfig.PROCESS_DIR );
-                this.submitDir = WebinCli.createOutputDir( parameters, String.valueOf( this.context ), getSubmissionName(), WebinCliConfig.SUBMIT_DIR );
-            } else {
-                throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
-            }
+        try {
+            readManifestForContext();
         } catch (WebinCliException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -77,15 +67,74 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         } finally {
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
                 ValidationMessageLogger.log(manifestReader.getValidationResult());
-                try (ValidationMessageReporter reporter = new ValidationMessageReporter(reportFile)) {
+                try (ValidationMessageReporter reporter = new ValidationMessageReporter(manifestReportFile)) {
                     reporter.write(manifestReader.getValidationResult());
                 }
             }
         }
 
         if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
-            throw WebinCliException.userError( WebinCliMessage.Manifest.INVALID_MANIFEST_FILE_ERROR.format(reportFile.getPath()) );
+            throw WebinCliException.userError( WebinCliMessage.Manifest.INVALID_MANIFEST_FILE_ERROR.format(manifestReportFile.getPath()) );
         }
+    }
+
+    @Override
+    public final void validateSubmission() {
+        this.validationDir = createSubmissionDir(WebinCliConfig.VALIDATE_DIR );
+        this.processDir = createSubmissionDir(WebinCliConfig.PROCESS_DIR );
+
+        validateSubmissionForContext();
+    }
+
+    @Override
+    public final void prepareSubmissionBundle() {
+        this.submitDir = createSubmissionDir(WebinCliConfig.SUBMIT_DIR );
+
+        List<File> uploadFileList = new ArrayList<>();
+        List< SubmissionBundle.SubmissionXMLFile > xmlFileList = new ArrayList<>();
+
+        Path uploadDir = Paths
+                .get( this.parameters.isTestMode() ? "webin-cli-test" : "webin-cli" )
+                .resolve( String.valueOf( this.context ) )
+                .resolve( WebinCli.getSafeOutputDir( getSubmissionName() ) );
+
+        prepareSubmissionBundleForContext(uploadDir, uploadFileList, xmlFileList);
+
+        SubmissionBundle submissionBundle = new SubmissionBundle(
+                getSubmitDir(),
+                uploadDir.toString(),
+                uploadFileList,
+                xmlFileList,
+                getParameters().getCenterName(),
+                calculateManifestMd5() );
+
+        submissionBundle.write();
+    }
+
+    @Override
+    public SubmissionBundle readSubmissionBundle() {
+        return SubmissionBundle.read(getSubmitDir(), calculateManifestMd5());
+    }
+
+    private File createSubmissionDir(String dir) {
+        if (StringUtils.isBlank(getSubmissionName())) {
+            throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
+        }
+        File newDir = WebinCli.createOutputDir( parameters.getOutputDir(), String.valueOf( context ), getSubmissionName(), dir);
+        if (!FileUtils.emptyDirectory(newDir)) {
+            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(newDir));
+        }
+        return newDir;
+    }
+
+    private String calculateManifestMd5() {
+        return FileUtils.calculateDigest( "MD5", parameters.getManifestFile());
+    }
+
+
+    // TODO: remove
+    public WebinCliContext getContext() {
+        return context;
     }
 
     public M getManifestReader() {
@@ -96,64 +145,13 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         return validationDir;
     }
 
-    public void setValidationDir(File validationDir) {
-        this.validationDir = validationDir;
-    }
-
     public File getProcessDir() {
         return processDir;
     }
 
-    public void setProcessDir(File processDir) {
-        this.processDir = processDir;
-    }
-
-
     public File getSubmitDir() {
         return submitDir;
     }
-
-    public void setSubmitDir(File submitDir) {
-        this.submitDir = submitDir;
-    }
-
-    public String getAlias () {
-        String alias = "webin-" + context.name() + "-" + getSubmissionName();
-        return alias;
-    }
-
-    private String
-    getSubmissionBundleFileName()
-    {
-        return new File( getSubmitDir(), WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX).getPath();
-    }
-
-    protected File
-    getReportFile( String filename )
-    {
-        return WebinCli.getReportFile( getValidationDir(), filename, WebinCliConfig.REPORT_FILE_SUFFIX );
-    }
-
-    @Override
-    public SubmissionBundle
-    getSubmissionBundle()
-    {
-        SubmissionBundleHelper submissionBundleHelper = new SubmissionBundleHelper( getSubmissionBundleFileName() );
-        try
-        {
-            return submissionBundleHelper.read( FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) ;
-        } catch( NoSuchAlgorithmException | IOException e )
-        {
-            return submissionBundleHelper.read();
-        }
-    }
-
-    protected void
-    setSubmissionBundle( SubmissionBundle submissionBundle )
-    {
-        new SubmissionBundleHelper( getSubmissionBundleFileName() ).write( submissionBundle );
-    }
-
 
     public WebinCliParameters
     getParameters()
@@ -161,10 +159,6 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         return this.parameters;
     }
 
-    /** Returns the submission name. It is the name from the manifest with multiple whitespaces replaced
-     * by a single underscore.
-     * @return
-     */
     public String
     getSubmissionName()
     {
@@ -175,9 +169,15 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliWrapper
         return name;
     }
 
-    public Path
-    getUploadRoot()
+    public String
+    getSubmissionAlias() {
+        String alias = "webin-" + context.name() + "-" + getSubmissionName();
+        return alias;
+    }
+
+    protected File
+    getReportFile( String filename )
     {
-    	return Paths.get( this.parameters.isTestMode() ? "webin-cli-test" : "webin-cli" );
+        return WebinCli.getReportFile( this.validationDir, filename, WebinCliConfig.REPORT_FILE_SUFFIX );
     }
 }

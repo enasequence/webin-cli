@@ -56,7 +56,7 @@ public class TranscriptomeAssemblyValidationTest {
           manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, fileName).build();
       TranscriptomeAssemblyWebinCli validator =
           validatorBuilder.readManifest(manifestFile, VALID_DIR);
-      validator.validate();
+      validator.validateSubmission();
       assertThat(
               validator
                   .getManifestReader()

@@ -26,7 +26,7 @@ public class AbstractWebinCliAliasTest {
     GenomeAssemblyWebinCli validator =
         new GenomeAssemblyWebinCli(WebinCliTestUtils.createTestWebinCliParameters());
     validator.getManifestReader().getManifest().setName("TEST_NAME  1");
-    assertThat("webin-genome-TEST_NAME_1").isEqualTo(validator.getAlias());
+    assertThat("webin-genome-TEST_NAME_1").isEqualTo(validator.getSubmissionAlias());
   }
 
   @Test
@@ -34,7 +34,7 @@ public class AbstractWebinCliAliasTest {
     SequenceAssemblyWebinCli validator =
         new SequenceAssemblyWebinCli(WebinCliTestUtils.createTestWebinCliParameters());
     validator.getManifestReader().getManifest().setName("TEST_NAME  1");
-    assertThat("webin-sequence-TEST_NAME_1").isEqualTo(validator.getAlias());
+    assertThat("webin-sequence-TEST_NAME_1").isEqualTo(validator.getSubmissionAlias());
   }
 
   @Test
@@ -42,7 +42,7 @@ public class AbstractWebinCliAliasTest {
     TranscriptomeAssemblyWebinCli validator =
         new TranscriptomeAssemblyWebinCli(WebinCliTestUtils.createTestWebinCliParameters());
     validator.getManifestReader().getManifest().setName("TEST_NAME  1");
-    assertThat("webin-transcriptome-TEST_NAME_1").isEqualTo(validator.getAlias());
+    assertThat("webin-transcriptome-TEST_NAME_1").isEqualTo(validator.getSubmissionAlias());
   }
 
   @Test
@@ -50,6 +50,6 @@ public class AbstractWebinCliAliasTest {
     RawReadsWebinCli validator =
         new RawReadsWebinCli(WebinCliTestUtils.createTestWebinCliParameters());
     validator.getManifestReader().setName("TEST_NAME  1");
-    assertThat("webin-reads-TEST_NAME_1").isEqualTo(validator.getAlias());
+    assertThat("webin-reads-TEST_NAME_1").isEqualTo(validator.getSubmissionAlias());
   }
 }

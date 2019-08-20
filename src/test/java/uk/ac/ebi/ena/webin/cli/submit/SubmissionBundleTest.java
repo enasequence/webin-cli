@@ -13,7 +13,6 @@ package uk.ac.ebi.ena.webin.cli.submit;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,7 @@ SubmissionBundleTest
 {
 
     @Test public void
-    test() throws NoSuchAlgorithmException, IOException
+    test() throws IOException
     {
         File submitDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toFile();
         String uploadDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toString();
@@ -44,7 +43,6 @@ SubmissionBundleTest
         SubmissionBundle sb = new SubmissionBundle( submitDirectory, uploadDirectory, uploadFileList, xmlFileList, center_name, FileUtils.calculateDigest( "MD5", manifestFile ) );
         SubmissionBundleHelper serialiser = new SubmissionBundleHelper( Files.createTempFile( ".data", "MANIFEST" ).toString() );
         serialiser.write( sb );
-        
         
         SubmissionBundle sb1 = serialiser.read( md5 );
         Assert.assertEquals( sb, sb1 );

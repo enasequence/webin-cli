@@ -34,7 +34,6 @@ import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
 import picocli.CommandLine;
 
-import uk.ac.ebi.embl.api.entry.genomeassembly.AssemblyInfoEntry;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
@@ -156,7 +155,7 @@ public class WebinCli {
 	initTimedFileLogger( WebinCliParameters parameters )
 	{
 		FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
-		String logFile = new File( createOutputDir( parameters, "." ), LOG_FILE_NAME ).getAbsolutePath();
+		String logFile = new File( createOutputDir( parameters.getOutputDir(), "." ), LOG_FILE_NAME ).getAbsolutePath();
 		fileAppender.setFile( logFile );
 		fileAppender.setAppend( false );
 		initTimedAppender( "FILE", fileAppender );
@@ -177,9 +176,11 @@ public class WebinCli {
 
 		AbstractWebinCli<?> validator = context.createValidator(parameters);
 
-		validator.readManifest( );
+		validator.readManifest();
 
-		if (params.validate || validator.getSubmissionBundle() == null) {
+		SubmissionBundle submissionBundle = validator.readSubmissionBundle();
+
+		if (params.validate || submissionBundle == null) {
 			doValidation(validator);
 		}
 
@@ -194,8 +195,10 @@ public class WebinCli {
 	{
 	   try 
 	   {
-           validator.validate();
-           validator.prepareSubmissionBundle();
+		   validator.validateSubmission();
+
+		   validator.prepareSubmissionBundle();
+
            log.info( WebinCliMessage.Cli.VALIDATE_SUCCESS.format() );
            
 	   } catch( WebinCliException ex )
@@ -223,14 +226,14 @@ public class WebinCli {
 	private void 
     doSubmit( AbstractWebinCli<?> validator )
     {
-		SubmissionBundle bundle = validator.getSubmissionBundle();
+		SubmissionBundle bundle = validator.readSubmissionBundle();
 
         UploadService ftpService = params.ascp && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
         
         try 
         {
             ftpService.connect( params.userName, params.password );
-            ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDirectory(), validator.getParameters().getInputDir().toPath() );
+            ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDir(), validator.getParameters().getInputDir().toPath() );
 			log.info( WebinCliMessage.Cli.UPLOAD_SUCCESS.format() );
 
         } catch( WebinCliException e ) 
@@ -244,7 +247,7 @@ public class WebinCli {
         try 
         {
             SubmitService submitService = new SubmitService.Builder()
-                                                           .setSubmitDir( bundle.getSubmitDirectory().getPath() )
+                                                           .setSubmitDir( bundle.getSubmitDir().getPath() )
                                                            .setUserName( params.userName )
                                                            .setPassword( params.password )
                                                            .setTest( params.test )
@@ -408,9 +411,9 @@ public class WebinCli {
 
 	
 	public static File
-	createOutputDir( WebinCliParameters parameters, String... dirs ) throws WebinCliException
+	createOutputDir( File outputDir, String... dirs ) throws WebinCliException
 	{
-		if (parameters.getOutputDir() == null) {
+		if (outputDir == null) {
 			throw WebinCliException.systemError( WebinCliMessage.Cli.MISSING_OUTPUT_DIR_ERROR.format());
 		}
 
@@ -419,7 +422,7 @@ public class WebinCli {
 		Path p;
 
 		try {
-			p = Paths.get(parameters.getOutputDir().getPath(), safeDirs);
+			p = Paths.get(outputDir.getPath(), safeDirs);
 		} catch (InvalidPathException ex) {
 			throw WebinCliException.systemError( WebinCliMessage.Cli.CREATE_DIR_ERROR.format(ex.getInput()));
 		}

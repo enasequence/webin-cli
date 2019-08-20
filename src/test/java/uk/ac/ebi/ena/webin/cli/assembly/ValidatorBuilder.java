@@ -46,26 +46,20 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     return this;
   }
 
-  private T createValidator(File inputDir, WebinCliParameters parameters) {
-    T validator = WebinCliContext.createValidator(validatorClass, parameters);
-    validator.setInputDir(inputDir);
-    validator.setValidationDir(WebinCliTestUtils.createTempDir());
-    validator.setProcessDir(WebinCliTestUtils.createTempDir());
-    validator.setSubmitDir(WebinCliTestUtils.createTempDir());
-    return validator;
+  private T createValidator(WebinCliParameters parameters) {
+    return WebinCliContext.createValidator(validatorClass, parameters);
   }
 
   private WebinCliParameters createParameters(File manifestFile, File inputDir) {
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setManifestFile(manifestFile);
     parameters.setInputDir(inputDir);
-    parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setMetadataProcessorsActive(manifestMetadataProcessors);
     return parameters;
   }
 
   public T readManifest(File manifestFile, File inputDir) {
-    T validator = createValidator(inputDir, createParameters(manifestFile, inputDir));
+    T validator = createValidator(createParameters(manifestFile, inputDir));
     validator.readManifest();
     if (sample != null) {
       validator.getManifestReader().getManifest().setSample(sample);
@@ -77,7 +71,7 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
   }
 
   public T readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
-    T validator = createValidator(inputDir, createParameters(manifestFile, inputDir));
+    T validator = createValidator(createParameters(manifestFile, inputDir));
     assertThatThrownBy(
             () -> validator.readManifest(),
             "Expected WebinCliException to be thrown: " + message.key())
