@@ -52,12 +52,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         super(context, parameters, manifestReader);
     }
 
-       public File
-    getInputDir()
-    {
-        return getParameters().getInputDir();
-    }
-
+    // TODO: remove
     @Override
     public R getManifestReader() {
         return super.getManifestReader();
