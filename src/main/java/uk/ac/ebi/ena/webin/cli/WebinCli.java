@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,14 +207,11 @@ public class WebinCli {
 	      switch( ex.getErrorType() )
 	      { 
 	          case USER_ERROR:
-
-			  	//	throw WebinCliException.userError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()))
-
-				  throw WebinCliException.userError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
-	               
+				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()):
+						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	          case VALIDATION_ERROR:
-
-	               throw WebinCliException.validationError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
+				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()):
+						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	               
 	          case SYSTEM_ERROR:
 	               throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), validator.getValidationDir()));
