@@ -12,25 +12,13 @@ package uk.ac.ebi.ena.webin.cli;
 
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 
-public interface WebinCliWrapper {
+public interface WebinCliValidator {
 
-    /**
-     * Read the submission manifest.
-     */
     void readManifest();
 
-    /**
-     * Validate the submission.
-     * */
-    void validate() throws WebinCliException;
+    void validateSubmission();
 
-    /**
-     * Prepare the submission bundle.
-     * */
     void prepareSubmissionBundle();
 
-    /**
-     * Get the submission bundle.
-     * */
-    SubmissionBundle getSubmissionBundle();
+    SubmissionBundle readSubmissionBundle();
 }

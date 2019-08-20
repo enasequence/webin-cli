@@ -10,11 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +25,22 @@ import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 public class 
 SubmissionBundleHelper 
 {
-    final private String submission_bundle_path;
+    final private File submissionBundleFile;
 
     private static final Logger log = LoggerFactory.getLogger(SubmissionBundleHelper.class);
 
     public
-    SubmissionBundleHelper( String submission_bundle_path )
+    SubmissionBundleHelper( String submissionBundleFile)
     {
-        this.submission_bundle_path = submission_bundle_path;
+        this.submissionBundleFile = new File(submissionBundleFile);
     }
-    
-    
+
+    public
+    SubmissionBundleHelper( File submissionBundleFile)
+    {
+        this.submissionBundleFile = submissionBundleFile;
+    }
+
     public SubmissionBundle
     read()
     { 
@@ -48,19 +49,19 @@ SubmissionBundleHelper
     
     
     public SubmissionBundle
-    read( String manifest_md5 )
+    read( String manifestMd5 )
     {
-        try( ObjectInputStream os = new ObjectInputStream( new FileInputStream( submission_bundle_path ) ) )
+        try( ObjectInputStream os = new ObjectInputStream( new FileInputStream(submissionBundleFile) ) )
         {
             SubmissionBundle sb = (SubmissionBundle) os.readObject();
             
-            if( null != manifest_md5 && !manifest_md5.equals( sb.getManifestMd5() ) )
+            if( null != manifestMd5 && !manifestMd5.equals( sb.getManifestMd5() ) )
             {
                 log.info(WebinCliMessage.Bundle.REVALIDATE_SUBMISSION.format());
                 return null;
             }
 
-            ValidationResult result = sb.validate( new ValidationResult( new DefaultOrigin(submission_bundle_path) ) );
+            ValidationResult result = sb.validate( new ValidationResult( new DefaultOrigin(submissionBundleFile.getAbsolutePath()) ) );
             ValidationMessageLogger.log(result);
 
             if( result.count(Severity.INFO) > 0 ) 
@@ -84,13 +85,13 @@ SubmissionBundleHelper
     public void
     write( SubmissionBundle sb )
     {
-        try( ObjectOutputStream os = new ObjectOutputStream( new FileOutputStream( submission_bundle_path ) ) )
+        try( ObjectOutputStream os = new ObjectOutputStream( new FileOutputStream(submissionBundleFile) ) )
         {
             os.writeObject( sb );
             os.flush();
         } catch( IOException ex )
         {
-            throw WebinCliException.systemError(ex, WebinCliMessage.Bundle.FILE_ERROR.format(submission_bundle_path ));
+            throw WebinCliException.systemError(ex, WebinCliMessage.Bundle.FILE_ERROR.format(submissionBundleFile));
         }
     }
     

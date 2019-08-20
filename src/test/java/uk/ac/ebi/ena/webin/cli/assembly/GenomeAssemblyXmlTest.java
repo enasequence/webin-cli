@@ -55,7 +55,8 @@ GenomeAssemblyXmlTest
         when(manifestReader.getManifest()).thenReturn(manifest);
         when(manifestReader.getName()).thenReturn(NAME);
 
-        WebinCliParameters parameters = new WebinCliParameters();
+        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+        parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
         GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli(parameters, manifestReader);
         return cli;
@@ -74,7 +75,8 @@ GenomeAssemblyXmlTest
                 new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
                 new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -110,7 +112,8 @@ GenomeAssemblyXmlTest
 
         manifest.setDescription("test_description");
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -143,7 +146,8 @@ GenomeAssemblyXmlTest
 
         manifest.setMoleculeType("test_moltype");
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -176,7 +180,8 @@ GenomeAssemblyXmlTest
 
         manifest.setTpa(true);
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -209,7 +214,8 @@ GenomeAssemblyXmlTest
 
         manifest.setAssemblyType( "test_assembly_type");
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -243,7 +249,8 @@ GenomeAssemblyXmlTest
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile.toFile() ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -280,7 +287,8 @@ GenomeAssemblyXmlTest
         manifest.files().add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile.toFile() ) );
         manifest.files().add( new SubmissionFile( GenomeManifest.FileType.AGP, agpFile.toFile() ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -316,7 +324,8 @@ GenomeAssemblyXmlTest
         manifest.setAuthors( "test_author1,test_author2.");
         manifest.setAddress( "ena,ebi,embl,UK");
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle(cli);
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 

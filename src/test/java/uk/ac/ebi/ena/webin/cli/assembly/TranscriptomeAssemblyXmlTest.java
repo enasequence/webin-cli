@@ -54,7 +54,8 @@ TranscriptomeAssemblyXmlTest {
         when(manifestReader.getManifest()).thenReturn(manifest);
         when(manifestReader.getName()).thenReturn(NAME);
 
-        WebinCliParameters parameters = new WebinCliParameters();
+        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+        parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
         TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli( parameters, manifestReader );
         return cli;
@@ -72,7 +73,8 @@ TranscriptomeAssemblyXmlTest {
                 new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
                 new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
@@ -105,7 +107,8 @@ TranscriptomeAssemblyXmlTest {
         TranscriptomeManifest manifest = cli.getManifestReader().getManifest();
 
         manifest.setTpa(true);
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
@@ -138,7 +141,8 @@ TranscriptomeAssemblyXmlTest {
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, fastaFile.toFile() ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
@@ -172,7 +176,8 @@ TranscriptomeAssemblyXmlTest {
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile() ) );
 
-        SubmissionBundle sb = WebinCliTestUtils.prepareSubmissionBundle( cli );
+        cli.prepareSubmissionBundle();
+        SubmissionBundle sb = cli.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 

@@ -16,10 +16,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,9 +81,10 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
         manifestReader.setStudyProcessorCallback( (Study study) -> this.studyId = study.getBioProjectId() );
     }
 
+    // TODO: remove function
     @Override
-    protected void readManifest(Path inputDir, File manifestFile) {
-        getManifestReader().readManifest( inputDir, manifestFile );
+    protected void readManifestForContext() {
+        getManifestReader().readManifest( getParameters().getInputDir().toPath(), getParameters().getManifestFile() );
 
         if (StringUtils.isBlank(studyId)) {
             studyId = getManifestReader().getStudyId();
@@ -97,19 +95,9 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
         }
     }
 
-
-    @Override public void
-    validate() throws WebinCliException
+    @Override
+    public void validateSubmissionForContext()
     {
-        if( !FileUtils.emptyDirectory(getValidationDir()) )
-            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
-
-        if( !FileUtils.emptyDirectory( getProcessDir() ) )
-            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getProcessDir()));
-
-        if( !FileUtils.emptyDirectory(getSubmitDir()) )
-            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
-
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
         
@@ -284,54 +272,41 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
         return valid;
     }
 
-    
-    @Override public void
-    prepareSubmissionBundle() throws WebinCliException
+    @Override
+    public void prepareSubmissionBundleForContext(Path uploadDir, List<File> uploadFileList, List<SubmissionBundle.SubmissionXMLFile> xmlFileList)
     {
+        List<RawReadsFile> files = getManifestReader().getRawReadFiles();
+
+        uploadFileList.addAll(files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() ));
+
+        files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
+        files.forEach( e -> e.setChecksum( FileUtils.calculateDigest( String.valueOf( e.getChecksumMethod() ), new File( e.getFilename() ) ) ));
+
+        List<Element> filesListE = files
+                .stream()
+               .sequential()
+               .map( e -> e.toElement( "FILE", uploadDir ) )
+               .collect( Collectors.toList() );
+
+        String alias = getSubmissionAlias();
+
+        String runXml = createRunXml( filesListE, alias, getParameters().getCenterName() );
+        String experimentXml = createExperimentXml( alias, getParameters().getCenterName(), is_paired, getManifestReader().getDescription() );
+
+        Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
+        Path experimentXmlFile = getSubmitDir().toPath().resolve( EXPERIMENT_XML );
+
         try
         {
-            List<RawReadsFile> files = getManifestReader().getRawReadFiles();
-            
-            List<File> uploadFileList = files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() );
-            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getSubmissionName() ) ) );
-            files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
-            files.forEach( e -> {
-                try
-                {
-                    e.setChecksum( FileUtils.calculateDigest( String.valueOf( e.getChecksumMethod() ), new File( e.getFilename() ) ) );
-                } catch( NoSuchAlgorithmException | IOException e1 )
-                {
-                    throw new RuntimeException( e1 );
-                }
-            } );
-            List<Element> eList = files.stream()
-                                       .sequential()
-                                       .map( e -> e.toElement( "FILE", uploadDir ) )
-                                       .collect( Collectors.toList() );
-    
-            //do something
-            String experiment_ref = getAlias();
-            
-            String e_xml = createExperimentXml( experiment_ref, getParameters().getCenterName(), is_paired, getManifestReader().getDescription() );
-            String r_xml = createRunXml( eList, experiment_ref, getParameters().getCenterName() );
-            
-            Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
-            Path experimentXmlFile = getSubmitDir().toPath().resolve( EXPERIMENT_XML );
-            
-            Files.write( runXmlFile, r_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-            Files.write( experimentXmlFile, e_xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-            
-            setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
-                                                       uploadDir.toString(), 
-                                                       uploadFileList,
-                                                       Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile(), FileUtils.calculateDigest( "MD5", experimentXmlFile.toFile() ) ), 
-                                                                      new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() ) ) ),
-                                                       getParameters().getCenterName(),
-                                                       FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );
-        } catch( NoSuchAlgorithmException | IOException ex )
+            Files.write( runXmlFile, runXml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+            Files.write( experimentXmlFile, experimentXml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+        } catch( IOException ex )
         {
             throw WebinCliException.systemError( ex );
         }
+
+        xmlFileList.add( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile(), FileUtils.calculateDigest( "MD5", experimentXmlFile.toFile() )));
+        xmlFileList.add( new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() )));
     }
 
     private String getTitle() {
@@ -339,32 +314,31 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
     }
 
     private String
-    createExperimentXml(String experiment_ref, String centerName, boolean is_paired, String design_description)
+    createExperimentXml(String alias, String centerName, boolean isPaired, String description)
     {
-        String instrument_model = getManifestReader().getInstrument();
-        design_description = StringUtils.isBlank( design_description ) ? "unspecified" : design_description;
-        String library_strategy  = getManifestReader().getLibraryStrategy();
-        String library_source    = getManifestReader().getLibrarySource();
-        String library_selection = getManifestReader().getLibrarySelection();
-        String library_name      = getManifestReader().getLibraryName();
-
+        String instrumentModel = getManifestReader().getInstrument();
+        description = StringUtils.isBlank( description ) ? "unspecified" : description;
+        String libraryStrategy = getManifestReader().getLibraryStrategy();
+        String librarySource = getManifestReader().getLibrarySource();
+        String librarySelection = getManifestReader().getLibrarySelection();
+        String libraryName = getManifestReader().getLibraryName();
         String platform  = getManifestReader().getPlatform();
-        Integer insert_size = getManifestReader().getInsertSize();
+        Integer insertSize = getManifestReader().getInsertSize();
                 
         try 
         {
-            String full_name = getTitle();
+            String title = getTitle();
             Element experimentSetE = new Element( "EXPERIMENT_SET" );
             Element experimentE = new Element( "EXPERIMENT" );
             experimentSetE.addContent( experimentE );
             
             Document doc = new Document( experimentSetE );
-            experimentE.setAttribute( "alias", experiment_ref );
+            experimentE.setAttribute( "alias", alias );
             
             if( null != centerName && !centerName.isEmpty() )
                 experimentE.setAttribute( "center_name", centerName );
             
-            experimentE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            experimentE.addContent( new Element( "TITLE" ).setText( title ) );
             
             Element studyRefE = new Element( "STUDY_REF" );
             experimentE.addContent( studyRefE );
@@ -374,7 +348,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
             experimentE.addContent( designE );
             
             Element designDescriptionE = new Element( "DESIGN_DESCRIPTION" );
-            designDescriptionE.setText( design_description );
+            designDescriptionE.setText( description );
             designE.addContent( designDescriptionE );
             
             Element sampleDescriptorE = new Element( "SAMPLE_DESCRIPTOR" );
@@ -385,27 +359,27 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
             Element libraryDescriptorE = new Element( "LIBRARY_DESCRIPTOR" );
             designE.addContent( libraryDescriptorE );
             
-            if( null != library_name )
+            if( null != libraryName )
             {
                 Element libraryNameE = new Element( "LIBRARY_NAME" );
-                libraryNameE.setText( library_name );
+                libraryNameE.setText( libraryName );
                 libraryDescriptorE.addContent( libraryNameE );
             }   
             
             Element libraryStrategyE = new Element( "LIBRARY_STRATEGY" );
-            libraryStrategyE.setText( library_strategy );
+            libraryStrategyE.setText( libraryStrategy );
             libraryDescriptorE.addContent( libraryStrategyE );
             
             Element librarySourceE = new Element( "LIBRARY_SOURCE" );
-            librarySourceE.setText( library_source );
+            librarySourceE.setText( librarySource );
             libraryDescriptorE.addContent( librarySourceE );
             
             Element librarySelectionE = new Element( "LIBRARY_SELECTION" );
-            librarySelectionE.setText( library_selection );
+            librarySelectionE.setText( librarySelection );
             libraryDescriptorE.addContent( librarySelectionE );
 
             Element libraryLayoutE = new Element( "LIBRARY_LAYOUT" );
-            if( !is_paired )
+            if( !isPaired )
             {
                 libraryLayoutE.addContent( new Element( "SINGLE" ) );
             } else
@@ -413,8 +387,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
                 Element pairedE = new Element( "PAIRED" );
                 libraryLayoutE.addContent( pairedE );
                 
-                if( null != insert_size )
-                    pairedE.setAttribute( "NOMINAL_LENGTH", String.valueOf( insert_size ) );
+                if( null != insertSize )
+                    pairedE.setAttribute( "NOMINAL_LENGTH", String.valueOf( insertSize ) );
             }
 
             libraryDescriptorE.addContent( libraryLayoutE );
@@ -425,7 +399,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
             Element platformRefE = new Element( platform );
             platformE.addContent( platformRefE );
             Element instrumentModelE = new Element( "INSTRUMENT_MODEL" );
-            instrumentModelE.setText( instrument_model );
+            instrumentModelE.setText( instrumentModel );
             platformRefE.addContent( instrumentModelE );
             
             XMLOutputter xmlOutput = new XMLOutputter();
@@ -442,33 +416,33 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
     
     
     String
-    createRunXml( List<Element> fileList, String experiment_ref, String centerName  ) 
+    createRunXml( List<Element> filesListE, String experimentAlias, String centerName  )
     {
         try 
         {
-            String full_name = getTitle();
+            String title = getTitle();
             Element runSetE = new Element( "RUN_SET" );
             Element runE = new Element( "RUN" );
             runSetE.addContent( runE );
             
             Document doc = new Document( runSetE );
-            runE.setAttribute( "alias", getAlias() );
+            runE.setAttribute( "alias", getSubmissionAlias() );
             
             if( null != centerName && !centerName.isEmpty() )
                 runE.setAttribute( "center_name", centerName );
             
-            runE.addContent( new Element( "TITLE" ).setText( full_name ) );
+            runE.addContent( new Element( "TITLE" ).setText( title ) );
             Element experimentRefE = new Element( "EXPERIMENT_REF" );
             runE.addContent( experimentRefE );
-            experimentRefE.setAttribute( "refname", experiment_ref );
+            experimentRefE.setAttribute( "refname", experimentAlias );
             
             Element dataBlockE = new Element( "DATA_BLOCK" );
             runE.addContent( dataBlockE );
             Element filesE = new Element( "FILES" );
             dataBlockE.addContent( filesE );
-            
-            for( Element e: fileList )
-                filesE.addContent( e );
+
+            for( Element fileE: filesListE )
+                filesE.addContent( fileE );
             
             XMLOutputter xmlOutput = new XMLOutputter();
             xmlOutput.setFormat( Format.getPrettyFormat() );

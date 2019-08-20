@@ -50,7 +50,7 @@ public class SequenceAssemblyValidationTest {
       System.out.println("Testing valid tab file: " + fileName);
       File manifestFile = manifestBuilder().file(FileType.TAB, fileName).build();
       SequenceAssemblyWebinCli validator = validatorBuilder.readManifest(manifestFile, VALID_DIR);
-      validator.validate();
+      validator.validateSubmission();
       assertThat(validator.getManifestReader().getManifest().files().get(FileType.TAB))
           .size()
           .isOne();

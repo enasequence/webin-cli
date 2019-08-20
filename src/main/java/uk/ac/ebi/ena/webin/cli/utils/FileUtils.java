@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class 
 FileUtils 
@@ -48,24 +49,28 @@ FileUtils
 	}
 
     static public String
-    calculateDigest( String digest_name,
-                     File   file ) throws IOException, NoSuchAlgorithmException
+    calculateDigest( String digestName, File file )
     {
-        MessageDigest digest = MessageDigest.getInstance( digest_name );
-        byte[] buf = new byte[ 4096 ];
-        int  read  = 0;
-        try( BufferedInputStream is = new BufferedInputStream( new FileInputStream( file ) ) )
-        {
-            while( ( read = is.read( buf ) ) > 0 )
-                digest.update( buf, 0, read );
+    	try
+		{
+			MessageDigest digest = MessageDigest.getInstance( digestName );
+			byte[] buf = new byte[ 4096 ];
+			int  read = 0;
+			try( BufferedInputStream is = new BufferedInputStream( new FileInputStream( file ) ) )
+			{
+				while( ( read = is.read( buf ) ) > 0 )
+					digest.update( buf, 0, read );
 
-            byte[] message_digest = digest.digest();
-            BigInteger value = new BigInteger( 1, message_digest );
-            return String.format( String.format( "%%0%dx", message_digest.length << 1 ), value );
-        }
+				byte[] message_digest = digest.digest();
+				BigInteger value = new BigInteger( 1, message_digest );
+				return String.format( String.format( "%%0%dx", message_digest.length << 1 ), value );
+			}
+		} catch( NoSuchAlgorithmException | IOException ex )
+		{
+			throw WebinCliException.systemError( ex );
+		}
     }
 
-	
 	public static boolean 
 	emptyDirectory( File dir )
 	{

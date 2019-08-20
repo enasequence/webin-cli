@@ -37,8 +37,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class 
@@ -54,13 +52,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         super(context, parameters, manifestReader);
     }
 
-    public void
-    setInputDir( File inputDir )
-    {
-        getParameters().setInputDir( inputDir );
-    }
-
-    public File
+       public File
     getInputDir()
     {
         return getParameters().getInputDir();
@@ -80,10 +72,10 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
     }
 
     // TODO: remove function
-    @Override protected void
-    readManifest( Path inputDir, File manifestFile )
+    @Override
+    protected void readManifestForContext( )
     {
-        getManifestReader().readManifest( inputDir, manifestFile );
+        getManifestReader().readManifest( getParameters().getInputDir().toPath(), getParameters().getManifestFile()  );
     }
 
     abstract Element createXmlAnalysisTypeElement();
@@ -99,7 +91,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
     protected abstract String getTitle();
 
     private String
-    createAnalysisXml( List<Element> fileElements, String centerName )
+    createAnalysisXml( Path uploadDir, String centerName )
     {
         M manifest = getManifest();
 
@@ -112,7 +104,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
             analysisSetE.addContent( analysisE );
             
             Document doc = new Document( analysisSetE );
-            analysisE.setAttribute( "alias", getAlias() );
+            analysisE.setAttribute( "alias", getSubmissionAlias() );
             
             if( null != centerName && !centerName.isEmpty() )
                 analysisE.setAttribute( "center_name", centerName );
@@ -163,8 +155,8 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
 
             Element filesE = new Element( "FILES" );
             analysisE.addContent( filesE );
-            
-            for( Element e: fileElements )
+
+            for( Element e: createXmlFileElements( uploadDir ) )
                 filesE.addContent( e );
             
             XMLOutputter xmlOutput = new XMLOutputter();
@@ -183,19 +175,12 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
     protected Element
     createXmlFileElement(Path uploadDir, File file, String fileType)
     {
-        try
-        {
-            return createXmlFileElement( String.valueOf( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ) ).replaceAll( "\\\\+", "/" ),
-                                      String.valueOf( fileType ),
-                                      DIGEST_NAME, 
-                                      FileUtils.calculateDigest( DIGEST_NAME, file ) );
-        }catch( IOException | NoSuchAlgorithmException e )
-        {
-            throw new RuntimeException( e );
-        }
+        return createXmlFileElement( String.valueOf( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ) ).replaceAll( "\\\\+", "/" ),
+                                  String.valueOf( fileType ),
+                                  DIGEST_NAME,
+                                  FileUtils.calculateDigest( DIGEST_NAME, file ) );
     }
 
-    
     private Element
     createXmlFileElement(String fileName, String fileType, String digest, String checksum )
     {
@@ -213,19 +198,11 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
 
-    @Override public void
-    validate() throws WebinCliException
+    @Override protected void validateSubmissionForContext()
     {
-        if( !FileUtils.emptyDirectory( getValidationDir() ) )
-            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getValidationDir()));
-
-        if( !FileUtils.emptyDirectory( getProcessDir() ) )
-            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getProcessDir()));
-
-        if( !FileUtils.emptyDirectory( getSubmitDir() ) )
-            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(getSubmitDir()));
-
         M manifest = getManifest();
+
+        // TODO: move ignore errors to AbstractWebinCli::validate
 
         manifest.setIgnoreErrors(false);
         try {
@@ -259,32 +236,24 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
     }
 
     protected abstract List<Element> createXmlFileElements(Path uploadDir);
-    
-    @Override public void
-    prepareSubmissionBundle() throws WebinCliException
+
+    @Override
+    public void prepareSubmissionBundleForContext(Path uploadDir, List<File> uploadFileList, List<SubmissionBundle.SubmissionXMLFile> xmlFileList)
     {
+        uploadFileList.addAll(getManifest().files().files());
+
+        String xml = createAnalysisXml( uploadDir, getParameters().getCenterName() );
+
+        Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
+
         try
         {
-            Path uploadDir = getUploadRoot().resolve( Paths.get( String.valueOf( getContext() ), WebinCli.getSafeOutputDirs( getSubmissionName() ) ) );
-            
-            List<File> uploadFileList = getManifest().files().files();
-            List<Element> fileElements = createXmlFileElements( uploadDir );
-
-            String xml = createAnalysisXml( fileElements, getParameters().getCenterName() );
-            
-            Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
-    
             Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-    
-            setSubmissionBundle( new SubmissionBundle( getSubmitDir(), 
-                                                       uploadDir.toString(), 
-                                                       uploadFileList, 
-                                                       Arrays.asList( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) ), 
-                                                       getParameters().getCenterName(),
-                                                       FileUtils.calculateDigest( "MD5", getParameters().getManifestFile() ) ) );   
-        } catch( IOException | NoSuchAlgorithmException ex )
-        {
+        }
+        catch(IOException ex) {
             throw WebinCliException.systemError( ex );
-        }        
+        }
+
+        xmlFileList.add( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) );
     }
 }
