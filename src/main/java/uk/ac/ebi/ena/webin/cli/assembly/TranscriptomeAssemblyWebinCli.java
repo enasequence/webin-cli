@@ -32,12 +32,6 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 		super(WebinCliContext.transcriptome, parameters, manifestReader);
 	}
 
-
-	@Override
-	protected String getTitle() {
-		return "Transcriptome assembly: " + getSubmissionName();
-	}
-
 	@Override Element
 	createXmlAnalysisTypeElement()
 	{

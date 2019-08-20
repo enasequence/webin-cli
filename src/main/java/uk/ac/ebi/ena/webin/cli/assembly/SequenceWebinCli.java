@@ -88,8 +88,6 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         return e;
     }
 
-    protected abstract String getTitle();
-
     private String
     createAnalysisXml( Path uploadDir, String centerName )
     {
@@ -97,7 +95,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
 
         try
         {
-            String title = getTitle();
+            String title = getSubmissionTitle();
 
             Element analysisSetE = new Element( "ANALYSIS_SET" );
             Element analysisE = new Element( "ANALYSIS" );

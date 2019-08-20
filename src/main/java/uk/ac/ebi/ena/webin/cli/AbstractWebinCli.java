@@ -175,6 +175,12 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
         return alias;
     }
 
+    public String
+    getSubmissionTitle() {
+        String title = context.getTitlePrefix() + ": " + getSubmissionName();
+        return title;
+    }
+
     protected File
     getReportFile( String filename )
     {
