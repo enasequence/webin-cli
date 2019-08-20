@@ -12,10 +12,12 @@ package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class WebinCliSubmissionTest {
   private final WebinCliBuilder reads =
@@ -110,7 +112,7 @@ public class WebinCliSubmissionTest {
     assertThatExceptionOfType(WebinCliException.class)
         .isThrownBy(() -> webinCliBuilder.execute(inputDir, outputDir, manifest))
         .withMessageContaining("Submission validation failed because of a user error")
-        .withMessageContaining(message);
+        ;
   }
 
   @Test
@@ -202,15 +204,18 @@ public class WebinCliSubmissionTest {
     ManifestBuilder manifest = genomeManifest(name).file("FASTA", fastaFile);
 
     assertExecuteThrowsUserError(
-        genome,
-        inputDir,
-        outputDir,
-        manifest,
-        "Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2");
+            genome,
+            inputDir,
+            outputDir,
+            manifest);
 
-    // TODO: error is missing from report file
-    // assertReportContains(WebinCliContext.genome, name, outputDir, fastaFile, "ERROR: Invalid
-    // number of sequences : 1, Minimum number of sequences for CONTIG is: 2");
+    //Note this error message is part of common webin-cli.report because this validation happening after reading all the files
+    WebinCliTestUtils.assertReportContains(
+            WebinCliContext.genome,
+            name,
+            outputDir,
+            Paths.get("webin-cli"),
+            "Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2");
   }
 
   @Test
