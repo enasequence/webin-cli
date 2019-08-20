@@ -203,9 +203,13 @@ public class WebinCli {
 	      switch( ex.getErrorType() )
 	      { 
 	          case USER_ERROR:
-	               throw WebinCliException.userError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
+
+			  	//	throw WebinCliException.userError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()))
+
+				  throw WebinCliException.userError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	               
 	          case VALIDATION_ERROR:
+
 	               throw WebinCliException.validationError( ex, WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	               
 	          case SYSTEM_ERROR:

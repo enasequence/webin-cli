@@ -15,7 +15,6 @@ import java.nio.file.Path;
 
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class WebinCliSubmissionTest {
@@ -114,17 +113,6 @@ public class WebinCliSubmissionTest {
         .withMessageContaining(message);
   }
 
-  private static void assertReportContains(
-      WebinCliContext context, String name, Path outputDir, Path dataFile, String message) {
-    Path reportFile =
-        outputDir
-            .resolve(context.name())
-            .resolve(WebinCli.getSafeOutputDir(name))
-            .resolve("validate")
-            .resolve(dataFile.getFileName().toString() + ".report");
-    assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);
-  }
-
   @Test
   public void testReadsSubmissionCramWithInfo() {
     Path inputDir = WebinCliTestUtils.createTempDir().toPath();
@@ -194,7 +182,7 @@ public class WebinCliSubmissionTest {
     ManifestBuilder manifest = genomeManifest(name).file("FLATFILE", flatFile);
 
     assertExecuteThrowsUserError(genome, inputDir, outputDir, manifest);
-    assertReportContains(
+    WebinCliTestUtils.assertReportContains(
         WebinCliContext.genome,
         name,
         outputDir,
@@ -267,7 +255,7 @@ public class WebinCliSubmissionTest {
 
     ManifestBuilder manifest = sequenceManifest(name).file("FLATFILE", flatFile);
     assertExecuteThrowsUserError(sequence, inputDir, outputDir, manifest);
-    assertReportContains(
+    WebinCliTestUtils.assertReportContains(
         WebinCliContext.sequence,
         name,
         outputDir,
@@ -307,7 +295,7 @@ public class WebinCliSubmissionTest {
     ManifestBuilder manifest = transcriptomeManifest(name).file("FLATFILE", flatFile);
 
     assertExecuteThrowsUserError(transcriptome, inputDir, outputDir, manifest);
-    assertReportContains(
+    WebinCliTestUtils.assertReportContains(
         WebinCliContext.transcriptome,
         name,
         outputDir,

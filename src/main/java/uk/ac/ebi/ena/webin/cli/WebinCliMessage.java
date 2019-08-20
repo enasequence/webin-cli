@@ -38,6 +38,8 @@ public interface WebinCliMessage {
         EXPIRYING_VERSION("Your application version will not be supported after {0}. The minimum supported version will be {1}. Please download the latest version {2} from https://github.com/enasequence/webin-cli/releases"),
         VALIDATE_USER_ERROR("Submission validation failed because of a user error: {0}. Please check validation reports for further information: {1}"),
         VALIDATE_SYSTEM_ERROR("Submission validation failed because of a system error: {0}. Please check validation reports for further information: {1}"),
+        VALIDATE_USER_ERROR_EX("Submission validation failed because of a user error. Please check validation reports for further information: {0}"),
+        VALIDATE_SYSTEM_ERROR_EX("Submission validation failed because of a system error. Please check validation reports for further information: {0}"),
         INIT_ERROR("Failed to initialise validator. {0}"),
         INVALID_REPORT_DIR_ERROR("invalid report directory: {0}"),
         MISSING_OUTPUT_DIR_ERROR("Missing output directory."),

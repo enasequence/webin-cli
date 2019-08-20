@@ -254,7 +254,7 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
             throw WebinCliException.systemError(ex);
         }
         if(response != null && response.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
-            throw WebinCliException.validationError(response.getFirstMessage());
+            throw WebinCliException.validationError("");
         }
     }
 

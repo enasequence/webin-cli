@@ -11,18 +11,23 @@
 package uk.ac.ebi.ena.webin.cli.assembly;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
 
@@ -209,6 +214,7 @@ public class GenomeAssemblyValidationTest {
 
   @Test
   public void testInvalidSequencelessChromosomeList() {
+
     File manifestFile =
         manifestBuilder()
             .file(FileType.FASTA, "valid_fasta.fasta.gz")
@@ -217,8 +223,15 @@ public class GenomeAssemblyValidationTest {
 
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+
     assertThatThrownBy(validator::validate)
-        .isInstanceOf(WebinCliException.class)
-        .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");
+            .isInstanceOf(WebinCliException.class);
+
+    WebinCliTestUtils.assertReportContains(
+            validator.getValidationDir().getPath(),
+            "webin-cli.report",
+            "Sequenceless chromosomes are not allowed in assembly");
+
+
   }
 }
