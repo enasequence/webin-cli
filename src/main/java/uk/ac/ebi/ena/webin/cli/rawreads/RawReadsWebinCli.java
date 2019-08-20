@@ -309,10 +309,6 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
         xmlFileList.add( new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() )));
     }
 
-    private String getTitle() {
-        return "Raw reads: " + getSubmissionName();
-    }
-
     private String
     createExperimentXml(String alias, String centerName, boolean isPaired, String description)
     {
@@ -327,7 +323,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
                 
         try 
         {
-            String title = getTitle();
+            String title = getSubmissionTitle();
             Element experimentSetE = new Element( "EXPERIMENT_SET" );
             Element experimentE = new Element( "EXPERIMENT" );
             experimentSetE.addContent( experimentE );
@@ -420,7 +416,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
     {
         try 
         {
-            String title = getTitle();
+            String title = getSubmissionTitle();
             Element runSetE = new Element( "RUN_SET" );
             Element runE = new Element( "RUN" );
             runSetE.addContent( runE );

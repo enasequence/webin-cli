@@ -32,11 +32,6 @@ GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeAssemblyManifestReader, Ge
 		super(WebinCliContext.genome, parameters, manifestReader);
 	}
 
-	@Override
-	protected String getTitle() {
-		return "Genome assembly: " + getSubmissionName();
-	}
-
 	@Override Element
 	createXmlAnalysisTypeElement()
 	{

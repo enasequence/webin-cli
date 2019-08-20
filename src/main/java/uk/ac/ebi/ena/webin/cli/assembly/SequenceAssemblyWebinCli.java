@@ -33,11 +33,6 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
         super(WebinCliContext.sequence, parameters, manifestReader);
     }
 
-    @Override
-    protected String getTitle() {
-        return "Sequence assembly: " + getSubmissionName();
-    }
-
     @Override Element
     createXmlAnalysisTypeElement()
     {
