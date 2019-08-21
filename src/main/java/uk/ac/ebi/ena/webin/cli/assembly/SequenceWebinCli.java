@@ -10,10 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
@@ -26,23 +22,21 @@ import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
+import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Map;
 
-public abstract class 
+public abstract class
 SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends AbstractWebinCli<R>
 {
-    private static final String DIGEST_NAME = "MD5";
     protected final static String ANALYSIS_XML = "analysis.xml";
     private static final String ERROR_FILE = "webin-cli.report";
 
@@ -71,124 +65,6 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
     protected void readManifestForContext( )
     {
         getManifestReader().readManifest( getParameters().getInputDir().toPath(), getParameters().getManifestFile()  );
-    }
-
-    abstract Element createXmlAnalysisTypeElement();
-
-    protected Element
-    createXmlTextElement(String name, String text )
-    {
-        Element e = new Element( name );
-        e.setText( text );
-        return e;
-    }
-
-    private String
-    createAnalysisXml( Path uploadDir, String centerName )
-    {
-        M manifest = getManifest();
-
-        try
-        {
-            String title = getSubmissionTitle();
-
-            Element analysisSetE = new Element( "ANALYSIS_SET" );
-            Element analysisE = new Element( "ANALYSIS" );
-            analysisSetE.addContent( analysisE );
-            
-            Document doc = new Document( analysisSetE );
-            analysisE.setAttribute( "alias", getSubmissionAlias() );
-            
-            if( null != centerName && !centerName.isEmpty() )
-                analysisE.setAttribute( "center_name", centerName );
-            
-            analysisE.addContent( new Element( "TITLE" ).setText( title ) );
-            
-            if( null != manifest.getDescription() && !manifest.getDescription().isEmpty() )
-                analysisE.addContent( new Element( "DESCRIPTION" ).setText( manifest.getDescription() ) );
-                
-            Element studyRefE = new Element( "STUDY_REF" );
-            analysisE.addContent( studyRefE );
-            studyRefE.setAttribute( "accession", manifest.getStudy().getBioProjectId() );
-			if( manifest.getSample() != null && manifest.getSample().getBioSampleId() != null && !manifest.getSample().getBioSampleId().isEmpty() )
-            {
-                Element sampleRefE = new Element( "SAMPLE_REF" );
-                analysisE.addContent( sampleRefE );
-				sampleRefE.setAttribute( "accession", manifest.getSample().getBioSampleId() );
-            }
-			
-			
-            if( null != manifest.getRun() )
-            {
-                List<Run> run = manifest.getRun();
-                for( Run r : run )
-                {
-                    Element runRefE = new Element( "RUN_REF" );
-                    analysisE.addContent( runRefE );
-                    runRefE.setAttribute( "accession", r.getRunId() );
-                }
-            }
-
-            
-            if( null != manifest.getAnalysis() )
-            {
-                List<Analysis> analysis = manifest.getAnalysis();
-                for( Analysis a : analysis )
-                {
-                    Element analysisRefE = new Element( "ANALYSIS_REF" );
-                    analysisE.addContent( analysisRefE );
-                    analysisRefE.setAttribute( "accession", a.getAnalysisId() );
-                }
-            }
-			
-            Element analysisTypeE = new Element( "ANALYSIS_TYPE" );
-            analysisE.addContent( analysisTypeE );
-            Element typeE = createXmlAnalysisTypeElement();
-            analysisTypeE.addContent( typeE );
-
-            Element filesE = new Element( "FILES" );
-            analysisE.addContent( filesE );
-
-            for( Element e: createXmlFileElements( uploadDir ) )
-                filesE.addContent( e );
-            
-            XMLOutputter xmlOutput = new XMLOutputter();
-            xmlOutput.setFormat( Format.getPrettyFormat() );
-            StringWriter stringWriter = new StringWriter();
-            xmlOutput.output( doc, stringWriter );
-            return stringWriter.toString();
-            
-        } catch( IOException ex )
-        {
-            throw WebinCliException.systemError( ex );
-        }
-    }
-
-
-    protected Element
-    createXmlFileElement(Path uploadDir, File file, String fileType)
-    {
-        return createXmlFileElement( String.valueOf( uploadDir.resolve( extractSubpath( getParameters().getInputDir(), file ) ) ).replaceAll( "\\\\+", "/" ),
-                                  String.valueOf( fileType ),
-                                  DIGEST_NAME,
-                                  FileUtils.calculateDigest( DIGEST_NAME, file ) );
-    }
-
-    private Element
-    createXmlFileElement(String fileName, String fileType, String digest, String checksum )
-    {
-        Element fileE = new Element( "FILE" );
-        fileE.setAttribute( "filename", fileName );
-        fileE.setAttribute( "filetype", String.valueOf( fileType ) );
-        fileE.setAttribute( "checksum_method", digest );
-        fileE.setAttribute( "checksum", checksum );
-        return fileE;
-    }
-
-    private String
-    extractSubpath(File inputDir, File file)
-    {
-        return file.toPath().startsWith( inputDir.toPath() ) ? inputDir.toPath().relativize( file.toPath() ).toString() : file.getName();
     }
 
     @Override protected void validateSubmissionForContext()
@@ -228,25 +104,31 @@ SequenceWebinCli<R extends SequenceManifestReaderEx, M extends Manifest> extends
         }
     }
 
-    protected abstract List<Element> createXmlFileElements(Path uploadDir);
-
     @Override
     public void prepareSubmissionBundleForContext(Path uploadDir, List<File> uploadFileList, List<SubmissionBundle.SubmissionXMLFile> xmlFileList)
     {
+        // TODO: move uploadFileList to AbstractWebinCli
+
         uploadFileList.addAll(getManifest().files().files());
 
-        String xml = createAnalysisXml( uploadDir, getParameters().getCenterName() );
+        // TODO: move xmlCreator to AbstractWebinCli
 
+        XmlCreator xmlCreator = getContext().createXmlCreator();
+
+        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = xmlCreator.createXml(getManifest(), getParameters().getCenterName(), getSubmissionTitle(), getSubmissionAlias(), getParameters().getInputDir().toPath(), uploadDir);
+
+        SubmissionXMLFileType analysisXmlType = SubmissionXMLFileType.ANALYSIS;
+        String analysisXml = xmls.get(analysisXmlType);
         Path analysisFile = getSubmitDir().toPath().resolve( ANALYSIS_XML );
 
         try
         {
-            Files.write( analysisFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+            Files.write( analysisFile, analysisXml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
         }
         catch(IOException ex) {
             throw WebinCliException.systemError( ex );
         }
 
-        xmlFileList.add( new SubmissionXMLFile( SubmissionXMLFileType.ANALYSIS, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) );
+        xmlFileList.add( new SubmissionXMLFile( analysisXmlType, analysisFile.toFile(), FileUtils.calculateDigest( "MD5", analysisFile.toFile() ) ) );
     }
 }

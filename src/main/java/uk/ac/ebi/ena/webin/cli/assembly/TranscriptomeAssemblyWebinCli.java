@@ -10,12 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jdom2.Element;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
@@ -30,34 +24,5 @@ public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<Transcriptom
 
 	public TranscriptomeAssemblyWebinCli(WebinCliParameters parameters, TranscriptomeAssemblyManifestReader manifestReader) {
 		super(WebinCliContext.transcriptome, parameters, manifestReader);
-	}
-
-	@Override Element
-	createXmlAnalysisTypeElement()
-	{
-		TranscriptomeManifest manifest = getManifestReader().getManifest();
-
-		Element element = new Element( "TRANSCRIPTOME_ASSEMBLY" );
-		element.addContent( createXmlTextElement( "NAME", manifest.getName() ) );
-		element.addContent( createXmlTextElement( "PROGRAM",  manifest.getProgram() ) );
-		element.addContent( createXmlTextElement( "PLATFORM", manifest.getPlatform() ) );
-		if ( manifest.isTpa())
-			element.addContent( createXmlTextElement( "TPA", String.valueOf( manifest.isTpa() ) ) );
-		if (null != manifest.getAuthors() && null != manifest.getAddress()) {
-			element.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
-			element.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
-		}
-		return element;
-	}
-
-	@Override
-	protected List<Element> createXmlFileElements(Path uploadDir) {
-		List<Element> fileElements = new ArrayList<>();
-
-		TranscriptomeManifest manifest = getManifestReader().getManifest();
-		manifest.files( TranscriptomeManifest.FileType.FASTA ).forEach( file -> fileElements.add( createXmlFileElement( uploadDir, file.getFile(), "fasta" ) ) );
-		manifest.files( TranscriptomeManifest.FileType.FLATFILE ).forEach( file -> fileElements.add( createXmlFileElement( uploadDir, file.getFile(), "flatfile" ) ) );
-
-		return fileElements;
 	}
 }

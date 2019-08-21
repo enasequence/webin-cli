@@ -10,12 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.assembly;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jdom2.Element;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
@@ -31,30 +25,5 @@ public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyM
 
     public SequenceAssemblyWebinCli(WebinCliParameters parameters, SequenceAssemblyManifestReader manifestReader) {
         super(WebinCliContext.sequence, parameters, manifestReader);
-    }
-
-    @Override Element
-    createXmlAnalysisTypeElement()
-    {
-        SequenceManifest manifest = getManifestReader().getManifest();
-
-        Element element = new Element("SEQUENCE_FLATFILE");
-        if (null != manifest.getAuthors() && null != manifest.getAddress()) {
-            element.addContent(createXmlTextElement("AUTHORS", manifest.getAuthors()));
-            element.addContent(createXmlTextElement("ADDRESS", manifest.getAddress()));
-            return element;
-        }
-        return element;
-    }
-
-    @Override
-    protected List<Element> createXmlFileElements(Path uploadDir) {
-        List<Element> fileElements = new ArrayList<>();
-
-        SequenceManifest manifest = getManifestReader().getManifest();
-        manifest.files( SequenceManifest.FileType.FLATFILE ).forEach( file -> fileElements.add( createXmlFileElement( uploadDir, file.getFile(), "flatfile" ) ) );
-        manifest.files( SequenceManifest.FileType.TAB).forEach( file -> fileElements.add( createXmlFileElement( uploadDir, file.getFile(), "tab" ) ) );
-
-        return fileElements;
     }
 }
