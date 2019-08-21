@@ -15,15 +15,16 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
+import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
 
 
-public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceAssemblyManifestReader, SequenceManifest> {
+public class SequenceAssemblyWebinCli extends SequenceWebinCli<SequenceManifest> {
 
     public SequenceAssemblyWebinCli(WebinCliParameters parameters) {
-        this(parameters, SequenceAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )));
+        this(parameters, SequenceAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new SequenceAssemblyXmlCreator());
     }
 
-    public SequenceAssemblyWebinCli(WebinCliParameters parameters, SequenceAssemblyManifestReader manifestReader) {
-        super(WebinCliContext.sequence, parameters, manifestReader);
+    public SequenceAssemblyWebinCli(WebinCliParameters parameters, ManifestReader<SequenceManifest> manifestReader, XmlCreator<SequenceManifest> xmlCreator) {
+        super(WebinCliContext.sequence, parameters, manifestReader, xmlCreator);
     }
 }

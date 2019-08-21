@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.rawreads;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,17 +28,27 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader.Field;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class
 RawReadsManifestReaderTest
 {
+    private static final String SAMPLE_ID = "SAMN00001636";
+    private static final String STUDY_ID = "PRJEB10672";
+
+
     private static RawReadsManifestReader createManifestReader() {
-        return RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null));
+        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+        parameters.setMetadataProcessorsActive(true);
+        return RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
     }
 
     @Before public void
@@ -54,18 +65,15 @@ RawReadsManifestReaderTest
     {
         Path inputDir = Paths.get( "." );
 
-        RawReadsFile file = RawReadsManifestReader.createReadFile(inputDir,
-                ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.FASTQ, "file.fastq"));
+        RawReadsFile file = RawReadsWebinCli.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.FASTQ, new File("file.fastq")));
         Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
 
-        file = RawReadsManifestReader.createReadFile(inputDir,
-                ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.BAM, "file.bam"));
+        file = RawReadsWebinCli.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.BAM, new File("file.bam")));
         Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
 
-        file = RawReadsManifestReader.createReadFile(inputDir,
-                ProcessorTestUtils.createFieldValue(ManifestFieldType.FILE, Field.CRAM, "file.cram"));
+        file = RawReadsWebinCli.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.CRAM, new File("file.cram")));
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }
@@ -75,8 +83,8 @@ RawReadsManifestReaderTest
     {
         String descr = "A description";
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( Field.STUDY             + " SRP123456789\n"
-                                + Field.SAMPLE            + " ERS198522\n"
+                                ( Field.STUDY            + " " + STUDY_ID + "\n"
+                                + Field.SAMPLE           + " " + SAMPLE_ID + "\n"
                                 + Field.PLATFORM          + " illumina\n"
                                 + Field.INSTRUMENT        + " Illumina HiScanSQ\n"
                                 + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
@@ -89,36 +97,39 @@ RawReadsManifestReaderTest
                                 + Field.DESCRIPTION       + " " + descr + "\n"
                                 + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+
         RawReadsManifestReader rm = createManifestReader();
-        Assert.assertNull( rm.getStudyId() );
-        Assert.assertNull( rm.getSampleId() );
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertNull( rm.getInstrument() );
-        Assert.assertNull( rm.getLibraryStrategy() );
-        Assert.assertNull( rm.getLibrarySource() );
-        Assert.assertNull( rm.getLibrarySelection() );
-        Assert.assertNull( rm.getLibraryName() );
-        Assert.assertNull( rm.getLibraryConstructionProtocol() );
-        Assert.assertNull( rm.getInsertSize() );
-        Assert.assertNull( rm.getName() );
-        Assert.assertNull( rm.getRawReadFiles() );
-        Assert.assertNull( rm.getDescription() );
+        ReadsManifest manifest = rm.getManifest();
+
+        Assert.assertNull( manifest.getStudy() );
+        Assert.assertNull( manifest.getSample() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertNull( manifest.getInstrument() );
+        Assert.assertNull( manifest.getLibraryStrategy() );
+        Assert.assertNull( manifest.getLibrarySource() );
+        Assert.assertNull( manifest.getLibrarySelection() );
+        Assert.assertNull( manifest.getLibraryName() );
+        Assert.assertNull( manifest.getLibraryConstructionProtocol() );
+        Assert.assertNull( manifest.getInsertSize() );
+        Assert.assertNull( manifest.getName() );
+        assertThat( manifest.files().files() ).size().isZero();
+        Assert.assertNull( manifest.getDescription() );
         
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
-        Assert.assertEquals( "SRP123456789", rm.getStudyId() );
-        Assert.assertEquals( "ERS198522", rm.getSampleId() );
-        Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
-        Assert.assertEquals( "Illumina HiScanSQ", rm.getInstrument() );
-        Assert.assertEquals( "CLONEEND", rm.getLibraryStrategy() );
-        Assert.assertEquals( "OTHER", rm.getLibrarySource() );
-        Assert.assertEquals( "Inverse rRNA selection", rm.getLibrarySelection() );
-        Assert.assertEquals( "Name library", rm.getLibraryName() );
-        Assert.assertEquals( "library construction protocol", rm.getLibraryConstructionProtocol() );
-        Assert.assertEquals( Integer.valueOf( 100500 ), rm.getInsertSize() );
-        Assert.assertEquals( "SOME-FANCY-NAME", rm.getName() );
-        Assert.assertEquals( 1, rm.getRawReadFiles().size() );
-        Assert.assertEquals( descr, rm.getDescription() );
+        Assert.assertEquals( STUDY_ID, manifest.getStudy().getBioProjectId() );
+        Assert.assertEquals( SAMPLE_ID, manifest.getSample().getBioSampleId() );
+        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
+        Assert.assertEquals( "Illumina HiScanSQ", manifest.getInstrument() );
+        Assert.assertEquals( "CLONEEND", manifest.getLibraryStrategy() );
+        Assert.assertEquals( "OTHER", manifest.getLibrarySource() );
+        Assert.assertEquals( "Inverse rRNA selection", manifest.getLibrarySelection() );
+        Assert.assertEquals( "Name library", manifest.getLibraryName() );
+        Assert.assertEquals( "library construction protocol", manifest.getLibraryConstructionProtocol() );
+        Assert.assertEquals( Integer.valueOf( 100500 ), manifest.getInsertSize() );
+        Assert.assertEquals( "SOME-FANCY-NAME", manifest.getName() );
+        assertThat( manifest.files().files() ).size().isOne();
+        Assert.assertEquals( descr, manifest.getDescription() );
     }
 
 
@@ -126,8 +137,8 @@ RawReadsManifestReaderTest
     testValidManifestWithInfo() throws IOException
     {
         Path inf = Files.write( Files.createTempFile( Files.createTempDirectory( "TEMP" ), "TEMP", "INFO" ),
-                                ( Field.STUDY             + " SRP123456789\n"
-                                + Field.SAMPLE            + " ERS198522\n"
+                                ( Field.STUDY            + " " + STUDY_ID + "\n"
+                                + Field.SAMPLE           + " " + SAMPLE_ID + "\n"
                                 + Field.PLATFORM          + " illumina\n"
                                 + Field.INSTRUMENT        + " Illumina HiScanSQ\n"
                                 + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
@@ -145,34 +156,35 @@ RawReadsManifestReaderTest
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifestReader rm = createManifestReader();
+        ReadsManifest manifest = rm.getManifest();
 
-        Assert.assertNull( rm.getStudyId() );
-        Assert.assertNull( rm.getSampleId() );
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertNull( rm.getInstrument() );
-        Assert.assertNull( rm.getLibraryStrategy() );
-        Assert.assertNull( rm.getLibrarySource() );
-        Assert.assertNull( rm.getLibrarySelection() );
-        Assert.assertNull( rm.getLibraryName() );
-        Assert.assertNull( rm.getLibraryConstructionProtocol() );
-        Assert.assertNull( rm.getInsertSize() );
-        Assert.assertNull( rm.getName() );
-        Assert.assertNull( rm.getRawReadFiles() );
+        Assert.assertNull( manifest.getStudy() );
+        Assert.assertNull( manifest.getSample() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertNull( manifest.getInstrument() );
+        Assert.assertNull( manifest.getLibraryStrategy() );
+        Assert.assertNull( manifest.getLibrarySource() );
+        Assert.assertNull( manifest.getLibrarySelection() );
+        Assert.assertNull( manifest.getLibraryName() );
+        Assert.assertNull( manifest.getLibraryConstructionProtocol() );
+        Assert.assertNull( manifest.getInsertSize() );
+        Assert.assertNull( manifest.getName() );
+        assertThat( manifest.files().files() ).size().isZero();
 
         rm.readManifest( inf.getParent(), man.toFile() );
 
-        Assert.assertEquals( "SRP123456789", rm.getStudyId() );
-        Assert.assertEquals( "ERS198522", rm.getSampleId() );
-        Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
-        Assert.assertEquals( "Illumina HiScanSQ", rm.getInstrument() );
-        Assert.assertEquals( "CLONEEND", rm.getLibraryStrategy() );
-        Assert.assertEquals( "OTHER", rm.getLibrarySource() );
-        Assert.assertEquals( "Inverse rRNA selection", rm.getLibrarySelection() );
-        Assert.assertEquals( "Name library", rm.getLibraryName() );
-        Assert.assertEquals( "library construction protocol", rm.getLibraryConstructionProtocol() );
-        Assert.assertEquals( new Integer( 100500 ), rm.getInsertSize() );
-        Assert.assertEquals( "SOME-FANCY-NAME", rm.getName() );
-        Assert.assertEquals( 1, rm.getRawReadFiles().size() );
+        Assert.assertEquals( STUDY_ID, manifest.getStudy().getBioProjectId() );
+        Assert.assertEquals( SAMPLE_ID, manifest.getSample().getBioSampleId() );
+        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
+        Assert.assertEquals( "Illumina HiScanSQ", manifest.getInstrument() );
+        Assert.assertEquals( "CLONEEND", manifest.getLibraryStrategy() );
+        Assert.assertEquals( "OTHER", manifest.getLibrarySource() );
+        Assert.assertEquals( "Inverse rRNA selection", manifest.getLibrarySelection() );
+        Assert.assertEquals( "Name library", manifest.getLibraryName() );
+        Assert.assertEquals( "library construction protocol", manifest.getLibraryConstructionProtocol() );
+        Assert.assertEquals( new Integer( 100500 ), manifest.getInsertSize() );
+        Assert.assertEquals( "SOME-FANCY-NAME", manifest.getName() );
+        assertThat( manifest.files().files() ).size().isOne();
     }
 
 
@@ -184,14 +196,15 @@ RawReadsManifestReaderTest
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifestReader rm = createManifestReader();
+        ReadsManifest manifest = rm.getManifest();
 
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertNull( rm.getInstrument() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertNull( manifest.getInstrument() );
 
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
-        Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
-        Assert.assertEquals( "unspecified", rm.getInstrument() );
+        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
+        Assert.assertEquals( "unspecified", manifest.getInstrument() );
     }
 
     @Test public void
@@ -203,14 +216,15 @@ RawReadsManifestReaderTest
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifestReader rm = createManifestReader();
+        ReadsManifest manifest = rm.getManifest();
 
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertNull( rm.getInstrument() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertNull( manifest.getInstrument() );
 
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
-        Assert.assertEquals( "ILLUMINA", rm.getPlatform() );
-        Assert.assertEquals( "unspecified", rm.getInstrument() );
+        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
+        Assert.assertEquals( "unspecified", manifest.getInstrument() );
     }
 
     @Test public void
@@ -222,14 +236,15 @@ RawReadsManifestReaderTest
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifestReader rm = createManifestReader();
+        ReadsManifest manifest = rm.getManifest();
 
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertNull( rm.getInstrument() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertNull( manifest.getInstrument() );
 
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
-        Assert.assertEquals( "LS454", rm.getPlatform() );
-        Assert.assertEquals( "454 GS FLX Titanium", rm.getInstrument() );
+        Assert.assertEquals( "LS454", manifest.getPlatform() );
+        Assert.assertEquals( "454 GS FLX Titanium", manifest.getInstrument() );
     }
 
 
@@ -241,14 +256,15 @@ RawReadsManifestReaderTest
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifestReader rm = createManifestReader();
+        ReadsManifest manifest = rm.getManifest();
 
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertNull( rm.getInstrument() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertNull( manifest.getInstrument() );
 
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertEquals( "unspecified", rm.getInstrument() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertEquals( "unspecified", manifest.getInstrument() );
         Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR.key(), Severity.ERROR));
     }
 
@@ -260,14 +276,15 @@ RawReadsManifestReaderTest
                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
         RawReadsManifestReader rm = createManifestReader();
+        ReadsManifest manifest = rm.getManifest();
 
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertNull( rm.getInstrument() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertNull( manifest.getInstrument() );
 
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
-        Assert.assertNull( rm.getPlatform() );
-        Assert.assertEquals( "unspecified", rm.getInstrument() );
+        Assert.assertNull( manifest.getPlatform() );
+        Assert.assertEquals( "unspecified", manifest.getInstrument() );
         Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR.key(), Severity.ERROR));
     }
 
@@ -276,8 +293,8 @@ RawReadsManifestReaderTest
     negativeInsertSize() throws IOException
     {
         Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
-                                ( Field.STUDY             + " SRP123456789\n"
-                                + Field.SAMPLE            + " ERS198522\n"
+                                ( Field.STUDY            + " " +  STUDY_ID + "\n"
+                                + Field.SAMPLE           + " " +  SAMPLE_ID + "\n"
                                 + Field.PLATFORM          + " ILLUMINA\n"
                                 + Field.INSTRUMENT        + " unspecifieD\n"
                                 + Field.INSERT_SIZE       + " -1\n"

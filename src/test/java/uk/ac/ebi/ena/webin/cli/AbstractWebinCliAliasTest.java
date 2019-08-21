@@ -49,7 +49,7 @@ public class AbstractWebinCliAliasTest {
   public void testReads() {
     RawReadsWebinCli validator =
         new RawReadsWebinCli(WebinCliTestUtils.createTestWebinCliParameters());
-    validator.getManifestReader().setName("TEST_NAME  1");
+    validator.getManifestReader().getManifest().setName("TEST_NAME  1");
     assertThat("webin-reads-TEST_NAME_1").isEqualTo(validator.getSubmissionAlias());
   }
 }

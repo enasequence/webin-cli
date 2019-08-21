@@ -12,21 +12,13 @@ package uk.ac.ebi.ena.webin.cli.rawreads;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +33,6 @@ import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.BamScanner;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.FastqScanner;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
-import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.ChecksumMethod;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage;
 import uk.ac.ebi.ena.readtools.webin.cli.rawreads.ScannerMessage.ScannerErrorMessage;
@@ -50,49 +41,21 @@ import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
 
 public class 
-RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
+RawReadsWebinCli extends AbstractWebinCli<ReadsManifest>
 {   
-    private static final String RUN_XML = "run.xml";
-    private static final String EXPERIMENT_XML = "experiment.xml";
-
-    private String studyId;
-    private String sampleId;
-
-    //TODO value should be estimated via validation
-    private boolean is_paired;
-
     private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCli.class);
 
     public RawReadsWebinCli(WebinCliParameters parameters) {
-        this(parameters, RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )));
+        this(parameters, RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new RawReadsXmlCreator());
     }
 
-    public RawReadsWebinCli(WebinCliParameters parameters, RawReadsManifestReader manifestReader) {
-        super(WebinCliContext.reads, parameters, manifestReader);
-        manifestReader.setSampleProcessorCallback( (Sample sample) -> this.sampleId = sample.getBioSampleId() );
-        manifestReader.setStudyProcessorCallback( (Study study) -> this.studyId = study.getBioProjectId() );
-    }
-
-    // TODO: remove function
-    @Override
-    protected void readManifestForContext() {
-        getManifestReader().readManifest( getParameters().getInputDir().toPath(), getParameters().getManifestFile() );
-
-        if (StringUtils.isBlank(studyId)) {
-            studyId = getManifestReader().getStudyId();
-        }
-
-        if (StringUtils.isBlank(sampleId)) {
-            sampleId = getManifestReader().getSampleId();
-        }
+    public RawReadsWebinCli(WebinCliParameters parameters, ManifestReader<ReadsManifest> manifestReader, XmlCreator<ReadsManifest> xmlCreator) {
+        super(WebinCliContext.reads, parameters, manifestReader, xmlCreator);
     }
 
     @Override
@@ -100,8 +63,8 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
     {
         boolean valid = true;
         AtomicBoolean paired = new AtomicBoolean();
-        
-        List<RawReadsFile> files = getManifestReader().getRawReadFiles();
+
+        List<RawReadsFile> files = createReadFiles();
 
         for (RawReadsFile rf : files) {
             if (Filetype.fastq.equals(rf.getFiletype())) {
@@ -116,7 +79,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
             break;
         }
 
-        is_paired = paired.get();
+        getManifestReader().getManifest().setPaired(paired.get());
         
         if( !valid )
             throw WebinCliException.validationError("");
@@ -170,7 +133,7 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
             }
             
             
-            FastqScanner fs = new FastqScanner(  getManifestReader().getPairingHorizon() )
+            FastqScanner fs = new FastqScanner(  getManifestReader().getManifest().getPairingHorizon() )
             {
                 @Override protected void 
                 logProcessedReadNumber( long count )
@@ -272,185 +235,70 @@ RawReadsWebinCli extends AbstractWebinCli<RawReadsManifestReader>
         return valid;
     }
 
-    @Override
-    public void prepareSubmissionBundleForContext(Path uploadDir, List<File> uploadFileList, List<SubmissionBundle.SubmissionXMLFile> xmlFileList)
+    private List<RawReadsFile> createReadFiles()
     {
-        List<RawReadsFile> files = getManifestReader().getRawReadFiles();
+        ReadsManifest manifest = getManifestReader().getManifest();
 
-        uploadFileList.addAll(files.stream().map( e -> new File( e.getFilename() ) ).collect( Collectors.toList() ));
+        RawReadsFile.AsciiOffset asciiOffset = null;
+        RawReadsFile.QualityScoringSystem qualityScoringSystem = null;
 
-        files.forEach( e -> e.setChecksumMethod( ChecksumMethod.MD5 ) );
-        files.forEach( e -> e.setChecksum( FileUtils.calculateDigest( String.valueOf( e.getChecksumMethod() ), new File( e.getFilename() ) ) ));
-
-        List<Element> filesListE = files
-                .stream()
-               .sequential()
-               .map( e -> e.toElement( "FILE", uploadDir ) )
-               .collect( Collectors.toList() );
-
-        String alias = getSubmissionAlias();
-
-        String runXml = createRunXml( filesListE, alias, getParameters().getCenterName() );
-        String experimentXml = createExperimentXml( alias, getParameters().getCenterName(), is_paired, getManifestReader().getDescription() );
-
-        Path runXmlFile = getSubmitDir().toPath().resolve( RUN_XML );
-        Path experimentXmlFile = getSubmitDir().toPath().resolve( EXPERIMENT_XML );
-
-        try
+        if( manifest.getQualityScore() != null )
         {
-            Files.write( runXmlFile, runXml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-            Files.write( experimentXmlFile, experimentXml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-        } catch( IOException ex )
-        {
-            throw WebinCliException.systemError( ex );
-        }
-
-        xmlFileList.add( new SubmissionXMLFile( SubmissionXMLFileType.EXPERIMENT, experimentXmlFile.toFile(), FileUtils.calculateDigest( "MD5", experimentXmlFile.toFile() )));
-        xmlFileList.add( new SubmissionXMLFile( SubmissionXMLFileType.RUN, runXmlFile.toFile(), FileUtils.calculateDigest( "MD5", runXmlFile.toFile() )));
-    }
-
-    private String
-    createExperimentXml(String alias, String centerName, boolean isPaired, String description)
-    {
-        String instrumentModel = getManifestReader().getInstrument();
-        description = StringUtils.isBlank( description ) ? "unspecified" : description;
-        String libraryStrategy = getManifestReader().getLibraryStrategy();
-        String librarySource = getManifestReader().getLibrarySource();
-        String librarySelection = getManifestReader().getLibrarySelection();
-        String libraryName = getManifestReader().getLibraryName();
-        String platform  = getManifestReader().getPlatform();
-        Integer insertSize = getManifestReader().getInsertSize();
-                
-        try 
-        {
-            String title = getSubmissionTitle();
-            Element experimentSetE = new Element( "EXPERIMENT_SET" );
-            Element experimentE = new Element( "EXPERIMENT" );
-            experimentSetE.addContent( experimentE );
-            
-            Document doc = new Document( experimentSetE );
-            experimentE.setAttribute( "alias", alias );
-            
-            if( null != centerName && !centerName.isEmpty() )
-                experimentE.setAttribute( "center_name", centerName );
-            
-            experimentE.addContent( new Element( "TITLE" ).setText( title ) );
-            
-            Element studyRefE = new Element( "STUDY_REF" );
-            experimentE.addContent( studyRefE );
-            studyRefE.setAttribute( "accession", studyId );
-  
-            Element designE = new Element( "DESIGN" );
-            experimentE.addContent( designE );
-            
-            Element designDescriptionE = new Element( "DESIGN_DESCRIPTION" );
-            designDescriptionE.setText( description );
-            designE.addContent( designDescriptionE );
-            
-            Element sampleDescriptorE = new Element( "SAMPLE_DESCRIPTOR" );
-            sampleDescriptorE.setAttribute( "accession", sampleId );
-
-            designE.addContent( sampleDescriptorE );
-
-            Element libraryDescriptorE = new Element( "LIBRARY_DESCRIPTOR" );
-            designE.addContent( libraryDescriptorE );
-            
-            if( null != libraryName )
+            switch( manifest.getQualityScore() )
             {
-                Element libraryNameE = new Element( "LIBRARY_NAME" );
-                libraryNameE.setText( libraryName );
-                libraryDescriptorE.addContent( libraryNameE );
-            }   
-            
-            Element libraryStrategyE = new Element( "LIBRARY_STRATEGY" );
-            libraryStrategyE.setText( libraryStrategy );
-            libraryDescriptorE.addContent( libraryStrategyE );
-            
-            Element librarySourceE = new Element( "LIBRARY_SOURCE" );
-            librarySourceE.setText( librarySource );
-            libraryDescriptorE.addContent( librarySourceE );
-            
-            Element librarySelectionE = new Element( "LIBRARY_SELECTION" );
-            librarySelectionE.setText( librarySelection );
-            libraryDescriptorE.addContent( librarySelectionE );
-
-            Element libraryLayoutE = new Element( "LIBRARY_LAYOUT" );
-            if( !isPaired )
-            {
-                libraryLayoutE.addContent( new Element( "SINGLE" ) );
-            } else
-            {
-                Element pairedE = new Element( "PAIRED" );
-                libraryLayoutE.addContent( pairedE );
-                
-                if( null != insertSize )
-                    pairedE.setAttribute( "NOMINAL_LENGTH", String.valueOf( insertSize ) );
+                case RawReadsManifestReader.QUALITY_SCORE_PHRED_33:
+                    asciiOffset = RawReadsFile.AsciiOffset.FROM33;
+                    qualityScoringSystem = RawReadsFile.QualityScoringSystem.phred;
+                    break;
+                case RawReadsManifestReader.QUALITY_SCORE_PHRED_64:
+                    asciiOffset = RawReadsFile.AsciiOffset.FROM64;
+                    qualityScoringSystem = RawReadsFile.QualityScoringSystem.phred;
+                    break;
+                case RawReadsManifestReader.QUALITY_SCORE_LOGODDS:
+                    asciiOffset = null;
+                    qualityScoringSystem = RawReadsFile.QualityScoringSystem.log_odds;
+                    break;
             }
-
-            libraryDescriptorE.addContent( libraryLayoutE );
-            
-            Element platformE = new Element( "PLATFORM" );
-            experimentE.addContent( platformE );
-            
-            Element platformRefE = new Element( platform );
-            platformE.addContent( platformRefE );
-            Element instrumentModelE = new Element( "INSTRUMENT_MODEL" );
-            instrumentModelE.setText( instrumentModel );
-            platformRefE.addContent( instrumentModelE );
-            
-            XMLOutputter xmlOutput = new XMLOutputter();
-            xmlOutput.setFormat( Format.getPrettyFormat() );
-            StringWriter stringWriter = new StringWriter();
-            xmlOutput.output( doc, stringWriter );
-            return stringWriter.toString();
-            
-        } catch( IOException ex )
-        {
-            throw WebinCliException.systemError( ex );
         }
+        List<RawReadsFile> files = getManifestReader().getManifest().files().get()
+                .stream()
+                .map( file -> createReadFile( getParameters().getInputDir().toPath(), file) )
+                .collect( Collectors.toList() );
+
+        // Set FASTQ quality scoring system and ascii offset.
+
+        for( RawReadsFile f : files )
+        {
+            if( f.getFiletype().equals( Filetype.fastq ) )
+            {
+                if( qualityScoringSystem != null )
+                    f.setQualityScoringSystem( qualityScoringSystem );
+                if( asciiOffset != null )
+                    f.setAsciiOffset( asciiOffset );
+            }
+        }
+
+        return files;
     }
-    
-    
-    String
-    createRunXml( List<Element> filesListE, String experimentAlias, String centerName  )
+
+    public static RawReadsFile
+    createReadFile( Path inputDir, SubmissionFile<ReadsManifest.FileType> file )
     {
-        try 
-        {
-            String title = getSubmissionTitle();
-            Element runSetE = new Element( "RUN_SET" );
-            Element runE = new Element( "RUN" );
-            runSetE.addContent( runE );
-            
-            Document doc = new Document( runSetE );
-            runE.setAttribute( "alias", getSubmissionAlias() );
-            
-            if( null != centerName && !centerName.isEmpty() )
-                runE.setAttribute( "center_name", centerName );
-            
-            runE.addContent( new Element( "TITLE" ).setText( title ) );
-            Element experimentRefE = new Element( "EXPERIMENT_REF" );
-            runE.addContent( experimentRefE );
-            experimentRefE.setAttribute( "refname", experimentAlias );
-            
-            Element dataBlockE = new Element( "DATA_BLOCK" );
-            runE.addContent( dataBlockE );
-            Element filesE = new Element( "FILES" );
-            dataBlockE.addContent( filesE );
+        RawReadsFile f = new RawReadsFile();
+        f.setInputDir( inputDir );
+        f.setFiletype( Filetype.valueOf( file.getFileType().name().toLowerCase() ) );
 
-            for( Element fileE: filesListE )
-                filesE.addContent( fileE );
-            
-            XMLOutputter xmlOutput = new XMLOutputter();
-            xmlOutput.setFormat( Format.getPrettyFormat() );
-            StringWriter stringWriter = new StringWriter();
-            xmlOutput.output( doc, stringWriter );
-            return stringWriter.toString();
-            
-        } catch( IOException ex )
-        {
-            throw WebinCliException.systemError( ex );
-        }
+        String fileName = file.getFile().getPath();
+
+        if( !Paths.get( fileName ).isAbsolute() )
+            f.setFilename( inputDir.resolve( Paths.get( fileName ) ).toString() );
+        else
+            f.setFilename( fileName );
+
+        return f;
     }
+
+
 
     
     private void 

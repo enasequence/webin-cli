@@ -90,7 +90,7 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
       manifest.manifest(this.manifestBuilder);
 
       System.out.println("Manifest files: " + files);
-      for (FileType fileType : files) {
+      for (FileType fileType : files.elementSet()) {
         manifest.file(fileType, files.count(fileType));
       }
 
@@ -108,13 +108,10 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
       }
 
       for (FileType fileType : fileTypes) {
-        if (manifestReader instanceof ManifestReaderEx) {
-          ManifestReaderEx manifestReaderEx = (ManifestReaderEx) manifestReader;
-          // System.out.println("Manifest " + fileType + " file count: " + files.count(fileType));
-          // System.out.println("ManifestReader "+ fileType + " file count: " + manifestReaderEx.getManifest().files().get(fileType).size());
-          assertThat(manifestReaderEx.getManifest().files().get(fileType).size())
+          System.out.println("Manifest " + fileType + " file count: " + files.count(fileType));
+          System.out.println("ManifestReader "+ fileType + " file count: " + manifestReader.getManifest().files().get(fileType).size());
+          assertThat(manifestReader.getManifest().files().get(fileType).size())
               .isEqualTo(files.count(fileType));
-        }
       }
     }
   }

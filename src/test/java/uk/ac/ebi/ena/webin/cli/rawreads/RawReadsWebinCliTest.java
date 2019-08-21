@@ -45,6 +45,8 @@ import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader.Field;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class 
 RawReadsWebinCliTest
@@ -319,6 +321,12 @@ RawReadsWebinCliTest
         parameters.setMetadataProcessorsActive(false);
         RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
         rr.readManifest();
+        Study study = new Study();
+        study.setBioProjectId("TEST");
+        Sample sample = new Sample();
+        sample.setBioSampleId("TEST");
+        rr.getManifestReader().getManifest().setStudy(study);
+        rr.getManifestReader().getManifest().setSample(sample);
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
@@ -327,10 +335,10 @@ RawReadsWebinCliTest
       + "<EXPERIMENT_SET>\n"
       + " <EXPERIMENT alias=\"webin-reads-SOME-FANCY-NAME\">\n"
       + "  <TITLE>Raw reads: SOME-FANCY-NAME</TITLE>\n"
-      + "   <STUDY_REF accession=\"ERP109454\" />\n"
+      + "   <STUDY_REF accession=\"TEST\" />\n"
       + "    <DESIGN>\n"
       + "     <DESIGN_DESCRIPTION>description text</DESIGN_DESCRIPTION>\n"
-      + "     <SAMPLE_DESCRIPTOR accession=\"ERS2713291\" />\n"
+      + "     <SAMPLE_DESCRIPTOR accession=\"TEST\" />\n"
       + "     <LIBRARY_DESCRIPTOR>\n"
       + "       <LIBRARY_STRATEGY>CLONEEND</LIBRARY_STRATEGY>\n"
       + "       <LIBRARY_SOURCE>OTHER</LIBRARY_SOURCE>\n"

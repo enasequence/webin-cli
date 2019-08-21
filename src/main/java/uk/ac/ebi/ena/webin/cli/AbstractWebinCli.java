@@ -11,46 +11,54 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
+import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
 
 public abstract class
-AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
+AbstractWebinCli<M extends Manifest> implements WebinCliValidator
 {
     private final WebinCliContext context;
     private final WebinCliParameters parameters;
-    private final M manifestReader;
+    private final ManifestReader<M> manifestReader;
+    private final XmlCreator<M> xmlCreator;
 
     private File validationDir;
     private File processDir;
     private File submitDir;
 
-    public AbstractWebinCli(WebinCliContext context, WebinCliParameters parameters, M manifestReader) {
+    private static final Logger log = LoggerFactory.getLogger(AbstractWebinCli.class);
+
+
+    public AbstractWebinCli(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlCreator<M> xmlCreator) {
         this.context = context;
         this.parameters = parameters;
         this.manifestReader = manifestReader;
+        this.xmlCreator = xmlCreator;
     }
-
-    protected abstract void readManifestForContext();
 
     protected abstract void validateSubmissionForContext();
 
-    protected abstract void prepareSubmissionBundleForContext(
-            Path uploadDir,
-            List<File> uploadFileList,
-            List<SubmissionBundle.SubmissionXMLFile> xmlFileList);
-
-    @Override
+   @Override
     public final void readManifest() {
         this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
 
@@ -59,7 +67,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
         manifestReportFile.delete();
 
         try {
-            readManifestForContext();
+            getManifestReader().readManifest( getParameters().getInputDir().toPath(), getParameters().getManifestFile()  );
         } catch (WebinCliException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -83,6 +91,25 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
         this.validationDir = createSubmissionDir(WebinCliConfig.VALIDATE_DIR );
         this.processDir = createSubmissionDir(WebinCliConfig.PROCESS_DIR );
 
+        M manifest = getManifestReader().getManifest();
+
+        manifest.setIgnoreErrors(false);
+        try {
+            IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
+                    .setCredentials(getParameters().getUsername(),
+                            getParameters().getPassword())
+                    .setTest(getParameters().isTestMode())
+                    .build();
+
+            manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName()));
+        }
+        catch (RuntimeException ex) {
+            log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
+        }
+
+
+
+
         validateSubmissionForContext();
     }
 
@@ -98,7 +125,30 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
                 .resolve( String.valueOf( this.context ) )
                 .resolve( WebinCli.getSafeOutputDir( getSubmissionName() ) );
 
-        prepareSubmissionBundleForContext(uploadDir, uploadFileList, xmlFileList);
+        uploadFileList.addAll(getManifestReader().getManifest().files().files());
+
+        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls =
+                xmlCreator.createXml(
+                        getManifestReader().getManifest(),
+                        getParameters().getCenterName(),
+                        getSubmissionTitle(),
+                        getSubmissionAlias(),
+                        getParameters().getInputDir().toPath(), uploadDir);
+
+        xmls.forEach((fileType, xml) -> {
+            String xmlFileName = fileType.name().toLowerCase() + ".xml";
+            Path xmlFile = getSubmitDir().toPath().resolve( xmlFileName );
+
+            try
+            {
+                Files.write( xmlFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
+            }
+            catch(IOException ex) {
+                throw WebinCliException.systemError( ex );
+            }
+
+            xmlFileList.add( new SubmissionBundle.SubmissionXMLFile( fileType, xmlFile.toFile(), FileUtils.calculateDigest( "MD5", xmlFile.toFile() ) ) );
+        });
 
         SubmissionBundle submissionBundle = new SubmissionBundle(
                 getSubmitDir(),
@@ -137,7 +187,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
         return context;
     }
 
-    public M getManifestReader() {
+    public ManifestReader<M> getManifestReader() {
         return manifestReader;
     }
 
@@ -162,7 +212,7 @@ AbstractWebinCli<M extends ManifestReader> implements WebinCliValidator
     public String
     getSubmissionName()
     {
-        String name = manifestReader.getName();
+        String name = manifestReader.getManifest().getName();
         if (name != null) {
             return name.trim().replaceAll("\\s+", "_");
         }

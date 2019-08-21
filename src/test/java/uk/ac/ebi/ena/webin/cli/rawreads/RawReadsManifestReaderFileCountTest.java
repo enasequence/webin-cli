@@ -12,19 +12,19 @@ package uk.ac.ebi.ena.webin.cli.rawreads;
 
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadManifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 
 public class RawReadsManifestReaderFileCountTest {
 
   @Test
   public void testFileCount() {
     new ManifestReaderFileCountTester<>(
-            RawReadsManifestReader.class, ReadManifest.FileType.values())
+            RawReadsManifestReader.class, ReadsManifest.FileType.values())
         // Supported file groups
-        .files(ReadManifest.FileType.BAM)
-        .files(ReadManifest.FileType.CRAM)
-        .files(ReadManifest.FileType.FASTQ)
-        .files(ReadManifest.FileType.FASTQ, ReadManifest.FileType.FASTQ)
+        .files(ReadsManifest.FileType.BAM)
+        .files(ReadsManifest.FileType.CRAM)
+        .files(ReadsManifest.FileType.FASTQ)
+        .files(ReadsManifest.FileType.FASTQ, ReadsManifest.FileType.FASTQ)
         .test();
   }
 }

@@ -24,7 +24,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 public class
-GenomeAssemblyManifestReader extends SequenceManifestReaderEx<GenomeManifest> {
+GenomeAssemblyManifestReader extends ManifestReader<GenomeManifest> {
 
 	public interface
 	Field 

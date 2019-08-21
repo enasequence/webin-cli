@@ -23,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class
-SequenceAssemblyManifestReader extends SequenceManifestReaderEx<SequenceManifest>
+SequenceAssemblyManifestReader extends ManifestReader<SequenceManifest>
 {
     public interface 
     Field 

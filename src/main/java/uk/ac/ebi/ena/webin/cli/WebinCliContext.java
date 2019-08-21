@@ -14,30 +14,18 @@ import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyWebinCli;
 import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyWebinCli;
 import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyWebinCli;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
-import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyXmlCreator;
-import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyXmlCreator;
-import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyXmlCreator;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
 
 public enum WebinCliContext {
-  genome(GenomeAssemblyWebinCli.class, GenomeAssemblyXmlCreator.class, "Genome assembly"),
-  transcriptome(
-      TranscriptomeAssemblyWebinCli.class,
-      TranscriptomeAssemblyXmlCreator.class,
-      "Transcriptome assembly"),
-  sequence(SequenceAssemblyWebinCli.class, SequenceAssemblyXmlCreator.class, "Sequence assembly"),
-  reads(RawReadsWebinCli.class, null, "Raw reads");
+  genome(GenomeAssemblyWebinCli.class, "Genome assembly"),
+  transcriptome(TranscriptomeAssemblyWebinCli.class, "Transcriptome assembly"),
+  sequence(SequenceAssemblyWebinCli.class, "Sequence assembly"),
+  reads(RawReadsWebinCli.class, "Raw reads");
 
   private final Class<? extends AbstractWebinCli> validatorClass;
-  private final Class<? extends XmlCreator> xmlCreatorClass;
   private final String titlePrefix;
 
-  WebinCliContext(
-      Class<? extends AbstractWebinCli> validatorClass,
-      Class<? extends XmlCreator> xmlCreatorClass,
-      String titlePrefix) {
+  WebinCliContext(Class<? extends AbstractWebinCli> validatorClass, String titlePrefix) {
     this.validatorClass = validatorClass;
-    this.xmlCreatorClass = xmlCreatorClass;
     this.titlePrefix = titlePrefix;
   }
 
@@ -53,14 +41,6 @@ public enum WebinCliContext {
       Class<T> validatorClass, WebinCliParameters parameters) {
     try {
       return validatorClass.getConstructor(WebinCliParameters.class).newInstance(parameters);
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  public XmlCreator createXmlCreator() {
-    try {
-      return xmlCreatorClass.newInstance();
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }

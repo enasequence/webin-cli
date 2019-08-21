@@ -11,28 +11,21 @@
 package uk.ac.ebi.ena.webin.cli.rawreads;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
-import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.AsciiOffset;
-import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
-import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.QualityScoringSystem;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 
 public class
-RawReadsManifestReader extends ManifestReader {
+RawReadsManifestReader extends ManifestReader<ReadsManifest> {
 
     public interface Field {
         String NAME = "NAME";
@@ -74,11 +67,10 @@ RawReadsManifestReader extends ManifestReader {
         String CRAM = "CRAM file";
     }
 
-
     private final static String INSTRUMENT_UNSPECIFIED = "unspecified";
-    private final static String QUALITY_SCORE_PHRED_33 = "PHRED_33";
-    private final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
-    private final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
+    public final static String QUALITY_SCORE_PHRED_33 = "PHRED_33";
+    public final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
+    public final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
 
     public final static ManifestCVList CV_INSTRUMENT = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/instrument.properties"));
     public final static ManifestCVList CV_PLATFORM = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/platform.properties"));
@@ -91,26 +83,7 @@ RawReadsManifestReader extends ManifestReader {
             QUALITY_SCORE_LOGODDS
     );
 
-    private String name = null;
-    private String description = null;
-    private String study_id = null;
-    private String sample_id = null;
-    private String platform = null;
-    private Integer insert_size;
-    private Integer pairing_horizon = 500_000_000;
-    private String library_construction_protocol;
-    private String library_name;
-    private String instrument;
-    private String library_source;
-    private String library_selection;
-    private String library_strategy;
-    private QualityScoringSystem qualityScoringSystem;
-    private AsciiOffset asciiOffset;
-    private List<RawReadsFile> files;
-
-    // TODO remove
-    private final SampleProcessor sampleProcessor;
-    private final StudyProcessor studyProcessor;
+    private final ReadsManifest manifest = new ReadsManifest();
 
     public static RawReadsManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
         return new RawReadsManifestReader(
@@ -155,21 +128,12 @@ RawReadsManifestReader extends ManifestReader {
                         .required(Field.BAM)
                         .build()
         );
-        this.sampleProcessor = sampleProcessor;
-        this.studyProcessor = studyProcessor;
-    }
 
-    // TODO remove
-    public void setSampleProcessorCallback(SampleProcessor.Callback<Sample> sampleProcessorCallback) {
-        if (sampleProcessor != null) {
-            sampleProcessor.setCallback(sampleProcessorCallback);
+        if ( studyProcessor != null ) {
+            studyProcessor.setCallback(study -> manifest.setStudy(study));
         }
-    }
-
-    // TODO remove
-    public void setStudyProcessorCallback(StudyProcessor.Callback<Study> studyProcessorCallback) {
-        if (studyProcessor != null) {
-            studyProcessor.setCallback(studyProcessorCallback);
+        if ( sampleProcessor != null ) {
+            sampleProcessor.setCallback(sample -> manifest.setSample(sample));
         }
     }
 
@@ -191,245 +155,92 @@ RawReadsManifestReader extends ManifestReader {
                 new FileSuffixProcessor(ManifestFileSuffix.CRAM_FILE_SUFFIX)};
     }
 
-    @Override public String
-    getName()
-    {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String
-    getStudyId()
-    {
-        return study_id;
-    }
-
-
-    public String
-    getSampleId()
-    {
-        return sample_id;
-    }
-
-
-    public String
-    getInstrument()
-    {
-        return instrument;
-    }
-
-
-    public String
-    getPlatform()
-    {
-        return platform;
-    }
-
-
-    public Integer
-    getInsertSize()
-    {
-        return insert_size;
-    }
-
-
-    public String
-    getLibrarySource()
-    {
-        return library_source;
-    }
-
-
-    public String
-    getLibrarySelection()
-    {
-        return library_selection;
-    }
-
-
-    public String
-    getLibraryStrategy()
-    {
-        return library_strategy;
-    }
-
-
-    public String
-    getLibraryConstructionProtocol()
-    {
-        return library_construction_protocol;
-    }
-
-
-    public String
-    getLibraryName()
-    {
-        return library_name;
-    }
-
-
-    public Integer
-    getPairingHorizon()
-    {
-        return pairing_horizon;
-    }
-
-
-    public List<RawReadsFile>
-    getRawReadFiles()
-    {
-        return files;
-    }
-
-
     @Override public void
     processManifest()
     {
-        name = getResult().getValue( Field.NAME );
-        study_id = getResult().getValue( Field.STUDY );
-        sample_id = getResult().getValue( Field.SAMPLE );
-        description = getResult().getValue( Field.DESCRIPTION );
-        
+        manifest.setName(getResult().getValue( Field.NAME ));
+        manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
+
         if (getResult().getCount(Field.INSTRUMENT) > 0 &&
-            getResult().getField(Field.INSTRUMENT).isValidFieldValueOrFileSuffix())
-            instrument = getResult().getValue(Field.INSTRUMENT);
+                getResult().getField(Field.INSTRUMENT).isValidFieldValueOrFileSuffix())
+            manifest.setInstrument(getResult().getValue(Field.INSTRUMENT));
 
         if (getResult().getCount(Field.PLATFORM) > 0 &&
-            getResult().getField(Field.PLATFORM).isValidFieldValueOrFileSuffix())
-            platform = getResult().getValue(Field.PLATFORM);
+                getResult().getField(Field.PLATFORM).isValidFieldValueOrFileSuffix())
+            manifest.setPlatform(getResult().getValue(Field.PLATFORM));
 
-        insert_size = getAndValidatePositiveInteger(getResult().getField(Field.INSERT_SIZE));
+        manifest.setInsertSize(getAndValidatePositiveInteger(getResult().getField(Field.INSERT_SIZE)));
 
         if (getResult().getCount(Field.LIBRARY_SOURCE) > 0 &&
-            getResult().getField(Field.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
-            library_source = getResult().getValue(Field.LIBRARY_SOURCE);
+                getResult().getField(Field.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
+            manifest.setLibrarySource(getResult().getValue(Field.LIBRARY_SOURCE));
 
         if (getResult().getCount(Field.LIBRARY_SELECTION) > 0 &&
-            getResult().getField(Field.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
-            library_selection = getResult().getValue(Field.LIBRARY_SELECTION);
+                getResult().getField(Field.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
+            manifest.setLibrarySelection(getResult().getValue(Field.LIBRARY_SELECTION));
 
         if (getResult().getCount(Field.LIBRARY_STRATEGY) > 0 &&
-            getResult().getField(Field.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
-            library_strategy = getResult().getValue(Field.LIBRARY_STRATEGY);
+                getResult().getField(Field.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
+            manifest.setLibraryStrategy(getResult().getValue(Field.LIBRARY_STRATEGY));
 
-        library_construction_protocol = getResult().getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL);
-        library_name = getResult().getValue(Field.LIBRARY_NAME);
+        manifest.setLibraryConstructionProtocol(getResult().getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL));
+        manifest.setLibraryName(getResult().getValue(Field.LIBRARY_NAME));
 
-        if( getResult().getValue( Field.QUALITY_SCORE ) != null )
-        {
-            switch( getResult().getValue( Field.QUALITY_SCORE ) )
-            {
-            case QUALITY_SCORE_PHRED_33:
-                asciiOffset = AsciiOffset.FROM33;
-                qualityScoringSystem = QualityScoringSystem.phred;
-                break;
-            case QUALITY_SCORE_PHRED_64:
-                asciiOffset = AsciiOffset.FROM64;
-                qualityScoringSystem = QualityScoringSystem.phred;
-                break;
-            case QUALITY_SCORE_LOGODDS:
-                asciiOffset = null;
-                qualityScoringSystem = QualityScoringSystem.log_odds;
-                break;
-            }
-        }
+        if (getResult().getCount(Field.QUALITY_SCORE) > 0)
+            manifest.setQualityScore(getResult().getValue(Field.QUALITY_SCORE));
 
         if (getResult().getCount(Field.__HORIZON) > 0)
-            pairing_horizon = getAndValidatePositiveInteger(getResult().getField(Field.__HORIZON));
+            manifest.setPairingHorizon(getAndValidatePositiveInteger(getResult().getField(Field.__HORIZON)));
 
         processInstrumentAndPlatform();
-        processFiles();
-    }
 
+        SubmissionFiles<ReadsManifest.FileType> submissionFiles = manifest.files();
+
+        getFiles( getInputDir(), getResult(), RawReadsManifestReader.Field.BAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.BAM, file ) ) );
+        getFiles( getInputDir(), getResult(), RawReadsManifestReader.Field.CRAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.CRAM, file ) ) );
+        getFiles( getInputDir(), getResult(), RawReadsManifestReader.Field.FASTQ ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.FASTQ, file ) ) );
+    }
 
     private void
     processInstrumentAndPlatform()
     {
-
-        if( null == platform && ( null == instrument || instrument.equals(INSTRUMENT_UNSPECIFIED) ) )
+        if( null == manifest.getPlatform()&& ( null == manifest.getInstrument() || manifest.getInstrument().equals(INSTRUMENT_UNSPECIFIED) ) )
         {
             error(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR,
                     String.join(", ", CV_PLATFORM.keyList()),
                     String.join(", ", CV_INSTRUMENT.keyList()));
         }
 
-        if( instrument != null )
+        if( manifest.getInstrument() != null )
         {
             // Set platform.
 
-            String platforms = CV_INSTRUMENT.getValue( instrument );
+            String platforms = CV_INSTRUMENT.getValue( manifest.getInstrument() );
             if( StringUtils.isBlank( platforms ) )
             {
-                error(WebinCliMessage.Manifest.MISSING_PLATFORM_FOR_INSTRUMENT_ERROR, instrument);
+                error(WebinCliMessage.Manifest.MISSING_PLATFORM_FOR_INSTRUMENT_ERROR, manifest.getInstrument());
             }
 
             String[] platformList = platforms.split( "[;,]" );
 
             if( 1 == platformList.length )
             {
-                platform = CV_PLATFORM.getKey( platformList[ 0 ] );
-            } else if(Stream.of( platformList ).noneMatch(e -> e.equals( platform ) ))
+                manifest.setPlatform(CV_PLATFORM.getKey( platformList[ 0 ] ));
+            } else if(Stream.of( platformList ).noneMatch(e -> e.equals( manifest.getPlatform() ) ))
             {
                 error( WebinCliMessage.Manifest.INVALID_PLATFORM_FOR_INSTRUMENT_ERROR,
-                        StringUtils.isBlank( platform ) ? "is not defined" : platform + " is not supported",
-                        instrument,
-                        CV_INSTRUMENT.getValue( instrument ) );
+                        StringUtils.isBlank( manifest.getPlatform() ) ? "is not defined" : manifest.getPlatform() + " is not supported",
+                        manifest.getInstrument(),
+                        CV_INSTRUMENT.getValue( manifest.getInstrument() ) );
             }
         } else
         {
-            instrument = INSTRUMENT_UNSPECIFIED;
+            manifest.setInstrument(INSTRUMENT_UNSPECIFIED);
         }
     }
 
-
-    private void
-    processFiles()
-    {
-        files = getResult().getFields().stream()
-                .filter( field -> field.getDefinition().getType() == ManifestFieldType.FILE )
-                .map( field -> createReadFile( getInputDir(), field ) )
-                .collect( Collectors.toList() );
-
-        // Set FASTQ quality scoring system and ascii offset.
-
-        for( RawReadsFile f : files )
-        {
-            if( f.getFiletype().equals( Filetype.fastq ) )
-            {
-                if( qualityScoringSystem != null )
-                    f.setQualityScoringSystem( qualityScoringSystem );
-                if( asciiOffset != null )
-                    f.setAsciiOffset( asciiOffset );
-            }
-        }
-    }
-
-
-    static RawReadsFile
-    createReadFile( Path inputDir, ManifestFieldValue field )
-    {
-        assert( field.getDefinition().getType() == ManifestFieldType.FILE );
-
-        RawReadsFile f = new RawReadsFile();
-        f.setInputDir( inputDir );
-        f.setFiletype( Filetype.valueOf( field.getName().toLowerCase() ) );
-
-        String fileName = field.getValue();
-        if( !Paths.get( fileName ).isAbsolute() )
-            f.setFilename( inputDir.resolve( Paths.get( fileName ) ).toString() );
-        else
-            f.setFilename( fileName );
-
-        return f;
-    }
-
-
-    @Override public String 
-    getDescription()
-    {
-        return description;
+    @Override
+    public ReadsManifest getManifest() {
+        return manifest;
     }
 }
