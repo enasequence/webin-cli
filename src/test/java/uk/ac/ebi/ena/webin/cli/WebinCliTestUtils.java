@@ -36,6 +36,8 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class WebinCliTestUtils {
 
     public static WebinCliParameters createTestWebinCliParameters() {
@@ -262,5 +264,21 @@ public class WebinCliTestUtils {
       } catch (IOException ex) {
         throw new RuntimeException(ex);
       }
+    }
+
+    public static void assertReportContains(
+            WebinCliContext context, String name, Path outputDir, Path dataFile, String message) {
+        Path reportFile =
+                outputDir
+                        .resolve(context.name())
+                        .resolve(WebinCli.getSafeOutputDir(name))
+                        .resolve("validate")
+                        .resolve(dataFile.getFileName().toString() + ".report");
+        assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);
+    }
+
+    public static void assertReportContains(String outputDir, String dataFile, String message) {
+        Path reportFile = Paths.get(outputDir).resolve(dataFile );
+        assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);
     }
 }

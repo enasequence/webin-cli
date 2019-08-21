@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
 
@@ -176,8 +177,11 @@ public class GenomeAssemblyValidationTest {
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     assertThatThrownBy(validator::validateSubmission)
-        .isInstanceOf(WebinCliException.class)
-        .hasMessageContaining("fasta file validation failed");
+            .isInstanceOf(WebinCliException.class);
+    WebinCliTestUtils.assertReportContains(
+            validator.getValidationDir().getPath(),
+            "webin-cli.report",
+            "fasta file validation failed");
   }
 
   @Test
@@ -188,8 +192,11 @@ public class GenomeAssemblyValidationTest {
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     assertThatThrownBy(validator::validateSubmission)
-        .isInstanceOf(WebinCliException.class)
-        .hasMessageContaining("flatfile file validation failed");
+            .isInstanceOf(WebinCliException.class);
+    WebinCliTestUtils.assertReportContains(
+            validator.getValidationDir().getPath(),
+            "webin-cli.report",
+            "flatfile file validation failed");
   }
 
   @Test
@@ -203,22 +210,32 @@ public class GenomeAssemblyValidationTest {
     GenomeAssemblyWebinCli validator =
         validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     assertThatThrownBy(validator::validateSubmission)
-        .isInstanceOf(WebinCliException.class)
-        .hasMessageContaining("agp file validation failed");
+        .isInstanceOf(WebinCliException.class);
+    WebinCliTestUtils.assertReportContains(
+            validator.getValidationDir().getPath(),
+            "webin-cli.report",
+            "agp file validation failed");
   }
 
   @Test
   public void testInvalidSequencelessChromosomeList() {
+
     File manifestFile =
-        manifestBuilder()
-            .file(FileType.FASTA, "valid_fasta.fasta.gz")
-            .file(FileType.CHROMOSOME_LIST, "invalid_chromosome_list_sequenceless.txt.gz")
-            .build();
+            manifestBuilder()
+                    .file(FileType.FASTA, "valid_fasta.fasta.gz")
+                    .file(FileType.CHROMOSOME_LIST, "invalid_chromosome_list_sequenceless.txt.gz")
+                    .build();
 
     GenomeAssemblyWebinCli validator =
-        validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            validatorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+
     assertThatThrownBy(validator::validateSubmission)
-        .isInstanceOf(WebinCliException.class)
-        .hasMessageContaining("Sequenceless chromosomes are not allowed in assembly");
+            .isInstanceOf(WebinCliException.class);
+
+    WebinCliTestUtils.assertReportContains(
+            validator.getValidationDir().getPath(),
+            "webin-cli.report",
+            "Sequenceless chromosomes are not allowed in assembly");
+
   }
 }
