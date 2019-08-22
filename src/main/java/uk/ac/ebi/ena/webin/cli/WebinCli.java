@@ -175,30 +175,30 @@ public class WebinCli {
 		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
 
-		AbstractWebinCli<?> validator = context.createValidator(parameters);
+		WebinCliExecutor<?> executor = context.createExecutor(parameters);
 
-		validator.readManifest();
+		executor.readManifest();
 
-		SubmissionBundle submissionBundle = validator.readSubmissionBundle();
+		SubmissionBundle submissionBundle = executor.readSubmissionBundle();
 
 		if (params.validate || submissionBundle == null) {
-			doValidation(validator);
+			doValidation(executor);
 		}
 
 		if (params.submit) {
-			doSubmit(validator);
+			doSubmit(executor);
 		}
 	}
 
 	
 	private void
-	doValidation(AbstractWebinCli<?> validator)
+	doValidation(WebinCliExecutor<?> executor)
 	{
 	   try 
 	   {
-		   validator.validateSubmission();
+		   executor.validateSubmission();
 
-		   validator.prepareSubmissionBundle();
+		   executor.prepareSubmissionBundle();
 
            log.info( WebinCliMessage.Cli.VALIDATE_SUCCESS.format() );
            
@@ -207,35 +207,35 @@ public class WebinCli {
 	      switch( ex.getErrorType() )
 	      { 
 	          case USER_ERROR:
-				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()):
-						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
+				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()):
+						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
 	          case VALIDATION_ERROR:
-				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()):
-						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
+				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()):
+						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
 	               
 	          case SYSTEM_ERROR:
-	               throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), validator.getValidationDir()));
+	               throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), executor.getValidationDir()));
 	      }
 	   } catch( Throwable ex )
 	   {
 	       StringWriter sw = new StringWriter();
 	       ex.printStackTrace( new PrintWriter( sw ) );
-	      throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format( null == ex.getMessage() ? sw.toString() : ex.getMessage(), validator.getValidationDir()));
+	      throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format( null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir()));
 	   }
 	}
 	 
 	
 	private void 
-    doSubmit( AbstractWebinCli<?> validator )
+    doSubmit( WebinCliExecutor<?> executor )
     {
-		SubmissionBundle bundle = validator.readSubmissionBundle();
+		SubmissionBundle bundle = executor.readSubmissionBundle();
 
         UploadService ftpService = params.ascp && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
         
         try 
         {
             ftpService.connect( params.userName, params.password );
-            ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDir(), validator.getParameters().getInputDir().toPath() );
+            ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath() );
 			log.info( WebinCliMessage.Cli.UPLOAD_SUCCESS.format() );
 
         } catch( WebinCliException e ) 

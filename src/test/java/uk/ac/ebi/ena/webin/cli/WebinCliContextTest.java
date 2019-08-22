@@ -11,16 +11,28 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import org.junit.Test;
+import uk.ac.ebi.ena.webin.cli.assembly.*;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsXmlWriter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class WebinCliContextTest {
 
   @Test
-  public void testCreateValidator() {
+  public void testCreateExecutor() {
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-    for (WebinCliContext context : WebinCliContext.values()) {
-      assertThat(context.createValidator(parameters)).isInstanceOf(context.getValidatorClass());
-    }
+
+    assertThat(WebinCliContext.genome.createExecutor(parameters).getManifestReader()).isInstanceOf(GenomeAssemblyManifestReader.class);
+    assertThat(WebinCliContext.genome.createExecutor(parameters).getXmlWriter()).isInstanceOf(GenomeAssemblyXmlWriter.class);
+
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getManifestReader()).isInstanceOf(TranscriptomeAssemblyManifestReader.class);
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getXmlWriter()).isInstanceOf(TranscriptomeAssemblyXmlWriter.class);
+
+    assertThat(WebinCliContext.sequence.createExecutor(parameters).getManifestReader()).isInstanceOf(SequenceAssemblyManifestReader.class);
+    assertThat(WebinCliContext.sequence.createExecutor(parameters).getXmlWriter()).isInstanceOf(SequenceAssemblyXmlWriter.class);
+
+    assertThat(WebinCliContext.reads.createExecutor(parameters).getManifestReader()).isInstanceOf(RawReadsManifestReader.class);
+    assertThat(WebinCliContext.reads.createExecutor(parameters).getXmlWriter()).isInstanceOf(RawReadsXmlWriter.class);
   }
 }

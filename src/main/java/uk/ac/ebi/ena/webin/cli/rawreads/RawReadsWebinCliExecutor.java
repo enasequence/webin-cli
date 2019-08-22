@@ -43,19 +43,16 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
-import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
-public class 
-RawReadsWebinCli extends AbstractWebinCli<ReadsManifest>
+public class
+RawReadsWebinCliExecutor extends WebinCliExecutor<ReadsManifest>
 {   
-    private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCli.class);
+    private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCliExecutor.class);
 
-    public RawReadsWebinCli(WebinCliParameters parameters) {
-        this(parameters, RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new RawReadsXmlWriter());
-    }
-
-    public RawReadsWebinCli(WebinCliParameters parameters, ManifestReader<ReadsManifest> manifestReader, XmlWriter<ReadsManifest> xmlWriter) {
-        super(WebinCliContext.reads, parameters, manifestReader, xmlWriter);
+    public RawReadsWebinCliExecutor(WebinCliParameters parameters) {
+        super(WebinCliContext.reads, parameters,
+                new RawReadsManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )),
+                new RawReadsXmlWriter());
     }
 
     @Override
@@ -138,14 +135,14 @@ RawReadsWebinCli extends AbstractWebinCli<ReadsManifest>
                 @Override protected void 
                 logProcessedReadNumber( long count )
                 {
-                    RawReadsWebinCli.this.logProcessedReadNumber( count );
+                    RawReadsWebinCliExecutor.this.logProcessedReadNumber( count );
                 }
                 
                 
                 @Override protected void 
                 logFlushMsg( String msg )
                 {
-                    RawReadsWebinCli.this.logFlushMsg( msg );
+                    RawReadsWebinCliExecutor.this.logFlushMsg( msg );
                     
                 }
             };            
@@ -202,7 +199,7 @@ RawReadsWebinCli extends AbstractWebinCli<ReadsManifest>
             @Override protected void 
             logProcessedReadNumber( long count )
             {
-                RawReadsWebinCli.this.logProcessedReadNumber( count );
+                RawReadsWebinCliExecutor.this.logProcessedReadNumber( count );
             }
         };
         

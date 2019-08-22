@@ -12,11 +12,11 @@ public class MetadataProcessorFactoryTest {
         MetadataProcessorParameters parameters = Mockito.mock(MetadataProcessorParameters.class);
         Mockito.when(parameters.isMetadataProcessorsActive()).thenReturn(true);
         MetadataProcessorFactory factory = new MetadataProcessorFactory(parameters);
-        assertThat(factory.createSampleProcessor()).isNotNull();
-        assertThat(factory.createStudyProcessor()).isNotNull();
-        assertThat(factory.createSampleXmlProcessor()).isNotNull();
-        assertThat(factory.createAnalysisProcessor()).isNotNull();
-        assertThat(factory.createRunProcessor()).isNotNull();
+        assertThat(factory.getSampleProcessor()).isNotNull();
+        assertThat(factory.getStudyProcessor()).isNotNull();
+        assertThat(factory.getSampleXmlProcessor()).isNotNull();
+        assertThat(factory.getAnalysisProcessor()).isNotNull();
+        assertThat(factory.getRunProcessor()).isNotNull();
     }
 
     @Test
@@ -25,11 +25,11 @@ public class MetadataProcessorFactoryTest {
         MetadataProcessorParameters parameters = Mockito.mock(MetadataProcessorParameters.class);
         Mockito.when(parameters.isMetadataProcessorsActive()).thenReturn(false);
         MetadataProcessorFactory factory = new MetadataProcessorFactory(parameters);
-        assertThat(factory.createSampleProcessor()).isNull();
-        assertThat(factory.createStudyProcessor()).isNull();
-        assertThat(factory.createSampleXmlProcessor()).isNull();
-        assertThat(factory.createAnalysisProcessor()).isNull();
-        assertThat(factory.createRunProcessor()).isNull();
+        assertThat(factory.getSampleProcessor()).isNull();
+        assertThat(factory.getStudyProcessor()).isNull();
+        assertThat(factory.getSampleXmlProcessor()).isNull();
+        assertThat(factory.getAnalysisProcessor()).isNull();
+        assertThat(factory.getRunProcessor()).isNull();
     }
 
     @Test
@@ -37,10 +37,10 @@ public class MetadataProcessorFactoryTest {
     testNull() {
         MetadataProcessorParameters parameters = null;
         MetadataProcessorFactory factory = new MetadataProcessorFactory(parameters);
-        assertThat(factory.createSampleProcessor()).isNull();
-        assertThat(factory.createStudyProcessor()).isNull();
-        assertThat(factory.createSampleXmlProcessor()).isNull();
-        assertThat(factory.createAnalysisProcessor()).isNull();
-        assertThat(factory.createRunProcessor()).isNull();
+        assertThat(factory.getSampleProcessor()).isNull();
+        assertThat(factory.getStudyProcessor()).isNull();
+        assertThat(factory.getSampleXmlProcessor()).isNull();
+        assertThat(factory.getAnalysisProcessor()).isNull();
+        assertThat(factory.getRunProcessor()).isNull();
     }
 }

@@ -16,6 +16,8 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -40,7 +42,7 @@ SequenceAssemblyXmlTest
     private static final String NAME = "test_sequence";
 
 
-    private SequenceAssemblyWebinCli init() {
+    private WebinCliExecutor<SequenceManifest> init() {
         SequenceManifest manifest = new SequenceManifest();
         manifest.setName( NAME );
         manifest.setStudy(new Study());
@@ -53,15 +55,14 @@ SequenceAssemblyXmlTest
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
-        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli(parameters, manifestReader, new SequenceAssemblyXmlWriter());
-        return cli;
+        return (WebinCliExecutor<SequenceManifest>) WebinCliContext.sequence.createExecutor(parameters,manifestReader);
     }
 
     @Test public void
     testAnalysisXML_RunAndAnalysisRef()
     {
-        SequenceAssemblyWebinCli cli = init();
-        SequenceManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<SequenceManifest> executor = init();
+        SequenceManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.addAnalysis(
                 new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
@@ -70,8 +71,8 @@ SequenceAssemblyXmlTest
                 new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
                 new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
@@ -96,14 +97,14 @@ SequenceAssemblyXmlTest
     @Test public void
     testAnalysisXML_FlatFile()
     {
-        SequenceAssemblyWebinCli cli = init();
-        SequenceManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<SequenceManifest> executor = init();
+        SequenceManifest manifest = executor.getManifestReader().getManifest();
 
         Path flatFile = WebinCliTestUtils.createGzippedTempFile( "flatfile.dat.gz", "ID   ;" );
         manifest.files().add( new SubmissionFile( SequenceManifest.FileType.FLATFILE, flatFile.toFile() ) );
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
@@ -126,14 +127,14 @@ SequenceAssemblyXmlTest
     @Test public void
     testAnalysisXML_AuthorsAndAddress()
     {
-        SequenceAssemblyWebinCli cli = init();
-        SequenceManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<SequenceManifest> executor = init();
+        SequenceManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.setAuthors( "test_author1,test_author2.");
         manifest.setAddress( "ena,ebi,embl,UK");
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 

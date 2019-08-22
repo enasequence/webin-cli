@@ -85,24 +85,17 @@ RawReadsManifestReader extends ManifestReader<ReadsManifest> {
 
     private final ReadsManifest manifest = new ReadsManifest();
 
-    public static RawReadsManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
-        return new RawReadsManifestReader(
-                parameters,
-               factory.createSampleProcessor(),
-               factory.createStudyProcessor());
-    }
 
-    private RawReadsManifestReader(
+    public RawReadsManifestReader(
             ManifestReaderParameters parameters,
-            SampleProcessor sampleProcessor,
-            StudyProcessor studyProcessor)
+            MetadataProcessorFactory factory)
     {
         super(parameters,
                 // Fields.
                 new ManifestFieldDefinition.Builder()
                        .meta().required().name(Field.NAME).desc(Description.NAME).and()
-                       .meta().required().name(Field.STUDY).desc(Description.STUDY).processor(studyProcessor).and()
-                       .meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(sampleProcessor).and()
+                       .meta().required().name(Field.STUDY).desc(Description.STUDY).processor(factory.getStudyProcessor()).and()
+                       .meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(factory.getSampleProcessor()).and()
                        .meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
                        .meta().optional().requiredInSpreadsheet().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).and()
                        .meta().optional().notInSpreadsheet().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).and()
@@ -129,11 +122,11 @@ RawReadsManifestReader extends ManifestReader<ReadsManifest> {
                         .build()
         );
 
-        if ( studyProcessor != null ) {
-            studyProcessor.setCallback(study -> manifest.setStudy(study));
+        if ( factory.getStudyProcessor() != null ) {
+            factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
         }
-        if ( sampleProcessor != null ) {
-            sampleProcessor.setCallback(sample -> manifest.setSample(sample));
+        if ( factory.getSampleProcessor() != null ) {
+            factory.getSampleProcessor().setCallback(sample -> manifest.setSample(sample));
         }
     }
 

@@ -21,6 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
 
 public class SequenceAssemblyValidationTest {
@@ -31,8 +34,8 @@ public class SequenceAssemblyValidationTest {
     return new ManifestBuilder().field("STUDY", "test").field("NAME", "test");
   }
 
-  private static final ValidatorBuilder<SequenceAssemblyWebinCli> validatorBuilder =
-      new ValidatorBuilder(SequenceAssemblyWebinCli.class)
+  private static final WebinCliExecutorBuilder<SequenceManifest> executorBuilder =
+      new WebinCliExecutorBuilder(WebinCliContext.sequence)
           .manifestMetadataProcessors(false)
           .sample(getDefaultSample());
 
@@ -49,9 +52,9 @@ public class SequenceAssemblyValidationTest {
       String fileName = file.getName();
       System.out.println("Testing valid tab file: " + fileName);
       File manifestFile = manifestBuilder().file(FileType.TAB, fileName).build();
-      SequenceAssemblyWebinCli validator = validatorBuilder.readManifest(manifestFile, VALID_DIR);
-      validator.validateSubmission();
-      assertThat(validator.getManifestReader().getManifest().files().get(FileType.TAB))
+      WebinCliExecutor<SequenceManifest> executor = executorBuilder.readManifest(manifestFile, VALID_DIR);
+      executor.validateSubmission();
+      assertThat(executor.getManifestReader().getManifest().files().get(FileType.TAB))
           .size()
           .isOne();
     }

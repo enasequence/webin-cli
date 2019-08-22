@@ -16,6 +16,8 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -40,7 +42,7 @@ GenomeAssemblyXmlTest
 
     private static final String NAME = "test_genome";
 
-    private GenomeAssemblyWebinCli init() {
+    private WebinCliExecutor<GenomeManifest> init() {
         GenomeManifest manifest = new GenomeManifest();
         manifest.setName( NAME );
         manifest.setSample(WebinCliTestUtils.getDefaultSample());
@@ -57,15 +59,14 @@ GenomeAssemblyXmlTest
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli(parameters, manifestReader, new GenomeAssemblyXmlWriter());
-        return cli;
+        return (WebinCliExecutor<GenomeManifest>) WebinCliContext.genome.createExecutor(parameters, manifestReader);
     }
 
     @Test public void
     testAnalysisXML_RunAndAnalysisRef()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.addAnalysis(
                 new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
@@ -74,8 +75,8 @@ GenomeAssemblyXmlTest
                 new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
                 new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -106,13 +107,13 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_Description()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.setDescription("test_description");
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -140,13 +141,13 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_MolType()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.setMoleculeType("test_moltype");
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -174,13 +175,13 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_Tpa()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.setTpa(true);
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -208,13 +209,13 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_AssemblyType()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.setAssemblyType( "test_assembly_type");
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -242,14 +243,14 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_FastaFile()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile.toFile() ) );
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -278,16 +279,16 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_FastaFileAndAgpFile()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
         Path agpFile = WebinCliTestUtils.createGzippedTempFile("agp.gz", ">123\nACGT");
         manifest.files().add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile.toFile() ) );
         manifest.files().add( new SubmissionFile( GenomeManifest.FileType.AGP, agpFile.toFile() ) );
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
@@ -317,14 +318,14 @@ GenomeAssemblyXmlTest
     @Test public void
     testAnalysisXML_AuthorsAndAddress()
     {
-        GenomeAssemblyWebinCli cli = init();
-        GenomeManifest manifest = cli.getManifestReader().getManifest();
+        WebinCliExecutor<GenomeManifest> executor = init();
+        GenomeManifest manifest = executor.getManifestReader().getManifest();
 
         manifest.setAuthors( "test_author1,test_author2.");
         manifest.setAddress( "ena,ebi,embl,UK");
 
-        cli.prepareSubmissionBundle();
-        SubmissionBundle sb = cli.readSubmissionBundle();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 

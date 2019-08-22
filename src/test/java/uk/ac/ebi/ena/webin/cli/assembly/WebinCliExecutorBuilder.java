@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.assembly;
 
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
@@ -21,33 +22,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Creates the validator and reads the manifest file without using the command line parser. */
-public class ValidatorBuilder<T extends SequenceWebinCli> {
-  private final Class<T> validatorClass;
+public class WebinCliExecutorBuilder<M extends Manifest> {
+  private final WebinCliContext context;
   private boolean manifestMetadataProcessors = true;
   private Study study;
   private Sample sample;
 
-  public ValidatorBuilder(Class<T> validatorClass) {
-    this.validatorClass = validatorClass;
+  public WebinCliExecutorBuilder(WebinCliContext context) {
+    this.context = context;
   }
 
-  public ValidatorBuilder manifestMetadataProcessors(boolean metadataServiceActive) {
+  public WebinCliExecutorBuilder manifestMetadataProcessors(boolean metadataServiceActive) {
     this.manifestMetadataProcessors = metadataServiceActive;
     return this;
   }
 
-  public ValidatorBuilder study(Study study) {
+  public WebinCliExecutorBuilder study(Study study) {
     this.study = study;
     return this;
   }
 
-  public ValidatorBuilder sample(Sample sample) {
+  public WebinCliExecutorBuilder sample(Sample sample) {
     this.sample = sample;
     return this;
   }
 
-  private T createValidator(WebinCliParameters parameters) {
-    return WebinCliContext.createValidator(validatorClass, parameters);
+  private WebinCliExecutor<M> createExecutor(WebinCliParameters parameters) {
+    return (WebinCliExecutor<M>) context.createExecutor(parameters);
   }
 
   private WebinCliParameters createParameters(File manifestFile, File inputDir) {
@@ -58,30 +59,30 @@ public class ValidatorBuilder<T extends SequenceWebinCli> {
     return parameters;
   }
 
-  public T readManifest(File manifestFile, File inputDir) {
-    T validator = createValidator(createParameters(manifestFile, inputDir));
-    validator.readManifest();
+  public WebinCliExecutor<M> readManifest(File manifestFile, File inputDir) {
+    WebinCliExecutor<M> executor = createExecutor(createParameters(manifestFile, inputDir));
+    executor.readManifest();
     if (sample != null) {
-      validator.getManifestReader().getManifest().setSample(sample);
+      executor.getManifestReader().getManifest().setSample(sample);
     }
     if (study != null) {
-      validator.getManifestReader().getManifest().setStudy(study);
+      executor.getManifestReader().getManifest().setStudy(study);
     }
-    return validator;
+    return executor;
   }
 
-  public T readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
-    T validator = createValidator(createParameters(manifestFile, inputDir));
+  public WebinCliExecutor<M> readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
+    WebinCliExecutor<M> executor = createExecutor(createParameters(manifestFile, inputDir));
     assertThatThrownBy(
-            () -> validator.readManifest(),
+            () -> executor.readManifest(),
             "Expected WebinCliException to be thrown: " + message.key())
         .isInstanceOf(WebinCliException.class);
     assertThat(
-            validator
+            executor
                 .getManifestReader()
                 .getValidationResult()
                 .count(message.key(), Severity.ERROR))
         .isGreaterThanOrEqualTo(1);
-    return validator;
+    return executor;
   }
 }

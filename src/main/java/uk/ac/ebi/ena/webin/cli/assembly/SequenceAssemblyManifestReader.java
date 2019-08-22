@@ -15,9 +15,6 @@ import java.util.Map;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.AnalysisProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.RunProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
@@ -56,27 +53,16 @@ SequenceAssemblyManifestReader extends ManifestReader<SequenceManifest>
 
     private final SequenceManifest manifest = new SequenceManifest();
 
-    public static SequenceAssemblyManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
-        return new SequenceAssemblyManifestReader(
-                parameters,
-                factory.createStudyProcessor(),
-                factory.createRunProcessor(),
-                factory.createAnalysisProcessor());
-    }
-
-    private SequenceAssemblyManifestReader(
+    public SequenceAssemblyManifestReader(
             ManifestReaderParameters parameters,
-            StudyProcessor studyProcessor,
-            RunProcessor runProcessor,
-            AnalysisProcessor analysisProcessor )
-    {
+            MetadataProcessorFactory factory) {
         super(parameters,
                 // Fields.
                 new ManifestFieldDefinition.Builder()
                     .meta().required().name( Field.NAME         ).desc( Description.NAME         ).and()
-                    .meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor( studyProcessor ).and()
-                    .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( runProcessor ).and()
-                    .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( analysisProcessor ).and()
+                    .meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor( factory.getStudyProcessor() ).and()
+                    .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( factory.getRunProcessor() ).and()
+                    .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( factory.getAnalysisProcessor() ).and()
                     .meta().optional().name( Field.DESCRIPTION  ).desc( Description.DESCRIPTION  ).and()
                     .file().optional().name( Field.TAB          ).desc( Description.TAB          ).processor( getTabProcessors() ).and()
                     .file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor( getFlatfileProcessors() ).and()
@@ -93,14 +79,14 @@ SequenceAssemblyManifestReader extends ManifestReader<SequenceManifest>
                     .build()
         );
 
-        if ( studyProcessor != null ) {
-            studyProcessor.setCallback(study -> manifest.setStudy(study));
+        if ( factory.getStudyProcessor() != null ) {
+            factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
         }
-        if ( runProcessor != null ) {
-            runProcessor.setCallback(run -> manifest.setRun(run));
+        if ( factory.getRunProcessor() != null ) {
+            factory.getRunProcessor().setCallback(run -> manifest.setRun(run));
         }
-        if (analysisProcessor != null ) {
-            analysisProcessor.setCallback(analysis -> manifest.setAnalysis(analysis));
+        if (factory.getAnalysisProcessor() != null ) {
+            factory.getAnalysisProcessor().setCallback(analysis -> manifest.setAnalysis(analysis));
         }
     }
 

@@ -35,7 +35,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public abstract class
-AbstractWebinCli<M extends Manifest> implements WebinCliValidator
+WebinCliExecutor<M extends Manifest>
 {
     private final WebinCliContext context;
     private final WebinCliParameters parameters;
@@ -46,10 +46,10 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
     private File processDir;
     private File submitDir;
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractWebinCli.class);
+    private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
 
 
-    public AbstractWebinCli(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M> xmlWriter) {
+    public WebinCliExecutor(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M> xmlWriter) {
         this.context = context;
         this.parameters = parameters;
         this.manifestReader = manifestReader;
@@ -58,7 +58,6 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
 
     protected abstract void validateSubmissionForContext();
 
-   @Override
     public final void readManifest() {
         this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
 
@@ -86,7 +85,6 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
         }
     }
 
-    @Override
     public final void validateSubmission() {
         this.validationDir = createSubmissionDir(WebinCliConfig.VALIDATE_DIR );
         this.processDir = createSubmissionDir(WebinCliConfig.PROCESS_DIR );
@@ -107,13 +105,9 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
             log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
         }
 
-
-
-
         validateSubmissionForContext();
     }
 
-    @Override
     public final void prepareSubmissionBundle() {
         this.submitDir = createSubmissionDir(WebinCliConfig.SUBMIT_DIR );
 
@@ -161,7 +155,6 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
         submissionBundle.write();
     }
 
-    @Override
     public SubmissionBundle readSubmissionBundle() {
         return SubmissionBundle.read(getSubmitDir(), calculateManifestMd5());
     }
@@ -189,6 +182,10 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
 
     public ManifestReader<M> getManifestReader() {
         return manifestReader;
+    }
+
+    public XmlWriter<M> getXmlWriter() {
+        return xmlWriter;
     }
 
     public File getValidationDir() {

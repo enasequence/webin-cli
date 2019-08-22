@@ -69,10 +69,10 @@ RawReadsWebinCliTest
                                                  ( getInfoPart() + "FASTQ " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -85,10 +85,10 @@ RawReadsWebinCliTest
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nBAM file2.bam" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -102,10 +102,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setMetadataProcessorsActive(false);
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -120,10 +120,10 @@ RawReadsWebinCliTest
         
         parameters.setMetadataProcessorsActive(false);
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -138,10 +138,10 @@ RawReadsWebinCliTest
         
         parameters.setMetadataProcessorsActive(false);
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -155,10 +155,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -172,10 +172,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -189,10 +189,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -210,10 +210,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -227,10 +227,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -244,10 +244,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -262,10 +262,10 @@ RawReadsWebinCliTest
         
         parameters.setMetadataProcessorsActive(false);
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -279,10 +279,10 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -298,10 +298,10 @@ RawReadsWebinCliTest
         
         parameters.setMetadataProcessorsActive(false);
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
 
@@ -319,16 +319,16 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
         Study study = new Study();
         study.setBioProjectId("TEST");
         Sample sample = new Sample();
         sample.setBioSampleId("TEST");
-        rr.getManifestReader().getManifest().setStudy(study);
-        rr.getManifestReader().getManifest().setSample(sample);
-        rr.prepareSubmissionBundle();
-        SubmissionBundle sb = rr.readSubmissionBundle();
+        executor.getManifestReader().getManifest().setStudy(study);
+        executor.getManifestReader().getManifest().setSample(sample);
+        executor.prepareSubmissionBundle();
+        SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
         WebinCliTestUtils.assertXml( new String( Files.readAllBytes( sb.getXMLFile(SubmissionXMLFileType.EXPERIMENT ).getFile().toPath() ), StandardCharsets.UTF_8 ),
        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -370,9 +370,9 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
     }
 
 
@@ -406,17 +406,17 @@ RawReadsWebinCliTest
 
         parameters.setMetadataProcessorsActive(false);
 
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
 
         try
         {
-            rr.validateSubmission();
+            executor.validateSubmission();
             fail( "Should not validate correctly" );
 
         } catch( WebinCliException wce )
         {
-            Assert.assertEquals("Result file should exist", 1, rr.getValidationDir().list(
+            Assert.assertEquals("Result file should exist", 1, executor.getValidationDir().list(
                     (dir, name) -> name.contains(file.getName())).length);
         }
     }
@@ -434,11 +434,11 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
-        rr.prepareSubmissionBundle();
-        String lines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
+        executor.prepareSubmissionBundle();
+        String lines = new String( Files.readAllBytes( executor.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( lines.contains( "<SINGLE />" ) );
     }
@@ -458,9 +458,9 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
     }
 
 
@@ -478,9 +478,9 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
     }
 
 
@@ -497,11 +497,11 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
-        rr.prepareSubmissionBundle();
-        String lines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
+        executor.prepareSubmissionBundle();
+        String lines = new String( Files.readAllBytes( executor.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( lines.contains( "<PAIRED" ) );
     }
@@ -524,16 +524,16 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
-        rr.prepareSubmissionBundle();
-        String rlines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
+        executor.prepareSubmissionBundle();
+        String rlines = new String( Files.readAllBytes( executor.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.RUN.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                     StandardCharsets.UTF_8 );
         Assert.assertTrue( rlines.contains( file1.getFileName().toString() ) );
         Assert.assertTrue( rlines.contains( file2.getFileName().toString() ) );
         
-        String elines = new String( Files.readAllBytes( rr.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
+        String elines = new String( Files.readAllBytes( executor.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( elines.contains( "<PAIRED" ) );
     }
@@ -556,9 +556,9 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
     }
 
     
@@ -575,16 +575,16 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
         try
         {
-            rr.validateSubmission();
+            executor.validateSubmission();
             fail( "Should validate incorrectly" );
             
         } catch( WebinCliException wce )
         {
-            Assert.assertEquals("Result file should exist", 1, rr.getValidationDir().list(
+            Assert.assertEquals("Result file should exist", 1, executor.getValidationDir().list(
                     (dir, name) -> name.contains(file.getName())).length);
         }
     }
@@ -602,16 +602,16 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
         try
         {
-            rr.validateSubmission();
+            executor.validateSubmission();
             fail( "Should validate incorrectly" );
             
         } catch( WebinCliException wce )
         {
-            Assert.assertEquals("Result file should exist", 1, rr.getValidationDir().list(
+            Assert.assertEquals("Result file should exist", 1, executor.getValidationDir().list(
                     (dir, name) -> name.contains(file.getName())).length);
         }
     }
@@ -629,9 +629,9 @@ RawReadsWebinCliTest
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         
         parameters.setMetadataProcessorsActive(false);
-        RawReadsWebinCli rr = new RawReadsWebinCli( parameters );
-        rr.readManifest();
-        rr.validateSubmission();
+        RawReadsWebinCliExecutor executor = new RawReadsWebinCliExecutor( parameters );
+        executor.readManifest();
+        executor.validateSubmission();
     }
 
     

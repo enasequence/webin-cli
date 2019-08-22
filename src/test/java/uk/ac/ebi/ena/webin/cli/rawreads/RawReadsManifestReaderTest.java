@@ -48,7 +48,7 @@ RawReadsManifestReaderTest
     private static RawReadsManifestReader createManifestReader() {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setMetadataProcessorsActive(true);
-        return RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
+        return new RawReadsManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
     }
 
     @Before public void
@@ -65,15 +65,15 @@ RawReadsManifestReaderTest
     {
         Path inputDir = Paths.get( "." );
 
-        RawReadsFile file = RawReadsWebinCli.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.FASTQ, new File("file.fastq")));
+        RawReadsFile file = RawReadsWebinCliExecutor.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.FASTQ, new File("file.fastq")));
         Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
         Assert.assertEquals( Filetype.fastq, file.getFiletype() );
 
-        file = RawReadsWebinCli.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.BAM, new File("file.bam")));
+        file = RawReadsWebinCliExecutor.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.BAM, new File("file.bam")));
         Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
         Assert.assertEquals( Filetype.bam, file.getFiletype() );
 
-        file = RawReadsWebinCli.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.CRAM, new File("file.cram")));
+        file = RawReadsWebinCliExecutor.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.CRAM, new File("file.cram")));
         Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
         Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }

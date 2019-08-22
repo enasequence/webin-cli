@@ -17,6 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
@@ -35,8 +37,9 @@ public class TranscriptomeAssemblyValidationTest {
         .field("NAME", "test");
   }
 
-  private static final ValidatorBuilder<TranscriptomeAssemblyWebinCli> validatorBuilder =
-      new ValidatorBuilder(TranscriptomeAssemblyWebinCli.class)
+  private static final WebinCliExecutorBuilder<TranscriptomeManifest> executorBuilder =
+      new WebinCliExecutorBuilder(
+              WebinCliContext.transcriptome)
           .manifestMetadataProcessors(false)
           .sample(WebinCliTestUtils.getDefaultSample());
 
@@ -54,11 +57,11 @@ public class TranscriptomeAssemblyValidationTest {
       // System.out.println(fileName);
       File manifestFile =
           manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, fileName).build();
-      TranscriptomeAssemblyWebinCli validator =
-          validatorBuilder.readManifest(manifestFile, VALID_DIR);
-      validator.validateSubmission();
+      WebinCliExecutor<TranscriptomeManifest> executor =
+          executorBuilder.readManifest(manifestFile, VALID_DIR);
+      executor.validateSubmission();
       assertThat(
-              validator
+              executor
                   .getManifestReader()
                   .getManifest()
                   .files()

@@ -12,27 +12,28 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.*;
 
 /** Creates the validator and reads the manifest file without using the command line parser. */
-public class ManifestReaderTester<T extends ManifestReader> {
-  private final Class<T> manifestReaderClass;
+public class ManifestReaderTester<M extends Manifest> {
+  private final Class<ManifestReader<M>> manifestReaderClass;
   private boolean metadataProcessorsActive = true;
   private boolean manifestValidateMandatory = true;
   private boolean manifestValidateFileExist = true;
   private boolean manifestValidateFileCount = true;
 
-  public ManifestReaderTester(Class<T> manifestReaderClass) {
-    this.manifestReaderClass = manifestReaderClass;
+  public ManifestReaderTester( Class<ManifestReader<M>> manifestReaderClass) {
+      this.manifestReaderClass = manifestReaderClass;
   }
 
   public ManifestReaderTester metadataProcessorsActive(boolean metadataProcessorsActive) {
@@ -55,14 +56,8 @@ public class ManifestReaderTester<T extends ManifestReader> {
     return this;
   }
 
-  private T create() {
-    try {
-      Method create =
-          manifestReaderClass.getMethod(
-              "create", ManifestReaderParameters.class, MetadataProcessorFactory.class);
-      return (T)
-          create.invoke(
-              null,
+  private ManifestReader<M> create() {
+        return WebinCliContext.createManifestReader(manifestReaderClass,
               new ManifestReaderParameters() {
                 public boolean isManifestValidateMandatory() {
                   return manifestValidateMandatory;
@@ -94,31 +89,29 @@ public class ManifestReaderTester<T extends ManifestReader> {
                       return true;
                     }
                   }));
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
+
   }
 
-  public T test(ManifestBuilder manifest) {
+  public ManifestReader<M> test(ManifestBuilder manifest) {
     return test(manifest, WebinCliTestUtils.createTempDir());
   }
 
-  public T test(ManifestBuilder manifest, File inputDir) {
+  public ManifestReader<M> test(ManifestBuilder manifest, File inputDir) {
     return test(manifest, inputDir.toPath());
   }
 
-  public T test(ManifestBuilder manifest, Path inputDir) {
-    T reader = create();
+  public ManifestReader<M> test(ManifestBuilder manifest, Path inputDir) {
+      ManifestReader<M> reader = create();
     reader.readManifest(inputDir, manifest.build(inputDir));
     return reader;
   }
 
-  public T testError(ManifestBuilder manifest, WebinCliMessage message) {
+  public ManifestReader<M> testError(ManifestBuilder manifest, WebinCliMessage message) {
     return testError(manifest, WebinCliTestUtils.createTempDir(), message);
   }
 
-  public T testError(ManifestBuilder manifest, File inputDir, WebinCliMessage message) {
-    T reader = test(manifest, inputDir);
+  public ManifestReader<M> testError(ManifestBuilder manifest, File inputDir, WebinCliMessage message) {
+  ManifestReader<M> reader = test(manifest, inputDir);
     assertThat(reader.getValidationResult().count(message.key(), Severity.ERROR))
         .isGreaterThanOrEqualTo(1);
     return reader;

@@ -8,10 +8,9 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.assembly;
+package uk.ac.ebi.ena.webin.cli;
 
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
-import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -21,12 +20,12 @@ import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 import java.nio.file.Paths;
 import java.util.List;
 
-public abstract class
-SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
+public class
+WebinCliExecutorEx<M extends Manifest> extends WebinCliExecutor<M>
 {
     private static final String ERROR_FILE = "webin-cli.report";
 
-    public SequenceWebinCli(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M> xmlWriter) {
+    public WebinCliExecutorEx(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M> xmlWriter) {
         super(context, parameters, manifestReader, xmlWriter);
     }
 

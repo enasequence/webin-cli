@@ -17,7 +17,6 @@ import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
@@ -67,32 +66,18 @@ TranscriptomeAssemblyManifestReader extends ManifestReader<TranscriptomeManifest
 
 	private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
-	public static TranscriptomeAssemblyManifestReader create(ManifestReaderParameters parameters, MetadataProcessorFactory factory) {
-		return new TranscriptomeAssemblyManifestReader(
-				parameters,
-				factory.createSampleProcessor(),
-				factory.createStudyProcessor(),
-				factory.createSampleXmlProcessor(),
-				factory.createRunProcessor(),
-				factory.createAnalysisProcessor());
-	}
-
-	private TranscriptomeAssemblyManifestReader(
+	public TranscriptomeAssemblyManifestReader(
 			ManifestReaderParameters parameters,
-			SampleProcessor sampleProcessor,
-		    StudyProcessor studyProcessor,
-		    SampleXmlProcessor sampleXmlProcessor,
-		    RunProcessor runProcessor,
-		    AnalysisProcessor analysisProcessor )
+			MetadataProcessorFactory factory)
 	{
 		super(parameters,
 				// Fields.
 				new ManifestFieldDefinition.Builder()
 					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
-					.meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor(studyProcessor).and()
-					.meta().required().name( Field.SAMPLE       ).desc( Description.SAMPLE       ).processor(sampleProcessor, sampleXmlProcessor).and()
-                    .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( runProcessor ).and()
-                    .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( analysisProcessor ).and()
+					.meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor( factory.getStudyProcessor()).and()
+					.meta().required().name( Field.SAMPLE       ).desc( Description.SAMPLE       ).processor( factory.getSampleProcessor(), factory.getSampleXmlProcessor()).and()
+                    .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( factory.getRunProcessor() ).and()
+                    .meta().optional().name( Field.ANALYSIS_REF ).desc( Description.ANALYSIS_REF ).processor( factory.getAnalysisProcessor() ).and()
 					.meta().optional().name( Field.DESCRIPTION  ).desc( Description.DESCRIPTION  ).and()
 					.meta().required().name( Field.PROGRAM      ).desc( Description.PROGRAM      ).and()
 					.meta().required().name( Field.PLATFORM     ).desc( Description.PLATFORM     ).and()
@@ -113,20 +98,20 @@ TranscriptomeAssemblyManifestReader extends ManifestReader<TranscriptomeManifest
 					.build()
 		);
 
-		if ( studyProcessor != null ) {
-			studyProcessor.setCallback(study -> manifest.setStudy(study));
+		if ( factory.getStudyProcessor() != null ) {
+			factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
 		}
-		if ( sampleProcessor != null ) {
-			sampleProcessor.setCallback(sample -> manifest.setSample(sample));
+		if ( factory.getSampleProcessor() != null ) {
+			factory.getSampleProcessor().setCallback(sample -> manifest.setSample(sample));
 		}
-		if ( runProcessor != null ) {
-			runProcessor.setCallback(run -> manifest.setRun(run));
+		if ( factory.getRunProcessor() != null ) {
+			factory.getRunProcessor().setCallback(run -> manifest.setRun(run));
 		}
-		if (analysisProcessor != null ) {
-			analysisProcessor.setCallback(analysis -> manifest.setAnalysis(analysis));
+		if (factory.getAnalysisProcessor() != null ) {
+			factory.getAnalysisProcessor().setCallback(analysis -> manifest.setAnalysis(analysis));
 		}
-		if (sampleXmlProcessor != null) {
-			sampleXmlProcessor.setCallback(sample -> {
+		if (factory.getSampleXmlProcessor() != null) {
+			factory.getSampleXmlProcessor().setCallback(sample -> {
 				manifest.getSample().setName(sample.getName());
 				manifest.getSample().setAttributes(sample.getAttributes());
 			});

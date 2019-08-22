@@ -10,37 +10,93 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyWebinCli;
-import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyWebinCli;
-import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyWebinCli;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCli;
+import uk.ac.ebi.ena.webin.cli.assembly.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.*;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public enum WebinCliContext {
-  genome(GenomeAssemblyWebinCli.class, "Genome assembly"),
-  transcriptome(TranscriptomeAssemblyWebinCli.class, "Transcriptome assembly"),
-  sequence(SequenceAssemblyWebinCli.class, "Sequence assembly"),
-  reads(RawReadsWebinCli.class, "Raw reads");
+  genome(
+          GenomeManifest.class,
+          GenomeAssemblyManifestReader.class,
+          GenomeAssemblyXmlWriter.class,
+          "Genome assembly"),
+  transcriptome(
+          TranscriptomeManifest.class,
+          TranscriptomeAssemblyManifestReader.class,
+          TranscriptomeAssemblyXmlWriter.class,
+          "Transcriptome assembly"),
+  sequence(
+          SequenceManifest.class,
+          SequenceAssemblyManifestReader.class,
+          SequenceAssemblyXmlWriter.class,
+          "Sequence assembly"),
+  reads(ReadsManifest.class, RawReadsManifestReader.class, RawReadsXmlWriter.class, "Raw reads");
 
-  private final Class<? extends AbstractWebinCli> validatorClass;
+  private final Class<? extends Manifest> manifestClass;
+  private final Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass;
+  private final Class<? extends XmlWriter<? extends Manifest>> xmlWriterClass;
+
   private final String titlePrefix;
 
-  WebinCliContext(Class<? extends AbstractWebinCli> validatorClass, String titlePrefix) {
-    this.validatorClass = validatorClass;
+  WebinCliContext(
+          Class<? extends Manifest> manifestClass,
+          Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass,
+          Class<? extends XmlWriter<? extends Manifest>> xmlWriterClass,
+          String titlePrefix) {
+    this.manifestClass = manifestClass;
+    this.manifestReaderClass = manifestReaderClass;
+    this.xmlWriterClass = xmlWriterClass;
     this.titlePrefix = titlePrefix;
   }
 
-  public Class<? extends AbstractWebinCli> getValidatorClass() {
-    return this.validatorClass;
+  public WebinCliExecutor<?> createExecutor(WebinCliParameters parameters) {
+    return createExecutor(parameters, createManifestReader(parameters));
   }
 
-  public AbstractWebinCli createValidator(WebinCliParameters parameters) {
-    return createValidator(validatorClass, parameters);
+  public WebinCliExecutor<?> createExecutor(
+          WebinCliParameters parameters, ManifestReader<?> manifestReader) {
+    if (manifestClass.equals(ReadsManifest.class)) {
+      // TODO: remove RawReadsWebinCliExecutor
+      return new RawReadsWebinCliExecutor(parameters);
+    } else {
+      try {
+        return new WebinCliExecutorEx<>(this, parameters, manifestReader, createXmlWriter());
+
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    }
   }
 
-  public static <T extends AbstractWebinCli> T createValidator(
-      Class<T> validatorClass, WebinCliParameters parameters) {
+  public ManifestReader createManifestReader(WebinCliParameters parameters) {
+    return createManifestReader(
+            manifestReaderClass,
+            ManifestReader.DEFAULT_PARAMETERS,
+            new MetadataProcessorFactory(parameters));
+  }
+
+  public static ManifestReader createManifestReader(
+          Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass,
+          ManifestReaderParameters manifestReaderParameters,
+          MetadataProcessorFactory metadataProcessorFactory) {
     try {
-      return validatorClass.getConstructor(WebinCliParameters.class).newInstance(parameters);
+      return manifestReaderClass
+              .getDeclaredConstructor(ManifestReaderParameters.class, MetadataProcessorFactory.class)
+              .newInstance(manifestReaderParameters, metadataProcessorFactory);
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  public XmlWriter createXmlWriter() {
+    try {
+      return xmlWriterClass.newInstance();
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
