@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest.FileType;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlCreatorHelper.createFileElement;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlCreatorHelper.createTextElement;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
-public class TranscriptomeAssemblyXmlCreator extends SequenceXmlCreator<TranscriptomeManifest> {
+public class TranscriptomeAssemblyXmlWriter extends SequenceXmlWriter<TranscriptomeManifest> {
 
   @Override
   protected Element createXmlAnalysisTypeElement(TranscriptomeManifest manifest) {

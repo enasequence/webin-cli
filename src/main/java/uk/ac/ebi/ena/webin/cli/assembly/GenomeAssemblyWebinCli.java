@@ -15,16 +15,16 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public class 
 GenomeAssemblyWebinCli extends SequenceWebinCli<GenomeManifest>
 {
 	public GenomeAssemblyWebinCli(WebinCliParameters parameters) {
-		this(parameters, GenomeAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new GenomeAssemblyXmlCreator());
+		this(parameters, GenomeAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new GenomeAssemblyXmlWriter());
 	}
 
-	public GenomeAssemblyWebinCli(WebinCliParameters parameters, ManifestReader<GenomeManifest> manifestReader, XmlCreator<GenomeManifest> xmlCreator) {
-		super(WebinCliContext.genome, parameters, manifestReader, xmlCreator);
+	public GenomeAssemblyWebinCli(WebinCliParameters parameters, ManifestReader<GenomeManifest> manifestReader, XmlWriter<GenomeManifest> xmlWriter) {
+		super(WebinCliContext.genome, parameters, manifestReader, xmlWriter);
 	}
 }

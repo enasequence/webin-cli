@@ -32,7 +32,7 @@ import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public abstract class
 AbstractWebinCli<M extends Manifest> implements WebinCliValidator
@@ -40,7 +40,7 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
     private final WebinCliContext context;
     private final WebinCliParameters parameters;
     private final ManifestReader<M> manifestReader;
-    private final XmlCreator<M> xmlCreator;
+    private final XmlWriter<M> xmlWriter;
 
     private File validationDir;
     private File processDir;
@@ -49,11 +49,11 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
     private static final Logger log = LoggerFactory.getLogger(AbstractWebinCli.class);
 
 
-    public AbstractWebinCli(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlCreator<M> xmlCreator) {
+    public AbstractWebinCli(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M> xmlWriter) {
         this.context = context;
         this.parameters = parameters;
         this.manifestReader = manifestReader;
-        this.xmlCreator = xmlCreator;
+        this.xmlWriter = xmlWriter;
     }
 
     protected abstract void validateSubmissionForContext();
@@ -128,7 +128,7 @@ AbstractWebinCli<M extends Manifest> implements WebinCliValidator
         uploadFileList.addAll(getManifestReader().getManifest().files().files());
 
         Map<SubmissionBundle.SubmissionXMLFileType, String> xmls =
-                xmlCreator.createXml(
+                xmlWriter.createXml(
                         getManifestReader().getManifest(),
                         getParameters().getCenterName(),
                         getSubmissionTitle(),

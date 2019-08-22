@@ -15,15 +15,15 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public class TranscriptomeAssemblyWebinCli extends SequenceWebinCli<TranscriptomeManifest> {
 
 	public TranscriptomeAssemblyWebinCli(WebinCliParameters parameters) {
-		this(parameters, TranscriptomeAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new TranscriptomeAssemblyXmlCreator());
+		this(parameters, TranscriptomeAssemblyManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new TranscriptomeAssemblyXmlWriter());
 	}
 
-	public TranscriptomeAssemblyWebinCli(WebinCliParameters parameters, ManifestReader<TranscriptomeManifest> manifestReader, XmlCreator<TranscriptomeManifest> xmlCreator) {
-		super(WebinCliContext.transcriptome, parameters, manifestReader, xmlCreator);
+	public TranscriptomeAssemblyWebinCli(WebinCliParameters parameters, ManifestReader<TranscriptomeManifest> manifestReader, XmlWriter<TranscriptomeManifest> xmlWriter) {
+		super(WebinCliContext.transcriptome, parameters, manifestReader, xmlWriter);
 	}
 }

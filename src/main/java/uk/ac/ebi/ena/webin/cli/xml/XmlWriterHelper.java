@@ -5,7 +5,7 @@ import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 import java.nio.file.Path;
 
-public class XmlCreatorHelper {
+public class XmlWriterHelper {
 
   public static Element createTextElement(String name, String text) {
     Element e = new Element(name);

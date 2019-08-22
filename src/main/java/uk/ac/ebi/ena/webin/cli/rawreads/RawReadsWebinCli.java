@@ -43,7 +43,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public class 
 RawReadsWebinCli extends AbstractWebinCli<ReadsManifest>
@@ -51,11 +51,11 @@ RawReadsWebinCli extends AbstractWebinCli<ReadsManifest>
     private static final Logger log = LoggerFactory.getLogger(RawReadsWebinCli.class);
 
     public RawReadsWebinCli(WebinCliParameters parameters) {
-        this(parameters, RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new RawReadsXmlCreator());
+        this(parameters, RawReadsManifestReader.create(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )), new RawReadsXmlWriter());
     }
 
-    public RawReadsWebinCli(WebinCliParameters parameters, ManifestReader<ReadsManifest> manifestReader, XmlCreator<ReadsManifest> xmlCreator) {
-        super(WebinCliContext.reads, parameters, manifestReader, xmlCreator);
+    public RawReadsWebinCli(WebinCliParameters parameters, ManifestReader<ReadsManifest> manifestReader, XmlWriter<ReadsManifest> xmlWriter) {
+        super(WebinCliContext.reads, parameters, manifestReader, xmlWriter);
     }
 
     @Override

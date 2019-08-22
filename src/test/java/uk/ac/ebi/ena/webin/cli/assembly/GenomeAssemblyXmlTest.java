@@ -57,7 +57,7 @@ GenomeAssemblyXmlTest
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
-        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli(parameters, manifestReader, new GenomeAssemblyXmlCreator());
+        GenomeAssemblyWebinCli cli = new GenomeAssemblyWebinCli(parameters, manifestReader, new GenomeAssemblyXmlWriter());
         return cli;
     }
 
@@ -79,7 +79,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                 "<ANALYSIS_SET>\n"
                       + "  <ANALYSIS>\n"
                       + "    <TITLE>Genome assembly: test_genome</TITLE>\n"
@@ -116,7 +116,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
@@ -150,7 +150,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
@@ -184,7 +184,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
@@ -218,7 +218,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
@@ -253,7 +253,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
@@ -291,7 +291,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                 "<ANALYSIS_SET>\n" +
                         "  <ANALYSIS>\n" +
                         "    <TITLE>Genome assembly: test_genome</TITLE>\n" +
@@ -328,7 +328,7 @@ GenomeAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle(sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS);
 
-        WebinCliTestUtils.assertAnalysisXml(analysisXml,
+        WebinCliTestUtils.assertXml(analysisXml,
                     "<ANALYSIS_SET>\n" +
                             "  <ANALYSIS>\n" +
                             "    <TITLE>Genome assembly: test_genome</TITLE>\n" +

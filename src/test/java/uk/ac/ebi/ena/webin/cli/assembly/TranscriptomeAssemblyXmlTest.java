@@ -56,7 +56,7 @@ TranscriptomeAssemblyXmlTest {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
-        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli( parameters, manifestReader, new TranscriptomeAssemblyXmlCreator() );
+        TranscriptomeAssemblyWebinCli cli = new TranscriptomeAssemblyWebinCli( parameters, manifestReader, new TranscriptomeAssemblyXmlWriter() );
         return cli;
     }
 
@@ -77,7 +77,7 @@ TranscriptomeAssemblyXmlTest {
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+        WebinCliTestUtils.assertXml( analysisXml,
                 "<ANALYSIS_SET>\n"
                         + "  <ANALYSIS>\n"
                         + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
@@ -111,7 +111,7 @@ TranscriptomeAssemblyXmlTest {
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+        WebinCliTestUtils.assertXml( analysisXml,
                 "<ANALYSIS_SET>\n"
                         + "  <ANALYSIS>\n"
                         + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
@@ -145,7 +145,7 @@ TranscriptomeAssemblyXmlTest {
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+        WebinCliTestUtils.assertXml( analysisXml,
                 "<ANALYSIS_SET>\n"
                       + "  <ANALYSIS>\n"
                       + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
@@ -180,7 +180,7 @@ TranscriptomeAssemblyXmlTest {
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+        WebinCliTestUtils.assertXml( analysisXml,
                 "<ANALYSIS_SET>\n"
                         + "  <ANALYSIS>\n"
                         + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"

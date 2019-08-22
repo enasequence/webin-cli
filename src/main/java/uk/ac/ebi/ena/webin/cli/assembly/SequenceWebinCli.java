@@ -16,7 +16,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -26,8 +26,8 @@ SequenceWebinCli<M extends Manifest> extends AbstractWebinCli<M>
 {
     private static final String ERROR_FILE = "webin-cli.report";
 
-    public SequenceWebinCli(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlCreator<M> xmlCreator) {
-        super(context, parameters, manifestReader, xmlCreator);
+    public SequenceWebinCli(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M> xmlWriter) {
+        super(context, parameters, manifestReader, xmlWriter);
     }
 
     @Override protected void validateSubmissionForContext()

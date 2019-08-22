@@ -53,7 +53,7 @@ SequenceAssemblyXmlTest
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
         parameters.setTestMode(false);
-        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli(parameters, manifestReader, new SequenceAssemblyXmlCreator());
+        SequenceAssemblyWebinCli cli = new SequenceAssemblyWebinCli(parameters, manifestReader, new SequenceAssemblyXmlWriter());
         return cli;
     }
 
@@ -75,7 +75,7 @@ SequenceAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+        WebinCliTestUtils.assertXml( analysisXml,
                 "<ANALYSIS_SET>\n"
                         + "<ANALYSIS>\n"
                         + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
@@ -107,7 +107,7 @@ SequenceAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+        WebinCliTestUtils.assertXml( analysisXml,
                 "<ANALYSIS_SET>\n"
                       + "<ANALYSIS>\n"
                       + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
@@ -137,7 +137,7 @@ SequenceAssemblyXmlTest
 
         String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
 
-        WebinCliTestUtils.assertAnalysisXml( analysisXml,
+        WebinCliTestUtils.assertXml( analysisXml,
                 "<ANALYSIS_SET>\n"
                         + "<ANALYSIS>\n"
                         + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"

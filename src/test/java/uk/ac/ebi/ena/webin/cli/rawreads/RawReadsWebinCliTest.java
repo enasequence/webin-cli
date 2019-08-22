@@ -330,7 +330,7 @@ RawReadsWebinCliTest
         rr.prepareSubmissionBundle();
         SubmissionBundle sb = rr.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
-        WebinCliTestUtils.assertAnalysisXml( new String( Files.readAllBytes( sb.getXMLFileList().get( 0 ).getFile().toPath() ), StandardCharsets.UTF_8 ),
+        WebinCliTestUtils.assertXml( new String( Files.readAllBytes( sb.getXMLFile(SubmissionXMLFileType.EXPERIMENT ).getFile().toPath() ), StandardCharsets.UTF_8 ),
        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       + "<EXPERIMENT_SET>\n"
       + " <EXPERIMENT alias=\"webin-reads-SOME-FANCY-NAME\">\n"

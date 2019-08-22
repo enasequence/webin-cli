@@ -18,7 +18,7 @@ import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -26,9 +26,9 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import static uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlCreatorHelper.createFileElement;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 
-public class RawReadsXmlCreator implements XmlCreator<ReadsManifest> {
+public class RawReadsXmlWriter implements XmlWriter<ReadsManifest> {
 
   @Override
   public Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(

@@ -14,14 +14,14 @@ import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 import static uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlCreatorHelper.createFileElement;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlCreatorHelper.createTextElement;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenomeAssemblyXmlCreator extends SequenceXmlCreator<GenomeManifest> {
+public class GenomeAssemblyXmlWriter extends SequenceXmlWriter<GenomeManifest> {
 
   @Override
   protected Element createXmlAnalysisTypeElement(GenomeManifest manifest) {

@@ -19,7 +19,7 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
-import uk.ac.ebi.ena.webin.cli.xml.XmlCreator;
+import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class SequenceXmlCreator<M extends Manifest> implements XmlCreator<M> {
+public abstract class SequenceXmlWriter<M extends Manifest> implements XmlWriter<M> {
 
   protected abstract Element createXmlAnalysisTypeElement(M manifest);
 
