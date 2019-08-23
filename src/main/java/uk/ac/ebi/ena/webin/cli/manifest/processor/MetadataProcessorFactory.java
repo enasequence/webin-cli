@@ -20,38 +20,59 @@ public class MetadataProcessorFactory {
     this.parameters = parameters;
   }
 
-  public SampleProcessor createSampleProcessor() {
-    if (parameters != null && parameters.isMetadataProcessorsActive()) {
-      return new SampleProcessor(parameters);
+  private SampleProcessor sampleProcessor;
+  private StudyProcessor studyProcessor;
+  private SampleXmlProcessor sampleXmlProcessor;
+  private RunProcessor runProcessor;
+  private AnalysisProcessor analysisProcessor;
+
+  public SampleProcessor getSampleProcessor() {
+    if (sampleProcessor != null) {
+      return sampleProcessor;
     }
-    return null;
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
+      sampleProcessor = new SampleProcessor(parameters);
+    }
+    return sampleProcessor;
   }
 
-  public StudyProcessor createStudyProcessor() {
-    if (parameters != null && parameters.isMetadataProcessorsActive()) {
-      return new StudyProcessor(parameters);
+  public StudyProcessor getStudyProcessor() {
+    if (studyProcessor != null) {
+      return studyProcessor;
     }
-    return null;
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
+      studyProcessor = new StudyProcessor(parameters);
+    }
+    return studyProcessor;
   }
 
-  public SampleXmlProcessor createSampleXmlProcessor() {
-    if (parameters != null && parameters.isMetadataProcessorsActive()) {
-      return new SampleXmlProcessor(parameters);
+  public SampleXmlProcessor getSampleXmlProcessor() {
+    if (sampleXmlProcessor != null) {
+      return sampleXmlProcessor;
     }
-    return null;
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
+      sampleXmlProcessor = new SampleXmlProcessor(parameters);
+    }
+    return sampleXmlProcessor;
   }
 
-  public RunProcessor createRunProcessor() {
-    if (parameters != null && parameters.isMetadataProcessorsActive()) {
-      return new RunProcessor(parameters);
+  public RunProcessor getRunProcessor() {
+    if (runProcessor != null) {
+      return runProcessor;
     }
-    return null;
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
+      runProcessor = new RunProcessor(parameters);
+    }
+    return runProcessor;
   }
 
-  public AnalysisProcessor createAnalysisProcessor() {
-    if (parameters != null && parameters.isMetadataProcessorsActive()) {
-      return new AnalysisProcessor(parameters);
+  public AnalysisProcessor getAnalysisProcessor() {
+    if (analysisProcessor != null) {
+      return analysisProcessor;
     }
-    return null;
+    if (parameters != null && parameters.isMetadataProcessorsActive()) {
+      analysisProcessor = new AnalysisProcessor(parameters);
+    }
+    return analysisProcessor;
   }
 }

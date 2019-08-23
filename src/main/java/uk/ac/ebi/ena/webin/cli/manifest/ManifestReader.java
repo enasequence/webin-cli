@@ -29,10 +29,13 @@ import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.embl.api.validation.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public abstract class
-ManifestReader
-{
+ManifestReader<M extends Manifest> {
+
+    public abstract M getManifest();
+
     public interface Fields {
         String INFO = "INFO";
     }
@@ -110,10 +113,6 @@ ManifestReader
     {
         return state.inputDir;
     }
-
-    
-    public abstract String getName();
-    public abstract String getDescription();
 
     public List<ManifestFieldDefinition> getFields() {
         return fields;

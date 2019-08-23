@@ -10,33 +10,33 @@
  */
 package uk.ac.ebi.ena.webin.cli.spreadsheet;
 
-import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyManifestReader;
-import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyManifestReader;
-import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 
 public enum SpreadsheetContext {
 
     GENOME(
-            GenomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
+            new ManifestReaderBuilder(GenomeManifestReader.class).build(),
             "genome",
             "Additionally, primary and binned metagenomes must have " +
-            ManifestReader.getFileGroupText( GenomeAssemblyManifestReader.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
+            ManifestReader.getFileGroupText( GenomeManifestReader.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
     ),
     TRANSCRIPTOME(
-            TranscriptomeAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
+            new ManifestReaderBuilder(TranscriptomeAssemblyManifestReader.class).build(),
             "transcriptome",
             null
     ),
     SEQUENCE(
-            SequenceAssemblyManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
+            new ManifestReaderBuilder(SequenceManifestReader.class).build(),
             "sequence",
             null
     ),
     READ(
-            RawReadsManifestReader.create( ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(null) ),
+            new ManifestReaderBuilder(ReadsManifestReader.class).build(),
             "read",
             null
     );

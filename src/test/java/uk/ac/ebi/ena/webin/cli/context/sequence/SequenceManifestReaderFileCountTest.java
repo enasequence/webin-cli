@@ -8,28 +8,21 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.manifest;
+package uk.ac.ebi.ena.webin.cli.context.sequence;
 
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import org.junit.Test;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
-import java.util.List;
+public class SequenceManifestReaderFileCountTest {
 
-public class TestManifestReader extends ManifestReader {
-
-    public TestManifestReader(List<ManifestFieldDefinition> fields) {
-        super(DEFAULT_PARAMETERS, fields);
-    }
-
-    public TestManifestReader(List<ManifestFieldDefinition> fields, List<ManifestFileGroup> fileGroups) {
-        super(DEFAULT_PARAMETERS, fields, fileGroups);
-    }
-
-    @Override
-    protected void processManifest() {
-    }
-
-    @Override
-    public Manifest getManifest() {
-        return null;
-    }
+  @Test
+  public void testFileCount() {
+    new ManifestReaderFileCountTester<>(
+            SequenceManifestReader.class, SequenceManifest.FileType.values())
+        // Supported file groups
+        .files(SequenceManifest.FileType.TAB)
+        .files(SequenceManifest.FileType.FLATFILE)
+        .test();
+  }
 }

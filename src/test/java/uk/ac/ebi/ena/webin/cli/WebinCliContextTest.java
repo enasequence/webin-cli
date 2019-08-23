@@ -11,16 +11,33 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import org.junit.Test;
+import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyXmlWriter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class WebinCliContextTest {
 
   @Test
-  public void testCreateValidator() {
+  public void testCreateExecutor() {
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-    for (WebinCliContext context : WebinCliContext.values()) {
-      assertThat(context.createValidator(parameters)).isInstanceOf(context.getValidatorClass());
-    }
+
+    assertThat(WebinCliContext.genome.createExecutor(parameters).getManifestReader()).isInstanceOf(GenomeManifestReader.class);
+    assertThat(WebinCliContext.genome.createExecutor(parameters).getXmlWriter()).isInstanceOf(GenomeXmlWriter.class);
+
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getManifestReader()).isInstanceOf(TranscriptomeAssemblyManifestReader.class);
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getXmlWriter()).isInstanceOf(TranscriptomeAssemblyXmlWriter.class);
+
+    assertThat(WebinCliContext.sequence.createExecutor(parameters).getManifestReader()).isInstanceOf(SequenceManifestReader.class);
+    assertThat(WebinCliContext.sequence.createExecutor(parameters).getXmlWriter()).isInstanceOf(SequenceXmlWriter.class);
+
+    assertThat(WebinCliContext.reads.createExecutor(parameters).getManifestReader()).isInstanceOf(ReadsManifestReader.class);
+    assertThat(WebinCliContext.reads.createExecutor(parameters).getXmlWriter()).isInstanceOf(ReadsXmlWriter.class);
   }
 }

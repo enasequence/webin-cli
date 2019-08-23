@@ -205,7 +205,7 @@ public class WebinCliTestUtils {
 
 
     public static void
-    assertAnalysisXml(String xml, String expectedXml) {
+    assertXml(String xml, String expectedXml) {
         xml = xml.replaceAll("<\\?xml.*", "");
         xml = xml.replaceAll("\\r\\n?", "\n");
         xml = Arrays.stream(xml.split("\n"))

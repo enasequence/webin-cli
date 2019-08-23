@@ -173,6 +173,11 @@ SubmissionBundle implements Serializable
         return xmlFileList;
     }
 
+    public SubmissionXMLFile
+    getXMLFile(SubmissionXMLFileType fileType)
+    {
+        return xmlFileList.stream().filter(file -> file.getType().equals(fileType)).findFirst().get();
+    }
 
     public String
     getCenterName()

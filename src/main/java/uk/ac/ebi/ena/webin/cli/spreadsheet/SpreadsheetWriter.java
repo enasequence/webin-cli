@@ -28,7 +28,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 
 public class SpreadsheetWriter {
 
@@ -211,7 +211,7 @@ public class SpreadsheetWriter {
 
     private List<String> getCvValues(ManifestFieldDefinition field, CVFieldProcessor processor) {
         ArrayList<String> excludeValues = new ArrayList<>();
-        if (spreadsheetContext == SpreadsheetContext.READ && field.getName().equals(RawReadsManifestReader.Field.INSTRUMENT)) {
+        if (spreadsheetContext == SpreadsheetContext.READ && field.getName().equals(ReadsManifestReader.Field.INSTRUMENT)) {
             excludeValues.add("unspecified");
         }
         return processor.getValues().stream().filter(value -> !excludeValues.contains(value)).sorted().collect(Collectors.toList());
