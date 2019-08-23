@@ -10,20 +10,25 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.webin.cli.assembly.*;
+import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsWebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.*;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public enum WebinCliContext {
   genome(
           GenomeManifest.class,
-          GenomeAssemblyManifestReader.class,
-          GenomeAssemblyXmlWriter.class,
+          GenomeManifestReader.class,
+          GenomeXmlWriter.class,
           "Genome assembly"),
   transcriptome(
           TranscriptomeManifest.class,
@@ -32,10 +37,10 @@ public enum WebinCliContext {
           "Transcriptome assembly"),
   sequence(
           SequenceManifest.class,
-          SequenceAssemblyManifestReader.class,
-          SequenceAssemblyXmlWriter.class,
+          SequenceManifestReader.class,
+          SequenceXmlWriter.class,
           "Sequence assembly"),
-  reads(ReadsManifest.class, RawReadsManifestReader.class, RawReadsXmlWriter.class, "Raw reads");
+  reads(ReadsManifest.class, ReadsManifestReader.class, ReadsXmlWriter.class, "Raw reads");
 
   private final Class<? extends Manifest> manifestClass;
   private final Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass;
@@ -74,8 +79,8 @@ public enum WebinCliContext {
   public WebinCliExecutor<?> createExecutor(
           WebinCliParameters parameters, ManifestReader<?> manifestReader) {
     if (manifestClass.equals(ReadsManifest.class)) {
-      // TODO: remove RawReadsWebinCliExecutor
-      return new RawReadsWebinCliExecutor(parameters);
+      // TODO: remove ReadsWebinCliExecutor
+      return new ReadsWebinCliExecutor(parameters);
     } else {
       try {
         XmlWriter<?> xmlWriter = xmlWriterClass.newInstance();

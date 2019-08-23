@@ -10,20 +10,20 @@
  */
 package uk.ac.ebi.ena.webin.cli.spreadsheet;
 
-import uk.ac.ebi.ena.webin.cli.assembly.GenomeAssemblyManifestReader;
-import uk.ac.ebi.ena.webin.cli.assembly.SequenceAssemblyManifestReader;
-import uk.ac.ebi.ena.webin.cli.assembly.TranscriptomeAssemblyManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
-import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 
 public enum SpreadsheetContext {
 
     GENOME(
-            new ManifestReaderBuilder(GenomeAssemblyManifestReader.class).build(),
+            new ManifestReaderBuilder(GenomeManifestReader.class).build(),
             "genome",
             "Additionally, primary and binned metagenomes must have " +
-            ManifestReader.getFileGroupText( GenomeAssemblyManifestReader.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
+            ManifestReader.getFileGroupText( GenomeManifestReader.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
     ),
     TRANSCRIPTOME(
             new ManifestReaderBuilder(TranscriptomeAssemblyManifestReader.class).build(),
@@ -31,12 +31,12 @@ public enum SpreadsheetContext {
             null
     ),
     SEQUENCE(
-            new ManifestReaderBuilder(SequenceAssemblyManifestReader.class).build(),
+            new ManifestReaderBuilder(SequenceManifestReader.class).build(),
             "sequence",
             null
     ),
     READ(
-            new ManifestReaderBuilder(RawReadsManifestReader.class).build(),
+            new ManifestReaderBuilder(ReadsManifestReader.class).build(),
             "read",
             null
     );
