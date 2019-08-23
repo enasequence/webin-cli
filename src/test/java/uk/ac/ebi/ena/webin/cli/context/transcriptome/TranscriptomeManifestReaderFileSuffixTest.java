@@ -10,14 +10,14 @@ public class TranscriptomeManifestReaderFileSuffixTest {
 
   @Test
   public void testValidFileSuffix() {
-    Class<TranscriptomeAssemblyManifestReader> manifestReader = TranscriptomeAssemblyManifestReader.class;
+    Class<TranscriptomeManifestReader> manifestReader = TranscriptomeManifestReader.class;
     valid(manifestReader, TranscriptomeManifest.FileType.FASTA, ".fasta.gz");
     valid(manifestReader, TranscriptomeManifest.FileType.FLATFILE, ".txt.gz");
   }
 
   @Test
   public void testInvalidFileSuffix() {
-    Class<TranscriptomeAssemblyManifestReader> manifestReader = TranscriptomeAssemblyManifestReader.class;
+    Class<TranscriptomeManifestReader> manifestReader = TranscriptomeManifestReader.class;
     // Invalid suffix before .gz
     invalid(manifestReader, TranscriptomeManifest.FileType.FASTA, ".INVALID.gz");
     // No .gz

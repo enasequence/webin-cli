@@ -22,7 +22,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class
-TranscriptomeAssemblyManifestReader extends ManifestReader<TranscriptomeManifest>
+TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 {
 	public interface
 	Field 
@@ -66,7 +66,7 @@ TranscriptomeAssemblyManifestReader extends ManifestReader<TranscriptomeManifest
 
 	private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
-	public TranscriptomeAssemblyManifestReader(
+	public TranscriptomeManifestReader(
 			ManifestReaderParameters parameters,
 			MetadataProcessorFactory factory)
 	{

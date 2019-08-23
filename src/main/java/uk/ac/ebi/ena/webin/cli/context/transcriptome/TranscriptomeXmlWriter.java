@@ -22,7 +22,7 @@ import static uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest.F
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
-public class TranscriptomeAssemblyXmlWriter extends SequenceToolsXmlWriter<TranscriptomeManifest> {
+public class TranscriptomeXmlWriter extends SequenceToolsXmlWriter<TranscriptomeManifest> {
 
   @Override
   protected Element createXmlAnalysisTypeElement(TranscriptomeManifest manifest) {

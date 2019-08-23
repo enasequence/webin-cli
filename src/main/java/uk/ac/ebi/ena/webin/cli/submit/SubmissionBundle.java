@@ -11,7 +11,10 @@
 package uk.ac.ebi.ena.webin.cli.submit;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,10 +74,9 @@ SubmissionBundle implements Serializable
     SubmissionXMLFile implements Serializable
     {
         private static final long serialVersionUID = 1L;
-        private final File                  file;
+        private final File file;
         private final SubmissionXMLFileType type;
-        private final String                md5;
-
+        private final String md5;
 
         public
         SubmissionXMLFile( SubmissionXMLFileType type, File file, String md5sum )
@@ -84,13 +86,11 @@ SubmissionBundle implements Serializable
             this.md5 = md5sum;
         }
 
-
         public String
         toString()
         {
             return String.format( "%s|%s|%s", type, file, md5 );
         }
-
 
         public File
         getFile()
@@ -98,13 +98,21 @@ SubmissionBundle implements Serializable
             return file;
         }
 
+        public String
+        getXml() {
+            try {
+                return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            }
+            catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
 
         public SubmissionXMLFileType
         getType()
         {
             return type;
         }
-
 
         public String
         getMd5()

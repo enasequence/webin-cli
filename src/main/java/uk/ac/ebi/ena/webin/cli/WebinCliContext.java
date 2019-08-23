@@ -14,8 +14,8 @@ import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
-import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyManifestReader;
-import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
@@ -32,8 +32,8 @@ public enum WebinCliContext {
           "Genome assembly"),
   transcriptome(
           TranscriptomeManifest.class,
-          TranscriptomeAssemblyManifestReader.class,
-          TranscriptomeAssemblyXmlWriter.class,
+          TranscriptomeManifestReader.class,
+          TranscriptomeXmlWriter.class,
           "Transcriptome assembly"),
   sequence(
           SequenceManifest.class,

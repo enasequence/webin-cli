@@ -12,7 +12,7 @@ package uk.ac.ebi.ena.webin.cli.spreadsheet;
 
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
-import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
@@ -26,7 +26,7 @@ public enum SpreadsheetContext {
             ManifestReader.getFileGroupText( GenomeManifestReader.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
     ),
     TRANSCRIPTOME(
-            new ManifestReaderBuilder(TranscriptomeAssemblyManifestReader.class).build(),
+            new ManifestReaderBuilder(TranscriptomeManifestReader.class).build(),
             "transcriptome",
             null
     ),

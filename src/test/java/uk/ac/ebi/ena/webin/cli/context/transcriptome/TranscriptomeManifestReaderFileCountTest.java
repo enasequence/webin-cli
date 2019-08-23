@@ -19,7 +19,7 @@ public class TranscriptomeManifestReaderFileCountTest {
   @Test
   public void testFileCount() {
     new ManifestReaderFileCountTester<>(
-            TranscriptomeAssemblyManifestReader.class, TranscriptomeManifest.FileType.values())
+            TranscriptomeManifestReader.class, TranscriptomeManifest.FileType.values())
         // Supported file groups
         .files(TranscriptomeManifest.FileType.FASTA)
         .files(TranscriptomeManifest.FileType.FLATFILE)

@@ -30,128 +30,125 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class
-SequenceXmlTest
-{
-    @Before public void
-    before()
-    {
-        Locale.setDefault( Locale.UK );
-    }
+public class SequenceXmlTest {
+  @Before
+  public void before() {
+    Locale.setDefault(Locale.UK);
+  }
 
-    private static final String NAME = "test_sequence";
+  private static final String NAME = "test_sequence";
 
+  private static SequenceManifest getDefaultManifest() {
+    SequenceManifest manifest = new SequenceManifest();
+    manifest.setName(NAME);
+    manifest.setStudy(new Study());
+    manifest.getStudy().setBioProjectId("test_study");
+    manifest.setDescription("test_description");
+    return manifest;
+  }
 
-    private WebinCliExecutor<SequenceManifest> init() {
-        SequenceManifest manifest = new SequenceManifest();
-        manifest.setName( NAME );
-        manifest.setStudy(new Study());
-        manifest.getStudy().setBioProjectId( "test_study" );
-        manifest.setDescription( "test_description" );
+  private static SubmissionBundle prepareSubmissionBundle(SequenceManifest manifest) {
+    SequenceManifestReader manifestReader = mock(SequenceManifestReader.class);
+    when(manifestReader.getManifest()).thenReturn(manifest);
+    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
+    parameters.setTestMode(false);
+    WebinCliExecutor<SequenceManifest> executor =
+        (WebinCliExecutor<SequenceManifest>)
+            WebinCliContext.sequence.createExecutor(parameters, manifestReader);
+    executor.prepareSubmissionBundle();
+    return executor.readSubmissionBundle();
+  }
 
-        SequenceManifestReader manifestReader = mock(SequenceManifestReader.class);
-        when(manifestReader.getManifest()).thenReturn(manifest);
+  @Test
+  public void testRunAndAnalysisRef() {
+    SequenceManifest manifest = getDefaultManifest();
+    manifest.addAnalysis(
+        new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
+        new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
+    manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
 
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
-        parameters.setTestMode(false);
-        return (WebinCliExecutor<SequenceManifest>) WebinCliContext.sequence.createExecutor(parameters,manifestReader);
-    }
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    @Test public void
-    testAnalysisXML_RunAndAnalysisRef()
-    {
-        WebinCliExecutor<SequenceManifest> executor = init();
-        SequenceManifest manifest = executor.getManifestReader().getManifest();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-        manifest.addAnalysis(
-                new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
-                new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) );
-        manifest.addRun(
-                new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
-                new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
+    WebinCliTestUtils.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "<ANALYSIS>\n"
+            + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
+            + "<DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "<STUDY_REF accession=\"test_study\"/>\n"
+            + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
+            + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
+            + "<ANALYSIS_TYPE>\n"
+            + "<SEQUENCE_FLATFILE/>\n"
+            + "</ANALYSIS_TYPE>\n"
+            + "    <FILES />\n"
+            + "</ANALYSIS>\n"
+            + "</ANALYSIS_SET>");
+  }
 
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
+  @Test
+  public void testFlatFile() {
+    SequenceManifest manifest = getDefaultManifest();
 
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
+    Path flatFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", "ID   ;");
+    manifest.files().add(new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile.toFile()));
 
-        WebinCliTestUtils.assertXml( analysisXml,
-                "<ANALYSIS_SET>\n"
-                        + "<ANALYSIS>\n"
-                        + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
-                        + "<DESCRIPTION>test_description</DESCRIPTION>\n"
-                        + "<STUDY_REF accession=\"test_study\"/>\n"
-                        + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
-                        + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
-                        + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
-                        + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
-                        + "<ANALYSIS_TYPE>\n"
-                        + "<SEQUENCE_FLATFILE/>\n"
-                        + "</ANALYSIS_TYPE>\n"
-                        + "    <FILES />\n"
-                        + "</ANALYSIS>\n"
-                        + "</ANALYSIS_SET>" );
-    }
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    @Test public void
-    testAnalysisXML_FlatFile()
-    {
-        WebinCliExecutor<SequenceManifest> executor = init();
-        SequenceManifest manifest = executor.getManifestReader().getManifest();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-        Path flatFile = WebinCliTestUtils.createGzippedTempFile( "flatfile.dat.gz", "ID   ;" );
-        manifest.files().add( new SubmissionFile( SequenceManifest.FileType.FLATFILE, flatFile.toFile() ) );
+    WebinCliTestUtils.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "<ANALYSIS>\n"
+            + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
+            + "<DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "<STUDY_REF accession=\"test_study\"/>\n"
+            + "<ANALYSIS_TYPE>\n"
+            + "<SEQUENCE_FLATFILE/>\n"
+            + "</ANALYSIS_TYPE>\n"
+            + "<FILES>\n"
+            + "      <FILE filename=\"webin-cli/sequence/"
+            + NAME
+            + "/"
+            + flatFile.getFileName()
+            + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"
+            + "</FILES>\n"
+            + "</ANALYSIS>\n"
+            + "</ANALYSIS_SET>");
+  }
 
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
+  @Test
+  public void testAuthorsAndAddress() {
+    SequenceManifest manifest = getDefaultManifest();
 
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
+    manifest.setAuthors("test_author1,test_author2.");
+    manifest.setAddress("ena,ebi,embl,UK");
 
-        WebinCliTestUtils.assertXml( analysisXml,
-                "<ANALYSIS_SET>\n"
-                      + "<ANALYSIS>\n"
-                      + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
-                      + "<DESCRIPTION>test_description</DESCRIPTION>\n"
-                      + "<STUDY_REF accession=\"test_study\"/>\n"
-                      + "<ANALYSIS_TYPE>\n"
-                      + "<SEQUENCE_FLATFILE/>\n"
-                      + "</ANALYSIS_TYPE>\n"
-                      + "<FILES>\n"
-                      + "      <FILE filename=\"webin-cli/sequence/" + NAME + "/" + flatFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"
-                      + "</FILES>\n"
-                      + "</ANALYSIS>\n"
-                      + "</ANALYSIS_SET>" );
-    }
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    @Test public void
-    testAnalysisXML_AuthorsAndAddress()
-    {
-        WebinCliExecutor<SequenceManifest> executor = init();
-        SequenceManifest manifest = executor.getManifestReader().getManifest();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-        manifest.setAuthors( "test_author1,test_author2.");
-        manifest.setAddress( "ena,ebi,embl,UK");
-
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
-
-        WebinCliTestUtils.assertXml( analysisXml,
-                "<ANALYSIS_SET>\n"
-                        + "<ANALYSIS>\n"
-                        + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
-                        + "<DESCRIPTION>test_description</DESCRIPTION>\n"
-                        + "<STUDY_REF accession=\"test_study\"/>\n"
-                        + "<ANALYSIS_TYPE>\n"
-                        + "<SEQUENCE_FLATFILE>\n"
-                        + "<AUTHORS>test_author1,test_author2.</AUTHORS>\n"
-                        + "<ADDRESS>ena,ebi,embl,UK</ADDRESS>\n"
-                        + "</SEQUENCE_FLATFILE>\n"
-                        + "</ANALYSIS_TYPE>\n"
-                        + "<FILES />\n"
-                        + "</ANALYSIS>\n"
-                        + "</ANALYSIS_SET>" );
-    }
+    WebinCliTestUtils.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "<ANALYSIS>\n"
+            + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
+            + "<DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "<STUDY_REF accession=\"test_study\"/>\n"
+            + "<ANALYSIS_TYPE>\n"
+            + "<SEQUENCE_FLATFILE>\n"
+            + "<AUTHORS>test_author1,test_author2.</AUTHORS>\n"
+            + "<ADDRESS>ena,ebi,embl,UK</ADDRESS>\n"
+            + "</SEQUENCE_FLATFILE>\n"
+            + "</ANALYSIS_TYPE>\n"
+            + "<FILES />\n"
+            + "</ANALYSIS>\n"
+            + "</ANALYSIS_SET>");
+  }
 }

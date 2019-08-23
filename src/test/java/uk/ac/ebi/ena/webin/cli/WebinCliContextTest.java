@@ -17,8 +17,8 @@ import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
-import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyManifestReader;
-import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeAssemblyXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeXmlWriter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,8 +31,8 @@ public class WebinCliContextTest {
     assertThat(WebinCliContext.genome.createExecutor(parameters).getManifestReader()).isInstanceOf(GenomeManifestReader.class);
     assertThat(WebinCliContext.genome.createExecutor(parameters).getXmlWriter()).isInstanceOf(GenomeXmlWriter.class);
 
-    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getManifestReader()).isInstanceOf(TranscriptomeAssemblyManifestReader.class);
-    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getXmlWriter()).isInstanceOf(TranscriptomeAssemblyXmlWriter.class);
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getManifestReader()).isInstanceOf(TranscriptomeManifestReader.class);
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getXmlWriter()).isInstanceOf(TranscriptomeXmlWriter.class);
 
     assertThat(WebinCliContext.sequence.createExecutor(parameters).getManifestReader()).isInstanceOf(SequenceManifestReader.class);
     assertThat(WebinCliContext.sequence.createExecutor(parameters).getXmlWriter()).isInstanceOf(SequenceXmlWriter.class);

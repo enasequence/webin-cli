@@ -30,175 +30,180 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class
-TranscriptomeXmlTest {
+public class TranscriptomeXmlTest {
 
-    @Before
-    public void
-    before() {
-        Locale.setDefault(Locale.UK);
-    }
+  @Before
+  public void before() {
+    Locale.setDefault(Locale.UK);
+  }
 
-    private static final String NAME = "test_transcriptome";
+  private static final String NAME = "test_transcriptome";
 
-    private WebinCliExecutor<TranscriptomeManifest> init() {
-        TranscriptomeManifest manifest = new TranscriptomeManifest();
-        manifest.setName( NAME );
-        manifest.setDescription( "test_description" );
-        manifest.setSample(WebinCliTestUtils.getDefaultSample());
-        manifest.getSample().setBioSampleId( "test_sample" );
-        manifest.setStudy(new Study());
-        manifest.getStudy().setBioProjectId( "test_study" );
-        manifest.setProgram( "test_program" );
-        manifest.setPlatform( "test_platform" );
+  private static TranscriptomeManifest getDefaultManifest() {
+    TranscriptomeManifest manifest = new TranscriptomeManifest();
+    manifest.setName(NAME);
+    manifest.setDescription("test_description");
+    manifest.setSample(WebinCliTestUtils.getDefaultSample());
+    manifest.getSample().setBioSampleId("test_sample");
+    manifest.setStudy(new Study());
+    manifest.getStudy().setBioProjectId("test_study");
+    manifest.setProgram("test_program");
+    manifest.setPlatform("test_platform");
+    return manifest;
+  }
 
-        TranscriptomeAssemblyManifestReader manifestReader = mock(TranscriptomeAssemblyManifestReader.class);
-        when(manifestReader.getManifest()).thenReturn(manifest);
+  private static SubmissionBundle prepareSubmissionBundle(TranscriptomeManifest manifest) {
+    TranscriptomeManifestReader manifestReader = mock(TranscriptomeManifestReader.class);
+    when(manifestReader.getManifest()).thenReturn(manifest);
+    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
+    parameters.setTestMode(false);
+    WebinCliExecutor<TranscriptomeManifest> executor =
+        (WebinCliExecutor<TranscriptomeManifest>)
+            WebinCliContext.transcriptome.createExecutor(parameters, manifestReader);
+    executor.prepareSubmissionBundle();
+    return executor.readSubmissionBundle();
+  }
 
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setManifestFile( WebinCliTestUtils.createEmptyTempFile().toFile() );
-        parameters.setTestMode(false);
-        return (WebinCliExecutor<TranscriptomeManifest>) WebinCliContext.transcriptome.createExecutor(parameters, manifestReader);
-    }
+  @Test
+  public void testAnalysisAndRunRef() {
+    TranscriptomeManifest manifest = getDefaultManifest();
+    manifest.addAnalysis(
+        new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
+        new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
+    manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
 
-    @Test public void
-    testAnalysisXML_AnalysisAndRunRef() {
-        WebinCliExecutor<TranscriptomeManifest> executor = init();
-        TranscriptomeManifest manifest = executor.getManifestReader().getManifest();
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-        manifest.addAnalysis(
-                new Analysis( "ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS" ),
-                new Analysis( "ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS" ) );
-        manifest.addRun(
-                new Run( "RUN_ID1", "RUN_ID1_ALIAS" ),
-                new Run( "RUN_ID2", "RUN_ID2_ALIAS" ) );
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
+    WebinCliTestUtils.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "  <ANALYSIS>\n"
+            + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
+            + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "    <STUDY_REF accession=\"test_study\" />\n"
+            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
+            + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
+            + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
+            + "    <ANALYSIS_TYPE>\n"
+            + "      <TRANSCRIPTOME_ASSEMBLY>\n"
+            + "        <NAME>test_transcriptome</NAME>\n"
+            + "        <PROGRAM>test_program</PROGRAM>\n"
+            + "        <PLATFORM>test_platform</PLATFORM>\n"
+            + "      </TRANSCRIPTOME_ASSEMBLY>\n"
+            + "    </ANALYSIS_TYPE>\n"
+            + "    <FILES />\n"
+            + "  </ANALYSIS>\n"
+            + "</ANALYSIS_SET>\n");
+  }
 
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
+  @Test
+  public void testTpa() {
+    TranscriptomeManifest manifest = getDefaultManifest();
+    manifest.setTpa(true);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-        WebinCliTestUtils.assertXml( analysisXml,
-                "<ANALYSIS_SET>\n"
-                        + "  <ANALYSIS>\n"
-                        + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
-                        + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-                        + "    <STUDY_REF accession=\"test_study\" />\n"
-                        + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-                        + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
-                        + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
-                        + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
-                        + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
-                        + "    <ANALYSIS_TYPE>\n"
-                        + "      <TRANSCRIPTOME_ASSEMBLY>\n"
-                        + "        <NAME>test_transcriptome</NAME>\n"
-                        + "        <PROGRAM>test_program</PROGRAM>\n"
-                        + "        <PLATFORM>test_platform</PLATFORM>\n"
-                        + "      </TRANSCRIPTOME_ASSEMBLY>\n"
-                        + "    </ANALYSIS_TYPE>\n"
-                        + "    <FILES />\n"
-                        + "  </ANALYSIS>\n"
-                        + "</ANALYSIS_SET>\n" );
-    }
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-    @Test public void
-    testAnalysisXML_Tpa() {
-        WebinCliExecutor<TranscriptomeManifest> executor = init();
-        TranscriptomeManifest manifest = executor.getManifestReader().getManifest();
+    WebinCliTestUtils.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "  <ANALYSIS>\n"
+            + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
+            + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "    <STUDY_REF accession=\"test_study\" />\n"
+            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
+            + "    <ANALYSIS_TYPE>\n"
+            + "      <TRANSCRIPTOME_ASSEMBLY>\n"
+            + "        <NAME>test_transcriptome</NAME>\n"
+            + "        <PROGRAM>test_program</PROGRAM>\n"
+            + "        <PLATFORM>test_platform</PLATFORM>\n"
+            + "        <TPA>true</TPA>\n"
+            + "      </TRANSCRIPTOME_ASSEMBLY>\n"
+            + "    </ANALYSIS_TYPE>\n"
+            + "    <FILES />\n"
+            + "  </ANALYSIS>\n"
+            + "</ANALYSIS_SET>\n");
+  }
 
-        manifest.setTpa(true);
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
+  @Test
+  public void testFastaFile() {
+    TranscriptomeManifest manifest = getDefaultManifest();
+    Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
+    manifest
+        .files()
+        .add(new SubmissionFile(TranscriptomeManifest.FileType.FASTA, fastaFile.toFile()));
 
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-        WebinCliTestUtils.assertXml( analysisXml,
-                "<ANALYSIS_SET>\n"
-                        + "  <ANALYSIS>\n"
-                        + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
-                        + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-                        + "    <STUDY_REF accession=\"test_study\" />\n"
-                        + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-                        + "    <ANALYSIS_TYPE>\n"
-                        + "      <TRANSCRIPTOME_ASSEMBLY>\n"
-                        + "        <NAME>test_transcriptome</NAME>\n"
-                        + "        <PROGRAM>test_program</PROGRAM>\n"
-                        + "        <PLATFORM>test_platform</PLATFORM>\n"
-                        + "        <TPA>true</TPA>\n"
-                        + "      </TRANSCRIPTOME_ASSEMBLY>\n"
-                        + "    </ANALYSIS_TYPE>\n"
-                        + "    <FILES />\n"
-                        + "  </ANALYSIS>\n"
-                        + "</ANALYSIS_SET>\n" );
-    }
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-    @Test public void
-    testAnalysisXML_FastaFile()
-    {
-        WebinCliExecutor<TranscriptomeManifest> executor = init();
-        TranscriptomeManifest manifest = executor.getManifestReader().getManifest();
+    WebinCliTestUtils.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "  <ANALYSIS>\n"
+            + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
+            + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "    <STUDY_REF accession=\"test_study\" />\n"
+            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
+            + "    <ANALYSIS_TYPE>\n"
+            + "      <TRANSCRIPTOME_ASSEMBLY>\n"
+            + "        <NAME>test_transcriptome</NAME>\n"
+            + "        <PROGRAM>test_program</PROGRAM>\n"
+            + "        <PLATFORM>test_platform</PLATFORM>\n"
+            + "      </TRANSCRIPTOME_ASSEMBLY>\n"
+            + "    </ANALYSIS_TYPE>\n"
+            + "    <FILES>\n"
+            + "      <FILE filename=\"webin-cli/transcriptome/"
+            + NAME
+            + "/"
+            + fastaFile.getFileName()
+            + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n"
+            + "    </FILES>\n"
+            + "  </ANALYSIS>\n"
+            + "</ANALYSIS_SET>\n");
+  }
 
-        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
-        manifest.files().add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, fastaFile.toFile() ) );
+  @Test
+  public void testFlatFile() {
+    TranscriptomeManifest manifest = getDefaultManifest();
 
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
+    Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", ">123\nACGT");
+    manifest
+        .files()
+        .add(new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile()));
 
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-        WebinCliTestUtils.assertXml( analysisXml,
-                "<ANALYSIS_SET>\n"
-                      + "  <ANALYSIS>\n"
-                      + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
-                      + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-                      + "    <STUDY_REF accession=\"test_study\" />\n"
-                      + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-                      + "    <ANALYSIS_TYPE>\n"
-                      + "      <TRANSCRIPTOME_ASSEMBLY>\n"
-                      + "        <NAME>test_transcriptome</NAME>\n"
-                      + "        <PROGRAM>test_program</PROGRAM>\n"
-                      + "        <PLATFORM>test_platform</PLATFORM>\n"
-                      + "      </TRANSCRIPTOME_ASSEMBLY>\n"
-                      + "    </ANALYSIS_TYPE>\n"
-                      + "    <FILES>\n"
-                      + "      <FILE filename=\"webin-cli/transcriptome/" + NAME + "/" + fastaFile.getFileName() + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n"
-                      + "    </FILES>\n"
-                      + "  </ANALYSIS>\n"
-                      + "</ANALYSIS_SET>\n" );
-    }
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-    @Test
-    public void
-    testAnalysisXML_FlatFile() {
-        WebinCliExecutor<TranscriptomeManifest> executor = init();
-        TranscriptomeManifest manifest = executor.getManifestReader().getManifest();
-
-        Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", ">123\nACGT");
-        manifest.files().add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile() ) );
-
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-
-        String analysisXml = WebinCliTestUtils.readXmlFromSubmissionBundle( sb, SubmissionBundle.SubmissionXMLFileType.ANALYSIS );
-
-        WebinCliTestUtils.assertXml( analysisXml,
-                "<ANALYSIS_SET>\n"
-                        + "  <ANALYSIS>\n"
-                        + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
-                        + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-                        + "    <STUDY_REF accession=\"test_study\" />\n"
-                        + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-                        + "    <ANALYSIS_TYPE>\n"
-                        + "      <TRANSCRIPTOME_ASSEMBLY>\n"
-                        + "        <NAME>test_transcriptome</NAME>\n"
-                        + "        <PROGRAM>test_program</PROGRAM>\n"
-                        + "        <PLATFORM>test_platform</PLATFORM>\n"
-                        + "      </TRANSCRIPTOME_ASSEMBLY>\n"
-                        + "    </ANALYSIS_TYPE>\n"
-                        + "    <FILES>\n"
-                        + "      <FILE filename=\"webin-cli/transcriptome/" + NAME + "/" + fastaFile.getFileName() + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n"
-                        + "    </FILES>\n"
-                        + "  </ANALYSIS>\n"
-                        + "</ANALYSIS_SET>\n" );
-    }
+    WebinCliTestUtils.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "  <ANALYSIS>\n"
+            + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
+            + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "    <STUDY_REF accession=\"test_study\" />\n"
+            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
+            + "    <ANALYSIS_TYPE>\n"
+            + "      <TRANSCRIPTOME_ASSEMBLY>\n"
+            + "        <NAME>test_transcriptome</NAME>\n"
+            + "        <PROGRAM>test_program</PROGRAM>\n"
+            + "        <PLATFORM>test_platform</PLATFORM>\n"
+            + "      </TRANSCRIPTOME_ASSEMBLY>\n"
+            + "    </ANALYSIS_TYPE>\n"
+            + "    <FILES>\n"
+            + "      <FILE filename=\"webin-cli/transcriptome/"
+            + NAME
+            + "/"
+            + fastaFile.getFileName()
+            + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n"
+            + "    </FILES>\n"
+            + "  </ANALYSIS>\n"
+            + "</ANALYSIS_SET>\n");
+  }
 }

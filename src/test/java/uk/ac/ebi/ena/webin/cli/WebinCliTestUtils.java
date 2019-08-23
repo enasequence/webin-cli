@@ -170,40 +170,6 @@ public class WebinCliTestUtils {
         }
     }
 
-    public static File
-    getFile( String filePath ) {
-        return new File( WebinCliTestUtils.class
-                .getClassLoader()
-                .getResource( filePath )
-                .getFile());
-    }
-
-    public static Path
-    getPath( String filePath ) {
-        URL url =
-                WebinCliTestUtils.class
-                .getClassLoader()
-                .getResource( filePath );
-        try {
-            return Paths.get(url.toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String
-    readXmlFromSubmissionBundle(SubmissionBundle submissionBundle, SubmissionBundle.SubmissionXMLFileType xmlFileType) {
-        SubmissionBundle.SubmissionXMLFile xmlFile = submissionBundle.getXMLFileList().stream()
-                .filter(file -> file.getType().equals(xmlFileType) )
-                .findFirst()
-                .get();
-        if (xmlFile == null) {
-            return null;
-        }
-        return WebinCliTestUtils.readFile( xmlFile.getFile().toPath() );
-    }
-
-
     public static void
     assertXml(String xml, String expectedXml) {
         xml = xml.replaceAll("<\\?xml.*", "");
