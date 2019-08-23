@@ -17,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
@@ -26,7 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TranscriptomeAssemblyValidationTest {
 
-  private static final File VALID_DIR = WebinCliTestUtils.resourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/valid");
+  private static final File VALID_DIR =
+      WebinCliTestUtils.resourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/valid");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
@@ -38,8 +38,7 @@ public class TranscriptomeAssemblyValidationTest {
   }
 
   private static final WebinCliExecutorBuilder<TranscriptomeManifest> executorBuilder =
-      new WebinCliExecutorBuilder(
-              WebinCliContext.transcriptome)
+      new WebinCliExecutorBuilder(TranscriptomeManifest.class)
           .manifestMetadataProcessors(false)
           .sample(WebinCliTestUtils.getDefaultSample());
 

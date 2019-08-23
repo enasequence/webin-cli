@@ -23,13 +23,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class WebinCliExecutorBuilder<M extends Manifest> {
-  private final WebinCliContext context;
+  private final Class<M> manifestClass;
   private boolean manifestMetadataProcessors = true;
   private Study study;
   private Sample sample;
 
-  public WebinCliExecutorBuilder(WebinCliContext context) {
-    this.context = context;
+  public WebinCliExecutorBuilder(Class<M> manifestClass) {
+    this.manifestClass = manifestClass;
   }
 
   public WebinCliExecutorBuilder manifestMetadataProcessors(boolean metadataServiceActive) {
@@ -48,7 +48,7 @@ public class WebinCliExecutorBuilder<M extends Manifest> {
   }
 
   private WebinCliExecutor<M> createExecutor(WebinCliParameters parameters) {
-    return (WebinCliExecutor<M>) context.createExecutor(parameters);
+    return WebinCliContext.createExecutor(manifestClass, parameters);
   }
 
   private WebinCliParameters createParameters(File manifestFile, File inputDir) {

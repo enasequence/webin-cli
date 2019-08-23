@@ -32,8 +32,8 @@ public class ManifestReaderTester<M extends Manifest> {
   private boolean manifestValidateFileExist = true;
   private boolean manifestValidateFileCount = true;
 
-  public ManifestReaderTester( Class<ManifestReader<M>> manifestReaderClass) {
-      this.manifestReaderClass = manifestReaderClass;
+  public ManifestReaderTester(Class<ManifestReader<M>> manifestReaderClass) {
+    this.manifestReaderClass = manifestReaderClass;
   }
 
   public ManifestReaderTester metadataProcessorsActive(boolean metadataProcessorsActive) {
@@ -57,39 +57,39 @@ public class ManifestReaderTester<M extends Manifest> {
   }
 
   private ManifestReader<M> create() {
-        return WebinCliContext.createManifestReader(manifestReaderClass,
-              new ManifestReaderParameters() {
-                public boolean isManifestValidateMandatory() {
-                  return manifestValidateMandatory;
+    return new ManifestReaderBuilder(manifestReaderClass,
+            new MetadataProcessorParameters() {
+                public boolean isMetadataProcessorsActive() {
+                    return metadataProcessorsActive;
                 }
 
-                public boolean isManifestValidateFileExist() {
-                  return manifestValidateFileExist;
+                public String getUsername() {
+                    return System.getenv("webin-cli-username");
                 }
 
-                public boolean isManifestValidateFileCount() {
-                  return manifestValidateFileCount;
+                public String getPassword() {
+                    return System.getenv("webin-cli-password");
                 }
-              },
-              new MetadataProcessorFactory(
-                  new MetadataProcessorParameters() {
-                    public boolean isMetadataProcessorsActive() {
-                      return metadataProcessorsActive;
-                    }
 
-                    public String getUsername() {
-                      return System.getenv("webin-cli-username");
-                    }
+                public boolean isTestMode() {
+                    return true;
+                }
+            })
+        .setManifestReaderParameters(
+            new ManifestReaderParameters() {
+              public boolean isManifestValidateMandatory() {
+                return manifestValidateMandatory;
+              }
 
-                    public String getPassword() {
-                      return System.getenv("webin-cli-password");
-                    }
+              public boolean isManifestValidateFileExist() {
+                return manifestValidateFileExist;
+              }
 
-                    public boolean isTestMode() {
-                      return true;
-                    }
-                  }));
-
+              public boolean isManifestValidateFileCount() {
+                return manifestValidateFileCount;
+              }
+            })
+        .build();
   }
 
   public ManifestReader<M> test(ManifestBuilder manifest) {
@@ -101,7 +101,7 @@ public class ManifestReaderTester<M extends Manifest> {
   }
 
   public ManifestReader<M> test(ManifestBuilder manifest, Path inputDir) {
-      ManifestReader<M> reader = create();
+    ManifestReader<M> reader = create();
     reader.readManifest(inputDir, manifest.build(inputDir));
     return reader;
   }
@@ -110,8 +110,9 @@ public class ManifestReaderTester<M extends Manifest> {
     return testError(manifest, WebinCliTestUtils.createTempDir(), message);
   }
 
-  public ManifestReader<M> testError(ManifestBuilder manifest, File inputDir, WebinCliMessage message) {
-  ManifestReader<M> reader = test(manifest, inputDir);
+  public ManifestReader<M> testError(
+      ManifestBuilder manifest, File inputDir, WebinCliMessage message) {
+    ManifestReader<M> reader = test(manifest, inputDir);
     assertThat(reader.getValidationResult().count(message.key(), Severity.ERROR))
         .isGreaterThanOrEqualTo(1);
     return reader;

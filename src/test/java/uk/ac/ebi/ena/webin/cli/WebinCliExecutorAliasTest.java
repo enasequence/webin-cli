@@ -16,34 +16,32 @@ import org.junit.Test;
 
 public class WebinCliExecutorAliasTest {
 
+  private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+
   @Test
   public void testGenome() {
-    WebinCliExecutor<?> executor =
-        WebinCliContext.genome.createExecutor(WebinCliTestUtils.createTestWebinCliParameters());
+    WebinCliExecutor<?> executor = WebinCliContext.genome.createExecutor(parameters);
     executor.getManifestReader().getManifest().setName("TEST_NAME  1");
     assertThat("webin-genome-TEST_NAME_1").isEqualTo(executor.getSubmissionAlias());
   }
 
   @Test
   public void testSequence() {
-    WebinCliExecutor<?> executor =
-            WebinCliContext.sequence.createExecutor(WebinCliTestUtils.createTestWebinCliParameters());
+    WebinCliExecutor<?> executor = WebinCliContext.sequence.createExecutor(parameters);
     executor.getManifestReader().getManifest().setName("TEST_NAME  1");
     assertThat("webin-sequence-TEST_NAME_1").isEqualTo(executor.getSubmissionAlias());
   }
 
   @Test
   public void testTranscriptome() {
-    WebinCliExecutor<?> executor =
-            WebinCliContext.transcriptome.createExecutor(WebinCliTestUtils.createTestWebinCliParameters());
+    WebinCliExecutor<?> executor = WebinCliContext.transcriptome.createExecutor(parameters);
     executor.getManifestReader().getManifest().setName("TEST_NAME  1");
     assertThat("webin-transcriptome-TEST_NAME_1").isEqualTo(executor.getSubmissionAlias());
   }
 
   @Test
   public void testReads() {
-    WebinCliExecutor<?> executor =
-            WebinCliContext.reads.createExecutor(WebinCliTestUtils.createTestWebinCliParameters());
+    WebinCliExecutor<?> executor = WebinCliContext.reads.createExecutor(parameters);
     executor.getManifestReader().getManifest().setName("TEST_NAME  1");
     assertThat("webin-reads-TEST_NAME_1").isEqualTo(executor.getSubmissionAlias());
   }

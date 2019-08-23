@@ -41,7 +41,7 @@ public class GenomeAssemblyValidationTest {
   }
 
   private static final WebinCliExecutorBuilder<GenomeManifest> executorBuilder =
-          new WebinCliExecutorBuilder(WebinCliContext.genome)
+          new WebinCliExecutorBuilder(GenomeManifest.class)
                   .manifestMetadataProcessors(false)
                   .sample(getDefaultSample());
 

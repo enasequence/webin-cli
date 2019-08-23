@@ -12,8 +12,7 @@ package uk.ac.ebi.ena.webin.cli;
 
 import uk.ac.ebi.ena.webin.cli.assembly.*;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderParameters;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsWebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.rawreads.RawReadsXmlWriter;
@@ -55,8 +54,21 @@ public enum WebinCliContext {
     this.titlePrefix = titlePrefix;
   }
 
+  public Class<? extends Manifest> getManifestClass() {
+    return manifestClass;
+  }
+
+  public static <M extends Manifest> WebinCliExecutor<M> createExecutor(Class<M> manifestClass, WebinCliParameters parameters) {
+    for (WebinCliContext context : WebinCliContext.values()) {
+      if (context.getManifestClass().equals(manifestClass)) {
+        return (WebinCliExecutor<M>) context.createExecutor(parameters);
+      }
+    }
+    return null;
+  }
+
   public WebinCliExecutor<?> createExecutor(WebinCliParameters parameters) {
-    return createExecutor(parameters, createManifestReader(parameters));
+    return createExecutor(parameters, new ManifestReaderBuilder(manifestReaderClass, parameters).build());
   }
 
   public WebinCliExecutor<?> createExecutor(
@@ -66,39 +78,12 @@ public enum WebinCliContext {
       return new RawReadsWebinCliExecutor(parameters);
     } else {
       try {
-        return new WebinCliExecutorEx<>(this, parameters, manifestReader, createXmlWriter());
+        XmlWriter<?> xmlWriter = xmlWriterClass.newInstance();
+        return new WebinCliExecutorEx(this, parameters, manifestReader, xmlWriter);
 
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
-    }
-  }
-
-  public ManifestReader createManifestReader(WebinCliParameters parameters) {
-    return createManifestReader(
-            manifestReaderClass,
-            ManifestReader.DEFAULT_PARAMETERS,
-            new MetadataProcessorFactory(parameters));
-  }
-
-  public static ManifestReader createManifestReader(
-          Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass,
-          ManifestReaderParameters manifestReaderParameters,
-          MetadataProcessorFactory metadataProcessorFactory) {
-    try {
-      return manifestReaderClass
-              .getDeclaredConstructor(ManifestReaderParameters.class, MetadataProcessorFactory.class)
-              .newInstance(manifestReaderParameters, metadataProcessorFactory);
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  public XmlWriter createXmlWriter() {
-    try {
-      return xmlWriterClass.newInstance();
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
     }
   }
 

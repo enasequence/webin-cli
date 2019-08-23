@@ -35,7 +35,7 @@ public class SequenceAssemblyValidationTest {
   }
 
   private static final WebinCliExecutorBuilder<SequenceManifest> executorBuilder =
-      new WebinCliExecutorBuilder(WebinCliContext.sequence)
+      new WebinCliExecutorBuilder(SequenceManifest.class)
           .manifestMetadataProcessors(false)
           .sample(getDefaultSample());
 
