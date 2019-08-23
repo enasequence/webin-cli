@@ -210,7 +210,7 @@ public class WebinCli {
 				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()):
 						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	          case VALIDATION_ERROR:
-				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()):
+				  throw WebinCliException.validationError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(validator.getValidationDir()):
 						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), validator.getValidationDir()));
 	               
 	          case SYSTEM_ERROR:
