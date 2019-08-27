@@ -44,8 +44,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
 
@@ -59,7 +57,7 @@ ReadsWebinCliTest
         ValidationResult.setDefaultMessageFormatter( null );
     }
 
- 
+
     @Test public void
     parseManifest() throws IOException {
         Path fastq_file = WebinCliTestUtils.createGzippedTempFile("fastq.gz", "@1.1\nACGT\n@\n!@#$\n");
@@ -305,59 +303,6 @@ ReadsWebinCliTest
         SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
-
-
-    @Test public void
-    testCorrectBAMManifest() throws IOException
-    {
-        URL url = ReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/webin/cli/rawreads/OUTO500m_MetOH_narG_OTU18.bam" );
-        Path file = Paths.get( new File( url.getFile() ).getCanonicalPath() );
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( getInfoPart() + "BAM " + file + "\n"
-                                                 + Field.DESCRIPTION + " description text" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
-        parameters.setMetadataProcessorsActive(false);
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        Study study = new Study();
-        study.setBioProjectId("TEST");
-        Sample sample = new Sample();
-        sample.setBioSampleId("TEST");
-        executor.getManifestReader().getManifest().setStudy(study);
-        executor.getManifestReader().getManifest().setSample(sample);
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-        WebinCliTestUtils.assertXml( new String( Files.readAllBytes( sb.getXMLFile(SubmissionXMLFileType.EXPERIMENT ).getFile().toPath() ), StandardCharsets.UTF_8 ),
-       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-      + "<EXPERIMENT_SET>\n"
-      + " <EXPERIMENT alias=\"webin-reads-SOME-FANCY-NAME\">\n"
-      + "  <TITLE>Raw reads: SOME-FANCY-NAME</TITLE>\n"
-      + "   <STUDY_REF accession=\"TEST\" />\n"
-      + "    <DESIGN>\n"
-      + "     <DESIGN_DESCRIPTION>description text</DESIGN_DESCRIPTION>\n"
-      + "     <SAMPLE_DESCRIPTOR accession=\"TEST\" />\n"
-      + "     <LIBRARY_DESCRIPTOR>\n"
-      + "       <LIBRARY_STRATEGY>CLONEEND</LIBRARY_STRATEGY>\n"
-      + "       <LIBRARY_SOURCE>OTHER</LIBRARY_SOURCE>\n"
-      + "       <LIBRARY_SELECTION>Inverse rRNA selection</LIBRARY_SELECTION>\n"
-      + "       <LIBRARY_LAYOUT>\n"
-      + "        <SINGLE />\n"
-      + "       </LIBRARY_LAYOUT>\n"
-      + "     </LIBRARY_DESCRIPTOR>\n"
-      + "    </DESIGN>\n"
-      + "    <PLATFORM>\n"
-      + "     <ILLUMINA>\n"
-      + "       <INSTRUMENT_MODEL>unspecified</INSTRUMENT_MODEL>\n"
-      + "     </ILLUMINA>\n"
-      + "    </PLATFORM>\n"
-      + " </EXPERIMENT>\n"
-      + "</EXPERIMENT_SET>" );
-    }
-
 
     @Test public void
     testCorrectBAM() throws IOException

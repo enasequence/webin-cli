@@ -80,7 +80,7 @@ public enum WebinCliContext {
           WebinCliParameters parameters, ManifestReader<?> manifestReader) {
     if (manifestClass.equals(ReadsManifest.class)) {
       // TODO: remove ReadsWebinCliExecutor
-      return new ReadsWebinCliExecutor(parameters);
+      return new ReadsWebinCliExecutor(parameters, (ReadsManifestReader)manifestReader);
     } else {
       try {
         XmlWriter<?> xmlWriter = xmlWriterClass.newInstance();

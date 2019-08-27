@@ -55,6 +55,12 @@ ReadsWebinCliExecutor extends WebinCliExecutor<ReadsManifest>
                 new ReadsXmlWriter());
     }
 
+    public ReadsWebinCliExecutor(WebinCliParameters parameters, ManifestReader<ReadsManifest> manifestReader) {
+        super(WebinCliContext.reads, parameters,
+                manifestReader,
+                new ReadsXmlWriter());
+    }
+
     @Override
     public void validateSubmissionForContext()
     {
