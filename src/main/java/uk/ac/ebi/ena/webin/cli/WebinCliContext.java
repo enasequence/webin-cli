@@ -21,6 +21,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsWebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.*;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
@@ -84,7 +85,7 @@ public enum WebinCliContext {
     } else {
       try {
         XmlWriter<?> xmlWriter = xmlWriterClass.newInstance();
-        return new WebinCliExecutorEx(this, parameters, manifestReader, xmlWriter);
+        return new WebinCliExecutor(this, parameters, manifestReader, xmlWriter);
 
       } catch (Exception ex) {
         throw new RuntimeException(ex);

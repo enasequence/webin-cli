@@ -25,16 +25,19 @@ import org.apache.commons.lang.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
-public abstract class
+public class
 WebinCliExecutor<M extends Manifest>
 {
     private final WebinCliContext context;
@@ -45,6 +48,9 @@ WebinCliExecutor<M extends Manifest>
     private File validationDir;
     private File processDir;
     private File submitDir;
+    protected ValidationResponse validationResponse;
+    //TODO : move it to a common place if used in multiple places
+    private static final String ERROR_FILE = "webin-cli.report";
 
     private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
 
@@ -56,7 +62,27 @@ WebinCliExecutor<M extends Manifest>
         this.xmlWriter = xmlWriter;
     }
 
-    protected abstract void validateSubmissionForContext();
+    protected void validateSubmissionForContext(){
+        M manifest = getManifestReader().getManifest();
+
+        if(!manifest.getFiles().get().isEmpty()) {
+            for (SubmissionFile subFile : (List<SubmissionFile>) manifest.getFiles().get()) {
+                subFile.setReportFile(Paths.get(getValidationDir().getPath()).resolve(subFile.getFile().getName() + ".report").toFile());
+            }
+        }
+        manifest.setReportFile(Paths.get(getValidationDir().getPath()).resolve(ERROR_FILE).toFile());
+        manifest.setProcessDir(getProcessDir());
+        ValidationResponse response;
+        try {
+            response = new SubmissionValidator().validate(manifest);
+        } catch (RuntimeException ex) {
+            throw WebinCliException.systemError(ex);
+        }
+        if(response != null && response.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
+            throw WebinCliException.validationError("");
+        }
+        validationResponse = response;
+    }
 
     public final void readManifest() {
         this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
@@ -124,6 +150,7 @@ WebinCliExecutor<M extends Manifest>
         Map<SubmissionBundle.SubmissionXMLFileType, String> xmls =
                 xmlWriter.createXml(
                         getManifestReader().getManifest(),
+                        validationResponse,
                         getParameters().getCenterName(),
                         getSubmissionTitle(),
                         getSubmissionAlias(),

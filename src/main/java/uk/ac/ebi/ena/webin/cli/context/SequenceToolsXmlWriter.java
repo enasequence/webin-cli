@@ -16,6 +16,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
@@ -37,6 +38,7 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest> implements XmlW
   @Override
   public Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(
       M manifest,
+      ValidationResponse response,
       String centerName,
       String submissionTitle,
       String submissionAlias,

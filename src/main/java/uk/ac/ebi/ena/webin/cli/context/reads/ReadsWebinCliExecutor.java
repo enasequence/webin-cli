@@ -86,6 +86,8 @@ ReadsWebinCliExecutor extends WebinCliExecutor<ReadsManifest>
         
         if( !valid )
             throw WebinCliException.validationError("");
+        //TODO: set validationResponse here
+        validationResponse = null;
     }
 
     
