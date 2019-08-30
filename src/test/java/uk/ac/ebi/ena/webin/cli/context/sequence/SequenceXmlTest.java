@@ -21,6 +21,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
@@ -53,8 +54,8 @@ public class SequenceXmlTest {
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
     parameters.setTestMode(false);
-    WebinCliExecutor<SequenceManifest> executor =
-        (WebinCliExecutor<SequenceManifest>)
+    WebinCliExecutor<SequenceManifest, ValidationResponse> executor =
+        (WebinCliExecutor<SequenceManifest, ValidationResponse>)
             WebinCliContext.sequence.createExecutor(parameters, manifestReader);
     executor.prepareSubmissionBundle();
     return executor.readSubmissionBundle();

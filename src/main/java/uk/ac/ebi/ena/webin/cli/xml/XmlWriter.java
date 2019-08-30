@@ -7,10 +7,10 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import java.nio.file.Path;
 import java.util.Map;
 
-public interface XmlWriter<M extends Manifest> {
+public interface XmlWriter<M extends Manifest, R extends ValidationResponse> {
   Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(
           M manifest,
-          ValidationResponse response,
+          R response,
           String centerName,
           String submissionTitle,
           String submissionAlias,

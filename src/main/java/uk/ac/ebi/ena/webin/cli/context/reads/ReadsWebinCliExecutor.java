@@ -43,22 +43,23 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
 public class
-ReadsWebinCliExecutor extends WebinCliExecutor<ReadsManifest>
+ReadsWebinCliExecutor extends WebinCliExecutor<ReadsManifest, ReadsValidationResponse>
 {   
     private static final Logger log = LoggerFactory.getLogger(ReadsWebinCliExecutor.class);
 
     public ReadsWebinCliExecutor(WebinCliParameters parameters) {
         super(WebinCliContext.reads, parameters,
                 new ReadsManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory( parameters )),
-                new ReadsXmlWriter());
+                new ReadsXmlWriter(), null);
     }
 
     public ReadsWebinCliExecutor(WebinCliParameters parameters, ManifestReader<ReadsManifest> manifestReader) {
         super(WebinCliContext.reads, parameters,
                 manifestReader,
-                new ReadsXmlWriter());
+                new ReadsXmlWriter(),null);
     }
 
     @Override

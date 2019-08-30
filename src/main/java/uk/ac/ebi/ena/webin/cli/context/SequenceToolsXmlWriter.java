@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class SequenceToolsXmlWriter<M extends Manifest> implements XmlWriter<M> {
+public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends ValidationResponse> implements XmlWriter<M, R> {
 
   protected abstract Element createXmlAnalysisTypeElement(M manifest);
 
@@ -38,7 +38,7 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest> implements XmlW
   @Override
   public Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(
       M manifest,
-      ValidationResponse response,
+      R response,
       String centerName,
       String submissionTitle,
       String submissionAlias,

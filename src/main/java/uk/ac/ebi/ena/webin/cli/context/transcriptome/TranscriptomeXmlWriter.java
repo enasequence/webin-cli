@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
 import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 import java.nio.file.Path;
@@ -22,7 +23,7 @@ import static uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest.F
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
-public class TranscriptomeXmlWriter extends SequenceToolsXmlWriter<TranscriptomeManifest> {
+public class TranscriptomeXmlWriter extends SequenceToolsXmlWriter<TranscriptomeManifest, ValidationResponse> {
 
   @Override
   protected Element createXmlAnalysisTypeElement(TranscriptomeManifest manifest) {

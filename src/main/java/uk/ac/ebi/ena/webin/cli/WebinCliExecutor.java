@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
@@ -33,33 +32,36 @@ import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public class
-WebinCliExecutor<M extends Manifest>
+WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 {
     private final WebinCliContext context;
     private final WebinCliParameters parameters;
     private final ManifestReader<M> manifestReader;
-    private final XmlWriter<M> xmlWriter;
+    private final Validator<M,R> validator;
+    private final XmlWriter<M, R> xmlWriter;
 
     private File validationDir;
     private File processDir;
     private File submitDir;
-    protected ValidationResponse validationResponse;
+    protected R validationResponse;
     //TODO : move it to a common place if used in multiple places
     private static final String ERROR_FILE = "webin-cli.report";
 
     private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
 
 
-    public WebinCliExecutor(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M> xmlWriter) {
+    public WebinCliExecutor(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M, R> xmlWriter, Validator<M,R> validator) {
         this.context = context;
         this.parameters = parameters;
         this.manifestReader = manifestReader;
         this.xmlWriter = xmlWriter;
+        this.validator = validator;
     }
 
     protected void validateSubmissionForContext(){
@@ -72,16 +74,15 @@ WebinCliExecutor<M extends Manifest>
         }
         manifest.setReportFile(Paths.get(getValidationDir().getPath()).resolve(ERROR_FILE).toFile());
         manifest.setProcessDir(getProcessDir());
-        ValidationResponse response;
+
         try {
-            response = new SubmissionValidator().validate(manifest);
+            validationResponse = getValidator().validate(manifest);
         } catch (RuntimeException ex) {
             throw WebinCliException.systemError(ex);
         }
-        if(response != null && response.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
+        if(validationResponse != null && validationResponse.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
             throw WebinCliException.validationError("");
         }
-        validationResponse = response;
     }
 
     public final void readManifest() {
@@ -211,7 +212,11 @@ WebinCliExecutor<M extends Manifest>
         return manifestReader;
     }
 
-    public XmlWriter<M> getXmlWriter() {
+    public Validator<M,R> getValidator() {
+        return validator;
+    }
+
+    public XmlWriter<M, R> getXmlWriter() {
         return xmlWriter;
     }
 

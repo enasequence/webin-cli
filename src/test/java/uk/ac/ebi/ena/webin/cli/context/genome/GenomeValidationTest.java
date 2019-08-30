@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
@@ -41,7 +42,7 @@ public class GenomeValidationTest {
             .field("NAME", "test");
   }
 
-  private static final WebinCliExecutorBuilder<GenomeManifest> executorBuilder =
+  private static final WebinCliExecutorBuilder<GenomeManifest, ValidationResponse> executorBuilder =
           new WebinCliExecutorBuilder(GenomeManifest.class)
                   .manifestMetadataProcessors(false)
                   .sample(getDefaultSample());
@@ -56,7 +57,7 @@ public class GenomeValidationTest {
     File manifestFile =
         manifestBuilder().file(FileType.FASTA, "valid_fasta.fasta.gz").build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
@@ -76,7 +77,7 @@ public class GenomeValidationTest {
             .file(FileType.FLATFILE, "valid_flatfile.dat.gz")
             .build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
@@ -89,7 +90,7 @@ public class GenomeValidationTest {
     File manifestFile =
         manifestBuilder().file(FileType.FLATFILE, "valid_flatfile.dat.gz").build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
@@ -105,7 +106,7 @@ public class GenomeValidationTest {
             .file(FileType.AGP, "valid_agp.agp.gz")
             .build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
@@ -122,7 +123,7 @@ public class GenomeValidationTest {
             .file(FileType.AGP, "valid_agp.agp.gz")
             .build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
@@ -140,7 +141,7 @@ public class GenomeValidationTest {
             .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(3);
@@ -159,7 +160,7 @@ public class GenomeValidationTest {
             .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(3);
@@ -174,7 +175,7 @@ public class GenomeValidationTest {
     File manifestFile =
         manifestBuilder().file(FileType.FASTA, "invalid_fasta.fasta.gz").build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
@@ -189,7 +190,7 @@ public class GenomeValidationTest {
     File manifestFile =
         manifestBuilder().file(FileType.FLATFILE, "invalid_flatfile.dat.gz").build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
@@ -207,7 +208,7 @@ public class GenomeValidationTest {
             .file(FileType.AGP, "invalid_agp.agp.gz")
             .build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
     assertThatThrownBy(executor::validateSubmission)
         .isInstanceOf(WebinCliException.class);
@@ -226,7 +227,7 @@ public class GenomeValidationTest {
                     .file(FileType.CHROMOSOME_LIST, "invalid_chromosome_list_sequenceless.txt.gz")
                     .build();
 
-    WebinCliExecutor<GenomeManifest> executor =
+    WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
             executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
 
     assertThatThrownBy(executor::validateSubmission)

@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
@@ -22,6 +23,7 @@ import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsWebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.*;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
@@ -30,33 +32,39 @@ public enum WebinCliContext {
           GenomeManifest.class,
           GenomeManifestReader.class,
           GenomeXmlWriter.class,
+          SubmissionValidator.class,
           "Genome assembly"),
   transcriptome(
           TranscriptomeManifest.class,
           TranscriptomeManifestReader.class,
           TranscriptomeXmlWriter.class,
+          SubmissionValidator.class,
           "Transcriptome assembly"),
   sequence(
           SequenceManifest.class,
           SequenceManifestReader.class,
           SequenceXmlWriter.class,
+          SubmissionValidator.class,
           "Sequence assembly"),
-  reads(ReadsManifest.class, ReadsManifestReader.class, ReadsXmlWriter.class, "Raw reads");
+  reads(ReadsManifest.class, ReadsManifestReader.class, ReadsXmlWriter.class, null, "Raw reads");
 
   private final Class<? extends Manifest> manifestClass;
   private final Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass;
-  private final Class<? extends XmlWriter<? extends Manifest>> xmlWriterClass;
+  private final Class<? extends XmlWriter<? extends Manifest, ? extends ValidationResponse>> xmlWriterClass;
+  private final Class<? extends Validator<? extends Manifest, ? extends ValidationResponse>> validatorClass;
 
   private final String titlePrefix;
 
   WebinCliContext(
           Class<? extends Manifest> manifestClass,
           Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass,
-          Class<? extends XmlWriter<? extends Manifest>> xmlWriterClass,
+          Class<? extends XmlWriter<? extends Manifest, ? extends ValidationResponse>> xmlWriterClass,
+          Class<? extends Validator<? extends Manifest, ? extends ValidationResponse>> validatorClass,
           String titlePrefix) {
     this.manifestClass = manifestClass;
     this.manifestReaderClass = manifestReaderClass;
     this.xmlWriterClass = xmlWriterClass;
+    this.validatorClass = validatorClass;
     this.titlePrefix = titlePrefix;
   }
 
@@ -64,28 +72,29 @@ public enum WebinCliContext {
     return manifestClass;
   }
 
-  public static <M extends Manifest> WebinCliExecutor<M> createExecutor(Class<M> manifestClass, WebinCliParameters parameters) {
+  public static <M extends Manifest, R extends ValidationResponse> WebinCliExecutor<M, R> createExecutor(Class<M> manifestClass, WebinCliParameters parameters) {
     for (WebinCliContext context : WebinCliContext.values()) {
       if (context.getManifestClass().equals(manifestClass)) {
-        return (WebinCliExecutor<M>) context.createExecutor(parameters);
+        return (WebinCliExecutor<M,R>) context.createExecutor(parameters);
       }
     }
     return null;
   }
 
-  public WebinCliExecutor<?> createExecutor(WebinCliParameters parameters) {
+  public WebinCliExecutor<?,?> createExecutor(WebinCliParameters parameters) {
     return createExecutor(parameters, new ManifestReaderBuilder(manifestReaderClass, parameters).build());
   }
 
-  public WebinCliExecutor<?> createExecutor(
+  public WebinCliExecutor<?,?> createExecutor(
           WebinCliParameters parameters, ManifestReader<?> manifestReader) {
     if (manifestClass.equals(ReadsManifest.class)) {
       // TODO: remove ReadsWebinCliExecutor
       return new ReadsWebinCliExecutor(parameters, (ReadsManifestReader)manifestReader);
     } else {
       try {
-        XmlWriter<?> xmlWriter = xmlWriterClass.newInstance();
-        return new WebinCliExecutor(this, parameters, manifestReader, xmlWriter);
+        XmlWriter<?,?> xmlWriter = xmlWriterClass.newInstance();
+        Validator<?,?> validator = validatorClass.newInstance();
+        return new WebinCliExecutor(this, parameters, manifestReader, xmlWriter, validator);
 
       } catch (Exception ex) {
         throw new RuntimeException(ex);

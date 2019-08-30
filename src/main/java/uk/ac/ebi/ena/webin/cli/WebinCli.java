@@ -175,7 +175,7 @@ public class WebinCli {
 		// initTimedConsoleLogger();
 		initTimedFileLogger(parameters);
 
-		WebinCliExecutor<?> executor = context.createExecutor(parameters);
+		WebinCliExecutor<?,?> executor = context.createExecutor(parameters);
 
 		executor.readManifest();
 
@@ -192,7 +192,7 @@ public class WebinCli {
 
 	
 	private void
-	doValidation(WebinCliExecutor<?> executor)
+	doValidation(WebinCliExecutor<?,?> executor)
 	{
 	   try 
 	   {
@@ -226,7 +226,7 @@ public class WebinCli {
 	 
 	
 	private void 
-    doSubmit( WebinCliExecutor<?> executor )
+    doSubmit( WebinCliExecutor<?,?> executor )
     {
 		SubmissionBundle bundle = executor.readSubmissionBundle();
 

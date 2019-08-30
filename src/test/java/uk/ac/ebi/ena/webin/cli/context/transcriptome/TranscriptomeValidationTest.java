@@ -20,6 +20,7 @@ import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +39,7 @@ public class TranscriptomeValidationTest {
         .field("NAME", "test");
   }
 
-  private static final WebinCliExecutorBuilder<TranscriptomeManifest> executorBuilder =
+  private static final WebinCliExecutorBuilder<TranscriptomeManifest, ValidationResponse> executorBuilder =
       new WebinCliExecutorBuilder(TranscriptomeManifest.class)
           .manifestMetadataProcessors(false)
           .sample(WebinCliTestUtils.getDefaultSample());
@@ -57,7 +58,7 @@ public class TranscriptomeValidationTest {
       // System.out.println(fileName);
       File manifestFile =
           manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, fileName).build();
-      WebinCliExecutor<TranscriptomeManifest> executor =
+      WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
           executorBuilder.readManifest(manifestFile, VALID_DIR);
       executor.validateSubmission();
       assertThat(

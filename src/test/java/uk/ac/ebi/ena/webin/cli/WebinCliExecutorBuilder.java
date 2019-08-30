@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import uk.ac.ebi.embl.api.validation.Severity;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
@@ -21,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Creates the validator and reads the manifest file without using the command line parser. */
-public class WebinCliExecutorBuilder<M extends Manifest> {
+public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationResponse> {
   private final Class<M> manifestClass;
   private boolean manifestMetadataProcessors = true;
   private Study study;
@@ -46,7 +47,7 @@ public class WebinCliExecutorBuilder<M extends Manifest> {
     return this;
   }
 
-  private WebinCliExecutor<M> createExecutor(WebinCliParameters parameters) {
+  private WebinCliExecutor<M,R> createExecutor(WebinCliParameters parameters) {
     return WebinCliContext.createExecutor(manifestClass, parameters);
   }
 
@@ -58,8 +59,8 @@ public class WebinCliExecutorBuilder<M extends Manifest> {
     return parameters;
   }
 
-  public WebinCliExecutor<M> readManifest(File manifestFile, File inputDir) {
-    WebinCliExecutor<M> executor = createExecutor(createParameters(manifestFile, inputDir));
+  public WebinCliExecutor<M,R> readManifest(File manifestFile, File inputDir) {
+    WebinCliExecutor<M,R> executor = createExecutor(createParameters(manifestFile, inputDir));
     executor.readManifest();
     if (sample != null) {
       executor.getManifestReader().getManifest().setSample(sample);
@@ -70,8 +71,8 @@ public class WebinCliExecutorBuilder<M extends Manifest> {
     return executor;
   }
 
-  public WebinCliExecutor<M> readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
-    WebinCliExecutor<M> executor = createExecutor(createParameters(manifestFile, inputDir));
+  public WebinCliExecutor<M,R> readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
+    WebinCliExecutor<M,R> executor = createExecutor(createParameters(manifestFile, inputDir));
     assertThatThrownBy(
             () -> executor.readManifest(),
             "Expected WebinCliException to be thrown: " + message.key())

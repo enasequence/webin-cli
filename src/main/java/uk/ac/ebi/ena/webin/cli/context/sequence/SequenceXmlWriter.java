@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.context.sequence;
 
 import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 import java.nio.file.Path;
@@ -22,7 +23,7 @@ import static uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileTy
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
-public class SequenceXmlWriter extends SequenceToolsXmlWriter<SequenceManifest> {
+public class SequenceXmlWriter extends SequenceToolsXmlWriter<SequenceManifest, ValidationResponse> {
 
   @Override
   protected Element createXmlAnalysisTypeElement(SequenceManifest manifest) {

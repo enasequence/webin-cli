@@ -19,6 +19,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 import java.io.IOException;
@@ -29,12 +30,12 @@ import java.util.Map;
 import static uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 
-public class ReadsXmlWriter implements XmlWriter<ReadsManifest> {
+public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationResponse> {
 
   @Override
   public Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(
       ReadsManifest manifest,
-      ValidationResponse response,
+      ReadsValidationResponse response,
       String centerName,
       String submissionTitle,
       String submissionAlias,
