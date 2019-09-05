@@ -135,7 +135,8 @@ public interface WebinCliMessage {
         MISSING_PLATFORM_AND_INSTRUMENT_ERROR("Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),
         INVALID_PLATFORM_FOR_INSTRUMENT_ERROR("Platform {0} for instrument {1}. Valid platforms are: {2}."),
         MISSING_PLATFORM_FOR_INSTRUMENT_ERROR("Missing platform for instrument: {0}."),
-        MISSING_ADDRESS_OR_AUTHOR_ERROR("Please provide both address and author details or neither.");
+        MISSING_ADDRESS_OR_AUTHOR_ERROR("Please provide both address and author details or neither."),
+        READS_INVALID_QUALITY_SCORE("Invalid quality score: {0}");
 
         public final String text;
         Manifest(String text) {

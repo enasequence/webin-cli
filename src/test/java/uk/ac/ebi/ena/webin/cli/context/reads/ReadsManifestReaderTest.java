@@ -59,8 +59,8 @@ ReadsManifestReaderTest
         ValidationResult.setDefaultMessageFormatter( null );
         Locale.setDefault( Locale.UK );
     }
-    
-    
+
+
     @Test public void
     testCreateReadFile()
     {
@@ -83,7 +83,7 @@ ReadsManifestReaderTest
     testValidManifest() throws IOException
     {
         String descr = "A description";
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
                                 ( Field.STUDY            + " " + STUDY_ID + "\n"
                                 + Field.SAMPLE           + " " + SAMPLE_ID + "\n"
                                 + Field.PLATFORM          + " illumina\n"
@@ -115,7 +115,7 @@ ReadsManifestReaderTest
         Assert.assertNull( manifest.getName() );
         assertThat( manifest.files().files() ).size().isZero();
         Assert.assertNull( manifest.getDescription() );
-        
+
         rm.readManifest( Paths.get( "." ), man.toFile() );
 
         Assert.assertEquals( STUDY_ID, manifest.getStudy().getBioProjectId() );
@@ -192,7 +192,7 @@ ReadsManifestReaderTest
     @Test public void
     testUnspecifiedInstrument() throws IOException
     {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
                                 ( Field.PLATFORM + " illumina\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
@@ -231,7 +231,7 @@ ReadsManifestReaderTest
     @Test public void
     testPlatformOverride() throws IOException
     {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
                                 ( Field.PLATFORM + " ILLUMINA\n"
                                 + Field.INSTRUMENT + " 454 GS FLX Titanium\n" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
@@ -252,7 +252,7 @@ ReadsManifestReaderTest
     @Test public void
     testUnspecifiedInstrumentNoPlatform() throws IOException
     {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
                                 ( "" ).getBytes(),
                                 StandardOpenOption.SYNC, StandardOpenOption.CREATE );
 
@@ -293,7 +293,7 @@ ReadsManifestReaderTest
     @Test public void
     negativeInsertSize() throws IOException
     {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ), 
+        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
                                 ( Field.STUDY            + " " +  STUDY_ID + "\n"
                                 + Field.SAMPLE           + " " +  SAMPLE_ID + "\n"
                                 + Field.PLATFORM          + " ILLUMINA\n"

@@ -64,7 +64,7 @@ ReadsWebinCliTest
 
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( fastq_file.getParent().toFile() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( getInfoPart() + "FASTQ " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
         parameters.setMetadataProcessorsActive(false);
@@ -116,7 +116,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
 
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
@@ -134,7 +134,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
 
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
@@ -152,7 +152,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ yoba.fastq.gz.bz2 PHRED_33" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -169,7 +169,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ " + createOutputFolder() + " PHRED_33" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -186,7 +186,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -207,7 +207,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -224,7 +224,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -241,7 +241,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM PHRED_33 file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
 
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -258,7 +258,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
 
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
@@ -276,7 +276,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
 
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -294,7 +294,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
 
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
@@ -314,7 +314,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( getInfoPart() + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -348,7 +348,7 @@ ReadsWebinCliTest
                                                  ( getInfoPart()
                                                  + "BAM " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
 
         parameters.setMetadataProcessorsActive(false);
 
@@ -378,7 +378,7 @@ ReadsWebinCliTest
         parameters.setManifestFile( Files.write( WebinCliTestUtils.createEmptyTempFile(),
                                                  ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -402,7 +402,7 @@ ReadsWebinCliTest
                                                  + "FASTQ " + file + "\n"
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -422,7 +422,7 @@ ReadsWebinCliTest
                                                  + "FASTQ " + file + "\n"
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -441,7 +441,7 @@ ReadsWebinCliTest
                                                  ( getInfoPart()
                                                  + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -468,7 +468,7 @@ ReadsWebinCliTest
                                                  + "FASTQ " + file1 + "\n"
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -478,12 +478,12 @@ ReadsWebinCliTest
                                     StandardCharsets.UTF_8 );
         Assert.assertTrue( rlines.contains( file1.getFileName().toString() ) );
         Assert.assertTrue( rlines.contains( file2.getFileName().toString() ) );
-        
+
         String elines = new String( Files.readAllBytes( executor.readSubmissionBundle().getXMLFileList().stream().filter(e->SubmissionXMLFileType.EXPERIMENT.equals( e.getType() ) ).findFirst().get().getFile().toPath() ),
                                    StandardCharsets.UTF_8 );
         Assert.assertTrue( elines.contains( "<PAIRED" ) );
     }
-    
+
     //TODO remove?
     @Test( expected = WebinCliException.class ) public void
     fastqFalsePair() throws IOException
@@ -495,31 +495,31 @@ ReadsWebinCliTest
 
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() 
-                                                 + "FASTQ " + file1 + "\n" 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart()
+                                                 + "FASTQ " + file1 + "\n"
                                                  + "FASTQ " + file2 ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
         executor.validateSubmission();
     }
 
-    
+
     @Test public void
     testIncorrectFastq() throws IOException
     {
         URL url = ReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/webin/cli/rawreads/MG23S_431.fastq.gz" );
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
-        
+
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
                                                  ( getInfoPart() + "FASTQ " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -527,7 +527,7 @@ ReadsWebinCliTest
         {
             executor.validateSubmission();
             fail( "Should validate incorrectly" );
-            
+
         } catch( WebinCliException wce )
         {
             Assert.assertEquals("Result file should exist", 1, executor.getValidationDir().list(
@@ -535,7 +535,7 @@ ReadsWebinCliTest
         }
     }
 
-    
+
     @Test public void
     testIncorrectCram() throws IOException
     {
@@ -543,10 +543,10 @@ ReadsWebinCliTest
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
@@ -554,15 +554,15 @@ ReadsWebinCliTest
         {
             executor.validateSubmission();
             fail( "Should validate incorrectly" );
-            
+
         } catch( WebinCliException wce )
         {
             Assert.assertEquals("Result file should exist", 1, executor.getValidationDir().list(
                     (dir, name) -> name.contains(file.getName())).length);
         }
     }
-    
-  
+
+
     @Test public void
     testCorrectCram() throws IOException
     {
@@ -570,58 +570,58 @@ ReadsWebinCliTest
         File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(), 
-                                                 ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ), 
+        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
+                                                 ( getInfoPart() + "CRAM " + file.getPath() ).getBytes( StandardCharsets.UTF_8 ),
                                                  StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        
+
         parameters.setMetadataProcessorsActive(false);
         ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
         executor.readManifest();
         executor.validateSubmission();
     }
 
-    
-    
+
+
     @Ignore @Test( timeout = 200_000 ) public void
     openSamExamples() throws UnsupportedEncodingException
     {
         final SamReaderFactory factory =
                 SamReaderFactory.makeDefault().enable( SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS ).validationStringency( ValidationStringency.LENIENT );
-        
+
         URL url = ReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/webin/cli/rawreads/20416_1#274.cram" );
         final SamInputResource resource = SamInputResource.of( new File( URLDecoder.decode( url.getFile(), "UTF-8" ) ) );
         ENAReferenceSource rs = new ENAReferenceSource( new String[] { } );
         rs.setLoggerWrapper( new LoggerWrapper() {
 
-            @Override public void 
+            @Override public void
             debug( Object... messageParts )
             {
                 System.out.println( Arrays.asList( messageParts ) );
             }
 
-            @Override public void 
+            @Override public void
             warn( Object... messageParts )
             {
                 System.out.println( Arrays.asList( messageParts ) );
             }
-            
-            @Override public void 
+
+            @Override public void
             error( Object... messageParts )
             {
                 System.out.println( Arrays.asList( messageParts ) );
             }
 
-            @Override public void 
+            @Override public void
             info( Object... messageParts )
             {
                 System.out.println( Arrays.asList( messageParts ) );
             }
-            
+
         } );
         factory.referenceSource( rs );
         final SamReader myReader = factory.open(resource);
 
-        for (final SAMRecord samRecord : myReader) 
+        for (final SAMRecord samRecord : myReader)
         {
             System.err.print(samRecord);
         }

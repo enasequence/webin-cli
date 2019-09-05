@@ -10,6 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
+import static uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -17,18 +25,9 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import static uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 
 public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationResponse> {
 
@@ -45,7 +44,7 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
     Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
     xmls.put(
         SubmissionBundle.SubmissionXMLFileType.EXPERIMENT,
-        createExperimentXml(manifest, submissionTitle, submissionAlias, centerName));
+        createExperimentXml(manifest, response, submissionTitle, submissionAlias, centerName));
     xmls.put(
         SubmissionBundle.SubmissionXMLFileType.RUN,
         createRunXml(manifest, submissionTitle, submissionAlias, centerName, inputDir, uploadDir));
@@ -54,7 +53,12 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
   }
 
   private String createExperimentXml(
-      ReadsManifest manifest, String submissionTitle, String submissionAlias, String centerName) {
+      ReadsManifest manifest,
+      ReadsValidationResponse response,
+      String submissionTitle,
+      String submissionAlias,
+      String centerName) {
+
     String instrument = manifest.getInstrument();
     String description =
         StringUtils.isBlank(manifest.getDescription()) ? "unspecified" : manifest.getDescription();
@@ -74,8 +78,9 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       Document doc = new Document(experimentSetE);
       experimentE.setAttribute("alias", submissionAlias);
 
-      if (null != centerName && !centerName.isEmpty())
+      if (null != centerName && !centerName.isEmpty()) {
         experimentE.setAttribute("center_name", centerName);
+      }
 
       experimentE.addContent(new Element("TITLE").setText(title));
 
@@ -124,13 +129,15 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
 
       Element libraryLayoutE = new Element("LIBRARY_LAYOUT");
 
-      if (!manifest.isPaired()) {
+      if (!response.isPaired()) {
         libraryLayoutE.addContent(new Element("SINGLE"));
       } else {
         Element pairedE = new Element("PAIRED");
         libraryLayoutE.addContent(pairedE);
 
-        if (null != insertSize) pairedE.setAttribute("NOMINAL_LENGTH", String.valueOf(insertSize));
+        if (null != insertSize) {
+          pairedE.setAttribute("NOMINAL_LENGTH", String.valueOf(insertSize));
+        }
       }
 
       libraryDescriptorE.addContent(libraryLayoutE);
@@ -171,7 +178,9 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       Document doc = new Document(runSetE);
       runE.setAttribute("alias", submissionAlias);
 
-      if (null != centerName && !centerName.isEmpty()) runE.setAttribute("center_name", centerName);
+      if (null != centerName && !centerName.isEmpty()) {
+        runE.setAttribute("center_name", centerName);
+      }
 
       runE.addContent(new Element("TITLE").setText(title));
       Element experimentRefE = new Element("EXPERIMENT_REF");

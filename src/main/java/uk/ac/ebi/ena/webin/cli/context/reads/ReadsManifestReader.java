@@ -16,11 +16,13 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage.Manifest;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.QualityScore;
 
 public class
 ReadsManifestReader extends ManifestReader<ReadsManifest> {
@@ -177,8 +179,15 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
         manifest.setLibraryConstructionProtocol(getResult().getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL));
         manifest.setLibraryName(getResult().getValue(Field.LIBRARY_NAME));
 
-        if (getResult().getCount(Field.QUALITY_SCORE) > 0)
-            manifest.setQualityScore(getResult().getValue(Field.QUALITY_SCORE));
+        if (getResult().getCount(Field.QUALITY_SCORE) > 0) {
+            String qsStr = getResult().getValue(Field.QUALITY_SCORE);
+            try {
+                QualityScore qs = QualityScore.valueOf(qsStr);
+                manifest.setQualityScore(qs);
+            } catch (Exception ex) {
+                error(Manifest.READS_INVALID_QUALITY_SCORE, getResult().getValue(Field.QUALITY_SCORE));
+            }
+        }
 
         if (getResult().getCount(Field.__HORIZON) > 0)
             manifest.setPairingHorizon(getAndValidatePositiveInteger(getResult().getField(Field.__HORIZON)));
