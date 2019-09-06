@@ -70,25 +70,26 @@ configurations.all {
 		project.ext.properties.gitlab_private_token = ''
 	else
 		project.ext.properties.gitlab_private_token = gitlab_private_token;
+    
 }
 
 
-//test {
-//	jvmArgs "-Dfile.encoding=UTF-8"
-//	maxHeapSize = '4G'
-//
-//	if( System.env.webin_cli_password ) {
-//      	environment 'webin-cli-password', System.env.webin_cli_password
-//    } else {
-//    	environment 'webin-cli-password', webinCliPassword
-//    }
-//
-//	if( System.env.webin_cli_username ) {
-//      	environment 'webin-cli-username', System.env.webin_cli_username
-//    } else {
-//    	environment 'webin-cli-username', webinCliUsername
-//    }
-//}
+test {
+	jvmArgs "-Dfile.encoding=UTF-8"
+	maxHeapSize = '4G'
+
+	if( System.env.webin_cli_password ) {
+      	environment 'webin-cli-password', System.env.webin_cli_password
+    } else {
+    	environment 'webin-cli-password', webinCliPassword
+    }
+
+	if( System.env.webin_cli_username ) {
+      	environment 'webin-cli-username', System.env.webin_cli_username
+    } else {
+    	environment 'webin-cli-username', webinCliUsername
+    }
+}
 
 repositories {
     mavenLocal()

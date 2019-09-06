@@ -1,151 +1,134 @@
-/*
- * Copyright 2018-2019 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SamInputResource;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.SamReaderFactory;
-import htsjdk.samtools.ValidationStringency;
-
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.readtools.cram.ref.ENAReferenceSource;
-import uk.ac.ebi.ena.readtools.cram.ref.ENAReferenceSource.LoggerWrapper;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFileType;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
+import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
+public class ReadsValidationTest {
 
-public class
-ReadsWebinCliTest
-{
-/*
-    @Before public void
-    before()
-    {
-        ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
-        ValidationResult.setDefaultMessageFormatter( null );
-    }
+  private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/rawreads");
 
+  private static ManifestBuilder manifestBuilder() {
+    return new ManifestBuilder()
+        .field("STUDY", "test")
+        .field("SAMPLE", "test")
+        .field("PLATFORM", "ILLUMINA")
+        .field("INSTRUMENT", "unspecified")
+        .field("NAME", "test")
+        .field("INSERT_SIZE", "1")
+        .field("LIBRARY_STRATEGY", "CLONEEND")
+        .field("LIBRARY_SOURCE", "OTHER")
+        .field("LIBRARY_SELECTION", "Inverse rRNA selection");
+  }
 
-    @Test public void
-    parseManifest() throws IOException {
-        Path fastq_file = WebinCliTestUtils.createGzippedTempFile("fastq.gz", "@1.1\nACGT\n@\n!@#$\n");
+  private static final WebinCliExecutorBuilder<ReadsManifest, ReadsValidationResponse> executorBuilder =
+      new WebinCliExecutorBuilder(ReadsManifest.class)
+          .manifestMetadataProcessors(false);
 
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( fastq_file.getParent().toFile() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( getInfoPart() + "FASTQ " + fastq_file.toString() ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setMetadataProcessorsActive(false);
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
+  @Test
+  public void
+  manifestTwoBAMs() {
+    File manifestFile =
+        manifestBuilder()
+            .file(FileType.BAM, "file1.bam")
+            .file(FileType.BAM, "file2.bam")
+            .build();
 
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
-    @Test( expected = WebinCliException.class ) public void
-    manifestTwoBAMs() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nBAM file2.bam" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setMetadataProcessorsActive(false);
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
+  @Test
+  public void
+  testCorrectBAM() {
+    File manifestFile =
+        manifestBuilder().file(FileType.BAM, "OUTO500m_MetOH_narG_OTU18.bam").build();
 
+    WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
+        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    assertThat(submissionFiles.get().size()).isEqualTo(1);
+    assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
+    executor.validateSubmission();
+  }
 
-    @Test( expected = WebinCliException.class ) public void
-    manifestTwoCRAMs() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nCRAM file1.cram\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-        parameters.setMetadataProcessorsActive(false);
+  @Test
+  public void
+  manifestTwoCRAMs() {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.CRAM, "file1.cram").
+            file(FileType.CRAM, "file2.cram").
+            build();
 
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
-
-
-    @Test( expected = WebinCliException.class ) public void
-    manifestMixingFormats() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file1.bam\nCRAM file2.cram" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-
-        parameters.setMetadataProcessorsActive(false);
-
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
 
-    @Test( expected = WebinCliException.class ) public void
-    manifestNoFiles() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+  @Test
+  public void
+  manifestMixingFormats() {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.BAM, "file1.bam").
+            file(FileType.CRAM, "file2.cram").
+            build();
 
-        parameters.setMetadataProcessorsActive(false);
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
+  @Test
+  public void
+  manifestNoFiles()
+  {
+    File manifestFile =
+        manifestBuilder().build();
+
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
 
+  @Test
+  public void
+  manifestDoesFileNotExist()
+  {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.BAM, "file1.bam").
+            file(FileType.CRAM, "file2.cram").
+            build();
+
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
+
+  /*
     @Test( expected = WebinCliException.class ) public void
     manifestDoesFileNotExist() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
@@ -685,5 +668,5 @@ ReadsWebinCliTest
         Assert.assertTrue( output.mkdirs() );
         return output;
     }
-    */
+   */
 }

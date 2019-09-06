@@ -10,7 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,14 +24,11 @@ import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile;
-import uk.ac.ebi.ena.readtools.webin.cli.rawreads.RawReadsFile.Filetype;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 
 import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
@@ -58,25 +54,6 @@ ReadsManifestReaderTest
         ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
         ValidationResult.setDefaultMessageFormatter( null );
         Locale.setDefault( Locale.UK );
-    }
-
-
-    @Test public void
-    testCreateReadFile()
-    {
-        Path inputDir = Paths.get( "." );
-
-        RawReadsFile file = ReadsWebinCliExecutor.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.FASTQ, new File("file.fastq")));
-        Assert.assertTrue( file.getFilename().contains( "file.fastq" ) );
-        Assert.assertEquals( Filetype.fastq, file.getFiletype() );
-
-        file = ReadsWebinCliExecutor.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.BAM, new File("file.bam")));
-        Assert.assertTrue( file.getFilename().contains( "file.bam" ) );
-        Assert.assertEquals( Filetype.bam, file.getFiletype() );
-
-        file = ReadsWebinCliExecutor.createReadFile(inputDir, new SubmissionFile<>(ReadsManifest.FileType.CRAM, new File("file.cram")));
-        Assert.assertTrue( file.getFilename().contains( "file.cram" ) );
-        Assert.assertEquals( Filetype.cram, file.getFiletype() );
     }
 
     @Test public void

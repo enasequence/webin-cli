@@ -76,9 +76,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifest.setProcessDir(getProcessDir());
 
         try {
-            validationResponse = getValidator().
-
-                validate(manifest);
+            validationResponse = getValidator().validate(manifest);
         } catch (RuntimeException ex) {
             throw WebinCliException.systemError(ex);
         }

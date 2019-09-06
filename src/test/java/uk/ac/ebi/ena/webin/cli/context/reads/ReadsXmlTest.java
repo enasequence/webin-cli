@@ -57,6 +57,7 @@ public class ReadsXmlTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         (WebinCliExecutor<ReadsManifest,ReadsValidationResponse>)
             WebinCliContext.reads.createExecutor(parameters, manifestReader);
+    executor.validateSubmission();
     executor.prepareSubmissionBundle();
     return executor.readSubmissionBundle();
   }
