@@ -6,17 +6,17 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import org.junit.Assert;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
@@ -102,26 +102,9 @@ public class ReadsValidationTest {
 
   @Test
   public void
-  manifestNoFiles()
-  {
+  manifestNoFiles() {
     File manifestFile =
         manifestBuilder().build();
-
-    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
-        .isInstanceOf(WebinCliException.class)
-        .hasMessageStartingWith("Invalid manifest file");
-  }
-
-
-  @Test
-  public void
-  manifestDoesFileNotExist()
-  {
-    File manifestFile =
-        manifestBuilder().
-            file(FileType.BAM, "file1.bam").
-            file(FileType.CRAM, "file2.cram").
-            build();
 
     assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
         .isInstanceOf(WebinCliException.class)
@@ -144,97 +127,92 @@ public class ReadsValidationTest {
         SubmissionBundle sb = executor.readSubmissionBundle();
         System.out.println( sb.getXMLFileList() );
     }
+*/
+
+  @Test
+  public void
+  manifestFileIsDirectory() throws IOException {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.FASTQ, createOutputFolder() + " PHRED_33").
+            build();
+
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
+
+  @Test
+  public void
+  manifestNoPath() {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.FASTQ, "").
+            build();
+
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
 
-    @Test( expected = WebinCliException.class ) public void
-    manifestFileIsDirectory() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ " + createOutputFolder() + " PHRED_33" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+  @Test
+  public void
+  manifestNonASCIIPath() throws IOException {
+    URL url = ReadsWebinCliTest.class.getClassLoader()
+        .getResource("uk/ac/ebi/ena/webin/cli/rawreads/MG23S_431.fastq.gz");
+    File gz = new File(URLDecoder.decode(url.getFile(), "UTF-8"));
 
-        parameters.setMetadataProcessorsActive(false);
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
+    Path file = Files
+        .write(Files.createTempFile("FILE", "Š.fq.gz"), Files.readAllBytes(gz.toPath()),
+            StandardOpenOption.TRUNCATE_EXISTING);
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.FASTQ, file).
+            build();
 
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
-    @Test( expected = WebinCliException.class ) public void
-    manifestNoPath() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+  @Test public void
+  manifestFastqNoScoring() {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.FASTQ, "file.fq.gz").
+            build();
 
-        parameters.setMetadataProcessorsActive(false);
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
+  @Test public void
+  manifestBAMScoring() {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.BAM, "PHRED_33 file.fq.gz").
+            build();
 
-    @Test( expected = WebinCliException.class ) public void
-    manifestNonASCIIPath() throws IOException {
-        URL url = ReadsWebinCliTest.class.getClassLoader().getResource( "uk/ac/ebi/ena/webin/cli/rawreads/MG23S_431.fastq.gz" );
-        File gz = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
-        Path file = Files.write( Files.createTempFile( "FILE", "Š.fq.gz" ), Files.readAllBytes( gz.toPath() ), StandardOpenOption.TRUNCATE_EXISTING );
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( getInfoPart() + "FASTQ " + file ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+  @Test public void
+  manifestBAMCompression() {
+    File manifestFile =
+        manifestBuilder().
+            file(FileType.BAM, "PHRED_33 file.fq.gz").
+            build();
 
-        parameters.setMetadataProcessorsActive(false);
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
+    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageStartingWith("Invalid manifest file");
+  }
 
-
-    @Test( expected = WebinCliException.class ) public void
-    manifestFastqNoScoring() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nFASTQ file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-
-        parameters.setMetadataProcessorsActive(false);
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
-
-
-    @Test( expected = WebinCliException.class ) public void
-    manifestBAMScoring() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM PHRED_33 file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
-
-
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
-
-
+/*
     @Test( expected = WebinCliException.class ) public void
     manifestBAMCompression() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
@@ -252,7 +230,7 @@ public class ReadsValidationTest {
         System.out.println( sb.getXMLFileList() );
     }
 
-
+/*
     @Test( expected = WebinCliException.class ) public void
     manifestCRAMScoring() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
@@ -658,15 +636,13 @@ public class ReadsValidationTest {
         }
 
     }
+*/
 
-
-    private File
-    createOutputFolder() throws IOException
-    {
-        File output = File.createTempFile( "test", "test" );
-        Assert.assertTrue( output.delete() );
-        Assert.assertTrue( output.mkdirs() );
-        return output;
-    }
-   */
+  private File
+  createOutputFolder() throws IOException {
+    File output = File.createTempFile("test", "test");
+    Assert.assertTrue(output.delete());
+    Assert.assertTrue(output.mkdirs());
+    return output;
+  }
 }
