@@ -151,7 +151,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         Map<SubmissionBundle.SubmissionXMLFileType, String> xmls =
                 xmlWriter.createXml(
                         getManifestReader().getManifest(),
-                        validationResponse,
+                        getValidationResponse(),
                         getParameters().getCenterName(),
                         getSubmissionTitle(),
                         getSubmissionAlias(),
@@ -264,5 +264,9 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     getReportFile( String filename )
     {
         return WebinCli.getReportFile( this.validationDir, filename, WebinCliConfig.REPORT_FILE_SUFFIX );
+    }
+
+    public R getValidationResponse() {
+        return validationResponse;
     }
 }

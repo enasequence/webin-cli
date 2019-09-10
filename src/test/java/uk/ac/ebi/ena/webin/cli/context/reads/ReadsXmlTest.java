@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.context.reads;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -57,9 +58,11 @@ public class ReadsXmlTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         (WebinCliExecutor<ReadsManifest,ReadsValidationResponse>)
             WebinCliContext.reads.createExecutor(parameters, manifestReader);
-    executor.validateSubmission();
-    executor.prepareSubmissionBundle();
-    return executor.readSubmissionBundle();
+    WebinCliExecutor<ReadsManifest, ReadsValidationResponse> mockedExecutor = Mockito.spy(executor);
+    ReadsValidationResponse rvr = new ReadsValidationResponse();
+    Mockito.when(mockedExecutor.getValidationResponse()).thenReturn(rvr);
+    mockedExecutor.prepareSubmissionBundle();
+    return mockedExecutor.readSubmissionBundle();
   }
 
   @Test

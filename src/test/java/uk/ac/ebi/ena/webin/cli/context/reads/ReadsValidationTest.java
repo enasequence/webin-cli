@@ -176,7 +176,8 @@ public class ReadsValidationTest {
         .hasMessageStartingWith("Invalid manifest file");
   }
 
-  @Test public void
+  @Test
+  public void
   manifestFastqNoScoring() {
     File manifestFile =
         manifestBuilder().
@@ -188,7 +189,8 @@ public class ReadsValidationTest {
         .hasMessageStartingWith("Invalid manifest file");
   }
 
-  @Test public void
+  @Test
+  public void
   manifestBAMScoring() {
     File manifestFile =
         manifestBuilder().
@@ -200,37 +202,57 @@ public class ReadsValidationTest {
         .hasMessageStartingWith("Invalid manifest file");
   }
 
-  @Test public void
+  @Test
+  public void
   manifestBAMCompression() {
     File manifestFile =
         manifestBuilder().
-            file(FileType.BAM, "PHRED_33 file.fq.gz").
+            file(FileType.BAM, "file.fq.gz").
             build();
 
-    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+    assertThatThrownBy(() -> executorBuilder.manifestMetadataProcessors(false).readManifest(manifestFile, RESOURCE_DIR))
         .isInstanceOf(WebinCliException.class)
         .hasMessageStartingWith("Invalid manifest file");
   }
 
-/*
-    @Test( expected = WebinCliException.class ) public void
-    manifestBAMCompression() throws IOException {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setInputDir( createOutputFolder() );
-        parameters.setManifestFile( Files.write( File.createTempFile( "FILE", "FILE" ).toPath(),
-                                                 ( "STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz" ).getBytes( StandardCharsets.UTF_8 ),
-                                                 StandardOpenOption.TRUNCATE_EXISTING ).toFile() );
+  /*
+  @Test(expected = WebinCliException.class)
+  public void
+  manifestBAMScoring() throws IOException {
+    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    parameters.setInputDir(createOutputFolder());
+    parameters.setManifestFile(Files.write(File.createTempFile("FILE", "FILE").toPath(),
+        ("STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM PHRED_33 file.fq.gz")
+            .getBytes(StandardCharsets.UTF_8),
+        StandardOpenOption.TRUNCATE_EXISTING).toFile());
 
-        parameters.setMetadataProcessorsActive(false);
+    ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor(parameters);
+    executor.readManifest();
+    executor.prepareSubmissionBundle();
+    SubmissionBundle sb = executor.readSubmissionBundle();
+    System.out.println(sb.getXMLFileList());
+  }
 
-        ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor( parameters );
-        executor.readManifest();
-        executor.prepareSubmissionBundle();
-        SubmissionBundle sb = executor.readSubmissionBundle();
-        System.out.println( sb.getXMLFileList() );
-    }
 
-/*
+  @Test(expected = WebinCliException.class)
+  public void
+  manifestBAMCompression() throws IOException {
+    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    parameters.setInputDir(createOutputFolder());
+    parameters.setManifestFile(Files.write(File.createTempFile("FILE", "FILE").toPath(),
+        ("STUDY SRP123456789\nSAMPLE ERS198522\nPLATFORM ILLUMINA\nNAME SOME-FANCY-NAME\nBAM file.fq.gz")
+            .getBytes(StandardCharsets.UTF_8),
+        StandardOpenOption.TRUNCATE_EXISTING).toFile());
+
+    parameters.setMetadataProcessorsActive(false);
+
+    ReadsWebinCliExecutor executor = new ReadsWebinCliExecutor(parameters);
+    executor.readManifest();
+    executor.prepareSubmissionBundle();
+    SubmissionBundle sb = executor.readSubmissionBundle();
+    System.out.println(sb.getXMLFileList());
+  }
+
     @Test( expected = WebinCliException.class ) public void
     manifestCRAMScoring() throws IOException {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
