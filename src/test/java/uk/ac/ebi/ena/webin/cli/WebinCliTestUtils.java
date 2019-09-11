@@ -244,7 +244,10 @@ public class WebinCliTestUtils {
     }
 
     public static void assertReportContains(String outputDir, String dataFile, String message) {
-        Path reportFile = Paths.get(outputDir).resolve(dataFile );
+        assertReportContains(Paths.get(outputDir).resolve(dataFile), message);
+    }
+
+    public static void assertReportContains(Path reportFile, String message) {
         assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);
     }
 }

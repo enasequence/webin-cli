@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationResponse> {
   private final Class<M> manifestClass;
+  private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
   private boolean manifestMetadataProcessors = true;
   private Study study;
   private Sample sample;
@@ -51,16 +52,15 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
     return WebinCliContext.createExecutor(manifestClass, parameters);
   }
 
-  private WebinCliParameters createParameters(File manifestFile, File inputDir) {
-    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+  private void finalizeParameters(File manifestFile, File inputDir) {
     parameters.setManifestFile(manifestFile);
     parameters.setInputDir(inputDir);
     parameters.setMetadataProcessorsActive(manifestMetadataProcessors);
-    return parameters;
   }
 
   public WebinCliExecutor<M,R> readManifest(File manifestFile, File inputDir) {
-    WebinCliExecutor<M,R> executor = createExecutor(createParameters(manifestFile, inputDir));
+    finalizeParameters(manifestFile, inputDir);
+    WebinCliExecutor<M,R> executor = createExecutor(parameters);
     executor.readManifest();
     if (sample != null) {
       executor.getManifestReader().getManifest().setSample(sample);
@@ -72,7 +72,8 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
   }
 
   public WebinCliExecutor<M,R> readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
-    WebinCliExecutor<M,R> executor = createExecutor(createParameters(manifestFile, inputDir));
+    finalizeParameters(manifestFile, inputDir);
+    WebinCliExecutor<M,R> executor = createExecutor(parameters);
     assertThatThrownBy(
             () -> executor.readManifest(),
             "Expected WebinCliException to be thrown: " + message.key())
@@ -84,5 +85,9 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
                 .count(message.key(), Severity.ERROR))
         .isGreaterThanOrEqualTo(1);
     return executor;
+  }
+
+  public WebinCliParameters getParameters() {
+    return parameters;
   }
 }

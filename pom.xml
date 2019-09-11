@@ -65,7 +65,7 @@
     <dependency>
       <groupId>uk.ac.ebi.ena</groupId>
       <artifactId>readtools</artifactId>
-      <version>1.1.3-snapshot-01</version>
+      <version>1.1.3-snapshot-03</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
