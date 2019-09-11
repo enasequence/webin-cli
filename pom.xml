@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>uk.ac.ebi.ena.webin-cli</groupId>
   <artifactId>webin-cli</artifactId>
-  <version>1.8.11</version>
+  <version>1.8.12</version>
   <inceptionYear>2019</inceptionYear>
   <licenses>
     <license>
@@ -47,7 +47,7 @@
     <dependency>
       <groupId>uk.ac.ebi.ena.webin-cli</groupId>
       <artifactId>webin-cli-validator</artifactId>
-      <version>1.0.5-snapshot-03</version>
+      <version>1.0.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -65,7 +65,7 @@
     <dependency>
       <groupId>uk.ac.ebi.ena</groupId>
       <artifactId>readtools</artifactId>
-      <version>1.1.3-snapshot-03</version>
+      <version>1.1.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
