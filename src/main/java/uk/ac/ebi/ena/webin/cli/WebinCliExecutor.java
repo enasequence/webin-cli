@@ -64,27 +64,6 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         this.validator = validator;
     }
 
-    protected void validateSubmissionForContext(){
-        M manifest = getManifestReader().getManifest();
-
-        if(!manifest.getFiles().get().isEmpty()) {
-            for (SubmissionFile subFile : (List<SubmissionFile>) manifest.getFiles().get()) {
-                subFile.setReportFile(Paths.get(getValidationDir().getPath()).resolve(subFile.getFile().getName() + ".report").toFile());
-            }
-        }
-        manifest.setReportFile(Paths.get(getValidationDir().getPath()).resolve(ERROR_FILE).toFile());
-        manifest.setProcessDir(getProcessDir());
-
-        try {
-            validationResponse = getValidator().validate(manifest);
-        } catch (RuntimeException ex) {
-            throw WebinCliException.systemError(ex);
-        }
-        if(validationResponse != null && validationResponse.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
-            throw WebinCliException.validationError("");
-        }
-    }
-
     public final void readManifest() {
         this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
 
@@ -118,6 +97,27 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
         M manifest = getManifestReader().getManifest();
 
+        setIgnoreErrors(manifest);
+
+        if(!manifest.getFiles().get().isEmpty()) {
+            for (SubmissionFile subFile : (List<SubmissionFile>) manifest.getFiles().get()) {
+                subFile.setReportFile(Paths.get(getValidationDir().getPath()).resolve(subFile.getFile().getName() + ".report").toFile());
+            }
+        }
+        manifest.setReportFile(Paths.get(getValidationDir().getPath()).resolve(ERROR_FILE).toFile());
+        manifest.setProcessDir(getProcessDir());
+
+        try {
+            validationResponse = getValidator().validate(manifest);
+        } catch (RuntimeException ex) {
+            throw WebinCliException.systemError(ex);
+        }
+        if(validationResponse != null && validationResponse.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
+            throw WebinCliException.validationError("");
+        }
+    }
+
+    private void setIgnoreErrors(M manifest) {
         manifest.setIgnoreErrors(false);
         try {
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
@@ -131,8 +131,6 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         catch (RuntimeException ex) {
             log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
         }
-
-        validateSubmissionForContext();
     }
 
     public final void prepareSubmissionBundle() {
