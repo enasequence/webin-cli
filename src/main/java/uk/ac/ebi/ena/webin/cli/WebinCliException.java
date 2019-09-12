@@ -28,18 +28,18 @@ WebinCliException extends RuntimeException
 
     private final ErrorType errorType;
 
-    private WebinCliException(ErrorType errorType, Throwable ex, String message, String ... messages) {
-        super(join(message, messages), ex);
+    private WebinCliException(ErrorType errorType, Exception ex, String ... messages) {
+        super(join(messages), ex);
         this.errorType = errorType;
     }
 
-    private WebinCliException(ErrorType errorType, String message, String ... messages) {
-        super(join(message, messages));
+    private WebinCliException(ErrorType errorType, String ... messages) {
+        super(join(messages));
         this.errorType = errorType;
     }
 
-    private WebinCliException(WebinCliException ex, String message, String ... messages) {
-        super(join(ex.getMessage(), join(message, messages)), ex);
+    private WebinCliException(WebinCliException ex, String ... messages) {
+        super(join(ex.getMessage(), join(messages)), ex);
         this.errorType = ex.errorType;
     }
 
@@ -47,48 +47,48 @@ WebinCliException extends RuntimeException
         return errorType;
     }
 
-    public static WebinCliException userError(Throwable ex) {
+    public static WebinCliException userError(Exception ex) {
         return userError(ex, ex.getMessage());
     }
 
-    public static WebinCliException systemError(Throwable ex) {
+    public static WebinCliException systemError(Exception ex) {
         return systemError(ex, ex.getMessage());
     }
 
-    public static WebinCliException validationError(Throwable ex) {
+    public static WebinCliException validationError(Exception ex) {
         return validationError(ex, ex.getMessage());
     }
 
-    public static WebinCliException userError(Throwable ex, String message, String ... messages) {
-        return new WebinCliException(ErrorType.USER_ERROR, ex, message, messages);
+    public static WebinCliException userError(Exception ex, String ... messages) {
+        return new WebinCliException(ErrorType.USER_ERROR, ex, messages);
     }
 
-    public static WebinCliException systemError(Throwable ex, String message, String ... messages) {
-        return new WebinCliException(ErrorType.SYSTEM_ERROR, ex, message, messages);
+    public static WebinCliException systemError(Exception ex, String ... messages) {
+        return new WebinCliException(ErrorType.SYSTEM_ERROR, ex, messages);
     }
 
-    public static WebinCliException validationError(Throwable ex, String message, String ... messages) {
-        return new WebinCliException(ErrorType.VALIDATION_ERROR, ex, message, messages);
+    public static WebinCliException validationError(Exception ex, String ... messages) {
+        return new WebinCliException(ErrorType.VALIDATION_ERROR, ex, messages);
     }
 
-    public static WebinCliException userError(String message, String ... messages) {
-        return new WebinCliException(ErrorType.USER_ERROR, message, messages);
+    public static WebinCliException userError(String ... messages) {
+        return new WebinCliException(ErrorType.USER_ERROR, messages);
     }
 
-    public static WebinCliException systemError(String message, String ... messages) {
-        return new WebinCliException(ErrorType.SYSTEM_ERROR, message, messages);
+    public static WebinCliException systemError(String ... messages) {
+        return new WebinCliException(ErrorType.SYSTEM_ERROR, messages);
     }
 
-    public static WebinCliException validationError(String message, String ... messages) {
-        return new WebinCliException(ErrorType.VALIDATION_ERROR, message, messages);
+    public static WebinCliException validationError(String ... messages) {
+        return new WebinCliException(ErrorType.VALIDATION_ERROR,messages);
     }
 
-    public static WebinCliException error(WebinCliException ex, String message, String ... messages) {
-        return new WebinCliException(ex, message, messages);
+    public static WebinCliException error(WebinCliException ex, String ... messages) {
+        return new WebinCliException(ex, messages);
     }
 
-    private static String join(String message, String ... messages) {
-        String str = message;
+    private static String join(String ... messages) {
+        String str = "";
         for (String msg : messages) {
             str += " " + msg;
         }

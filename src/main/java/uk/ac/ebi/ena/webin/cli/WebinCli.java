@@ -54,7 +54,8 @@ public class WebinCli {
 	private final static String LOG_FILE_NAME= "webin-cli.report";
 
 	private WebinCliCommand params;
-	private WebinCliContext context;
+	private WebinCliExecutor<?, ?> executor;
+	private WebinCliException exception;
 
 	private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
 
@@ -83,26 +84,24 @@ public class WebinCli {
             checkVersion( params.test );
 
             WebinCli webinCli = new WebinCli();
-            WebinCliParameters parameters = webinCli.init( params );
-            webinCli.execute( parameters );
-            
-            return SUCCESS;
-            
-        } catch( WebinCliException e ) 
-        {
-            log.error( e.getMessage(), e );
 
-            switch( e.getErrorType() )
-            {
-                default:
-                    return SYSTEM_ERROR;
-                    
-                case USER_ERROR:
-                    return USER_ERROR;
-                    
-                case VALIDATION_ERROR:
-                    return VALIDATION_ERROR;
-            }
+			webinCli.execute( params );
+
+			WebinCliException exception = webinCli.getException();
+			if (exception != null) {
+				log.error( exception.getMessage(), exception );
+				switch( exception.getErrorType() )
+				{
+					case USER_ERROR:
+						return USER_ERROR;
+					case VALIDATION_ERROR:
+						return VALIDATION_ERROR;
+					default:
+						return SYSTEM_ERROR;
+				}
+			}
+
+			return SUCCESS;
             
         } catch( Throwable e )
         {
@@ -111,13 +110,9 @@ public class WebinCli {
         }
     }
 
-
-	WebinCliParameters
-    init( WebinCliCommand params )
-    {
-        this.params = params;
-        this.context = params.context;
-
+	private WebinCliParameters
+	init()
+	{
         if( !params.inputDir.isDirectory() )
             throw WebinCliException.userError( WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.format( params.inputDir.getPath() ) );
 
@@ -167,29 +162,40 @@ public class WebinCli {
 		logger.addAppender( fileAppender );
 	}
 
-	void
-	execute(WebinCliParameters parameters)
+	WebinCli
+	execute(WebinCliCommand params)
 	{
-		context = params.context;
+		this.params = params;
 
-		// initTimedConsoleLogger();
-		initTimedFileLogger(parameters);
+		try {
+			WebinCliParameters parameters = init();
 
-		WebinCliExecutor<?,?> executor = context.createExecutor(parameters);
+			// initTimedConsoleLogger();
+			initTimedFileLogger(parameters);
 
-		executor.readManifest();
+			executor = params.context.createExecutor(parameters);
 
-		SubmissionBundle submissionBundle = executor.readSubmissionBundle();
+			executor.readManifest();
 
-		if (params.validate || submissionBundle == null) {
-			doValidation(executor);
+			SubmissionBundle submissionBundle = executor.readSubmissionBundle();
+
+			if (params.validate || submissionBundle == null) {
+				doValidation(executor);
+			}
+
+			if (params.submit) {
+				doSubmit(executor);
+			}
+		}
+		catch (WebinCliException ex) {
+			exception = ex;
+		}
+		catch (Exception ex){
+			exception = WebinCliException.systemError(ex);
 		}
 
-		if (params.submit) {
-			doSubmit(executor);
-		}
+		return this;
 	}
-
 	
 	private void
 	doValidation(WebinCliExecutor<?,?> executor)
@@ -216,7 +222,7 @@ public class WebinCli {
 	          case SYSTEM_ERROR:
 	               throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), executor.getValidationDir()));
 	      }
-	   } catch( Throwable ex )
+	   } catch( Exception ex )
 	   {
 	       StringWriter sw = new StringWriter();
 	       ex.printStackTrace( new PrintWriter( sw ) );
@@ -337,7 +343,15 @@ public class WebinCli {
 		}
 	}
 
-    private static void 
+	public WebinCliExecutor<?, ?> getExecutor() {
+		return executor;
+	}
+
+	public WebinCliException getException() {
+		return exception;
+	}
+
+	private static void
 	printHelp() 
 	{
 		log.info( "Please use " + WebinCliCommand.Options.help + " option to see all command line options." );

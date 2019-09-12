@@ -14,6 +14,8 @@ package uk.ac.ebi.ena.webin.cli;
 import java.io.File;
 import java.nio.file.Path;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class WebinCliBuilder {
   private final WebinCliContext context;
@@ -40,21 +42,9 @@ public class WebinCliBuilder {
     return this;
   }
 
-  public WebinCli execute(Path inputDir, String manifest) {
-    return execute(
-        inputDir,
-        WebinCliTestUtils.createTempDir().toPath(),
-        new ManifestBuilder().manifest(manifest).build(inputDir));
-  }
-
   public WebinCli execute(Path inputDir, ManifestBuilder manifestBuilder) {
     return execute(
-        inputDir, WebinCliTestUtils.createTempDir().toPath(), manifestBuilder.build(inputDir));
-  }
-
-  public WebinCli execute(Path inputDir, Path outputDir, String manifest) {
-
-    return execute(inputDir, outputDir, new ManifestBuilder().manifest(manifest).build(inputDir));
+            inputDir, WebinCliTestUtils.createTempDir().toPath(), manifestBuilder.build(inputDir));
   }
 
   public WebinCli execute(Path inputDir, Path outputDir, ManifestBuilder manifestBuilder) {
@@ -74,7 +64,15 @@ public class WebinCliBuilder {
     parameters.submit = submit;
     parameters.ascp = ascp;
     WebinCli webinCli = new WebinCli();
-    webinCli.execute(webinCli.init(parameters));
+    webinCli.execute(parameters);
     return webinCli;
+  }
+
+  public static void assertError(WebinCli webinCli) {
+    assertThat(webinCli.getException()).isNotNull();
+  }
+
+  public static void assertError(WebinCli webinCli, String message) {
+    assertThat(webinCli.getException()).hasMessageContaining(message);
   }
 }

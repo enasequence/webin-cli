@@ -14,7 +14,6 @@ import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDir;
 import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import org.junit.Test;
 
@@ -55,9 +54,7 @@ public class WebinCliTest {
     parameters.outputDir = WebinCliTestUtils.createTempDir();
 
     WebinCli webinCli = new WebinCli();
-    assertThatExceptionOfType(WebinCliException.class)
-        .isThrownBy(() -> webinCli.init(parameters))
-        .withMessage(
+    WebinCliBuilder.assertError(webinCli.execute(parameters),
             MessageFormat.format(
                 WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text,
                 parameters.inputDir.getAbsoluteFile()));
@@ -70,9 +67,7 @@ public class WebinCliTest {
     parameters.outputDir = WebinCliTestUtils.createTempFile("test").toFile();
 
     WebinCli webinCli = new WebinCli();
-    assertThatExceptionOfType(WebinCliException.class)
-        .isThrownBy(() -> webinCli.init(parameters))
-        .withMessage(
+    WebinCliBuilder.assertError(webinCli.execute(parameters),
             MessageFormat.format(
                 WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
                 parameters.outputDir.getAbsoluteFile()));
@@ -85,9 +80,7 @@ public class WebinCliTest {
     parameters.outputDir = WebinCliTestUtils.createTempDir();
 
     WebinCli webinCli = new WebinCli();
-    assertThatExceptionOfType(WebinCliException.class)
-        .isThrownBy(() -> webinCli.init(parameters))
-        .withMessage(
+    WebinCliBuilder.assertError(webinCli.execute(parameters),
             MessageFormat.format(
                 WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text, parameters.inputDir.getName()));
   }
@@ -99,20 +92,9 @@ public class WebinCliTest {
     parameters.outputDir = new File(UUID.randomUUID().toString());
 
     WebinCli webinCli = new WebinCli();
-    assertThatExceptionOfType(WebinCliException.class)
-        .isThrownBy(() -> webinCli.init(parameters))
-        .withMessage(
+    WebinCliBuilder.assertError(webinCli.execute(parameters),
             MessageFormat.format(
                 WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
                 parameters.outputDir.getName()));
-  }
-
-  @Test
-  public void testDirParam() {
-    WebinCliCommand parameters = new WebinCliCommand();
-    parameters.inputDir = new File(".");
-    parameters.outputDir = new File(".");
-    WebinCli webinCli = new WebinCli();
-    webinCli.init(parameters);
   }
 }

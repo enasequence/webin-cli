@@ -16,8 +16,7 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliBuilder.assertError;
 
 public class WebinCliSubmissionTest {
   private final WebinCliBuilder reads =
@@ -96,23 +95,10 @@ public class WebinCliSubmissionTest {
     return WebinCliTestUtils.createTempFileFromResource(resource, inputDir);
   }
 
-  private static void assertExecuteThrowsUserError(
+  private static void assertValidationUserError(
       WebinCliBuilder webinCliBuilder, Path inputDir, Path outputDir, ManifestBuilder manifest) {
-    assertThatExceptionOfType(WebinCliException.class)
-        .isThrownBy(() -> webinCliBuilder.execute(inputDir, outputDir, manifest))
-        .withMessageContaining("Submission validation failed because of a user error");
-  }
-
-  private static void assertExecuteThrowsUserError(
-      WebinCliBuilder webinCliBuilder,
-      Path inputDir,
-      Path outputDir,
-      ManifestBuilder manifest,
-      String message) {
-    assertThatExceptionOfType(WebinCliException.class)
-        .isThrownBy(() -> webinCliBuilder.execute(inputDir, outputDir, manifest))
-        .withMessageContaining("Submission validation failed because of a user error")
-        ;
+    assertError(webinCliBuilder.execute(inputDir, outputDir, manifest),
+        "Submission validation failed because of a user error");
   }
 
   @Test
@@ -183,7 +169,7 @@ public class WebinCliSubmissionTest {
     Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir);
     ManifestBuilder manifest = genomeManifest(name).file("FLATFILE", flatFile);
 
-    assertExecuteThrowsUserError(genome, inputDir, outputDir, manifest);
+    assertValidationUserError(genome, inputDir, outputDir, manifest);
     WebinCliTestUtils.assertReportContains(
         WebinCliContext.genome,
         name,
@@ -203,7 +189,7 @@ public class WebinCliSubmissionTest {
 
     ManifestBuilder manifest = genomeManifest(name).file("FASTA", fastaFile);
 
-    assertExecuteThrowsUserError(
+    assertValidationUserError(
             genome,
             inputDir,
             outputDir,
@@ -259,7 +245,7 @@ public class WebinCliSubmissionTest {
     Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir);
 
     ManifestBuilder manifest = sequenceManifest(name).file("FLATFILE", flatFile);
-    assertExecuteThrowsUserError(sequence, inputDir, outputDir, manifest);
+    assertValidationUserError(sequence, inputDir, outputDir, manifest);
     WebinCliTestUtils.assertReportContains(
         WebinCliContext.sequence,
         name,
@@ -299,7 +285,7 @@ public class WebinCliSubmissionTest {
     Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir);
     ManifestBuilder manifest = transcriptomeManifest(name).file("FLATFILE", flatFile);
 
-    assertExecuteThrowsUserError(transcriptome, inputDir, outputDir, manifest);
+    assertValidationUserError(transcriptome, inputDir, outputDir, manifest);
     WebinCliTestUtils.assertReportContains(
         WebinCliContext.transcriptome,
         name,
