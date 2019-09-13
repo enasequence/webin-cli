@@ -12,285 +12,208 @@ package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
 
 import org.junit.Test;
 
-import static uk.ac.ebi.ena.webin.cli.WebinCliBuilder.assertError;
-
 public class WebinCliSubmissionTest {
-  private final WebinCliBuilder reads =
-      new WebinCliBuilder(WebinCliContext.reads).validate(true).submit(true).ascp(false);
-  private final WebinCliBuilder genome =
-      new WebinCliBuilder(WebinCliContext.genome).validate(true).submit(true).ascp(false);
-  private final WebinCliBuilder transcriptome =
-      new WebinCliBuilder(WebinCliContext.transcriptome).validate(true).submit(true).ascp(false);
-  private final WebinCliBuilder sequence =
-      new WebinCliBuilder(WebinCliContext.sequence).validate(true).submit(true).ascp(false);
 
-  private ManifestBuilder readsManifest() {
-    return new ManifestBuilder()
-        .field("NAME", WebinCliTestUtils.createName())
-        .field("STUDY", "SRP052303")
-        .field("SAMPLE", "ERS2554688")
-        .field("PLATFORM", "ILLUMINA")
-        .field("INSTRUMENT", "unspecifieD")
-        .field("INSERT_SIZE", "1")
-        .field("LIBRARY_NAME", "YOBA LIB")
-        .field("LIBRARY_STRATEGY", "CLONEEND")
-        .field("LIBRARY_SOURCE", "OTHER")
-        .field("LIBRARY_SELECTION", "Inverse rRNA selection")
-        .field("DESCRIPTION", "Some reads description");
-  }
+    private static final File READS_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/rawreads/");
+    private static final File GENOME_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/assembly/");
+    private static final File TRANSCRIPTOME_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/");
+    private static final File SEQUENCE_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/template/");
 
-  private ManifestBuilder genomeManifest() {
-    return genomeManifest(WebinCliTestUtils.createName());
-  }
+    private ManifestBuilder readsManifest() {
+        return new ManifestBuilder()
+                .name()
+                .field("STUDY", "SRP052303")
+                .field("SAMPLE", "ERS2554688")
+                .field("PLATFORM", "ILLUMINA")
+                .field("INSTRUMENT", "unspecifieD")
+                .field("INSERT_SIZE", "1")
+                .field("LIBRARY_NAME", "YOBA LIB")
+                .field("LIBRARY_STRATEGY", "CLONEEND")
+                .field("LIBRARY_SOURCE", "OTHER")
+                .field("LIBRARY_SELECTION", "Inverse rRNA selection")
+                .field("DESCRIPTION", "Some reads description");
+    }
 
-  private ManifestBuilder genomeManifest(String name) {
-    return new ManifestBuilder()
-        .field("ASSEMBLYNAME", name)
-        .field("COVERAGE", "45")
-        .field("PROGRAM", "assembly")
-        .field("PLATFORM", "fghgf")
-        .field("MINGAPLENGTH", "34")
-        .field("MOLECULETYPE", "genomic DNA")
-        .field("SAMPLE", "SAMN04526268")
-        .field("STUDY", "PRJEB20083")
-        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
-        .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-        .field("DESCRIPTION", "Some genome assembly description");
-  }
+    private ManifestBuilder genomeManifest() {
+        return new ManifestBuilder()
+                .name()
+                .field("COVERAGE", "45")
+                .field("PROGRAM", "assembly")
+                .field("PLATFORM", "fghgf")
+                .field("MINGAPLENGTH", "34")
+                .field("MOLECULETYPE", "genomic DNA")
+                .field("SAMPLE", "SAMN04526268")
+                .field("STUDY", "PRJEB20083")
+                .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+                .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+                .field("DESCRIPTION", "Some genome assembly description");
+    }
 
-  private ManifestBuilder transcriptomeManifest() {
-    return transcriptomeManifest(WebinCliTestUtils.createName());
-  }
+    private ManifestBuilder transcriptomeManifest() {
+        return new ManifestBuilder()
+                .name()
+                .field("PROGRAM", "assembly")
+                .field("PLATFORM", "fghgf")
+                .field("SAMPLE", "SAMN04526268")
+                .field("STUDY", "PRJEB20083")
+                .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+                .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+                .field("DESCRIPTION", "Some transcriptome assembly description");
+    }
 
-  private ManifestBuilder transcriptomeManifest(String name) {
-    return new ManifestBuilder()
-        .field("ASSEMBLYNAME", name)
-        .field("PROGRAM", "assembly")
-        .field("PLATFORM", "fghgf")
-        .field("SAMPLE", "SAMN04526268")
-        .field("STUDY", "PRJEB20083")
-        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
-        .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-        .field("DESCRIPTION", "Some transcriptome assembly description");
-  }
+    private ManifestBuilder sequenceManifest() {
+        return new ManifestBuilder()
+                .name()
+                .field("STUDY", "PRJEB20083")
+                .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+                .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+                .field("DESCRIPTION", "Some sequence assembly description");
+    }
 
-  private ManifestBuilder sequenceManifest() {
-    return sequenceManifest(WebinCliTestUtils.createName());
-  }
+    private static WebinCli assertWebinCliException(
+            WebinCliBuilder webinCliBuilder, File inputDir, ManifestBuilder manifest) {
+        return assertWebinCliException(webinCliBuilder, inputDir.toPath(), manifest);
+    }
 
-  private ManifestBuilder sequenceManifest(String name) {
-    return new ManifestBuilder()
-        .field("NAME", name)
-        .field("STUDY", "PRJEB20083")
-        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
-        .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-        .field("DESCRIPTION", "Some sequence assembly description");
-  }
+    private static WebinCli assertWebinCliException(
+            WebinCliBuilder webinCliBuilder, Path inputDir, ManifestBuilder manifest) {
+        return webinCliBuilder.executeThrows(inputDir, manifest, WebinCliException.class,
+                "Submission validation failed because of a user error");
+    }
 
-  private static Path copy(String resource, Path inputDir) {
-    return WebinCliTestUtils.createTempFileFromResource(resource, inputDir);
-  }
+    @Test
+    public void testReadsSubmissionCram() {
+        ManifestBuilder manifest = readsManifest()
+                .file("CRAM", "18045_1#93.cram");
+        WebinCliBuilder.READS.execute(READS_RESOURCE_DIR, manifest);
+    }
 
-  private static void assertValidationUserError(
-      WebinCliBuilder webinCliBuilder, Path inputDir, Path outputDir, ManifestBuilder manifest) {
-    assertError(webinCliBuilder.execute(inputDir, outputDir, manifest),
-        "Submission validation failed because of a user error");
-  }
+    @Test
+    public void testReadsSubmissionCramWithInfo() {
+        File infoFile = readsManifest().build();
+        ManifestBuilder manifest = new ManifestBuilder()
+                .file("CRAM", "18045_1#93.cram")
+                .field("INFO", infoFile.getAbsolutePath());
+        WebinCliBuilder.READS.execute(READS_RESOURCE_DIR, manifest);
+    }
 
-  @Test
-  public void testReadsSubmissionCramWithInfo() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path cramFile = copy("uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", inputDir);
-    File infoFile = readsManifest().build(inputDir);
+    @Test
+    public void testReadsSubmissionCramWithAscp() {
+        ManifestBuilder manifest = readsManifest()
+                .file("CRAM", "18045_1#93.cram");
+        WebinCliBuilder.READS.ascp(true).execute(READS_RESOURCE_DIR, manifest);
+    }
 
-    ManifestBuilder manifest =
-        new ManifestBuilder().file("CRAM", cramFile).field("INFO", infoFile.getAbsolutePath());
-    reads.execute(inputDir, manifest);
-  }
+    @Test
+    public void testGenomeSubmissionFlatFileAgp() {
+        ManifestBuilder manifest = genomeManifest()
+                .file("FLATFILE", "valid_flatfile.dat.gz")
+                .file("AGP", "valid_agp.agp.gz");
+        WebinCliBuilder.GENOME.execute(GENOME_RESOURCE_DIR, manifest);
+    }
 
-  @Test
-  public void testReadsSubmissionCram() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path cramFile = copy("uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", inputDir);
+    @Test
+    public void testGenomeSubmissionFlatFileAgpWithInfo() {
+        File infoFile = genomeManifest().build();
+        ManifestBuilder manifest = new ManifestBuilder()
+                .file("FLATFILE", "valid_flatfile.dat.gz")
+                .file("AGP", "valid_agp.agp.gz")
+                .field("INFO", infoFile.getAbsolutePath());
+        WebinCliBuilder.GENOME.execute(GENOME_RESOURCE_DIR, manifest);
+    }
 
-    ManifestBuilder manifest = readsManifest().file("CRAM", cramFile);
-    reads.execute(inputDir, manifest);
-  }
+    @Test
+    public void testGenomeSubmissionFlatFileWithFormatError() {
+        ManifestBuilder manifest = genomeManifest()
+                .file("FLATFILE", "invalid_flatfile.dat.gz");
+        WebinCli cli = assertWebinCliException(WebinCliBuilder.GENOME, GENOME_RESOURCE_DIR, manifest);
+        WebinCliTestUtils.assertReportContains(cli,
+                "invalid_flatfile.dat.gz",
+                "ERROR: Invalid ID line format [ line: 1]");
+    }
 
-  @Test
-  public void testReadsSubmissionCramWithAscp() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path cramFile = copy("uk/ac/ebi/ena/webin/cli/rawreads/18045_1#93.cram", inputDir);
+    @Test
+    public void testGenomeSubmissionFastaWithOneSequenceError() {
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path fastaFile = WebinCliTestUtils.createTempFile(
+                "test.fasta.gz", inputDir, true, ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+        ManifestBuilder manifest = genomeManifest()
+                .file("FASTA", fastaFile);
+        WebinCli cli = assertWebinCliException(WebinCliBuilder.GENOME, inputDir, manifest);
+        WebinCliTestUtils.assertReportContains(
+                cli,
+                "webin-cli",
+                "Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2");
+    }
 
-    ManifestBuilder manifest = readsManifest().file("CRAM", cramFile);
-    new WebinCliBuilder(WebinCliContext.reads)
-        .validate(true)
-        .submit(true)
-        .ascp(true)
-        .execute(inputDir, manifest);
-  }
+    @Test
+    public void testGenomeSubmissionFastaWithOneSequencePrimaryMetagenome() {
+        Path inputDir = WebinCliTestUtils.createTempDir().toPath();
+        Path fastaFile = WebinCliTestUtils.createTempFile(
+                "test.fasta.gz", inputDir, true, ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+        ManifestBuilder manifest = genomeManifest()
+                .file("FASTA", fastaFile)
+                .field("ASSEMBLY_TYPE", "primary metagenome");
+        WebinCliBuilder.GENOME.execute(inputDir, manifest);
+    }
 
-  @Test
-  public void testGenomeSubmissionFlatFileAgpWithInfo() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfile.dat.gz", inputDir);
-    Path agpFile = copy("uk/ac/ebi/ena/webin/cli/assembly/valid_agp.agp.gz", inputDir);
 
-    File infoFile = genomeManifest().build(inputDir);
+    @Test
+    public void testSequenceSubmissionTab() {
+        ManifestBuilder manifest = sequenceManifest()
+                .file("TAB", "valid/ERT000003-EST.tsv.gz");
+        WebinCliBuilder.SEQUENCE.execute(SEQUENCE_RESOURCE_DIR, manifest);
+    }
 
-    ManifestBuilder manifest =
-        new ManifestBuilder()
-            .file("FLATFILE", flatFile)
-            .file("AGP", agpFile)
-            .field("INFO", infoFile.getAbsolutePath());
-    genome.execute(inputDir, manifest);
-  }
+    @Test
+    public void testSequenceSubmissionTabWithInfo() {
+        File infoFile = sequenceManifest().build();
+        ManifestBuilder manifest = new ManifestBuilder()
+                .file("TAB", "valid/ERT000003-EST.tsv.gz")
+                .field("INFO", infoFile.getAbsolutePath());
+        WebinCliBuilder.SEQUENCE.execute(SEQUENCE_RESOURCE_DIR, manifest);
+    }
 
-  @Test
-  public void testGenomeSubmissionFlatFileAgp() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/valid_flatfile.dat.gz", inputDir);
-    Path agpFile = copy("uk/ac/ebi/ena/webin/cli/assembly/valid_agp.agp.gz", inputDir);
+    @Test
+    public void testSequenceSubmissionFlatFileWithFormatError() {
+        ManifestBuilder manifest = sequenceManifest()
+                .file("FLATFILE", "invalid_flatfile.dat.gz");
+        WebinCli cli = assertWebinCliException(WebinCliBuilder.SEQUENCE, GENOME_RESOURCE_DIR, manifest);
+        WebinCliTestUtils.assertReportContains(
+                cli,
+                "invalid_flatfile.dat.gz",
+                "ERROR: Invalid ID line format [ line: 1]");
+    }
 
-    ManifestBuilder manifest = genomeManifest().file("FLATFILE", flatFile).file("AGP", agpFile);
-    genome.execute(inputDir, manifest);
-  }
+    @Test
+    public void testTranscriptomeSubmissionFasta() {
+        ManifestBuilder manifest = transcriptomeManifest()
+                .file("FASTA", "valid/valid_fasta.fasta.gz");
+        WebinCliBuilder.TRANSCRIPTOME.execute(TRANSCRIPTOME_RESOURCE_DIR, manifest);
+    }
 
-  @Test
-  public void testGenomeSubmissionFlatFileWithFormatError() {
-    String name = WebinCliTestUtils.createName();
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path outputDir = WebinCliTestUtils.createTempDir().toPath();
+    @Test
+    public void testTranscriptomeSubmissionFastaWithInfo() {
+        File infoFile = transcriptomeManifest().build();
+        ManifestBuilder manifest = new ManifestBuilder()
+                .file("FASTA", "valid/valid_fasta.fasta.gz")
+                .field("INFO", infoFile.getAbsolutePath());
+        WebinCliBuilder.TRANSCRIPTOME.execute(TRANSCRIPTOME_RESOURCE_DIR, manifest);
+    }
 
-    Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir);
-    ManifestBuilder manifest = genomeManifest(name).file("FLATFILE", flatFile);
-
-    assertValidationUserError(genome, inputDir, outputDir, manifest);
-    WebinCliTestUtils.assertReportContains(
-        WebinCliContext.genome,
-        name,
-        outputDir,
-        flatFile,
-        "ERROR: Invalid ID line format [ line: 1]");
-  }
-
-  @Test
-  public void testGenomeSubmissionFastaWithOneSequenceError() {
-    String name = WebinCliTestUtils.createName();
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path outputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path fastaFile =
-        WebinCliTestUtils.createTempFile(
-            "test.fasta.gz", inputDir, true, ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-
-    ManifestBuilder manifest = genomeManifest(name).file("FASTA", fastaFile);
-
-    assertValidationUserError(
-            genome,
-            inputDir,
-            outputDir,
-            manifest);
-
-    //Note this error message is part of common webin-cli.report because this validation happening after reading all the files
-    WebinCliTestUtils.assertReportContains(
-            WebinCliContext.genome,
-            name,
-            outputDir,
-            Paths.get("webin-cli"),
-            "Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2");
-  }
-
-  @Test
-  public void testGenomeSubmissionFastaWithOneSequencePrimaryMetagenome() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path fastaFile =
-        WebinCliTestUtils.createTempFile(
-            "test.fasta.gz", inputDir, true, ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-
-    ManifestBuilder manifest =
-        genomeManifest().file("FASTA", fastaFile).field("ASSEMBLY_TYPE", "primary metagenome");
-    genome.execute(inputDir, manifest);
-  }
-
-  @Test
-  public void testSequenceSubmissionTabWithInfo() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path tabFile = copy("uk/ac/ebi/ena/webin/cli/template/valid/ERT000003-EST.tsv.gz", inputDir);
-    File infoFile = sequenceManifest().build(inputDir);
-
-    ManifestBuilder manifest =
-        new ManifestBuilder().file("TAB", tabFile).field("INFO", infoFile.getAbsolutePath());
-    sequence.execute(inputDir, manifest);
-  }
-
-  @Test
-  public void testSequenceSubmissionTab() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path tabFile = copy("uk/ac/ebi/ena/webin/cli/template/valid/ERT000003-EST.tsv.gz", inputDir);
-
-    ManifestBuilder manifest = sequenceManifest().file("TAB", tabFile);
-    sequence.execute(inputDir, manifest);
-  }
-
-  @Test
-  public void testSequenceSubmissionFlatFileWithFormatError() {
-    String name = WebinCliTestUtils.createName();
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path outputDir = WebinCliTestUtils.createTempDir().toPath();
-
-    Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir);
-
-    ManifestBuilder manifest = sequenceManifest(name).file("FLATFILE", flatFile);
-    assertValidationUserError(sequence, inputDir, outputDir, manifest);
-    WebinCliTestUtils.assertReportContains(
-        WebinCliContext.sequence,
-        name,
-        outputDir,
-        flatFile,
-        "ERROR: Invalid ID line format [ line: 1]");
-  }
-
-  @Test
-  public void testTranscriptomeSubmissionFastaWithInfo() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path fastaFile =
-        copy("uk/ac/ebi/ena/webin/cli/transcriptome/valid/valid_fasta.fasta.gz", inputDir);
-    File infoFile = transcriptomeManifest().build(inputDir);
-
-    ManifestBuilder manifest =
-        new ManifestBuilder().file("FASTA", fastaFile).field("INFO", infoFile.getAbsolutePath());
-    transcriptome.execute(inputDir, manifest);
-  }
-
-  @Test
-  public void testTranscriptomeSubmissionFasta() {
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path fastaFile =
-        copy("uk/ac/ebi/ena/webin/cli/transcriptome/valid/valid_fasta.fasta.gz", inputDir);
-
-    ManifestBuilder manifest = transcriptomeManifest().file("FASTA", fastaFile);
-    transcriptome.execute(inputDir, manifest);
-  }
-
-  @Test
-  public void testTranscriptomeSubmissionFlatFileWithFormatError() {
-    String name = WebinCliTestUtils.createName();
-    Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-    Path outputDir = WebinCliTestUtils.createTempDir().toPath();
-
-    Path flatFile = copy("uk/ac/ebi/ena/webin/cli/assembly/invalid_flatfile.dat.gz", inputDir);
-    ManifestBuilder manifest = transcriptomeManifest(name).file("FLATFILE", flatFile);
-
-    assertValidationUserError(transcriptome, inputDir, outputDir, manifest);
-    WebinCliTestUtils.assertReportContains(
-        WebinCliContext.transcriptome,
-        name,
-        outputDir,
-        flatFile,
-        "ERROR: Invalid ID line format [ line: 1]");
-  }
+    @Test
+    public void testTranscriptomeSubmissionFlatFileWithFormatError() {
+        ManifestBuilder manifest = transcriptomeManifest()
+                .file("FLATFILE", "invalid_flatfile.dat.gz");
+        WebinCli cli = assertWebinCliException(WebinCliBuilder.TRANSCRIPTOME, GENOME_RESOURCE_DIR, manifest);
+        WebinCliTestUtils.assertReportContains(
+                cli,
+                "invalid_flatfile.dat.gz",
+                "ERROR: Invalid ID line format [ line: 1]");
+    }
 }

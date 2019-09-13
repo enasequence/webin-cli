@@ -16,17 +16,28 @@ import java.io.File;
 
 public class WebinCliParameters implements MetadataProcessorParameters
 {
+    private WebinCliContext context;
     private File manifestFile;
     private String username;
     private String password;
     private File outputDir;
     private File inputDir = new File( "." );
     private String centerName;
-    private boolean testMode;
-
+    private boolean validate;
+    private boolean submit;
+    private boolean test;
+    private boolean ascp;
     private boolean metadataProcessorsActive = true;
 
     public WebinCliParameters() {
+    }
+
+    public WebinCliContext getContext() {
+        return context;
+    }
+
+    public void setContext(WebinCliContext context) {
+        this.context = context;
     }
 
     public File getManifestFile() {
@@ -77,12 +88,36 @@ public class WebinCliParameters implements MetadataProcessorParameters
         this.centerName = centerName;
     }
 
-    public boolean isTestMode() {
-        return testMode;
+    public boolean isValidate() {
+        return validate;
     }
 
-    public void setTestMode(boolean testMode) {
-        this.testMode = testMode;
+    public void setValidate(boolean validate) {
+        this.validate = validate;
+    }
+
+    public boolean isSubmit() {
+        return submit;
+    }
+
+    public void setSubmit(boolean submit) {
+        this.submit = submit;
+    }
+
+    public boolean isTest() {
+        return test;
+    }
+
+    public void setTest(boolean test) {
+        this.test = test;
+    }
+
+    public boolean isAscp() {
+        return ascp;
+    }
+
+    public void setAscp(boolean ascp) {
+        this.ascp = ascp;
     }
 
     public boolean isMetadataProcessorsActive() {

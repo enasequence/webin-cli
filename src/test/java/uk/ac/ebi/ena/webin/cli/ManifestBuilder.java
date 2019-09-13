@@ -14,106 +14,115 @@ import java.io.File;
 import java.nio.file.Path;
 
 public class ManifestBuilder {
-  private String manifest = "";
+    private String manifest = "";
 
-  public ManifestBuilder manifest(String manifest) {
-    if (manifest != null) {
-      this.manifest += manifest;
-    }
-    return this;
-  }
-
-  public ManifestBuilder manifest(ManifestBuilder manifest) {
-    if (manifest != null) {
-      this.manifest += manifest;
-    }
-    return this;
-  }
-
-  public ManifestBuilder field(String field, String value) {
-    if (field != null && value != null) {
-      manifest += field + "\t" + value + "\n";
-    }
-    return this;
-  }
-
-  public ManifestBuilder file(String field, File file) {
-    return field(field, file.getName());
-  }
-
-  public ManifestBuilder file(String field, Path file) {
-    return field(field, file.getFileName().toString());
-  }
-
-  public <FileType extends Enum<FileType>> ManifestBuilder file(
-      FileType fileType, String fileName) {
-    return field(fileType.name(), fileName);
-  }
-
-  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, File file) {
-    return field(fileType.name(), file.getName());
-  }
-
-  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, Path file) {
-    return field(fileType.name(), file.getFileName().toString());
-  }
-
-  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, int cnt) {
-    for (int i = 0; i < cnt; ++i) {
-      file(fileType);
-    }
-    return this;
-  }
-
-  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType... fileTypes) {
-    for (FileType fileType : fileTypes) {
-      if (fileType != null) {
-        switch (fileType.name()) {
-          case "FASTA":
-            file(fileType, ".fasta.gz");
-            break;
-          case "FLATFILE":
-            file(fileType, ".dat.gz");
-            break;
-          case "AGP":
-            file(fileType, ".agp.gz");
-            break;
-          case "CHROMOSOME_LIST":
-          case "UNLOCALISED_LIST":
-          case "TAB":
-            file(fileType, ".tab.gz");
-            break;
-          case "BAM":
-            file(fileType, ".bam");
-            break;
-          case "CRAM":
-            file(fileType, ".cram");
-            break;
-          case "FASTQ":
-            file(fileType, ".fastq.gz");
-            break;
-          default:
-            throw new RuntimeException("Unknown file type: " + fileType.name());
+    public ManifestBuilder manifest(String manifest) {
+        if (manifest != null) {
+            this.manifest += manifest;
         }
-      }
+        return this;
     }
-    return this;
-  }
 
-  public File build() {
-    return WebinCliTestUtils.createTempFile(manifest).toFile();
-  }
+    public ManifestBuilder manifest(ManifestBuilder manifest) {
+        if (manifest != null) {
+            this.manifest += manifest;
+        }
+        return this;
+    }
 
-  public File build(File inputDir) {
-    return build(inputDir.toPath());
-  }
+    public ManifestBuilder name() {
+        return field("NAME", String.format("TEST %X", System.currentTimeMillis()));
+    }
 
-  public File build(Path inputDir) {
-    return WebinCliTestUtils.createTempFile(inputDir, manifest).toFile();
-  }
 
-  @Override
-  public String toString() {
-    return manifest;
-  }
+    public ManifestBuilder field(String field, String value) {
+        if (field != null && value != null) {
+            manifest += field + "\t" + value + "\n";
+        }
+        return this;
+    }
+
+    public ManifestBuilder file(String field, File file) {
+        return field(field, file.getName());
+    }
+
+    public ManifestBuilder file(String field, String file) {
+        return field(field, file);
+    }
+
+    public ManifestBuilder file(String field, Path file) {
+        return field(field, file.getFileName().toString());
+    }
+
+    public <FileType extends Enum<FileType>> ManifestBuilder file(
+            FileType fileType, String fileName) {
+        return field(fileType.name(), fileName);
+    }
+
+    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, File file) {
+        return field(fileType.name(), file.getName());
+    }
+
+    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, Path file) {
+        return field(fileType.name(), file.getFileName().toString());
+    }
+
+    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, int cnt) {
+        for (int i = 0; i < cnt; ++i) {
+            file(fileType);
+        }
+        return this;
+    }
+
+    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType... fileTypes) {
+        for (FileType fileType : fileTypes) {
+            if (fileType != null) {
+                switch (fileType.name()) {
+                    case "FASTA":
+                        file(fileType, ".fasta.gz");
+                        break;
+                    case "FLATFILE":
+                        file(fileType, ".dat.gz");
+                        break;
+                    case "AGP":
+                        file(fileType, ".agp.gz");
+                        break;
+                    case "CHROMOSOME_LIST":
+                    case "UNLOCALISED_LIST":
+                    case "TAB":
+                        file(fileType, ".tab.gz");
+                        break;
+                    case "BAM":
+                        file(fileType, ".bam");
+                        break;
+                    case "CRAM":
+                        file(fileType, ".cram");
+                        break;
+                    case "FASTQ":
+                        file(fileType, ".fastq.gz");
+                        break;
+                    default:
+                        throw new RuntimeException("Unknown file type: " + fileType.name());
+                }
+            }
+        }
+        return this;
+    }
+
+    public File build() {
+        return WebinCliTestUtils.createTempFile(manifest).toFile();
+    }
+
+    public File build(File inputDir) {
+        return build(inputDir.toPath());
+    }
+
+    public File build(Path inputDir) {
+        return WebinCliTestUtils.createTempFile(inputDir, manifest).toFile();
+    }
+
+    @Override
+    public String toString() {
+        return manifest;
+    }
 }

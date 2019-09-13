@@ -57,7 +57,7 @@ public class GenomeXmlTest {
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
-    parameters.setTestMode(false);
+    parameters.setTest(false);
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         (WebinCliExecutor<GenomeManifest, ValidationResponse>)
             WebinCliContext.genome.createExecutor(parameters, manifestReader);

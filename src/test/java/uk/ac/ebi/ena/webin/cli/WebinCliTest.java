@@ -23,78 +23,74 @@ import java.util.UUID;
 
 public class WebinCliTest {
 
-  @Test
-  public void testGetSafeOutputDir() {
-    assertThat("A_aZ").isEqualTo(getSafeOutputDir("A aZ"));
-    assertThat("A_a_Z").isEqualTo(getSafeOutputDir("A a Z"));
-    assertThat("A_a_Z").isEqualTo(getSafeOutputDir("A  a   Z"));
-    assertThat("AaZ").isEqualTo(getSafeOutputDir("AaZ"));
-    assertThat("A_AA").isEqualTo(getSafeOutputDir("A&AA"));
-    assertThat("A.AA").isEqualTo(getSafeOutputDir("A.AA"));
-    assertThat("A-AA").isEqualTo(getSafeOutputDir("A-AA"));
-    assertThat("A_AA").isEqualTo(getSafeOutputDir("A_____AA"));
-    assertThat("AA").isEqualTo(getSafeOutputDir("_____AA"));
-    assertThat("AA").isEqualTo(getSafeOutputDir("AA_____"));
-    assertThat("_").isEqualTo(getSafeOutputDir("_______"));
-    assertThat(".").isEqualTo(getSafeOutputDir("."));
-  }
+    @Test
+    public void testGetSafeOutputDir() {
+        assertThat("A_aZ").isEqualTo(getSafeOutputDir("A aZ"));
+        assertThat("A_a_Z").isEqualTo(getSafeOutputDir("A a Z"));
+        assertThat("A_a_Z").isEqualTo(getSafeOutputDir("A  a   Z"));
+        assertThat("AaZ").isEqualTo(getSafeOutputDir("AaZ"));
+        assertThat("A_AA").isEqualTo(getSafeOutputDir("A&AA"));
+        assertThat("A.AA").isEqualTo(getSafeOutputDir("A.AA"));
+        assertThat("A-AA").isEqualTo(getSafeOutputDir("A-AA"));
+        assertThat("A_AA").isEqualTo(getSafeOutputDir("A_____AA"));
+        assertThat("AA").isEqualTo(getSafeOutputDir("_____AA"));
+        assertThat("AA").isEqualTo(getSafeOutputDir("AA_____"));
+        assertThat("_").isEqualTo(getSafeOutputDir("_______"));
+        assertThat(".").isEqualTo(getSafeOutputDir("."));
+    }
 
-  @Test
-  public void testGetSafeOutputDirs() {
-    assertThat(".").isEqualTo(getSafeOutputDirs(".", "E_vermicularis_upd")[0]);
-    assertThat("E_vermicularis_upd").isEqualTo(getSafeOutputDirs(".", "E_vermicularis_upd")[1]);
-    assertThat("AaZ").isEqualTo(getSafeOutputDirs("AaZ", "AaZ")[0]);
-    assertThat("A.AA").isEqualTo(getSafeOutputDirs("AaZ", "A.AA")[1]);
-  }
+    @Test
+    public void testGetSafeOutputDirs() {
+        assertThat(".").isEqualTo(getSafeOutputDirs(".", "E_vermicularis_upd")[0]);
+        assertThat("E_vermicularis_upd").isEqualTo(getSafeOutputDirs(".", "E_vermicularis_upd")[1]);
+        assertThat("AaZ").isEqualTo(getSafeOutputDirs("AaZ", "AaZ")[0]);
+        assertThat("A.AA").isEqualTo(getSafeOutputDirs("AaZ", "A.AA")[1]);
+    }
 
-  @Test
-  public void testInputDirIsAFileError() {
-    WebinCliCommand parameters = new WebinCliCommand();
-    parameters.inputDir = WebinCliTestUtils.createTempFile("test").toFile();
-    parameters.outputDir = WebinCliTestUtils.createTempDir();
+    @Test
+    public void testInputDirIsAFileError() {
+        WebinCliCommand cmd = new WebinCliCommand();
+        cmd.inputDir = WebinCliTestUtils.createTempFile("test").toFile();
+        cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-    WebinCli webinCli = new WebinCli();
-    WebinCliBuilder.assertError(webinCli.execute(parameters),
-            MessageFormat.format(
-                WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text,
-                parameters.inputDir.getAbsoluteFile()));
-  }
+        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
+                MessageFormat.format(
+                        WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text,
+                        cmd.inputDir.getAbsoluteFile()));
+    }
 
-  @Test
-  public void testOutputDirIsAFileError() {
-    WebinCliCommand parameters = new WebinCliCommand();
-    parameters.inputDir = WebinCliTestUtils.createTempDir();
-    parameters.outputDir = WebinCliTestUtils.createTempFile("test").toFile();
+    @Test
+    public void testOutputDirIsAFileError() {
+        WebinCliCommand cmd = new WebinCliCommand();
+        cmd.inputDir = WebinCliTestUtils.createTempDir();
+        cmd.outputDir = WebinCliTestUtils.createTempFile("test").toFile();
 
-    WebinCli webinCli = new WebinCli();
-    WebinCliBuilder.assertError(webinCli.execute(parameters),
-            MessageFormat.format(
-                WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
-                parameters.outputDir.getAbsoluteFile()));
-  }
+        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
+                MessageFormat.format(
+                        WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
+                        cmd.outputDir.getAbsoluteFile()));
+    }
 
-  @Test
-  public void testInputDirMissingError() {
-    WebinCliCommand parameters = new WebinCliCommand();
-    parameters.inputDir = new File(UUID.randomUUID().toString());
-    parameters.outputDir = WebinCliTestUtils.createTempDir();
+    @Test
+    public void testInputDirMissingError() {
+        WebinCliCommand cmd = new WebinCliCommand();
+        cmd.inputDir = new File(UUID.randomUUID().toString());
+        cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-    WebinCli webinCli = new WebinCli();
-    WebinCliBuilder.assertError(webinCli.execute(parameters),
-            MessageFormat.format(
-                WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text, parameters.inputDir.getName()));
-  }
+        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
+                MessageFormat.format(
+                        WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text, cmd.inputDir.getName()));
+    }
 
-  @Test
-  public void testOutputDirMissingError() {
-    WebinCliCommand parameters = new WebinCliCommand();
-    parameters.inputDir = WebinCliTestUtils.createTempDir();
-    parameters.outputDir = new File(UUID.randomUUID().toString());
+    @Test
+    public void testOutputDirMissingError() {
+        WebinCliCommand cmd = new WebinCliCommand();
+        cmd.inputDir = WebinCliTestUtils.createTempDir();
+        cmd.outputDir = new File(UUID.randomUUID().toString());
 
-    WebinCli webinCli = new WebinCli();
-    WebinCliBuilder.assertError(webinCli.execute(parameters),
-            MessageFormat.format(
-                WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
-                parameters.outputDir.getName()));
-  }
+        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
+                MessageFormat.format(
+                        WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
+                        cmd.outputDir.getName()));
+    }
 }

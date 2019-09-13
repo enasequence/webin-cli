@@ -49,7 +49,7 @@ SampleXmlProcessor implements ManifestFieldProcessor
         {
             SampleXmlService sampleXmlService = new SampleXmlService.Builder()
                                                                                 .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                                                .setTest( parameters.isTestMode() )
+                                                                                .setTest( parameters.isTest() )
                                                                                 .build();
             Sample source = sampleXmlService.getSample( value );
             callback.notify( source );

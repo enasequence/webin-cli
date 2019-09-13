@@ -15,9 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,7 +30,6 @@ import org.junit.Assert;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +40,7 @@ public class WebinCliTestUtils {
          WebinCliParameters parameters = new WebinCliParameters();
          parameters.setUsername( System.getenv( "webin-cli-username" ) );
          parameters.setPassword( System.getenv( "webin-cli-password" ) );
-         parameters.setTestMode( true );
+         parameters.setTest( true );
          parameters.setOutputDir(WebinCliTestUtils.createTempDir());
          return parameters;
     }
@@ -86,11 +82,6 @@ public class WebinCliTestUtils {
     }
 
     public static Path
-    createTempFile(String fileName, Path folder, String contents) {
-        return createTempFile(fileName, folder, false, contents);
-    }
-
-    public static Path
     createGzippedTempFile(String fileName, String contents) {
         return createTempFile(fileName,null,true, contents);
     }
@@ -123,41 +114,6 @@ public class WebinCliTestUtils {
         catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    public static Path
-    createTempFileFromResource( String resource, Path folder ) {
-        return createTempFileFromResource(resource, folder, false);
-    }
-
-        public static Path
-    createTempFileFromResource( String resource, Path folder, boolean compress, String...suffix ) {
-        try {
-            URL url = WebinCliTestUtils.class.getClassLoader().getResource( resource );
-            File file = new File( URLDecoder.decode( url.getFile(), "UTF-8" ) );
-            Path path = Files.createTempFile( folder, "COPY", file.getName() + ( suffix.length > 0 ? String.join("", suffix) : "" ) );
-            OutputStream os;
-            Files.copy( file.toPath(), ( os = compress ? new GZIPOutputStream( Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) )
-                    : Files.newOutputStream( path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC ) ) );
-            os.flush();
-            os.close();
-            Assert.assertTrue( Files.exists( path ) );
-            Assert.assertTrue( Files.isRegularFile( path ) );
-            return path;
-        }
-        catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public static String
-    createName() {
-        return String.format( "TEST %X", System.currentTimeMillis() );
-    }
-
-    public static String
-    readFile(File file) {
-        return readFile(file.toPath());
     }
 
     public static String
@@ -230,6 +186,29 @@ public class WebinCliTestUtils {
       } catch (IOException ex) {
         throw new RuntimeException(ex);
       }
+    }
+
+    public static void assertReportContains(
+            WebinCli cli, String dataFile, String message) {
+        assertReportContains(cli, Paths.get(dataFile), message);
+    }
+
+    public static void assertReportContains(
+            WebinCli cli, File dataFile, String message) {
+        assertReportContains(cli, dataFile.toPath(), message);
+    }
+
+    public static void assertReportContains(
+            WebinCli cli, Path dataFile, String message) {
+        WebinCliParameters params = cli.getParameters();
+        String name = cli.getExecutor().getManifestReader().getManifest().getName();
+        Path reportFile =
+                params.getOutputDir().toPath()
+                        .resolve(params.getContext().name())
+                        .resolve(WebinCli.getSafeOutputDir(name))
+                        .resolve("validate")
+                        .resolve(dataFile.getFileName().toString() + ".report");
+        assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);
     }
 
     public static void assertReportContains(

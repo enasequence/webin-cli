@@ -71,7 +71,7 @@ public class ManifestReaderTester<M extends Manifest> {
                     return System.getenv("webin-cli-password");
                 }
 
-                public boolean isTestMode() {
+                public boolean isTest() {
                     return true;
                 }
             })

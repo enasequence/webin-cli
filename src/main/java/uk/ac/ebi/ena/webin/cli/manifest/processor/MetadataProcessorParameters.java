@@ -14,5 +14,5 @@ public interface MetadataProcessorParameters {
     boolean isMetadataProcessorsActive();
     String getUsername();
     String getPassword();
-    boolean isTestMode();
+    boolean isTest();
 }

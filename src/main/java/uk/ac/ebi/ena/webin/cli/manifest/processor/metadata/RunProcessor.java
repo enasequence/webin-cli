@@ -66,7 +66,7 @@ RunProcessor implements ManifestFieldProcessor
             {
                 RunService runService = new RunService.Builder()
                                                       .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                      .setTest( parameters.isTestMode() )
+                                                      .setTest( parameters.isTest() )
                                                       .build();
                 run_list.add( runService.getRun( id ) );
                            

@@ -51,13 +51,11 @@ public class WebinCli {
 	public final static int USER_ERROR = 2;
 	public final static int VALIDATION_ERROR = 3;
 
+	private final WebinCliParameters parameters;
+	private final WebinCliExecutor<?, ?> executor;
+
 	private final static String LOG_FILE_NAME= "webin-cli.report";
-
-	private WebinCliCommand params;
-	private WebinCliExecutor<?, ?> executor;
-	private WebinCliException exception;
-
-	private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
+	private final static Logger log = LoggerFactory.getLogger(WebinCli.class);
 
     public static void 
     main( String... args )
@@ -65,7 +63,6 @@ public class WebinCli {
         System.exit( __main( args ) );
 	}
 
-    
     private static int
     __main( String... args )
     {
@@ -83,54 +80,61 @@ public class WebinCli {
             
             checkVersion( params.test );
 
-            WebinCli webinCli = new WebinCli();
+            WebinCli webinCli = new WebinCli( params );
 
-			webinCli.execute( params );
-
-			WebinCliException exception = webinCli.getException();
-			if (exception != null) {
-				log.error( exception.getMessage(), exception );
-				switch( exception.getErrorType() )
-				{
-					case USER_ERROR:
-						return USER_ERROR;
-					case VALIDATION_ERROR:
-						return VALIDATION_ERROR;
-					default:
-						return SYSTEM_ERROR;
-				}
-			}
+			webinCli.execute();
 
 			return SUCCESS;
-            
-        } catch( Throwable e )
+		}
+        catch( WebinCliException ex ) {
+			switch( ex.getErrorType() )
+			{
+				case USER_ERROR:
+					return USER_ERROR;
+				case VALIDATION_ERROR:
+					return VALIDATION_ERROR;
+				default:
+					return SYSTEM_ERROR;
+			}
+        }
+        catch( Throwable e )
         {
             log.error( e.getMessage(), e );
             return SYSTEM_ERROR;
         }
     }
 
-	private WebinCliParameters
-	init()
-	{
-        if( !params.inputDir.isDirectory() )
-            throw WebinCliException.userError( WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.format( params.inputDir.getPath() ) );
-
-        if( !params.outputDir.isDirectory() )
-            throw WebinCliException.userError( WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.format( params.outputDir.getPath() ) );
-        
-        WebinCliParameters parameters = new WebinCliParameters();
-        parameters.setManifestFile( params.manifest );
-        parameters.setInputDir( params.inputDir  );
-        parameters.setOutputDir( params.outputDir );
-        parameters.setUsername( params.userName );
-        parameters.setPassword( params.password );
-        parameters.setCenterName( params.centerName );
-        parameters.setTestMode( params.test );
-
-        return parameters;
+	public WebinCli(WebinCliCommand cmd) {
+        this(initParameters(cmd));
     }
 
+	public WebinCli(WebinCliParameters parameters) {
+		this.parameters = parameters;
+		this.executor = parameters.getContext().createExecutor(parameters);
+
+		// initTimedConsoleLogger();
+		initTimedFileLogger(parameters);
+	}
+
+	private static WebinCliParameters initParameters(WebinCliCommand cmd) {
+		if( !cmd.inputDir.isDirectory() )
+			throw WebinCliException.userError( WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.format( cmd.inputDir.getPath() ) );
+		if( !cmd.outputDir.isDirectory() )
+			throw WebinCliException.userError( WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.format( cmd.outputDir.getPath() ) );
+		WebinCliParameters parameters = new WebinCliParameters();
+		parameters.setContext( cmd.context );
+		parameters.setManifestFile( cmd.manifest );
+		parameters.setInputDir( cmd.inputDir  );
+		parameters.setOutputDir( cmd.outputDir );
+		parameters.setUsername( cmd.userName );
+		parameters.setPassword( cmd.password );
+		parameters.setCenterName( cmd.centerName );
+		parameters.setValidate( cmd.validate );
+		parameters.setSubmit( cmd.submit );
+		parameters.setTest( cmd.test );
+		parameters.setAscp( cmd.ascp );
+		return parameters;
+	}
 	
 	private void 
 	initTimedAppender( String name, OutputStreamAppender<ILoggingEvent> appender ) 
@@ -162,43 +166,30 @@ public class WebinCli {
 		logger.addAppender( fileAppender );
 	}
 
-	WebinCli
-	execute(WebinCliCommand params)
+	void
+	execute()
 	{
-		this.params = params;
-
 		try {
-			WebinCliParameters parameters = init();
-
-			// initTimedConsoleLogger();
-			initTimedFileLogger(parameters);
-
-			executor = params.context.createExecutor(parameters);
-
 			executor.readManifest();
 
-			SubmissionBundle submissionBundle = executor.readSubmissionBundle();
-
-			if (params.validate || submissionBundle == null) {
-				doValidation(executor);
+			if (parameters.isValidate() || executor.readSubmissionBundle() == null) {
+				validate(executor);
 			}
 
-			if (params.submit) {
-				doSubmit(executor);
+			if (parameters.isSubmit()) {
+				submit(executor);
 			}
 		}
 		catch (WebinCliException ex) {
-			exception = ex;
+			throw ex;
 		}
-		catch (Exception ex){
-			exception = WebinCliException.systemError(ex);
+		catch (Exception ex) {
+			throw WebinCliException.systemError(ex);
 		}
-
-		return this;
 	}
 	
 	private void
-	doValidation(WebinCliExecutor<?,?> executor)
+	validate(WebinCliExecutor<?,?> executor)
 	{
 	   try 
 	   {
@@ -229,18 +220,17 @@ public class WebinCli {
 	      throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format( null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir()));
 	   }
 	}
-	 
-	
-	private void 
-    doSubmit( WebinCliExecutor<?,?> executor )
+
+	private void
+	submit(WebinCliExecutor<?,?> executor )
     {
 		SubmissionBundle bundle = executor.readSubmissionBundle();
 
-        UploadService ftpService = params.ascp && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
+        UploadService ftpService = parameters.isAscp() && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
         
         try 
         {
-            ftpService.connect( params.userName, params.password );
+            ftpService.connect( parameters.getUsername(), parameters.getPassword() );
             ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath() );
 			log.info( WebinCliMessage.Cli.UPLOAD_SUCCESS.format() );
 
@@ -256,9 +246,9 @@ public class WebinCli {
         {
             SubmitService submitService = new SubmitService.Builder()
                                                            .setSubmitDir( bundle.getSubmitDir().getPath() )
-                                                           .setUserName( params.userName )
-                                                           .setPassword( params.password )
-                                                           .setTest( params.test )
+                                                           .setUserName( parameters.getUsername() )
+                                                           .setPassword( parameters.getPassword() )
+                                                           .setTest( parameters.isTest() )
                                                            .build();
             submitService.doSubmission( bundle.getXMLFileList(), bundle.getCenterName(), getVersionForSubmission() );
 
@@ -343,12 +333,12 @@ public class WebinCli {
 		}
 	}
 
-	public WebinCliExecutor<?, ?> getExecutor() {
-		return executor;
+	public WebinCliParameters getParameters() {
+		return parameters;
 	}
 
-	public WebinCliException getException() {
-		return exception;
+	public WebinCliExecutor<?, ?> getExecutor() {
+		return executor;
 	}
 
 	private static void

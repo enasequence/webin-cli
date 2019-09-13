@@ -16,12 +16,17 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Creates the validator and reads the manifest file without using the command line parser. */
 public class WebinCliBuilder {
   private final WebinCliContext context;
+  private final Path outputDir = WebinCliTestUtils.createTempDir().toPath();
   private boolean validate = true;
   private boolean submit = true;
   private boolean ascp = false;
+
+  public static final WebinCliBuilder READS = new WebinCliBuilder(WebinCliContext.reads);
+  public static final WebinCliBuilder GENOME = new WebinCliBuilder(WebinCliContext.genome);
+  public static final WebinCliBuilder TRANSCRIPTOME = new WebinCliBuilder(WebinCliContext.transcriptome);
+  public static final WebinCliBuilder SEQUENCE = new WebinCliBuilder(WebinCliContext.sequence);
 
   public WebinCliBuilder(WebinCliContext context) {
     this.context = context;
@@ -42,37 +47,51 @@ public class WebinCliBuilder {
     return this;
   }
 
+  private WebinCliCommand cmd(Path inputDir, ManifestBuilder manifestBuilder) {
+    WebinCliCommand cmd = new WebinCliCommand();
+    cmd.context = context;
+    cmd.inputDir = inputDir.toFile();
+    cmd.outputDir = outputDir.toFile();
+    cmd.manifest = manifestBuilder.build(inputDir);
+    cmd.userName = System.getenv("webin-cli-username");
+    cmd.password = System.getenv("webin-cli-password");
+    cmd.test = true;
+    cmd.validate = validate;
+    cmd.submit = submit;
+    cmd.ascp = ascp;
+    return cmd;
+  }
+
+
+  public WebinCli execute(File inputDir, ManifestBuilder manifestBuilder) {
+    return execute(inputDir.toPath(), manifestBuilder);
+  }
+
   public WebinCli execute(Path inputDir, ManifestBuilder manifestBuilder) {
-    return execute(
-            inputDir, WebinCliTestUtils.createTempDir().toPath(), manifestBuilder.build(inputDir));
-  }
-
-  public WebinCli execute(Path inputDir, Path outputDir, ManifestBuilder manifestBuilder) {
-    return execute(inputDir, outputDir, manifestBuilder.build(inputDir));
-  }
-
-  public WebinCli execute(Path inputDir, Path outputDir, File manifest) {
-    WebinCliCommand parameters = new WebinCliCommand();
-    parameters.context = context;
-    parameters.inputDir = inputDir.toFile();
-    parameters.outputDir = outputDir.toFile();
-    parameters.manifest = manifest;
-    parameters.userName = System.getenv("webin-cli-username");
-    parameters.password = System.getenv("webin-cli-password");
-    parameters.test = true;
-    parameters.validate = validate;
-    parameters.submit = submit;
-    parameters.ascp = ascp;
-    WebinCli webinCli = new WebinCli();
-    webinCli.execute(parameters);
+    WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
+    WebinCli webinCli = new WebinCli(cmd);
+    webinCli.execute();
     return webinCli;
   }
 
-  public static void assertError(WebinCli webinCli) {
-    assertThat(webinCli.getException()).isNotNull();
+  public <T extends Exception> WebinCli executeThrows(Path inputDir, ManifestBuilder manifestBuilder, Class<T> exceptionClass, String ... messages) {
+    WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
+    return executeThrows(cmd, exceptionClass, messages);
   }
 
-  public static void assertError(WebinCli webinCli, String message) {
-    assertThat(webinCli.getException()).hasMessageContaining(message);
+  public static <T extends Exception> WebinCli executeThrows(WebinCliCommand cmd, Class<T> exceptionClass, String ... messages) {
+    WebinCli cli = null;
+    try {
+      cli = new WebinCli(cmd);
+      cli.execute();
+    }
+    catch (Exception ex) {
+      if (exceptionClass.isInstance(ex)) {
+        for (String message : messages) {
+          assertThat(ex).hasMessageContaining(message);
+        }
+      }
+    }
+    return cli;
   }
 }

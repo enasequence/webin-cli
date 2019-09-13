@@ -18,7 +18,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
@@ -54,7 +53,7 @@ public class ReadsXmlTest {
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
-    parameters.setTestMode(false);
+    parameters.setTest(false);
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         (WebinCliExecutor<ReadsManifest,ReadsValidationResponse>)
             WebinCliContext.reads.createExecutor(parameters, manifestReader);

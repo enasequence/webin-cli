@@ -51,7 +51,7 @@ StudyProcessor implements ManifestFieldProcessor
         {
             StudyService studyService = new StudyService.Builder()
                                                         .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                        .setTest( parameters.isTestMode() )
+                                                        .setTest( parameters.isTest() )
                                                         .build();
             Study study = studyService.getStudy( value );
             fieldValue.setValue( study.getBioProjectId() );

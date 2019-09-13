@@ -53,7 +53,7 @@ public class SequenceXmlTest {
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
-    parameters.setTestMode(false);
+    parameters.setTest(false);
     WebinCliExecutor<SequenceManifest, ValidationResponse> executor =
         (WebinCliExecutor<SequenceManifest, ValidationResponse>)
             WebinCliContext.sequence.createExecutor(parameters, manifestReader);

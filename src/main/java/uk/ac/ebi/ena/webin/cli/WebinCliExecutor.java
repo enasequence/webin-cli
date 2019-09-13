@@ -123,7 +123,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
                     .setCredentials(getParameters().getUsername(),
                             getParameters().getPassword())
-                    .setTest(getParameters().isTestMode())
+                    .setTest(getParameters().isTest())
                     .build();
 
             manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName()));
@@ -140,7 +140,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         List< SubmissionBundle.SubmissionXMLFile > xmlFileList = new ArrayList<>();
 
         Path uploadDir = Paths
-                .get( this.parameters.isTestMode() ? "webin-cli-test" : "webin-cli" )
+                .get( this.parameters.isTest() ? "webin-cli-test" : "webin-cli" )
                 .resolve( String.valueOf( this.context ) )
                 .resolve( WebinCli.getSafeOutputDir( getSubmissionName() ) );
 

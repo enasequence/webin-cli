@@ -68,7 +68,7 @@ AnalysisProcessor implements ManifestFieldProcessor
             {
                 AnalysisService analysisService = new AnalysisService.Builder()
                                                                      .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                                     .setTest( parameters.isTestMode() )
+                                                                     .setTest( parameters.isTest() )
                                                                      .build();
                 analysis_list.add( analysisService.getAnalysis( id ) );
                 
