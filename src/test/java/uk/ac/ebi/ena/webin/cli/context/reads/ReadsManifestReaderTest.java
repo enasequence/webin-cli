@@ -44,7 +44,6 @@ ReadsManifestReaderTest
 
     private static ReadsManifestReader createManifestReader() {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-        parameters.setMetadataProcessorsActive(true);
         return new ReadsManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
     }
 

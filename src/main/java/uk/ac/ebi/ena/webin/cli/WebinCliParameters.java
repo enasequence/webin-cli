@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 
 import java.io.File;
 
@@ -27,7 +28,12 @@ public class WebinCliParameters implements MetadataProcessorParameters
     private boolean submit;
     private boolean test;
     private boolean ascp;
-    private boolean metadataProcessorsActive = true;
+
+    private SampleProcessor sampleProcessor;
+    private StudyProcessor studyProcessor;
+    private SampleXmlProcessor sampleXmlProcessor;
+    private RunProcessor runProcessor;
+    private AnalysisProcessor analysisProcessor;
 
     public WebinCliParameters() {
     }
@@ -120,11 +126,43 @@ public class WebinCliParameters implements MetadataProcessorParameters
         this.ascp = ascp;
     }
 
-    public boolean isMetadataProcessorsActive() {
-        return metadataProcessorsActive;
+    public SampleProcessor getSampleProcessor() {
+        return sampleProcessor;
     }
 
-    public void setMetadataProcessorsActive(boolean metadataProcessorsActive) {
-        this.metadataProcessorsActive = metadataProcessorsActive;
+    public void setSampleProcessor(SampleProcessor sampleProcessor) {
+        this.sampleProcessor = sampleProcessor;
+    }
+
+    public StudyProcessor getStudyProcessor() {
+        return studyProcessor;
+    }
+
+    public void setStudyProcessor(StudyProcessor studyProcessor) {
+        this.studyProcessor = studyProcessor;
+    }
+
+    public SampleXmlProcessor getSampleXmlProcessor() {
+        return sampleXmlProcessor;
+    }
+
+    public void setSampleXmlProcessor(SampleXmlProcessor sampleXmlProcessor) {
+        this.sampleXmlProcessor = sampleXmlProcessor;
+    }
+
+    public RunProcessor getRunProcessor() {
+        return runProcessor;
+    }
+
+    public void setRunProcessor(RunProcessor runProcessor) {
+        this.runProcessor = runProcessor;
+    }
+
+    public AnalysisProcessor getAnalysisProcessor() {
+        return analysisProcessor;
+    }
+
+    public void setAnalysisProcessor(AnalysisProcessor analysisProcessor) {
+        this.analysisProcessor = analysisProcessor;
     }
 }

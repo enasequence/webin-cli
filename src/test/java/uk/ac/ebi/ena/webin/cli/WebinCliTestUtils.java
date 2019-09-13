@@ -41,7 +41,6 @@ public class WebinCliTestUtils {
          parameters.setUsername( System.getenv( "webin-cli-username" ) );
          parameters.setPassword( System.getenv( "webin-cli-password" ) );
          parameters.setTest( true );
-         parameters.setOutputDir(WebinCliTestUtils.createTempDir());
          return parameters;
     }
 

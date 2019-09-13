@@ -57,6 +57,7 @@ public class TranscriptomeXmlTest {
     TranscriptomeManifestReader manifestReader = mock(TranscriptomeManifestReader.class);
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
     parameters.setTest(false);
     WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =

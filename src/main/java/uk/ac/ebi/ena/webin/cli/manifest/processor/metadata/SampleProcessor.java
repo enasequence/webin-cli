@@ -42,6 +42,10 @@ SampleProcessor implements ManifestFieldProcessor
         this.callback = callback;
     }
 
+    public Callback<Sample> getCallback() {
+        return callback;
+    }
+
     @Override public ValidationResult
     process( ManifestFieldValue fieldValue )
     {

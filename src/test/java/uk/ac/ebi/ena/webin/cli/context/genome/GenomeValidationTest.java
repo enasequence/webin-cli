@@ -43,8 +43,7 @@ public class GenomeValidationTest {
   }
 
   private static final WebinCliExecutorBuilder<GenomeManifest, ValidationResponse> executorBuilder =
-          new WebinCliExecutorBuilder(GenomeManifest.class)
-                  .manifestMetadataProcessors(false)
+          new WebinCliExecutorBuilder(GenomeManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
                   .sample(getDefaultSample());
 
   @Before
@@ -58,7 +57,8 @@ public class GenomeValidationTest {
         manifestBuilder().file(FileType.FASTA, "valid_fasta.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
@@ -78,7 +78,8 @@ public class GenomeValidationTest {
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
@@ -91,7 +92,8 @@ public class GenomeValidationTest {
         manifestBuilder().file(FileType.FLATFILE, "valid_flatfile.dat.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
@@ -107,7 +109,8 @@ public class GenomeValidationTest {
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
@@ -124,7 +127,8 @@ public class GenomeValidationTest {
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
@@ -142,7 +146,8 @@ public class GenomeValidationTest {
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(3);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
@@ -161,7 +166,8 @@ public class GenomeValidationTest {
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(3);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
@@ -176,7 +182,8 @@ public class GenomeValidationTest {
         manifestBuilder().file(FileType.FASTA, "invalid_fasta.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
     WebinCliTestUtils.assertReportContains(
@@ -191,7 +198,8 @@ public class GenomeValidationTest {
         manifestBuilder().file(FileType.FLATFILE, "invalid_flatfile.dat.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
     WebinCliTestUtils.assertReportContains(
@@ -209,7 +217,8 @@ public class GenomeValidationTest {
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
         .isInstanceOf(WebinCliException.class);
     WebinCliTestUtils.assertReportContains(
@@ -228,11 +237,10 @@ public class GenomeValidationTest {
                     .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
-            executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
-
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
-
     WebinCliTestUtils.assertReportContains(
             executor.getValidationDir().getPath(),
             "webin-cli.report",

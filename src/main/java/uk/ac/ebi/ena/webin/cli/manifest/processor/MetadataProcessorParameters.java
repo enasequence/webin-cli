@@ -10,9 +10,15 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
+
 public interface MetadataProcessorParameters {
-    boolean isMetadataProcessorsActive();
     String getUsername();
     String getPassword();
     boolean isTest();
+    SampleProcessor getSampleProcessor();
+    StudyProcessor getStudyProcessor();
+    SampleXmlProcessor getSampleXmlProcessor();
+    RunProcessor getRunProcessor();
+    AnalysisProcessor getAnalysisProcessor();
 }

@@ -12,11 +12,10 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 
 import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.io.File;
@@ -59,10 +58,6 @@ public class ManifestReaderTester<M extends Manifest> {
   private ManifestReader<M> create() {
     return new ManifestReaderBuilder(manifestReaderClass,
             new MetadataProcessorParameters() {
-                public boolean isMetadataProcessorsActive() {
-                    return metadataProcessorsActive;
-                }
-
                 public String getUsername() {
                     return System.getenv("webin-cli-username");
                 }
@@ -73,6 +68,26 @@ public class ManifestReaderTester<M extends Manifest> {
 
                 public boolean isTest() {
                     return true;
+                }
+
+                public SampleProcessor getSampleProcessor() {
+                    return null;
+                }
+
+                public StudyProcessor getStudyProcessor() {
+                    return null;
+                }
+
+                public SampleXmlProcessor getSampleXmlProcessor() {
+                    return null;
+                }
+
+                public RunProcessor getRunProcessor() {
+                    return null;
+                }
+
+                public AnalysisProcessor getAnalysisProcessor() {
+                    return null;
                 }
             })
         .setManifestReaderParameters(

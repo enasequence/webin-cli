@@ -47,15 +47,9 @@ public class ReadsValidationTest {
   }
 
 
-  private WebinCliExecutorBuilder<ReadsManifest, ReadsValidationResponse> executorBuilder;
-
-  @Before
-  public void
-  makeExecutorBuilder() {
-    executorBuilder =
-        new WebinCliExecutorBuilder(ReadsManifest.class)
-            .manifestMetadataProcessors(false);
-  }
+  private static WebinCliExecutorBuilder<ReadsManifest, ReadsValidationResponse> executorBuilder =
+        new WebinCliExecutorBuilder(
+            ReadsManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK);
 
   @Test
   public void
@@ -65,7 +59,7 @@ public class ReadsValidationTest {
       File manifestFile =
           manifestBuilder().file(fileType, "doesnotexisits.fastq.gz.bz2").build();
 
-      assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+      assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
           .isInstanceOf(WebinCliException.class)
           .hasMessageStartingWith("Invalid manifest file");
 
@@ -82,7 +76,7 @@ public class ReadsValidationTest {
       File manifestFile =
           manifestBuilder().file(fileType, createOutputFolder()).build();
 
-      assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+      assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
           .isInstanceOf(WebinCliException.class)
           .hasMessageStartingWith("Invalid manifest file");
 
@@ -99,7 +93,7 @@ public class ReadsValidationTest {
       File manifestFile =
           manifestBuilder().file(fileType, "").build();
 
-      assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+      assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
           .isInstanceOf(WebinCliException.class)
           .hasMessageStartingWith("Invalid manifest file");
 
@@ -124,7 +118,7 @@ public class ReadsValidationTest {
             file(FileType.FASTQ, file).
             build();
 
-    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+    assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
         .isInstanceOf(WebinCliException.class)
         .hasMessageStartingWith("Invalid manifest file");
 
@@ -141,7 +135,7 @@ public class ReadsValidationTest {
             .field(QUALITY_SCORE, "PHRED_34")
             .build();
 
-    assertThatThrownBy(() -> executorBuilder.readManifest(manifestFile, RESOURCE_DIR))
+    assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
         .isInstanceOf(WebinCliException.class)
         .hasMessageStartingWith("Invalid manifest file");
   }
@@ -155,8 +149,10 @@ public class ReadsValidationTest {
             .field(QUALITY_SCORE, "PHRED_33")
             .build();
 
-    WebinCliExecutor<ReadsManifest, ReadsValidationResponse> ex = executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
-    assertThat(ex.getManifestReader().getManifest().getQualityScore()).isEqualTo(QualityScore.PHRED_33);
+    WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
+            executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    assertThat(executor.getManifestReader().getManifest().getQualityScore()).isEqualTo(QualityScore.PHRED_33);
   }
 
   @Test
@@ -166,7 +162,8 @@ public class ReadsValidationTest {
         manifestBuilder().file(FileType.BAM, "m54097_170904_165950.subreads.bam").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
@@ -183,7 +180,8 @@ public class ReadsValidationTest {
         manifestBuilder().file(FileType.BAM, "OUTO500m_MetOH_narG_OTU18.bam").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
@@ -200,7 +198,8 @@ public class ReadsValidationTest {
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
@@ -220,7 +219,8 @@ public class ReadsValidationTest {
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
@@ -238,7 +238,8 @@ public class ReadsValidationTest {
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
@@ -257,7 +258,8 @@ public class ReadsValidationTest {
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
@@ -274,7 +276,8 @@ public class ReadsValidationTest {
         manifestBuilder().file(FileType.FASTQ, "ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
@@ -288,7 +291,8 @@ public class ReadsValidationTest {
         manifestBuilder().file(FileType.FASTQ, "EP0_GTTCCTT_0.txt.gz").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
@@ -305,7 +309,8 @@ public class ReadsValidationTest {
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
@@ -322,7 +327,8 @@ public class ReadsValidationTest {
         manifestBuilder().file(FileType.CRAM, "18045_1#93.cram").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
@@ -339,8 +345,8 @@ public class ReadsValidationTest {
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        executorBuilder.readManifest(manifestFile, RESOURCE_DIR);
-
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();

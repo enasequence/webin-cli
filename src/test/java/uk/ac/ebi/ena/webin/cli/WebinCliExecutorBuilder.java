@@ -10,7 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.embl.api.validation.Severity;
+import org.mockito.invocation.InvocationOnMock;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
@@ -18,75 +20,78 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 import java.io.File;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationResponse> {
-  private final Class<M> manifestClass;
-  private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
-  private boolean manifestMetadataProcessors = true;
-  private Study study;
-  private Sample sample;
+    private final Class<M> manifestClass;
+    private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
 
-  public WebinCliExecutorBuilder(Class<M> manifestClass) {
-    this.manifestClass = manifestClass;
-  }
+    private SampleProcessor sampleProcessor;
+    private StudyProcessor studyProcessor;
+    private SampleXmlProcessor sampleXmlProcessor;
+    private RunProcessor runProcessor;
+    private AnalysisProcessor analysisProcessor;
 
-  public WebinCliExecutorBuilder manifestMetadataProcessors(boolean manifestMetadataProcessors) {
-    this.manifestMetadataProcessors = manifestMetadataProcessors;
-    return this;
-  }
-
-  public WebinCliExecutorBuilder study(Study study) {
-    this.study = study;
-    return this;
-  }
-
-  public WebinCliExecutorBuilder sample(Sample sample) {
-    this.sample = sample;
-    return this;
-  }
-
-  private WebinCliExecutor<M,R> createExecutor(WebinCliParameters parameters) {
-    return WebinCliContext.createExecutor(manifestClass, parameters);
-  }
-
-  private void finalizeParameters(File manifestFile, File inputDir) {
-    parameters.setManifestFile(manifestFile);
-    parameters.setInputDir(inputDir);
-    parameters.setMetadataProcessorsActive(manifestMetadataProcessors);
-  }
-
-  public WebinCliExecutor<M,R> readManifest(File manifestFile, File inputDir) {
-    finalizeParameters(manifestFile, inputDir);
-    WebinCliExecutor<M,R> executor = createExecutor(parameters);
-    executor.readManifest();
-    if (sample != null) {
-      executor.getManifestReader().getManifest().setSample(sample);
+    public enum MetadataProcessorType {
+        DEFAULT,
+        MOCK
     }
-    if (study != null) {
-      executor.getManifestReader().getManifest().setStudy(study);
+
+    public WebinCliExecutorBuilder(Class<M> manifestClass, MetadataProcessorType metadataProcessorType) {
+        this.manifestClass = manifestClass;
+        if (MetadataProcessorType.MOCK.equals(metadataProcessorType)) {
+            this.sampleProcessor = mock(SampleProcessor.class);
+            this.studyProcessor = mock(StudyProcessor.class);
+            this.sampleXmlProcessor = mock(SampleXmlProcessor.class);
+            this.runProcessor = mock(RunProcessor.class);
+            this.analysisProcessor = mock(AnalysisProcessor.class);
+
+            when(this.sampleProcessor.process(any())).thenReturn(new ValidationResult());
+            when(this.studyProcessor.process(any())).thenReturn(new ValidationResult());
+            when(this.sampleXmlProcessor.process(any())).thenReturn(new ValidationResult());
+            when(this.runProcessor.process(any())).thenReturn(new ValidationResult());
+            when(this.analysisProcessor.process(any())).thenReturn(new ValidationResult());
+        }
     }
-    return executor;
-  }
 
-  public WebinCliExecutor<M,R> readManifestThrows(File manifestFile, File inputDir, WebinCliMessage message) {
-    finalizeParameters(manifestFile, inputDir);
-    WebinCliExecutor<M,R> executor = createExecutor(parameters);
-    assertThatThrownBy(
-            () -> executor.readManifest(),
-            "Expected WebinCliException to be thrown: " + message.key())
-        .isInstanceOf(WebinCliException.class);
-    assertThat(
-            executor
-                .getManifestReader()
-                .getValidationResult()
-                .count(message.key(), Severity.ERROR))
-        .isGreaterThanOrEqualTo(1);
-    return executor;
-  }
+    public WebinCliExecutorBuilder study(Study study) {
+        this.studyProcessor = spy(new StudyProcessor(null));
+        doAnswer((InvocationOnMock invocation) ->
+                {
+                    StudyProcessor processor = (StudyProcessor)invocation.getMock();
+                    processor.getCallback().notify(study);
+                    return new ValidationResult();
+                }
+        ).when(this.studyProcessor).process(any());
+        return this;
+    }
 
-  public WebinCliParameters getParameters() {
-    return parameters;
-  }
+    public WebinCliExecutorBuilder sample(Sample sample) {
+        this.sampleProcessor = spy(new SampleProcessor(null));
+        doAnswer((InvocationOnMock invocation) ->
+                {
+                    SampleProcessor processor = (SampleProcessor)invocation.getMock();
+                    processor.getCallback().notify(sample);
+                    return new ValidationResult();
+                }
+        ).when(this.sampleProcessor).process(any());
+        return this;
+    }
+
+    public WebinCliExecutor<M, R> build(File manifestFile, File inputDir) {
+        parameters.setManifestFile(manifestFile);
+        parameters.setInputDir(inputDir);
+        parameters.setOutputDir(WebinCliTestUtils.createTempDir());
+        parameters.setSampleProcessor(sampleProcessor);
+        parameters.setStudyProcessor(studyProcessor);
+        parameters.setSampleXmlProcessor(sampleXmlProcessor);
+        parameters.setRunProcessor(runProcessor);
+        parameters.setAnalysisProcessor(analysisProcessor);
+        return WebinCliContext.createExecutor(manifestClass, parameters);
+    }
+
+    public WebinCliParameters getParameters() {
+        return parameters;
+    }
 }

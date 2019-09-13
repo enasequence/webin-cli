@@ -41,7 +41,11 @@ StudyProcessor implements ManifestFieldProcessor
     public void setCallback(Callback<Study> callback) {
         this.callback = callback;
     }
-    
+
+    public Callback<Study> getCallback() {
+        return callback;
+    }
+
     @Override public ValidationResult
     process( ManifestFieldValue fieldValue )
     {

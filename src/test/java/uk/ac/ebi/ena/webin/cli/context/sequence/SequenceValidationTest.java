@@ -36,8 +36,7 @@ public class SequenceValidationTest {
   }
 
   private static final WebinCliExecutorBuilder<SequenceManifest, ValidationResponse> executorBuilder =
-      new WebinCliExecutorBuilder(SequenceManifest.class)
-          .manifestMetadataProcessors(false)
+      new WebinCliExecutorBuilder(SequenceManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
           .sample(getDefaultSample());
 
   @Before
@@ -53,7 +52,8 @@ public class SequenceValidationTest {
       String fileName = file.getName();
       System.out.println("Testing valid tab file: " + fileName);
       File manifestFile = manifestBuilder().file(FileType.TAB, fileName).build();
-      WebinCliExecutor<SequenceManifest, ValidationResponse> executor = executorBuilder.readManifest(manifestFile, VALID_DIR);
+      WebinCliExecutor<SequenceManifest, ValidationResponse> executor = executorBuilder.build(manifestFile, VALID_DIR);
+      executor.readManifest();
       executor.validateSubmission();
       assertThat(executor.getManifestReader().getManifest().files().get(FileType.TAB))
           .size()

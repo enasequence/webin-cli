@@ -52,6 +52,7 @@ public class ReadsXmlTest {
     ReadsManifestReader manifestReader = mock(ReadsManifestReader.class);
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
     parameters.setTest(false);
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =

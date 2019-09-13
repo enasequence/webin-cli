@@ -40,8 +40,7 @@ public class TranscriptomeValidationTest {
   }
 
   private static final WebinCliExecutorBuilder<TranscriptomeManifest, ValidationResponse> executorBuilder =
-      new WebinCliExecutorBuilder(TranscriptomeManifest.class)
-          .manifestMetadataProcessors(false)
+      new WebinCliExecutorBuilder(TranscriptomeManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
           .sample(WebinCliTestUtils.getDefaultSample());
 
   @Before
@@ -59,7 +58,8 @@ public class TranscriptomeValidationTest {
       File manifestFile =
           manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, fileName).build();
       WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
-          executorBuilder.readManifest(manifestFile, VALID_DIR);
+          executorBuilder.build(manifestFile, VALID_DIR);
+      executor.readManifest();
       executor.validateSubmission();
       assertThat(
               executor
