@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -107,7 +106,7 @@ public class ReadsValidationTest {
   dataFileNonASCIIPath() throws IOException {
 
     URL url = ReadsValidationTest.class.getClassLoader()
-        .getResource("uk/ac/ebi/ena/webin/cli/reads/MG23S_431.fastq.gz");
+        .getResource("uk/ac/ebi/ena/webin/cli/reads/invalid.fastq.gz");
     File gz = new File(URLDecoder.decode(url.getFile(), "UTF-8"));
 
     Path file = Files
@@ -131,7 +130,7 @@ public class ReadsValidationTest {
   incorrectQualityScore() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTQ, "ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz")
+            .file(FileType.FASTQ, "valid.fastq.gz")
             .field(QUALITY_SCORE, "PHRED_34")
             .build();
 
@@ -145,7 +144,7 @@ public class ReadsValidationTest {
   correctQualityScore() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTQ, "ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz")
+            .file(FileType.FASTQ, "valid.fastq.gz")
             .field(QUALITY_SCORE, "PHRED_33")
             .build();
 
@@ -159,7 +158,7 @@ public class ReadsValidationTest {
   public void
   incorrectBAM() {
     File manifestFile =
-        manifestBuilder().file(FileType.BAM, "m54097_170904_165950.subreads.bam").build();
+        manifestBuilder().file(FileType.BAM, "invalid.bam").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -177,7 +176,7 @@ public class ReadsValidationTest {
   public void
   correctBAM() {
     File manifestFile =
-        manifestBuilder().file(FileType.BAM, "OUTO500m_MetOH_narG_OTU18.bam").build();
+        manifestBuilder().file(FileType.BAM, "valid.bam").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -193,8 +192,8 @@ public class ReadsValidationTest {
   sameFilePairedFastq() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTQ, "ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz")
-            .file(FileType.FASTQ, "ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz")
+            .file(FileType.FASTQ, "valid.fastq.gz")
+            .file(FileType.FASTQ, "valid.fastq.gz")
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
@@ -214,8 +213,8 @@ public class ReadsValidationTest {
   correctTwoFastq() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTQ, "EP0_GTTCCTT_S1.txt.gz")
-            .file(FileType.FASTQ, "EP0_GTTCCTT_S2.txt.gz")
+            .file(FileType.FASTQ, "valid_paired_1.fastq.gz")
+            .file(FileType.FASTQ, "valid_paired_2.fastq.gz")
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
@@ -233,8 +232,8 @@ public class ReadsValidationTest {
   invalidTwoFastqNotPaired() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTQ, "EP0_GTTCCTT_P1.txt.gz")
-            .file(FileType.FASTQ, "EP0_GTTCCTT_P2.txt.gz")
+            .file(FileType.FASTQ, "invalid_not_paired_1.fastq.gz")
+            .file(FileType.FASTQ, "invalid_not_paired_2.fastq.gz")
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
@@ -254,7 +253,7 @@ public class ReadsValidationTest {
   invalidOneFastq() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTQ, "MG23S_431.fastq.gz")
+            .file(FileType.FASTQ, "invalid.fastq.gz")
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
@@ -273,7 +272,7 @@ public class ReadsValidationTest {
   public void
   correctFastq() {
     File manifestFile =
-        manifestBuilder().file(FileType.FASTQ, "ZeroCycle_ES0_TTCCTT20NGA_0.txt.gz").build();
+        manifestBuilder().file(FileType.FASTQ, "valid.fastq.gz").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -288,7 +287,7 @@ public class ReadsValidationTest {
   public void
   correctOneFastqPaired() {
     File manifestFile =
-        manifestBuilder().file(FileType.FASTQ, "EP0_GTTCCTT_0.txt.gz").build();
+        manifestBuilder().file(FileType.FASTQ, "valid_paired_single_fastq.gz").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -305,7 +304,7 @@ public class ReadsValidationTest {
   incorrectCram() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.CRAM, "15194_1#135.cram")
+            .file(FileType.CRAM, "invalid.cram")
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
@@ -322,9 +321,9 @@ public class ReadsValidationTest {
 
   @Test
   public void
-  correctCram() {
+  validCram() {
     File manifestFile =
-        manifestBuilder().file(FileType.CRAM, "18045_1#93.cram").build();
+        manifestBuilder().file(FileType.CRAM, "valid.cram").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -341,7 +340,7 @@ public class ReadsValidationTest {
   dataFileReportWritten() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.BAM, "m54097_170904_165950.subreads.bam")
+            .file(FileType.BAM, "invalid.bam")
             .build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =

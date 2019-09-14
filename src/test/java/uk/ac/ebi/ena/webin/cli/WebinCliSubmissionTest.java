@@ -93,7 +93,7 @@ public class WebinCliSubmissionTest {
     @Test
     public void testReadsSubmissionCram() {
         ManifestBuilder manifest = readsManifest()
-                .file("CRAM", "18045_1#93.cram");
+                .file("CRAM", "valid.cram");
         WebinCliBuilder.READS.build(READS_RESOURCE_DIR, manifest).execute();
     }
 
@@ -101,7 +101,7 @@ public class WebinCliSubmissionTest {
     public void testReadsSubmissionCramWithInfo() {
         File infoFile = readsManifest().build();
         ManifestBuilder manifest = new ManifestBuilder()
-                .file("CRAM", "18045_1#93.cram")
+                .file("CRAM", "valid.cram")
                 .field("INFO", infoFile.getAbsolutePath());
         WebinCliBuilder.READS.build(READS_RESOURCE_DIR, manifest).execute();
     }
@@ -109,15 +109,15 @@ public class WebinCliSubmissionTest {
     @Test
     public void testReadsSubmissionCramWithAscp() {
         ManifestBuilder manifest = readsManifest()
-                .file("CRAM", "18045_1#93.cram");
+                .file("CRAM", "valid.cram");
         WebinCliBuilder.READS.ascp(true).build(READS_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
     public void testGenomeSubmissionFlatFileAgp() {
         ManifestBuilder manifest = genomeManifest()
-                .file("FLATFILE", "valid_flatfile.dat.gz")
-                .file("AGP", "valid_agp.agp.gz");
+                .file("FLATFILE", "valid.flatfile.gz")
+                .file("AGP", "valid.agp.gz");
         WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, manifest).execute();
     }
 
@@ -125,8 +125,8 @@ public class WebinCliSubmissionTest {
     public void testGenomeSubmissionFlatFileAgpWithInfo() {
         File infoFile = genomeManifest().build();
         ManifestBuilder manifest = new ManifestBuilder()
-                .file("FLATFILE", "valid_flatfile.dat.gz")
-                .file("AGP", "valid_agp.agp.gz")
+                .file("FLATFILE", "valid.flatfile.gz")
+                .file("AGP", "valid.agp.gz")
                 .field("INFO", infoFile.getAbsolutePath());
         WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, manifest).execute();
     }
@@ -134,10 +134,10 @@ public class WebinCliSubmissionTest {
     @Test
     public void testGenomeSubmissionFlatFileWithFormatError() {
         ManifestBuilder manifest = genomeManifest()
-                .file("FLATFILE", "invalid_flatfile.dat.gz");
+                .file("FLATFILE", "invalid.flatfile.gz");
         WebinCli cli = assertWebinCliException(WebinCliBuilder.GENOME, GENOME_RESOURCE_DIR, manifest);
         WebinCliTestUtils.assertReportContains(cli,
-                "invalid_flatfile.dat.gz",
+                "invalid.flatfile.gz",
                 "ERROR: Invalid ID line format [ line: 1]");
     }
 
@@ -185,18 +185,18 @@ public class WebinCliSubmissionTest {
     @Test
     public void testSequenceSubmissionFlatFileWithFormatError() {
         ManifestBuilder manifest = sequenceManifest()
-                .file("FLATFILE", "invalid_flatfile.dat.gz");
+                .file("FLATFILE", "invalid.flatfile.gz");
         WebinCli cli = assertWebinCliException(WebinCliBuilder.SEQUENCE, GENOME_RESOURCE_DIR, manifest);
         WebinCliTestUtils.assertReportContains(
                 cli,
-                "invalid_flatfile.dat.gz",
+                "invalid.flatfile.gz",
                 "ERROR: Invalid ID line format [ line: 1]");
     }
 
     @Test
     public void testTranscriptomeSubmissionFasta() {
         ManifestBuilder manifest = transcriptomeManifest()
-                .file("FASTA", "valid/valid_fasta.fasta.gz");
+                .file("FASTA", "valid/valid.fasta.gz");
         WebinCliBuilder.TRANSCRIPTOME.build(TRANSCRIPTOME_RESOURCE_DIR, manifest).execute();
     }
 
@@ -204,7 +204,7 @@ public class WebinCliSubmissionTest {
     public void testTranscriptomeSubmissionFastaWithInfo() {
         File infoFile = transcriptomeManifest().build();
         ManifestBuilder manifest = new ManifestBuilder()
-                .file("FASTA", "valid/valid_fasta.fasta.gz")
+                .file("FASTA", "valid/valid.fasta.gz")
                 .field("INFO", infoFile.getAbsolutePath());
         WebinCliBuilder.TRANSCRIPTOME.build(TRANSCRIPTOME_RESOURCE_DIR, manifest).execute();
     }
@@ -212,11 +212,11 @@ public class WebinCliSubmissionTest {
     @Test
     public void testTranscriptomeSubmissionFlatFileWithFormatError() {
         ManifestBuilder manifest = transcriptomeManifest()
-                .file("FLATFILE", "invalid_flatfile.dat.gz");
+                .file("FLATFILE", "invalid.flatfile.gz");
         WebinCli cli = assertWebinCliException(WebinCliBuilder.TRANSCRIPTOME, GENOME_RESOURCE_DIR, manifest);
         WebinCliTestUtils.assertReportContains(
                 cli,
-                "invalid_flatfile.dat.gz",
+                "invalid.flatfile.gz",
                 "ERROR: Invalid ID line format [ line: 1]");
     }
 }

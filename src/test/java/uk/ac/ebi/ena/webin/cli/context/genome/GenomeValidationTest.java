@@ -54,7 +54,7 @@ public class GenomeValidationTest {
   @Test
   public void testValidFasta() {
     File manifestFile =
-        manifestBuilder().file(FileType.FASTA, "valid_fasta.fasta.gz").build();
+        manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -74,7 +74,7 @@ public class GenomeValidationTest {
                 "Biologische Anstalt Helgoland, Alfred-Wegener-Institut, Helmholtz "
                     + "Zentrum für Polar- und Meeresforschung, Kurpromenade 27498 Helgoland, Germany")
             .field(GenomeManifestReader.Field.AUTHORS, "Kirstein   Ivan, Wichels Alfred..;")
-            .file(FileType.FLATFILE, "valid_flatfile.dat.gz")
+            .file(FileType.FLATFILE, "valid.flatfile.gz")
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
@@ -89,7 +89,7 @@ public class GenomeValidationTest {
   @Test
   public void testValidFlatFile() {
     File manifestFile =
-        manifestBuilder().file(FileType.FLATFILE, "valid_flatfile.dat.gz").build();
+        manifestBuilder().file(FileType.FLATFILE, "valid.flatfile.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
             executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -104,8 +104,8 @@ public class GenomeValidationTest {
   public void testValidFastaAndAgp() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTA, "valid_fasta.fasta.gz")
-            .file(FileType.AGP, "valid_agp.agp.gz")
+            .file(FileType.FASTA, "valid.fasta.gz")
+            .file(FileType.AGP, "valid.agp.gz")
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
@@ -122,8 +122,8 @@ public class GenomeValidationTest {
   public void testValidFlatFileAndAgp() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FLATFILE, "valid_flatfile.dat.gz")
-            .file(FileType.AGP, "valid_agp.agp.gz")
+            .file(FileType.FLATFILE, "valid.flatfile.gz")
+            .file(FileType.AGP, "valid.agp.gz")
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
@@ -140,8 +140,8 @@ public class GenomeValidationTest {
   public void testValidFastaAndAgpAndChromosomeList() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTA, "valid_fasta.fasta.gz")
-            .file(FileType.AGP, "valid_agp.agp.gz")
+            .file(FileType.FASTA, "valid.fasta.gz")
+            .file(FileType.AGP, "valid.agp.gz")
             .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
 
@@ -160,8 +160,8 @@ public class GenomeValidationTest {
   public void testValidFlatFileAndAgpAndChromosomeList() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FLATFILE, "valid_flatfile.dat.gz")
-            .file(FileType.AGP, "valid_agp.agp.gz")
+            .file(FileType.FLATFILE, "valid.flatfile.gz")
+            .file(FileType.AGP, "valid.agp.gz")
             .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
 
@@ -179,7 +179,7 @@ public class GenomeValidationTest {
   @Test
   public void testInvalidFasta() {
     File manifestFile =
-        manifestBuilder().file(FileType.FASTA, "invalid_fasta.fasta.gz").build();
+        manifestBuilder().file(FileType.FASTA, "invalid.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
             executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -195,7 +195,7 @@ public class GenomeValidationTest {
   @Test
   public void testInvalidFlatFile() {
     File manifestFile =
-        manifestBuilder().file(FileType.FLATFILE, "invalid_flatfile.dat.gz").build();
+        manifestBuilder().file(FileType.FLATFILE, "invalid.flatfile.gz").build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
             executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -212,8 +212,8 @@ public class GenomeValidationTest {
   public void testInvalidAgp() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FASTA, "valid_fasta.fasta.gz")
-            .file(FileType.AGP, "invalid_agp.agp.gz")
+            .file(FileType.FASTA, "valid.fasta.gz")
+            .file(FileType.AGP, "invalid.agp.gz")
             .build();
 
     WebinCliExecutor<GenomeManifest,ValidationResponse> executor =
@@ -232,7 +232,7 @@ public class GenomeValidationTest {
 
     File manifestFile =
             manifestBuilder()
-                    .file(FileType.FASTA, "valid_fasta.fasta.gz")
+                    .file(FileType.FASTA, "valid.fasta.gz")
                     .file(FileType.CHROMOSOME_LIST, "invalid_chromosome_list_sequenceless.txt.gz")
                     .build();
 
