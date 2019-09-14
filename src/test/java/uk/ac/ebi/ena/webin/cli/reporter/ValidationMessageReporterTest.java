@@ -22,7 +22,7 @@ import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.DefaultOrigin;
 import uk.ac.ebi.embl.api.validation.Origin;
 import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
 
 public class ValidationMessageReporterTest {
 
@@ -30,7 +30,7 @@ public class ValidationMessageReporterTest {
     public void
     testWriteString() throws IOException
     {
-        Path reportFile = WebinCliTestUtils.createEmptyTempFile("test");
+        Path reportFile = TempFileBuilder.empty("test");
         ValidationMessageReporter reporter = new ValidationMessageReporter(reportFile.toFile());
 
         reporter.write(Severity.ERROR, "MESSAGE1" );
@@ -50,7 +50,7 @@ public class ValidationMessageReporterTest {
     public void
     testWriteValidationMessage() throws IOException
     {
-        Path reportFile = WebinCliTestUtils.createEmptyTempFile("test");
+        Path reportFile = TempFileBuilder.empty("test");
         ValidationMessageReporter reporter = new ValidationMessageReporter(reportFile.toFile());
 
         reporter.write(ValidationMessageReporter.createValidationMessage(Severity.ERROR, "MESSAGE1"));
@@ -67,7 +67,7 @@ public class ValidationMessageReporterTest {
 
         // With origin.
 
-        reportFile = WebinCliTestUtils.createEmptyTempFile("test");
+        reportFile = TempFileBuilder.empty("test");
         reporter = new ValidationMessageReporter(reportFile.toFile());
 
         Origin origin = new DefaultOrigin("ORIGIN2");

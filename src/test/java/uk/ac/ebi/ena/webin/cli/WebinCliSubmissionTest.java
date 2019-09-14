@@ -144,8 +144,8 @@ public class WebinCliSubmissionTest {
     @Test
     public void testGenomeSubmissionFastaWithOneSequenceError() {
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-        Path fastaFile = WebinCliTestUtils.createTempFile(
-                "test.fasta.gz", inputDir, true, ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+        Path fastaFile = TempFileBuilder.gzip(
+                inputDir, "test.fasta.gz", ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
         ManifestBuilder manifest = genomeManifest()
                 .file("FASTA", fastaFile);
         WebinCli cli = assertWebinCliException(WebinCliBuilder.GENOME, inputDir, manifest);
@@ -158,14 +158,13 @@ public class WebinCliSubmissionTest {
     @Test
     public void testGenomeSubmissionFastaWithOneSequencePrimaryMetagenome() {
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
-        Path fastaFile = WebinCliTestUtils.createTempFile(
-                "test.fasta.gz", inputDir, true, ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+        Path fastaFile = TempFileBuilder.gzip(
+                inputDir,"test.fasta.gz", ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
         ManifestBuilder manifest = genomeManifest()
                 .file("FASTA", fastaFile)
                 .field("ASSEMBLY_TYPE", "primary metagenome");
         WebinCliBuilder.GENOME.build(inputDir, manifest).execute();
     }
-
 
     @Test
     public void testSequenceSubmissionTab() {

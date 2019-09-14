@@ -13,10 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context.reads;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
@@ -53,7 +50,7 @@ public class ReadsXmlTest {
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
-    parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
+    parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         (WebinCliExecutor<ReadsManifest,ReadsValidationResponse>)
@@ -113,7 +110,7 @@ public class ReadsXmlTest {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
-    Path file = WebinCliTestUtils.createEmptyTempFile("cram");
+    Path file = TempFileBuilder.empty("cram");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.CRAM, file.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
@@ -144,7 +141,7 @@ public class ReadsXmlTest {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
-    Path file = WebinCliTestUtils.createEmptyTempFile("bam");
+    Path file =  TempFileBuilder.empty("bam");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.BAM, file.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
@@ -175,7 +172,7 @@ public class ReadsXmlTest {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
-    Path file = WebinCliTestUtils.createEmptyTempFile("fastq");
+    Path file =  TempFileBuilder.empty("fastq");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
@@ -206,8 +203,8 @@ public class ReadsXmlTest {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
-    Path file1 = WebinCliTestUtils.createEmptyTempFile("fastq");
-    Path file2= WebinCliTestUtils.createEmptyTempFile("fastq");
+    Path file1 = TempFileBuilder.empty("fastq");
+    Path file2= TempFileBuilder.empty("fastq");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file1.toFile()));
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file2.toFile()));
 

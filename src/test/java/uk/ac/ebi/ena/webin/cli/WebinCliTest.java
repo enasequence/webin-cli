@@ -51,7 +51,7 @@ public class WebinCliTest {
     @Test
     public void testInputDirIsAFileError() {
         WebinCliCommand cmd = new WebinCliCommand();
-        cmd.inputDir = WebinCliTestUtils.createTempFile("test").toFile();
+        cmd.inputDir = TempFileBuilder.file("test").toFile();
         cmd.outputDir = WebinCliTestUtils.createTempDir();
 
         assertThatThrownBy(() -> new WebinCli(cmd) )
@@ -66,7 +66,7 @@ public class WebinCliTest {
     public void testOutputDirIsAFileError() {
         WebinCliCommand cmd = new WebinCliCommand();
         cmd.inputDir = WebinCliTestUtils.createTempDir();
-        cmd.outputDir = WebinCliTestUtils.createTempFile("test").toFile();
+        cmd.outputDir = TempFileBuilder.file("test").toFile();
 
         assertThatThrownBy(() -> new WebinCli(cmd) )
                 .isInstanceOf(WebinCliException.class)

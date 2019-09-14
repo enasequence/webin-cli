@@ -16,10 +16,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -53,7 +50,7 @@ public class SequenceXmlTest {
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
-    parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
+    parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);
     WebinCliExecutor<SequenceManifest, ValidationResponse> executor =
         (WebinCliExecutor<SequenceManifest, ValidationResponse>)
@@ -97,7 +94,7 @@ public class SequenceXmlTest {
   public void testFlatFile() {
     SequenceManifest manifest = getDefaultManifest();
 
-    Path flatFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", "ID   ;");
+    Path flatFile = TempFileBuilder.gzip("flatfile.dat.gz", "ID   ;");
     manifest.files().add(new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);

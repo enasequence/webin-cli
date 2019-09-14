@@ -110,7 +110,7 @@ public class ManifestBuilder {
     }
 
     public File build() {
-        return WebinCliTestUtils.createTempFile(manifest).toFile();
+        return TempFileBuilder.file(manifest).toFile();
     }
 
     public File build(File inputDir) {
@@ -118,7 +118,7 @@ public class ManifestBuilder {
     }
 
     public File build(Path inputDir) {
-        return WebinCliTestUtils.createTempFile(inputDir, manifest).toFile();
+        return  TempFileBuilder.file(inputDir, manifest).toFile();
     }
 
     @Override

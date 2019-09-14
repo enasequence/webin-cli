@@ -16,10 +16,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -57,7 +54,7 @@ public class GenomeXmlTest {
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
-    parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
+    parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         (WebinCliExecutor<GenomeManifest, ValidationResponse>)
@@ -230,7 +227,7 @@ public class GenomeXmlTest {
   @Test
   public void testFastaFile() {
     GenomeManifest manifest = getDefaultManifest();
-    Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.fasta.gz", ">123\nACGT");
+    Path fastaFile =  TempFileBuilder.gzip("flatfile.fasta.gz", ">123\nACGT");
     manifest.files().add(new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
@@ -267,8 +264,8 @@ public class GenomeXmlTest {
   @Test
   public void testFastaFileAndAgpFile() {
     GenomeManifest manifest = getDefaultManifest();
-    Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
-    Path agpFile = WebinCliTestUtils.createGzippedTempFile("agp.gz", ">123\nACGT");
+    Path fastaFile = TempFileBuilder.gzip("fasta.gz", ">123\nACGT");
+    Path agpFile = TempFileBuilder.gzip("agp.gz", ">123\nACGT");
     manifest.files().add(new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile.toFile()));
     manifest.files().add(new SubmissionFile(GenomeManifest.FileType.AGP, agpFile.toFile()));
 

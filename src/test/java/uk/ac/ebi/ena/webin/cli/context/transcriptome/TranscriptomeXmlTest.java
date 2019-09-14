@@ -16,10 +16,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliContext;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -58,7 +55,7 @@ public class TranscriptomeXmlTest {
     when(manifestReader.getManifest()).thenReturn(manifest);
     WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
-    parameters.setManifestFile(WebinCliTestUtils.createEmptyTempFile().toFile());
+    parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);
     WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
         (WebinCliExecutor<TranscriptomeManifest, ValidationResponse>)
@@ -135,7 +132,7 @@ public class TranscriptomeXmlTest {
   @Test
   public void testFastaFile() {
     TranscriptomeManifest manifest = getDefaultManifest();
-    Path fastaFile = WebinCliTestUtils.createGzippedTempFile("fasta.gz", ">123\nACGT");
+    Path fastaFile = TempFileBuilder.gzip("fasta.gz", ">123\nACGT");
     manifest
         .files()
         .add(new SubmissionFile(TranscriptomeManifest.FileType.FASTA, fastaFile.toFile()));
@@ -174,7 +171,7 @@ public class TranscriptomeXmlTest {
   public void testFlatFile() {
     TranscriptomeManifest manifest = getDefaultManifest();
 
-    Path fastaFile = WebinCliTestUtils.createGzippedTempFile("flatfile.dat.gz", ">123\nACGT");
+    Path fastaFile =  TempFileBuilder.gzip("flatfile.dat.gz", ">123\nACGT");
     manifest
         .files()
         .add(new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile()));

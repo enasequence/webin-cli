@@ -58,62 +58,6 @@ public class WebinCliTestUtils {
         }
     }
 
-    public static Path
-    createEmptyTempFile()
-    {
-        return createTempFile(null, null, false,null);
-    }
-
-    public static Path
-    createEmptyTempFile(String fileName)
-    {
-        return createTempFile(fileName, null, false,null);
-    }
-
-    public static Path
-    createTempFile(String contents) {
-        return createTempFile(null, null, false,contents);
-    }
-
-    public static Path
-    createTempFile(Path folder, String contents) {
-        return createTempFile(null, folder, false, contents);
-    }
-
-    public static Path
-    createGzippedTempFile(String fileName, String contents) {
-        return createTempFile(fileName,null,true, contents);
-    }
-
-
-    public static Path
-    createTempFile(String fileName, Path folder, boolean compress, String contents)
-    {
-        try {
-            Path path;
-            if (folder != null && fileName != null)
-                path = Files.createTempFile(folder, "TEST", fileName);
-            else if (fileName != null)
-                path = Files.createTempFile("TEST", fileName);
-            else
-                path = Files.createTempFile("TEST", "TEST");
-            if (contents != null) {
-                InputStream is = new ByteArrayInputStream(contents.getBytes());
-                OutputStream os;
-                IOUtils.copy(is, (os = compress ?
-                        new GZIPOutputStream(Files.newOutputStream(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC))
-                        : Files.newOutputStream(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC)));
-                os.flush();
-                os.close();
-            }
-            Assert.assertTrue(Files.exists(path));
-            Assert.assertTrue(Files.isRegularFile(path));
-            return path;
-        }
-        catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 
     public static String
     readFile(Path file) {
