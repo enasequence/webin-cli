@@ -14,8 +14,6 @@ package uk.ac.ebi.ena.webin.cli;
 import java.io.File;
 import java.nio.file.Path;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class WebinCliBuilder {
   private final WebinCliContext context;
   private final Path outputDir = WebinCliTestUtils.createTempDir().toPath();
@@ -62,36 +60,12 @@ public class WebinCliBuilder {
     return cmd;
   }
 
-
-  public WebinCli execute(File inputDir, ManifestBuilder manifestBuilder) {
-    return execute(inputDir.toPath(), manifestBuilder);
+  public WebinCli build(File inputDir, ManifestBuilder manifestBuilder) {
+    return build(inputDir.toPath(), manifestBuilder);
   }
 
-  public WebinCli execute(Path inputDir, ManifestBuilder manifestBuilder) {
+  public WebinCli build(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
-    WebinCli webinCli = new WebinCli(cmd);
-    webinCli.execute();
-    return webinCli;
-  }
-
-  public <T extends Exception> WebinCli executeThrows(Path inputDir, ManifestBuilder manifestBuilder, Class<T> exceptionClass, String ... messages) {
-    WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
-    return executeThrows(cmd, exceptionClass, messages);
-  }
-
-  public static <T extends Exception> WebinCli executeThrows(WebinCliCommand cmd, Class<T> exceptionClass, String ... messages) {
-    WebinCli cli = null;
-    try {
-      cli = new WebinCli(cmd);
-      cli.execute();
-    }
-    catch (Exception ex) {
-      if (exceptionClass.isInstance(ex)) {
-        for (String message : messages) {
-          assertThat(ex).hasMessageContaining(message);
-        }
-      }
-    }
-    return cli;
+    return new WebinCli(cmd);
   }
 }

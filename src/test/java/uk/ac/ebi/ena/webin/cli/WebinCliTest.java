@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDir;
 import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
 
@@ -53,10 +54,12 @@ public class WebinCliTest {
         cmd.inputDir = WebinCliTestUtils.createTempFile("test").toFile();
         cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
-                MessageFormat.format(
-                        WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text,
-                        cmd.inputDir.getAbsoluteFile()));
+        assertThatThrownBy(() -> new WebinCli(cmd) )
+                .isInstanceOf(WebinCliException.class)
+                .hasMessage(
+                        MessageFormat.format(
+                                WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text,
+                                cmd.inputDir.getAbsoluteFile()));
     }
 
     @Test
@@ -65,10 +68,12 @@ public class WebinCliTest {
         cmd.inputDir = WebinCliTestUtils.createTempDir();
         cmd.outputDir = WebinCliTestUtils.createTempFile("test").toFile();
 
-        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
-                MessageFormat.format(
-                        WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
-                        cmd.outputDir.getAbsoluteFile()));
+        assertThatThrownBy(() -> new WebinCli(cmd) )
+                .isInstanceOf(WebinCliException.class)
+                .hasMessage(
+                        MessageFormat.format(
+                                WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
+                                cmd.outputDir.getAbsoluteFile()));
     }
 
     @Test
@@ -77,9 +82,11 @@ public class WebinCliTest {
         cmd.inputDir = new File(UUID.randomUUID().toString());
         cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
-                MessageFormat.format(
-                        WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text, cmd.inputDir.getName()));
+        assertThatThrownBy(() -> new WebinCli(cmd) )
+                .isInstanceOf(WebinCliException.class)
+                .hasMessage(
+                        MessageFormat.format(
+                                WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text, cmd.inputDir.getName()));
     }
 
     @Test
@@ -88,9 +95,11 @@ public class WebinCliTest {
         cmd.inputDir = WebinCliTestUtils.createTempDir();
         cmd.outputDir = new File(UUID.randomUUID().toString());
 
-        WebinCliBuilder.executeThrows(cmd, WebinCliException.class,
-                MessageFormat.format(
-                        WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
-                        cmd.outputDir.getName()));
+        assertThatThrownBy(() -> new WebinCli(cmd) )
+                .isInstanceOf(WebinCliException.class)
+                .hasMessage(
+                        MessageFormat.format(
+                                WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
+                                cmd.outputDir.getName()));
     }
 }

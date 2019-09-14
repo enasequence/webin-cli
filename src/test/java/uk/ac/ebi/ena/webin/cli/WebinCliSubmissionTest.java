@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli;
 import java.io.File;
 import java.nio.file.Path;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
 
 import org.junit.Test;
@@ -82,15 +83,18 @@ public class WebinCliSubmissionTest {
 
     private static WebinCli assertWebinCliException(
             WebinCliBuilder webinCliBuilder, Path inputDir, ManifestBuilder manifest) {
-        return webinCliBuilder.executeThrows(inputDir, manifest, WebinCliException.class,
-                "Submission validation failed because of a user error");
+        WebinCli cli = webinCliBuilder.build(inputDir, manifest);
+        assertThatThrownBy(cli::execute)
+                .isInstanceOf(WebinCliException.class)
+                .hasMessageContaining("Submission validation failed because of a user error");
+        return cli;
     }
 
     @Test
     public void testReadsSubmissionCram() {
         ManifestBuilder manifest = readsManifest()
                 .file("CRAM", "18045_1#93.cram");
-        WebinCliBuilder.READS.execute(READS_RESOURCE_DIR, manifest);
+        WebinCliBuilder.READS.build(READS_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
@@ -99,14 +103,14 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = new ManifestBuilder()
                 .file("CRAM", "18045_1#93.cram")
                 .field("INFO", infoFile.getAbsolutePath());
-        WebinCliBuilder.READS.execute(READS_RESOURCE_DIR, manifest);
+        WebinCliBuilder.READS.build(READS_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
     public void testReadsSubmissionCramWithAscp() {
         ManifestBuilder manifest = readsManifest()
                 .file("CRAM", "18045_1#93.cram");
-        WebinCliBuilder.READS.ascp(true).execute(READS_RESOURCE_DIR, manifest);
+        WebinCliBuilder.READS.ascp(true).build(READS_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
@@ -114,7 +118,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = genomeManifest()
                 .file("FLATFILE", "valid_flatfile.dat.gz")
                 .file("AGP", "valid_agp.agp.gz");
-        WebinCliBuilder.GENOME.execute(GENOME_RESOURCE_DIR, manifest);
+        WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
@@ -124,7 +128,7 @@ public class WebinCliSubmissionTest {
                 .file("FLATFILE", "valid_flatfile.dat.gz")
                 .file("AGP", "valid_agp.agp.gz")
                 .field("INFO", infoFile.getAbsolutePath());
-        WebinCliBuilder.GENOME.execute(GENOME_RESOURCE_DIR, manifest);
+        WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
@@ -159,7 +163,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = genomeManifest()
                 .file("FASTA", fastaFile)
                 .field("ASSEMBLY_TYPE", "primary metagenome");
-        WebinCliBuilder.GENOME.execute(inputDir, manifest);
+        WebinCliBuilder.GENOME.build(inputDir, manifest).execute();
     }
 
 
@@ -167,7 +171,7 @@ public class WebinCliSubmissionTest {
     public void testSequenceSubmissionTab() {
         ManifestBuilder manifest = sequenceManifest()
                 .file("TAB", "valid/ERT000003-EST.tsv.gz");
-        WebinCliBuilder.SEQUENCE.execute(SEQUENCE_RESOURCE_DIR, manifest);
+        WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
@@ -176,7 +180,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = new ManifestBuilder()
                 .file("TAB", "valid/ERT000003-EST.tsv.gz")
                 .field("INFO", infoFile.getAbsolutePath());
-        WebinCliBuilder.SEQUENCE.execute(SEQUENCE_RESOURCE_DIR, manifest);
+        WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
@@ -194,7 +198,7 @@ public class WebinCliSubmissionTest {
     public void testTranscriptomeSubmissionFasta() {
         ManifestBuilder manifest = transcriptomeManifest()
                 .file("FASTA", "valid/valid_fasta.fasta.gz");
-        WebinCliBuilder.TRANSCRIPTOME.execute(TRANSCRIPTOME_RESOURCE_DIR, manifest);
+        WebinCliBuilder.TRANSCRIPTOME.build(TRANSCRIPTOME_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
@@ -203,7 +207,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = new ManifestBuilder()
                 .file("FASTA", "valid/valid_fasta.fasta.gz")
                 .field("INFO", infoFile.getAbsolutePath());
-        WebinCliBuilder.TRANSCRIPTOME.execute(TRANSCRIPTOME_RESOURCE_DIR, manifest);
+        WebinCliBuilder.TRANSCRIPTOME.build(TRANSCRIPTOME_RESOURCE_DIR, manifest).execute();
     }
 
     @Test
