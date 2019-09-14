@@ -165,11 +165,25 @@ public class WebinCliTestUtils {
         assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);
     }
 
-    public static void assertReportContains(String outputDir, String dataFile, String message) {
-        assertReportContains(Paths.get(outputDir).resolve(dataFile), message);
+    public static void assertReportContains(String outputDir, String reportFile, String message) {
+        assertReportContains(Paths.get(outputDir).resolve(reportFile), message);
+    }
+
+    public static void assertReportContains(Path outputDir, String reportFile, String message) {
+        assertReportContains(outputDir.resolve(reportFile), message);
     }
 
     public static void assertReportContains(Path reportFile, String message) {
         assertThat(WebinCliTestUtils.readFile(reportFile)).contains(message);
     }
+
+
+    public static void assertReportNotContains(Path outputDir, String reportFile, String message) {
+        assertReportNotContains(outputDir.resolve(reportFile), message);
+    }
+
+    public static void assertReportNotContains(Path reportFile, String message) {
+        assertThat(WebinCliTestUtils.readFile(reportFile)).doesNotContain(message);
+    }
+
 }

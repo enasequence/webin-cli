@@ -10,280 +10,230 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.File;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.embl.api.validation.ValidationMessage;
 import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
 import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class
-ReadsManifestReaderTest
-{
-    private static final String SAMPLE_ID = "SAMN00001636";
-    private static final String STUDY_ID = "PRJEB10672";
-
+ReadsManifestReaderTest {
+    private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/reads");
 
     private static ReadsManifestReader createManifestReader() {
         WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
         return new ReadsManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
     }
 
-    @Before public void
-    before()
-    {
-        ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
-        ValidationResult.setDefaultMessageFormatter( null );
-        Locale.setDefault( Locale.UK );
+    private static WebinCliExecutorBuilder<ReadsManifest, ReadsValidationResponse> executorBuilder =
+            new WebinCliExecutorBuilder(
+                    ReadsManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK);
+
+    private void assertManifestError(File manifestFile, String message) {
+        WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
+                executorBuilder.build(manifestFile, RESOURCE_DIR);
+
+        assertThatThrownBy(executor::readManifest)
+                .isInstanceOf(WebinCliException.class)
+                .hasMessageStartingWith("Invalid manifest file");
+
+        WebinCliTestUtils.assertReportContains(
+                executor.getParameters().getOutputDir().toPath(),
+                manifestFile.getName() + ".report",
+                message);
     }
 
-    @Test public void
-    testValidManifest() throws IOException
-    {
-        String descr = "A description";
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                                ( Field.STUDY            + " " + STUDY_ID + "\n"
-                                + Field.SAMPLE           + " " + SAMPLE_ID + "\n"
-                                + Field.PLATFORM          + " illumina\n"
-                                + Field.INSTRUMENT        + " Illumina HiScanSQ\n"
-                                + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + Field.LIBRARY_SOURCE    + " OTHER\n"
-                                + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + Field.LIBRARY_NAME      + " Name library\n"
-                                + Field.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
-                                + Field.INSERT_SIZE       + " 100500\n"
-                                + Field.NAME              + " SOME-FANCY-NAME\n "
-                                + Field.DESCRIPTION       + " " + descr + "\n"
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE.bam" ) ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+    private void assertNoManifestError(File manifestFile, String message) {
+        WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
+                executorBuilder.build(manifestFile, RESOURCE_DIR);
 
-        ReadsManifestReader rm = createManifestReader();
-        ReadsManifest manifest = rm.getManifest();
+        assertThatThrownBy(executor::readManifest)
+                .isInstanceOf(WebinCliException.class)
+                .hasMessageStartingWith("Invalid manifest file");
 
-        Assert.assertNull( manifest.getStudy() );
-        Assert.assertNull( manifest.getSample() );
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertNull( manifest.getInstrument() );
-        Assert.assertNull( manifest.getLibraryStrategy() );
-        Assert.assertNull( manifest.getLibrarySource() );
-        Assert.assertNull( manifest.getLibrarySelection() );
-        Assert.assertNull( manifest.getLibraryName() );
-        Assert.assertNull( manifest.getLibraryConstructionProtocol() );
-        Assert.assertNull( manifest.getInsertSize() );
-        Assert.assertNull( manifest.getName() );
-        assertThat( manifest.files().files() ).size().isZero();
-        Assert.assertNull( manifest.getDescription() );
-
-        rm.readManifest( Paths.get( "." ), man.toFile() );
-
-        Assert.assertEquals( STUDY_ID, manifest.getStudy().getBioProjectId() );
-        Assert.assertEquals( SAMPLE_ID, manifest.getSample().getBioSampleId() );
-        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
-        Assert.assertEquals( "Illumina HiScanSQ", manifest.getInstrument() );
-        Assert.assertEquals( "CLONEEND", manifest.getLibraryStrategy() );
-        Assert.assertEquals( "OTHER", manifest.getLibrarySource() );
-        Assert.assertEquals( "Inverse rRNA selection", manifest.getLibrarySelection() );
-        Assert.assertEquals( "Name library", manifest.getLibraryName() );
-        Assert.assertEquals( "library construction protocol", manifest.getLibraryConstructionProtocol() );
-        Assert.assertEquals( Integer.valueOf( 100500 ), manifest.getInsertSize() );
-        Assert.assertEquals( "SOME-FANCY-NAME", manifest.getName() );
-        assertThat( manifest.files().files() ).size().isOne();
-        Assert.assertEquals( descr, manifest.getDescription() );
+        WebinCliTestUtils.assertReportNotContains(
+                executor.getParameters().getOutputDir().toPath(),
+                manifestFile.getName() + ".report",
+                message);
     }
 
-
-    @Test public void
-    testValidManifestWithInfo() throws IOException
-    {
-        Path inf = Files.write( Files.createTempFile( Files.createTempDirectory( "TEMP" ), "TEMP", "INFO" ),
-                                ( Field.STUDY            + " " + STUDY_ID + "\n"
-                                + Field.SAMPLE           + " " + SAMPLE_ID + "\n"
-                                + Field.PLATFORM          + " illumina\n"
-                                + Field.INSTRUMENT        + " Illumina HiScanSQ\n"
-                                + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + Field.LIBRARY_SOURCE    + " OTHER\n"
-                                + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + Field.LIBRARY_NAME      + " Name library\n"
-                                + Field.LIBRARY_CONSTRUCTION_PROTOCOL + " library construction protocol\n"
-                                + Field.INSERT_SIZE       + " 100500\n"
-                                + Field.NAME              + " SOME-FANCY-NAME\n" ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                                ( "INFO " + inf.getFileName() + "\n"
-                                + "BAM " + Files.createTempFile( inf.getParent(), "TEMP", "FILE" ).getFileName() ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-
-        ReadsManifestReader rm = createManifestReader();
-        ReadsManifest manifest = rm.getManifest();
-
-        Assert.assertNull( manifest.getStudy() );
-        Assert.assertNull( manifest.getSample() );
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertNull( manifest.getInstrument() );
-        Assert.assertNull( manifest.getLibraryStrategy() );
-        Assert.assertNull( manifest.getLibrarySource() );
-        Assert.assertNull( manifest.getLibrarySelection() );
-        Assert.assertNull( manifest.getLibraryName() );
-        Assert.assertNull( manifest.getLibraryConstructionProtocol() );
-        Assert.assertNull( manifest.getInsertSize() );
-        Assert.assertNull( manifest.getName() );
-        assertThat( manifest.files().files() ).size().isZero();
-
-        rm.readManifest( inf.getParent(), man.toFile() );
-
-        Assert.assertEquals( STUDY_ID, manifest.getStudy().getBioProjectId() );
-        Assert.assertEquals( SAMPLE_ID, manifest.getSample().getBioSampleId() );
-        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
-        Assert.assertEquals( "Illumina HiScanSQ", manifest.getInstrument() );
-        Assert.assertEquals( "CLONEEND", manifest.getLibraryStrategy() );
-        Assert.assertEquals( "OTHER", manifest.getLibrarySource() );
-        Assert.assertEquals( "Inverse rRNA selection", manifest.getLibrarySelection() );
-        Assert.assertEquals( "Name library", manifest.getLibraryName() );
-        Assert.assertEquals( "library construction protocol", manifest.getLibraryConstructionProtocol() );
-        Assert.assertEquals( new Integer( 100500 ), manifest.getInsertSize() );
-        Assert.assertEquals( "SOME-FANCY-NAME", manifest.getName() );
-        assertThat( manifest.files().files() ).size().isOne();
+    @Before
+    public void
+    before() {
+        ValidationMessage.setDefaultMessageFormatter(ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END);
+        ValidationResult.setDefaultMessageFormatter(null);
+        Locale.setDefault(Locale.UK);
     }
 
+    @Test
+    public void
+    testValidManifest() {
+        ReadsManifestReader manifestReader = createManifestReader();
+        ReadsManifest manifest = manifestReader.getManifest();
 
-    @Test public void
-    testUnspecifiedInstrument() throws IOException
-    {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                                ( Field.PLATFORM + " illumina\n" ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+        Assert.assertNull(manifest.getStudy());
+        Assert.assertNull(manifest.getSample());
+        Assert.assertNull(manifest.getPlatform());
+        Assert.assertNull(manifest.getInstrument());
+        Assert.assertNull(manifest.getLibraryStrategy());
+        Assert.assertNull(manifest.getLibrarySource());
+        Assert.assertNull(manifest.getLibrarySelection());
+        Assert.assertNull(manifest.getLibraryName());
+        Assert.assertNull(manifest.getLibraryConstructionProtocol());
+        Assert.assertNull(manifest.getInsertSize());
+        Assert.assertNull(manifest.getName());
+        assertThat(manifest.files().files()).size().isZero();
+        Assert.assertNull(manifest.getDescription());
 
-        ReadsManifestReader rm = createManifestReader();
-        ReadsManifest manifest = rm.getManifest();
+        manifestReader.readManifest(Paths.get("."),
+                new ManifestBuilder()
+                        .field(Field.PLATFORM, " illumina")
+                        .field(Field.INSTRUMENT, " Illumina HiScanSQ")
+                        .field(Field.LIBRARY_STRATEGY, " CLONEEND")
+                        .field(Field.LIBRARY_SOURCE, " OTHER")
+                        .field(Field.LIBRARY_SELECTION, " Inverse rRNA selection")
+                        .field(Field.LIBRARY_NAME, " Name library")
+                        .field(Field.LIBRARY_CONSTRUCTION_PROTOCOL, " library construction protocol")
+                        .field(Field.INSERT_SIZE, " 100500")
+                        .field(Field.NAME, " SOME-FANCY-NAME")
+                        .field(Field.DESCRIPTION, " description")
+                        .file("BAM", TempFileBuilder.empty("bam"))
+                        .build());
 
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertNull( manifest.getInstrument() );
-
-        rm.readManifest( Paths.get( "." ), man.toFile() );
-
-        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
-        Assert.assertEquals( "unspecified", manifest.getInstrument() );
+        Assert.assertEquals("ILLUMINA", manifest.getPlatform());
+        Assert.assertEquals("Illumina HiScanSQ", manifest.getInstrument());
+        Assert.assertEquals("CLONEEND", manifest.getLibraryStrategy());
+        Assert.assertEquals("OTHER", manifest.getLibrarySource());
+        Assert.assertEquals("Inverse rRNA selection", manifest.getLibrarySelection());
+        Assert.assertEquals("Name library", manifest.getLibraryName());
+        Assert.assertEquals("library construction protocol", manifest.getLibraryConstructionProtocol());
+        Assert.assertEquals(Integer.valueOf(100500), manifest.getInsertSize());
+        Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());
+        assertThat(manifest.files().files()).size().isOne();
+        Assert.assertEquals("description", manifest.getDescription());
     }
 
-    @Test public void
-    testUnspecifiedInstrument2() throws IOException
-    {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                (  Field.PLATFORM + " ILLUMINA\n" +
-                Field.INSTRUMENT + " unspecifieD\n" ).getBytes(),
-                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+    @Test
+    public void
+    missingInstrument() {
+        ReadsManifestReader manifestReader = createManifestReader();
+        ReadsManifest manifest = manifestReader.getManifest();
 
-        ReadsManifestReader rm = createManifestReader();
-        ReadsManifest manifest = rm.getManifest();
+        Assert.assertNull(manifest.getPlatform());
+        Assert.assertNull(manifest.getInstrument());
 
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertNull( manifest.getInstrument() );
+        manifestReader.readManifest(Paths.get("."),
+                new ManifestBuilder()
+                        .field(Field.PLATFORM, "illumina")
+                        .build()
+        );
 
-        rm.readManifest( Paths.get( "." ), man.toFile() );
-
-        Assert.assertEquals( "ILLUMINA", manifest.getPlatform() );
-        Assert.assertEquals( "unspecified", manifest.getInstrument() );
+        Assert.assertEquals("ILLUMINA", manifest.getPlatform());
+        Assert.assertEquals("unspecified", manifest.getInstrument());
     }
 
-    @Test public void
-    testPlatformOverride() throws IOException
-    {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                                ( Field.PLATFORM + " ILLUMINA\n"
-                                + Field.INSTRUMENT + " 454 GS FLX Titanium\n" ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+    @Test
+    public void
+    unspecifiedInstrument() {
+        ReadsManifestReader manifestReader = createManifestReader();
+        ReadsManifest manifest = manifestReader.getManifest();
 
-        ReadsManifestReader rm = createManifestReader();
-        ReadsManifest manifest = rm.getManifest();
+        Assert.assertNull(manifest.getPlatform());
+        Assert.assertNull(manifest.getInstrument());
 
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertNull( manifest.getInstrument() );
+        manifestReader.readManifest(Paths.get("."),
+                new ManifestBuilder()
+                        .field(Field.PLATFORM, "ILLUMINA")
+                        .field(Field.INSTRUMENT, "unspecifieD")
+                        .build()
+        );
 
-        rm.readManifest( Paths.get( "." ), man.toFile() );
-
-        Assert.assertEquals( "LS454", manifest.getPlatform() );
-        Assert.assertEquals( "454 GS FLX Titanium", manifest.getInstrument() );
+        Assert.assertEquals("ILLUMINA", manifest.getPlatform());
+        Assert.assertEquals("unspecified", manifest.getInstrument());
     }
 
+    @Test
+    public void
+    platformOverride() {
+        ReadsManifestReader manifestReader = createManifestReader();
+        ReadsManifest manifest = manifestReader.getManifest();
 
-    @Test public void
-    testUnspecifiedInstrumentNoPlatform() throws IOException
-    {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                                ( "" ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
+        Assert.assertNull(manifest.getPlatform());
+        Assert.assertNull(manifest.getInstrument());
 
-        ReadsManifestReader rm = createManifestReader();
-        ReadsManifest manifest = rm.getManifest();
+        manifestReader.readManifest(Paths.get("."),
+                new ManifestBuilder()
+                        .field(Field.PLATFORM, "ILLUMINA")
+                        .field(Field.INSTRUMENT, "454 GS FLX Titanium")
+                        .build()
+        );
 
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertNull( manifest.getInstrument() );
-
-        rm.readManifest( Paths.get( "." ), man.toFile() );
-
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertEquals( "unspecified", manifest.getInstrument() );
-        Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR.key(), Severity.ERROR));
+        Assert.assertEquals("LS454", manifest.getPlatform());
+        Assert.assertEquals("454 GS FLX Titanium", manifest.getInstrument());
     }
 
-    @Test public void
-    testUnspecifiedInstrumentNoPlatform2() throws IOException
-    {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                ( Field.INSTRUMENT + " unspecifieD\n" ).getBytes(),
-                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-
-        ReadsManifestReader rm = createManifestReader();
-        ReadsManifest manifest = rm.getManifest();
-
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertNull( manifest.getInstrument() );
-
-        rm.readManifest( Paths.get( "." ), man.toFile() );
-
-        Assert.assertNull( manifest.getPlatform() );
-        Assert.assertEquals( "unspecified", manifest.getInstrument() );
-        Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR.key(), Severity.ERROR));
+    @Test
+    public void
+    missingPlatformAndInstrument() {
+        assertManifestError(
+                new ManifestBuilder()
+                        .build(),
+                "ERROR: Platform and/or instrument should be defined");
     }
 
-
-    @Test public void
-    negativeInsertSize() throws IOException
-    {
-        Path man = Files.write( Files.createTempFile( "TEMP", "MANIFEST" ),
-                                ( Field.STUDY            + " " +  STUDY_ID + "\n"
-                                + Field.SAMPLE           + " " +  SAMPLE_ID + "\n"
-                                + Field.PLATFORM          + " ILLUMINA\n"
-                                + Field.INSTRUMENT        + " unspecifieD\n"
-                                + Field.INSERT_SIZE       + " -1\n"
-                                + Field.LIBRARY_STRATEGY  + " CLONEEND\n"
-                                + Field.LIBRARY_SOURCE    + " OTHER\n"
-                                + Field.LIBRARY_SELECTION + " Inverse rRNA selection\n"
-                                + Field.NAME              + " SOME-FANCY-NAME\n "
-                                + "BAM " + Files.createTempFile( "TEMP", "FILE" ) ).getBytes(),
-                                StandardOpenOption.SYNC, StandardOpenOption.CREATE );
-        ReadsManifestReader rm = createManifestReader();
-        rm.readManifest( Paths.get( "." ), man.toFile() );
-        Assert.assertEquals(1, rm.getValidationResult().count(WebinCliMessage.Manifest.INVALID_POSITIVE_INTEGER_ERROR.key(), Severity.ERROR));
+    @Test
+    public void
+    unspecifiedInstrumentMissingPlatform() {
+        assertManifestError(
+                new ManifestBuilder()
+                        .field(Field.INSTRUMENT, "unspecified")
+                        .build(),
+                "ERROR: Platform and/or instrument should be defined");
     }
 
+    @Test
+    public void
+    negativeInsertSize() {
+        assertManifestError(
+                new ManifestBuilder()
+                        .field(Field.INSERT_SIZE, "-1")
+                        .build(),
+                "ERROR: Invalid INSERT_SIZE field value: \"-1\". Non-negative integer expected");
+    }
+
+    @Test
+    public void
+    invalidQualityScore() {
+        assertManifestError(
+                new ManifestBuilder()
+                        .field(Field.QUALITY_SCORE, "PHRED_34")
+                        .build(),
+                "ERROR: Invalid QUALITY_SCORE field value");
+    }
+
+    @Test
+    public void
+    validQualityScore() {
+        assertNoManifestError(
+                new ManifestBuilder()
+                        .field(Field.QUALITY_SCORE, "PHRED_33")
+                        .build(),
+                "ERROR: Invalid QUALITY_SCORE field value");
+    }
 }
