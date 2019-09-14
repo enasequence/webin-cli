@@ -29,7 +29,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
 
 public class SequenceValidationTest {
 
-  private static final File VALID_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/template/valid");
+  private static final File VALID_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/sequence/valid");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder().field("STUDY", "test").field("NAME", "test");

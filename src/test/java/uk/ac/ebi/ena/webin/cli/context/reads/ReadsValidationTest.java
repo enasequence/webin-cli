@@ -29,7 +29,7 @@ import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
 public class ReadsValidationTest {
 
-  private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/rawreads");
+  private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/reads");
 
   private static final String NAME = "test";
 
@@ -107,7 +107,7 @@ public class ReadsValidationTest {
   dataFileNonASCIIPath() throws IOException {
 
     URL url = ReadsValidationTest.class.getClassLoader()
-        .getResource("uk/ac/ebi/ena/webin/cli/rawreads/MG23S_431.fastq.gz");
+        .getResource("uk/ac/ebi/ena/webin/cli/reads/MG23S_431.fastq.gz");
     File gz = new File(URLDecoder.decode(url.getFile(), "UTF-8"));
 
     Path file = Files

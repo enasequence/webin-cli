@@ -30,7 +30,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
 
 public class GenomeValidationTest {
 
-  private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/assembly");
+  private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/genome");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()

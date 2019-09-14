@@ -19,10 +19,10 @@ import org.junit.Test;
 
 public class WebinCliSubmissionTest {
 
-    private static final File READS_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/rawreads/");
-    private static final File GENOME_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/assembly/");
+    private static final File READS_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/reads/");
+    private static final File GENOME_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/genome/");
     private static final File TRANSCRIPTOME_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/");
-    private static final File SEQUENCE_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/template/");
+    private static final File SEQUENCE_RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/sequence/");
 
     private ManifestBuilder readsManifest() {
         return new ManifestBuilder()

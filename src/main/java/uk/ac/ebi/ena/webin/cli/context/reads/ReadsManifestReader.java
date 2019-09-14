@@ -72,11 +72,11 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
     public final static String QUALITY_SCORE_PHRED_64 = "PHRED_64";
     public final static String QUALITY_SCORE_LOGODDS = "LOGODDS";
 
-    public final static ManifestCVList CV_INSTRUMENT = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/instrument.properties"));
-    public final static ManifestCVList CV_PLATFORM = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/platform.properties"));
-    public final static ManifestCVList CV_SELECTION = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/selection.properties"));
-    public final static ManifestCVList CV_SOURCE = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/source.properties"));
-    public final static ManifestCVList CV_STRATEGY = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/rawreads/strategy.properties"));
+    public final static ManifestCVList CV_INSTRUMENT = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/reads/instrument.properties"));
+    public final static ManifestCVList CV_PLATFORM = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/reads/platform.properties"));
+    public final static ManifestCVList CV_SELECTION = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/reads/selection.properties"));
+    public final static ManifestCVList CV_SOURCE = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/reads/source.properties"));
+    public final static ManifestCVList CV_STRATEGY = new ManifestCVList(new File("uk/ac/ebi/ena/webin/cli/reads/strategy.properties"));
     public final static ManifestCVList CV_QUALITY_SCORE = new ManifestCVList(
             QUALITY_SCORE_PHRED_33,
             QUALITY_SCORE_PHRED_64,
