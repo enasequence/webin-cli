@@ -5,14 +5,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
-import org.junit.Assert;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
@@ -43,82 +35,6 @@ public class ReadsValidationTest {
     private static WebinCliExecutorBuilder<ReadsManifest, ReadsValidationResponse> executorBuilder =
             new WebinCliExecutorBuilder(
                     ReadsManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK);
-
-    @Test
-    public void
-    dataFileIsMissing() {
-
-        for (FileType fileType : FileType.values()) {
-            File manifestFile =
-                    manifestBuilder().file(fileType, "missing.gz.bz2").build();
-
-            WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
-            assertThatThrownBy(() -> executor.readManifest())
-                    .isInstanceOf(WebinCliException.class)
-                    .hasMessageStartingWith("Invalid manifest file");
-
-            new ReportTester(executor).inManifestReport("ERROR: Invalid " + fileType.name() + " file name");
-        }
-    }
-
-    @Test
-    public void
-    dataFileIsDirectory() throws IOException {
-
-        for (FileType fileType : FileType.values()) {
-            File manifestFile =
-                    manifestBuilder().file(fileType, createOutputFolder()).build();
-
-            WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
-            assertThatThrownBy(() -> executor.readManifest())
-                    .isInstanceOf(WebinCliException.class)
-                    .hasMessageStartingWith("Invalid manifest file");
-
-            new ReportTester(executor).inManifestReport("ERROR: Invalid " + fileType.name() + " file name");
-        }
-    }
-
-    @Test
-    public void
-    dataFileNoPath() {
-
-        for (FileType fileType : FileType.values()) {
-            File manifestFile =
-                    manifestBuilder().file(fileType, "").build();
-
-            WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
-            assertThatThrownBy(() -> executor.readManifest())
-                    .isInstanceOf(WebinCliException.class)
-                    .hasMessageStartingWith("Invalid manifest file");
-
-            new ReportTester(executor).inManifestReport("ERROR: No data files have been specified");
-        }
-    }
-
-    @Test
-    public void
-    dataFileNonASCIIPath() throws IOException {
-
-        URL url = ReadsValidationTest.class.getClassLoader()
-                .getResource("uk/ac/ebi/ena/webin/cli/reads/invalid.fastq.gz");
-        File gz = new File(URLDecoder.decode(url.getFile(), "UTF-8"));
-
-        Path file = Files
-                .write(Files.createTempFile("FILE", "Š.fq.gz"), Files.readAllBytes(gz.toPath()),
-                        StandardOpenOption.TRUNCATE_EXISTING);
-        File manifestFile =
-                manifestBuilder().
-                        file(FileType.FASTQ, file).
-                        build();
-
-
-        WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
-        assertThatThrownBy(() -> executor.readManifest())
-                .isInstanceOf(WebinCliException.class)
-                .hasMessageStartingWith("Invalid manifest file");
-
-        new ReportTester(executor).inManifestReport("File name should conform following regular expression");
-    }
 
     @Test
     public void
@@ -312,13 +228,5 @@ public class ReadsValidationTest {
         assertThat(submissionFiles.get().size()).isEqualTo(1);
         assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
         executor.validateSubmission();
-    }
-
-    private File
-    createOutputFolder() throws IOException {
-        File output = File.createTempFile("test", "test");
-        Assert.assertTrue(output.delete());
-        Assert.assertTrue(output.mkdirs());
-        return output;
     }
 }

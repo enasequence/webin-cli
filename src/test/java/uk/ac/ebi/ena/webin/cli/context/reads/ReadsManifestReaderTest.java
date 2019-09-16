@@ -47,7 +47,7 @@ ReadsManifestReaderTest {
 
     private void assertManifestError(File manifestFile, String message) {
         WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-                executorBuilder.build(manifestFile, RESOURCE_DIR);
+                executorBuilder.build(manifestFile, WebinCliTestUtils.createTempDir());
 
         assertThatThrownBy(executor::readManifest)
                 .isInstanceOf(WebinCliException.class)
@@ -229,5 +229,54 @@ ReadsManifestReaderTest {
                         .field(Field.QUALITY_SCORE, "PHRED_33")
                         .build(),
                 "ERROR: Invalid QUALITY_SCORE field value");
+    }
+
+    @Test
+    public void
+    dataFileIsMissing() {
+        for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
+            assertManifestError(
+                    new ManifestBuilder()
+                            .file(fileType, "missing")
+                            .build(),
+                    "ERROR: Invalid " + fileType.name() + " file name");
+        }
+    }
+
+    @Test
+    public void
+    dataFileIsDirectory() {
+        File dir = WebinCliTestUtils.createTempDir();
+        for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
+            assertManifestError(
+                    new ManifestBuilder()
+                            .file(fileType, dir)
+                            .build(),
+                    "ERROR: Invalid " + fileType.name() + " file name");
+        }
+    }
+
+    @Test
+    public void
+    dataFileNoPath() {
+        for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
+            assertManifestError(
+                    new ManifestBuilder()
+                            .file(fileType, "")
+                            .build(),
+                    "ERROR: No data files have been specified");
+        }
+    }
+
+    @Test
+    public void
+    dataFileNonASCIIPath() {
+        for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
+            assertManifestError(
+                    new ManifestBuilder()
+                            .file(fileType, TempFileBuilder.empty("Š"))
+                            .build(),
+                    "File name should conform following regular expression");
+        }
     }
 }
