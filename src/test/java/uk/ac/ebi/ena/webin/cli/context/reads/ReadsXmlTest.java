@@ -77,7 +77,7 @@ public class ReadsXmlTest {
     String experimentXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.EXPERIMENT).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
         experimentXml,
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<EXPERIMENT_SET>\n"
@@ -117,7 +117,7 @@ public class ReadsXmlTest {
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
         runXml,
         "<RUN_SET>\n"
             + "  <RUN>\n"
@@ -148,7 +148,7 @@ public class ReadsXmlTest {
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
             runXml,
             "<RUN_SET>\n"
                     + "  <RUN>\n"
@@ -179,7 +179,7 @@ public class ReadsXmlTest {
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
             runXml,
             "<RUN_SET>\n"
                     + "  <RUN>\n"
@@ -212,7 +212,7 @@ public class ReadsXmlTest {
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
             runXml,
             "<RUN_SET>\n"
                     + "  <RUN>\n"

@@ -71,7 +71,7 @@ public class SequenceXmlTest {
 
     String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
         analysisXml,
         "<ANALYSIS_SET>\n"
             + "<ANALYSIS>\n"
@@ -101,7 +101,7 @@ public class SequenceXmlTest {
 
     String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
         analysisXml,
         "<ANALYSIS_SET>\n"
             + "<ANALYSIS>\n"
@@ -133,7 +133,7 @@ public class SequenceXmlTest {
 
     String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
 
-    WebinCliTestUtils.assertXml(
+    XmlTester.assertXml(
         analysisXml,
         "<ANALYSIS_SET>\n"
             + "<ANALYSIS>\n"

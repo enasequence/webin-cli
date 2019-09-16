@@ -186,10 +186,8 @@ public class GenomeValidationTest {
     executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
-    WebinCliTestUtils.assertReportContains(
-            executor.getValidationDir().getPath(),
-            "webin-cli.report",
-            "fasta file validation failed");
+
+    new ReportTester(executor).inSubmissionReport("fasta file validation failed");
   }
 
   @Test
@@ -202,10 +200,8 @@ public class GenomeValidationTest {
     executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
-    WebinCliTestUtils.assertReportContains(
-            executor.getValidationDir().getPath(),
-            "webin-cli.report",
-            "flatfile file validation failed");
+
+    new ReportTester(executor).inSubmissionReport("flatfile file validation failed");
   }
 
   @Test
@@ -221,10 +217,8 @@ public class GenomeValidationTest {
     executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
         .isInstanceOf(WebinCliException.class);
-    WebinCliTestUtils.assertReportContains(
-            executor.getValidationDir().getPath(),
-            "webin-cli.report",
-            "agp file validation failed");
+
+    new ReportTester(executor).inSubmissionReport("agp file validation failed");
   }
 
   @Test
@@ -241,10 +235,8 @@ public class GenomeValidationTest {
     executor.readManifest();
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
-    WebinCliTestUtils.assertReportContains(
-            executor.getValidationDir().getPath(),
-            "webin-cli.report",
-            "Sequenceless chromosomes are not allowed in assembly");
+
+    new ReportTester(executor).inSubmissionReport("Sequenceless chromosomes are not allowed in assembly");
 
   }
 }

@@ -2,9 +2,7 @@ package uk.ac.ebi.ena.webin.cli.context.reads;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.assertReportContains;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field.QUALITY_SCORE;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,15 +14,10 @@ import java.nio.file.StandardOpenOption;
 
 import org.junit.Assert;
 import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.QualityScore;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
 public class ReadsValidationTest {
@@ -59,12 +52,12 @@ public class ReadsValidationTest {
             File manifestFile =
                     manifestBuilder().file(fileType, "missing.gz.bz2").build();
 
-            assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
+            WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
+            assertThatThrownBy(() -> executor.readManifest())
                     .isInstanceOf(WebinCliException.class)
                     .hasMessageStartingWith("Invalid manifest file");
 
-            assertReportContains(executorBuilder.getParameters().getOutputDir().toString(), manifestFile.getName() + ".report",
-                    "ERROR: Invalid " + fileType.name() + " file name");
+            new ReportTester(executor).inManifestReport("ERROR: Invalid " + fileType.name() + " file name");
         }
     }
 
@@ -76,12 +69,12 @@ public class ReadsValidationTest {
             File manifestFile =
                     manifestBuilder().file(fileType, createOutputFolder()).build();
 
-            assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
+            WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
+            assertThatThrownBy(() -> executor.readManifest())
                     .isInstanceOf(WebinCliException.class)
                     .hasMessageStartingWith("Invalid manifest file");
 
-            assertReportContains(executorBuilder.getParameters().getOutputDir().toString(), manifestFile.getName() + ".report",
-                    "ERROR: Invalid " + fileType.name() + " file name");
+            new ReportTester(executor).inManifestReport("ERROR: Invalid " + fileType.name() + " file name");
         }
     }
 
@@ -93,12 +86,12 @@ public class ReadsValidationTest {
             File manifestFile =
                     manifestBuilder().file(fileType, "").build();
 
-            assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
+            WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
+            assertThatThrownBy(() -> executor.readManifest())
                     .isInstanceOf(WebinCliException.class)
                     .hasMessageStartingWith("Invalid manifest file");
 
-            assertReportContains(executorBuilder.getParameters().getOutputDir().toString(), manifestFile.getName() + ".report",
-                    "ERROR: No data files have been specified");
+            new ReportTester(executor).inManifestReport("ERROR: No data files have been specified");
         }
     }
 
@@ -118,14 +111,14 @@ public class ReadsValidationTest {
                         file(FileType.FASTQ, file).
                         build();
 
-        assertThatThrownBy(() -> executorBuilder.build(manifestFile, RESOURCE_DIR).readManifest())
+
+        WebinCliExecutor<?, ?> executor = executorBuilder.build(manifestFile, RESOURCE_DIR);
+        assertThatThrownBy(() -> executor.readManifest())
                 .isInstanceOf(WebinCliException.class)
                 .hasMessageStartingWith("Invalid manifest file");
 
-        assertReportContains(executorBuilder.getParameters().getOutputDir().toString(), manifestFile.getName() + ".report",
-                "File name should conform following regular expression");
+        new ReportTester(executor).inManifestReport("File name should conform following regular expression");
     }
-
 
     @Test
     public void
@@ -143,6 +136,8 @@ public class ReadsValidationTest {
         assertThatThrownBy(() -> executor.validateSubmission())
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
+
+        new ReportTester(executor).inFileReport("invalid.bam", "File contains no valid reads");
     }
 
     @Test
@@ -178,6 +173,8 @@ public class ReadsValidationTest {
         assertThatThrownBy(() -> executor.validateSubmission())
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
+
+        new ReportTester(executor).inFileReport("invalid.fastq.gz", "does not match FASTQ regexp");
     }
 
     @Test
@@ -194,7 +191,7 @@ public class ReadsValidationTest {
         assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
         executor.validateSubmission();
     }
-    
+
     @Test
     public void
     validPairedFastqTwoFiles() {
@@ -249,6 +246,11 @@ public class ReadsValidationTest {
         assertThatThrownBy(() -> executor.validateSubmission())
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
+
+        new ReportTester(executor).inFileReport("invalid_not_paired_1.fastq.gz",
+            "Detected paired fastq submission with less than 20% of paired reads");
+        new ReportTester(executor).inFileReport("invalid_not_paired_2.fastq.gz",
+            "Detected paired fastq submission with less than 20% of paired reads");
     }
 
     @Test
@@ -270,6 +272,9 @@ public class ReadsValidationTest {
         assertThatThrownBy(() -> executor.validateSubmission())
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
+
+        System.out.println(executor.getValidationDir().getAbsolutePath());
+        new ReportTester(executor).inFileReport("valid.fastq.gz", "Multiple (1) occurance of read name");
     }
 
     @Test
@@ -290,6 +295,8 @@ public class ReadsValidationTest {
         assertThatThrownBy(() -> executor.validateSubmission())
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
+
+        new ReportTester(executor).inFileReport("invalid.cram", "File contains no valid reads");
     }
 
     @Test
@@ -305,32 +312,6 @@ public class ReadsValidationTest {
         assertThat(submissionFiles.get().size()).isEqualTo(1);
         assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
         executor.validateSubmission();
-    }
-
-
-    // TODO: move to readtools
-    @Test
-    public void
-    dataFileReportWritten() {
-        File manifestFile =
-                manifestBuilder()
-                        .file(FileType.BAM, "invalid.bam")
-                        .build();
-
-        WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-                executorBuilder.build(manifestFile, RESOURCE_DIR);
-        executor.readManifest();
-        SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
-        assertThat(submissionFiles.get().size()).isEqualTo(1);
-        assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
-
-        assertThatThrownBy(() -> executor.validateSubmission())
-                .isInstanceOf(WebinCliException.class)
-                .hasMessage("");
-
-        for (SubmissionFile sf : executor.getManifestReader().getManifest().getFiles().get()) {
-            assertReportContains(sf.getReportFile().toPath(), "ERROR: File contains no valid reads");
-        }
     }
 
     private File

@@ -53,10 +53,7 @@ ReadsManifestReaderTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessageStartingWith("Invalid manifest file");
 
-        WebinCliTestUtils.assertReportContains(
-                executor.getParameters().getOutputDir().toPath(),
-                manifestFile.getName() + ".report",
-                message);
+        new ReportTester(executor).inManifestReport(message);
     }
 
     private void assertNoManifestError(File manifestFile, String message) {
@@ -67,10 +64,7 @@ ReadsManifestReaderTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessageStartingWith("Invalid manifest file");
 
-        WebinCliTestUtils.assertReportNotContains(
-                executor.getParameters().getOutputDir().toPath(),
-                manifestFile.getName() + ".report",
-                message);
+        new ReportTester(executor).notInManifestReport(message);
     }
 
     @Before

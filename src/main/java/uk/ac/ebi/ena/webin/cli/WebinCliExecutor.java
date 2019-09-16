@@ -50,8 +50,8 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     private File processDir;
     private File submitDir;
     protected R validationResponse;
-    //TODO : move it to a common place if used in multiple places
-    private static final String ERROR_FILE = "webin-cli.report";
+
+    private static final String REPORT_FILE = "webin-cli.report";
 
     private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
 
@@ -67,8 +67,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     public final void readManifest() {
         this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
 
-        File manifestFile = getParameters().getManifestFile();
-        File manifestReportFile = getReportFile(manifestFile.getName());
+        File manifestReportFile = getManifestReportFile();
         manifestReportFile.delete();
 
         try {
@@ -104,7 +103,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
                 subFile.setReportFile(Paths.get(getValidationDir().getPath()).resolve(subFile.getFile().getName() + ".report").toFile());
             }
         }
-        manifest.setReportFile(Paths.get(getValidationDir().getPath()).resolve(ERROR_FILE).toFile());
+        manifest.setReportFile(getSubmissionReportFile());
         manifest.setProcessDir(getProcessDir());
 
         try {
@@ -230,6 +229,18 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         return submitDir;
     }
 
+    public File
+    getSubmissionReportFile() {
+        return Paths.get(getValidationDir().getPath()).resolve(REPORT_FILE).toFile();
+    }
+
+    public File
+    getManifestReportFile( )
+    {
+        File manifestFile = getParameters().getManifestFile();
+        return WebinCli.getReportFile( this.validationDir, manifestFile.getName(), WebinCliConfig.REPORT_FILE_SUFFIX );
+    }
+
     public WebinCliParameters
     getParameters()
     {
@@ -256,12 +267,6 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     getSubmissionTitle() {
         String title = context.getTitlePrefix() + ": " + getSubmissionName();
         return title;
-    }
-
-    protected File
-    getReportFile( String filename )
-    {
-        return WebinCli.getReportFile( this.validationDir, filename, WebinCliConfig.REPORT_FILE_SUFFIX );
     }
 
     public R getValidationResponse() {

@@ -136,8 +136,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = genomeManifest()
                 .file("FLATFILE", "invalid.flatfile.gz");
         WebinCli cli = assertWebinCliException(WebinCliBuilder.GENOME, GENOME_RESOURCE_DIR, manifest);
-        WebinCliTestUtils.assertReportContains(cli,
-                "invalid.flatfile.gz",
+        new ReportTester(cli).inFileReport("invalid.flatfile.gz",
                 "ERROR: Invalid ID line format [ line: 1]");
     }
 
@@ -149,9 +148,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = genomeManifest()
                 .file("FASTA", fastaFile);
         WebinCli cli = assertWebinCliException(WebinCliBuilder.GENOME, inputDir, manifest);
-        WebinCliTestUtils.assertReportContains(
-                cli,
-                "webin-cli",
+        new ReportTester(cli).inSubmissionReport(
                 "Invalid number of sequences : 1, Minimum number of sequences for CONTIG is: 2");
     }
 
@@ -187,9 +184,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = sequenceManifest()
                 .file("FLATFILE", "invalid.flatfile.gz");
         WebinCli cli = assertWebinCliException(WebinCliBuilder.SEQUENCE, GENOME_RESOURCE_DIR, manifest);
-        WebinCliTestUtils.assertReportContains(
-                cli,
-                "invalid.flatfile.gz",
+        new ReportTester(cli).inFileReport("invalid.flatfile.gz",
                 "ERROR: Invalid ID line format [ line: 1]");
     }
 
@@ -214,9 +209,7 @@ public class WebinCliSubmissionTest {
         ManifestBuilder manifest = transcriptomeManifest()
                 .file("FLATFILE", "invalid.flatfile.gz");
         WebinCli cli = assertWebinCliException(WebinCliBuilder.TRANSCRIPTOME, GENOME_RESOURCE_DIR, manifest);
-        WebinCliTestUtils.assertReportContains(
-                cli,
-                "invalid.flatfile.gz",
+        new ReportTester(cli).inFileReport("invalid.flatfile.gz",
                 "ERROR: Invalid ID line format [ line: 1]");
     }
 }
