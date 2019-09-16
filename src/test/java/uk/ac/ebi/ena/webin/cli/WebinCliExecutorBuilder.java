@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 
 public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationResponse> {
     private final Class<M> manifestClass;
-    private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    private final WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
 
     private SampleProcessor sampleProcessor;
     private StudyProcessor studyProcessor;

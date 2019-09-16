@@ -48,7 +48,7 @@ public class SequenceXmlTest {
   private static SubmissionBundle prepareSubmissionBundle(SequenceManifest manifest) {
     SequenceManifestReader manifestReader = mock(SequenceManifestReader.class);
     when(manifestReader.getManifest()).thenReturn(manifest);
-    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);

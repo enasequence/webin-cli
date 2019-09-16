@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TranscriptomeValidationTest {
 
   private static final File VALID_DIR =
-      WebinCliTestUtils.resourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/valid");
+      WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/valid");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()

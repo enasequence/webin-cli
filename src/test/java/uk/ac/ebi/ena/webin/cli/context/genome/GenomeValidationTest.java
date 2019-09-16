@@ -13,7 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context.genome;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
 import java.util.*;
@@ -30,7 +30,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
 
 public class GenomeValidationTest {
 
-  private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/genome");
+  private static final File RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/genome");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()

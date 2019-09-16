@@ -53,7 +53,7 @@ public class TranscriptomeXmlTest {
   private static SubmissionBundle prepareSubmissionBundle(TranscriptomeManifest manifest) {
     TranscriptomeManifestReader manifestReader = mock(TranscriptomeManifestReader.class);
     when(manifestReader.getManifest()).thenReturn(manifest);
-    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);

@@ -42,8 +42,8 @@ StudyServiceTest {
     private void testGetStudyUsingValidId(String id) {
 
         StudyService studyService = new StudyService.Builder()
-                                                    .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                    .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                    .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                    .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                     .setTest( TEST )
                                                     .build();
         Study study = studyService.getStudy( id );
@@ -57,8 +57,8 @@ StudyServiceTest {
     public void testGetStudyUsingInvalidId() {
         String studyId = "INVALID";
         StudyService studyService = new StudyService.Builder()
-                                                    .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                    .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                    .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                    .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                     .setTest( TEST )
                                                     .build();
         assertThatThrownBy( () ->

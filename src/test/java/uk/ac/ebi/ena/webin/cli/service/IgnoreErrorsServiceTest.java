@@ -25,8 +25,8 @@ IgnoreErrorsServiceTest
     testGetIgnoreErrorsFalse() 
     {
         assertThat( new IgnoreErrorsService.Builder()
-                                           .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                           .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                           .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                           .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                            .setTest( TEST )
                                            .build()
                                            .getIgnoreErrors( "UNKNOWN", "UNKNOWN" )

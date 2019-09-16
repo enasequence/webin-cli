@@ -46,8 +46,8 @@ SampleXmlServiceTest {
     public void testGetSourceFeatureUsingInvalidId() {
         String id = "INVALID";
         SampleXmlService sampleService = new SampleXmlService.Builder()
-                                                                     .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                                     .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                                     .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                                     .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                                      .setTest( TEST )
                                                                      .build();
         assertThatThrownBy(() -> {
@@ -58,8 +58,8 @@ SampleXmlServiceTest {
 
     private void testGetSourceFeatureUsingValidId(String id) {
         SampleXmlService sampleService = new SampleXmlService.Builder()
-                                                                     .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                                     .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                                     .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                                     .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                                      .setTest( TEST )
                                                                      .build();
         Sample sample = sampleService.getSample( id );

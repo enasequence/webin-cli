@@ -47,8 +47,8 @@ AnalysisServiceTest
     {
 
         AnalysisService analysisService = new AnalysisService.Builder()
-                                                             .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                             .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                              .setTest( TEST )
                                                              .build();
         Analysis analysis = analysisService.getAnalysis( id );
@@ -63,8 +63,8 @@ AnalysisServiceTest
     {
         String analysisId = "INVALID";
         AnalysisService analysisService = new AnalysisService.Builder()
-                                                             .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                             .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                              .setTest( TEST )
                                                              .build();
 

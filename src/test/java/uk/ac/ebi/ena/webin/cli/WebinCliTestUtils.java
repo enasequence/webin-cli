@@ -22,38 +22,40 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class WebinCliTestUtils {
 
-    public static WebinCliParameters createTestWebinCliParameters() {
-         WebinCliParameters parameters = new WebinCliParameters();
-         parameters.setUsername( System.getenv( "webin-cli-username" ) );
-         parameters.setPassword( System.getenv( "webin-cli-password" ) );
-         parameters.setTest( true );
-         return parameters;
+    public static WebinCliParameters getTestWebinCliParameters() {
+        WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setUsername(getTestWebinUsername());
+        parameters.setPassword(getTestWebinPassword());
+        parameters.setTest(true);
+        return parameters;
     }
 
-    public static File
-    createTempDir()
-    {
-        try {
-            File folder = File.createTempFile("test", "test");
-            Assert.assertTrue(folder.delete());
-            Assert.assertTrue(folder.mkdirs());
-            return folder;
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String getWebinUsername() {
-        String username = System.getenv( "webin-cli-username" );
-        Assert.assertNotNull( "please set up environment variable: webin-cli-username", username);
+    public static String getTestWebinUsername() {
+        String username = System.getenv("webin-cli-username");
+        Assert.assertNotNull("please set up environment variable: webin-cli-username", username);
         return username;
     }
 
-    public static String getWebinPassword() {
-        String password = System.getenv( "webin-cli-password" );
-        Assert.assertNotNull( "please set up environment variable: webin-cli-password", password);
+    public static String getTestWebinPassword() {
+        String password = System.getenv("webin-cli-password");
+        Assert.assertNotNull("please set up environment variable: webin-cli-password", password);
         return password;
+    }
+
+    public static File getResourceDir(String dir) {
+        try {
+            ResourcePatternResolver resolver =
+                    new PathMatchingResourcePatternResolver(WebinCliTestUtils.class.getClassLoader());
+            Resource[] resources = resolver.getResources("classpath*:" + dir + "/*");
+            for (Resource resource : resources) {
+                if (resource.getFile().getAbsolutePath().contains("resources")) {
+                    return resource.getFile().getParentFile();
+                }
+            }
+            return null;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static Sample getDefaultSample() {
@@ -62,19 +64,14 @@ public class WebinCliTestUtils {
         return sample;
     }
 
-    public static File resourceDir(String dir) {
-      try {
-        ResourcePatternResolver resolver =
-            new PathMatchingResourcePatternResolver(WebinCliTestUtils.class.getClassLoader());
-        Resource[] resources = resolver.getResources("classpath*:" + dir + "/*");
-        for (Resource resource : resources) {
-          if (resource.getFile().getAbsolutePath().contains("resources")) {
-            return resource.getFile().getParentFile();
-          }
+    public static File createTempDir() {
+        try {
+            File folder = File.createTempFile("test", "test");
+            Assert.assertTrue(folder.delete());
+            Assert.assertTrue(folder.mkdirs());
+            return folder;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return null;
-      } catch (IOException ex) {
-        throw new RuntimeException(ex);
-      }
     }
 }

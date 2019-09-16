@@ -2,7 +2,7 @@ package uk.ac.ebi.ena.webin.cli.context.reads;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
 import org.junit.Test;
@@ -14,7 +14,7 @@ import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
 public class ReadsValidationTest {
 
-    private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/reads");
+    private static final File RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/reads");
 
     private static final String NAME = "test";
 

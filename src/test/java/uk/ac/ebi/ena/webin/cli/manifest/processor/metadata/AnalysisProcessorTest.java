@@ -25,7 +25,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 public class
 AnalysisProcessorTest
 {
-    private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    private final WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
 
     @Test public void
     testCorrect()

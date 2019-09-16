@@ -44,8 +44,8 @@ SampleServiceTest {
     public void testGetSampleUsingInvalidId() {
         String id = "INVALID";
         SampleService sampleService = new SampleService.Builder()
-                                                       .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                       .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                       .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                       .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                        .setTest( TEST )
                                                        .build();
         assertThatThrownBy( () ->sampleService.getSample( id ) )
@@ -55,8 +55,8 @@ SampleServiceTest {
 
     private void testGetSampleUsingValidId(String id) {
         SampleService sampleService = new SampleService.Builder()
-                                                       .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                                       .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                                       .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                       .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                        .setTest( TEST )
                                                        .build();
         Sample sample = sampleService.getSample( id );

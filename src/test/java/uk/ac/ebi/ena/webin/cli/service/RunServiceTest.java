@@ -47,8 +47,8 @@ RunServiceTest
     {
 
         RunService runService = new RunService.Builder()
-                                              .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                              .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                              .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                              .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                               .setTest( TEST )
                                               .build();
         Run run = runService.getRun( id );
@@ -63,8 +63,8 @@ RunServiceTest
     {
         String runId = "INVALID";
         RunService runService = new RunService.Builder()
-                                              .setUserName( WebinCliTestUtils.getWebinUsername() )
-                                              .setPassword( WebinCliTestUtils.getWebinPassword() )
+                                              .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                              .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                                               .setTest( TEST )
                                               .build();
 

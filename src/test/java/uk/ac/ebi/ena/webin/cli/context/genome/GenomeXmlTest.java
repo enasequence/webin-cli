@@ -52,7 +52,7 @@ public class GenomeXmlTest {
   private static SubmissionBundle prepareSubmissionBundle(GenomeManifest manifest) {
     GenomeManifestReader manifestReader = mock(GenomeManifestReader.class);
     when(manifestReader.getManifest()).thenReturn(manifest);
-    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);

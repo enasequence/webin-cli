@@ -48,7 +48,7 @@ public class ReadsXmlTest {
   private static SubmissionBundle prepareSubmissionBundle(ReadsManifest manifest) {
     ReadsManifestReader manifestReader = mock(ReadsManifestReader.class);
     when(manifestReader.getManifest()).thenReturn(manifest);
-    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);

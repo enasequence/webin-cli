@@ -16,7 +16,7 @@ import org.junit.Test;
 
 public class WebinCliExecutorAliasTest {
 
-  private final WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+  private final WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
 
   @Test
   public void testGenome() {

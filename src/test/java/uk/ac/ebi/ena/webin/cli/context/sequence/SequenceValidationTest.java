@@ -12,7 +12,7 @@ package uk.ac.ebi.ena.webin.cli.context.sequence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
 import java.util.Locale;
@@ -29,7 +29,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
 
 public class SequenceValidationTest {
 
-  private static final File VALID_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/sequence/valid");
+  private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/valid");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder().field("STUDY", "test").field("NAME", "test");

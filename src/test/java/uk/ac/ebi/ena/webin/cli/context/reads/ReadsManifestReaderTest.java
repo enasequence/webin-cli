@@ -27,17 +27,17 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.resourceDir;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class
 ReadsManifestReaderTest {
-    private static final File RESOURCE_DIR = resourceDir("uk/ac/ebi/ena/webin/cli/reads");
+    private static final File RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/reads");
 
     private static ReadsManifestReader createManifestReader() {
-        WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+        WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
         return new ReadsManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
     }
 

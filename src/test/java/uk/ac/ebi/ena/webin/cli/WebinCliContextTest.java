@@ -26,7 +26,7 @@ public class WebinCliContextTest {
 
   @Test
   public void testCreateExecutor() {
-    WebinCliParameters parameters = WebinCliTestUtils.createTestWebinCliParameters();
+    WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
 
     assertThat(WebinCliContext.genome.createExecutor(parameters).getManifestReader()).isInstanceOf(GenomeManifestReader.class);
     assertThat(WebinCliContext.genome.createExecutor(parameters).getXmlWriter()).isInstanceOf(GenomeXmlWriter.class);
