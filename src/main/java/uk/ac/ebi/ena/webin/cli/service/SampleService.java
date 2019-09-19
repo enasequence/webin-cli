@@ -56,8 +56,8 @@ SampleService extends WebinService
     private Sample getSample(String sampleId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
-                WebinCliMessage.Service.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
+                WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
+                WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
 
         ResponseEntity<SampleResponse> response = restTemplate.exchange(
                 getWebinRestUri("reference/sample/{id}", test),
@@ -68,7 +68,7 @@ SampleService extends WebinService
 
         SampleResponse sampleResponse = response.getBody();
         if (sampleResponse == null || !sampleResponse.canBeReferenced) {
-            throw WebinCliException.userError(WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
+            throw WebinCliException.userError(WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
         }
         Sample sample = new Sample();
         sample.setBioSampleId(sampleResponse.bioSampleId);

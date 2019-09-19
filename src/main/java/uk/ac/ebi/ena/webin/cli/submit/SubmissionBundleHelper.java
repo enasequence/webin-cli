@@ -15,12 +15,10 @@ import java.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.embl.api.validation.DefaultOrigin;
-import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 
 public class 
 SubmissionBundleHelper 
@@ -57,16 +55,17 @@ SubmissionBundleHelper
             
             if( null != manifestMd5 && !manifestMd5.equals( sb.getManifestMd5() ) )
             {
-                log.info(WebinCliMessage.Bundle.REVALIDATE_SUBMISSION.format());
+                log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
                 return null;
             }
 
-            ValidationResult result = sb.validate( new ValidationResult( new DefaultOrigin(submissionBundleFile.getAbsolutePath()) ) );
-            ValidationMessageLogger.log(result);
+            ValidationResult result = new ValidationResult();
+            result.add(sb.validate(), submissionBundleFile.getAbsolutePath());
+            result.log();
 
-            if( result.count(Severity.INFO) > 0 ) 
+            if(result.count(ValidationMessage.Severity.INFO) > 0) // TODO: potentially dangerous comparison
             {
-                log.info(WebinCliMessage.Bundle.REVALIDATE_SUBMISSION.format());
+                log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
                 return null;
             }
             
@@ -75,7 +74,7 @@ SubmissionBundleHelper
         } catch( ClassNotFoundException | IOException e )
         {
             // Submission bundle could not be read.
-            log.info(WebinCliMessage.Bundle.VALIDATE_SUBMISSION.format());
+            log.info(WebinCliMessage.SUBMISSION_BUNDLE_VALIDATE_SUBMISSION.text());
             return null;
         }
 
@@ -91,7 +90,7 @@ SubmissionBundleHelper
             os.flush();
         } catch( IOException ex )
         {
-            throw WebinCliException.systemError(ex, WebinCliMessage.Bundle.FILE_ERROR.format(submissionBundleFile));
+            throw WebinCliException.systemError(ex, WebinCliMessage.SUBMISSION_BUNDLE_FILE_ERROR.format(submissionBundleFile));
         }
     }
     

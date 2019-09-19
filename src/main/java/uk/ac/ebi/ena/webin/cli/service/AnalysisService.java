@@ -64,8 +64,8 @@ AnalysisService extends WebinService
     getAnalysis( String analysisId, String userName, String password, boolean test )
     {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler( new NotFoundErrorHandler( WebinCliMessage.Service.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ),
-                                                                WebinCliMessage.Service.ANALYSIS_SERVICE_SYSTEM_ERROR.format( analysisId ) ) );
+        restTemplate.setErrorHandler( new NotFoundErrorHandler( WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ),
+                                                                WebinCliMessage.ANALYSIS_SERVICE_SYSTEM_ERROR.format( analysisId ) ) );
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( userName, password ).build();
 
@@ -77,7 +77,7 @@ AnalysisService extends WebinService
 
         AnalysisResponse analysisResponse = response.getBody();
         if( analysisResponse == null || !analysisResponse.canBeReferenced )
-            throw WebinCliException.userError( WebinCliMessage.Service.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ) );
+            throw WebinCliException.userError( WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ) );
 
         Analysis analysis = new Analysis();
         analysis.setAnalysisId(analysisResponse.id);

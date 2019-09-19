@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 
 public class 
 ManifestReaderResult 
@@ -24,7 +24,7 @@ ManifestReaderResult
     private final ValidationResult validationResult = new ValidationResult();
     private Collection<ManifestFieldValue> fields = new ArrayList<>();
 
-    public ValidationResult 
+    public ValidationResult
     getValidationResult()
     {
         return validationResult;

@@ -14,9 +14,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
@@ -144,7 +144,7 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		if (getParameters().isManifestValidateMandatory()) {
 			if( StringUtils.isBlank( manifest.getName() ) )
 			{
-				error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
+				error( WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
 			}
 		}
 
@@ -156,7 +156,7 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 				manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
 				manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
 			} else {
-				error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
+				error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
 			}
 		}
 

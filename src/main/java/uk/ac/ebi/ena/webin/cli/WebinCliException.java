@@ -21,6 +21,7 @@ WebinCliException extends RuntimeException
         VALIDATION_ERROR("validation error");
 
         public final String text;
+
         ErrorType(String text) {
             this.text = text;
         }

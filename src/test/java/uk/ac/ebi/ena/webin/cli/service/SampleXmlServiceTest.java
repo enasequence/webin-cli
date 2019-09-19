@@ -16,8 +16,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
@@ -53,7 +53,7 @@ SampleXmlServiceTest {
         assertThatThrownBy(() -> {
             sampleService.getSample( id );
         }).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(id));
+                .hasMessageContaining(WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(id));
     }
 
     private void testGetSourceFeatureUsingValidId(String id) {

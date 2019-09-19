@@ -25,9 +25,8 @@ import org.apache.commons.lang.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.ena.webin.cli.logger.ValidationMessageLogger;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.reporter.ValidationMessageReporter;
+import uk.ac.ebi.ena.webin.cli.message.ValidationReporter;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
@@ -75,18 +74,18 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         } catch (WebinCliException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw WebinCliException.systemError(ex, WebinCliMessage.Cli.INIT_ERROR.format(ex.getMessage()));
+            throw WebinCliException.systemError(ex, WebinCliMessage.EXECUTOR_INIT_ERROR.format(ex.getMessage()));
         } finally {
             if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
-                ValidationMessageLogger.log(manifestReader.getValidationResult());
-                try (ValidationMessageReporter reporter = new ValidationMessageReporter(manifestReportFile)) {
+                manifestReader.getValidationResult().log();
+                try (ValidationReporter reporter = new ValidationReporter(manifestReportFile)) {
                     reporter.write(manifestReader.getValidationResult());
                 }
             }
         }
 
         if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
-            throw WebinCliException.userError( WebinCliMessage.Manifest.INVALID_MANIFEST_FILE_ERROR.format(manifestReportFile.getPath()) );
+            throw WebinCliException.userError( WebinCliMessage.MANIFEST_READER_INVALID_MANIFEST_FILE_ERROR.format(manifestReportFile.getPath()) );
         }
     }
 
@@ -128,7 +127,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName()));
         }
         catch (RuntimeException ex) {
-            log.warn(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format());
+            log.warn(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
         }
     }
 
@@ -186,11 +185,11 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
     private File createSubmissionDir(String dir) {
         if (StringUtils.isBlank(getSubmissionName())) {
-            throw WebinCliException.systemError(WebinCliMessage.Cli.INIT_ERROR.format("Missing submission name."));
+            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
         }
         File newDir = WebinCli.createOutputDir( parameters.getOutputDir(), String.valueOf( context ), getSubmissionName(), dir);
         if (!FileUtils.emptyDirectory(newDir)) {
-            throw WebinCliException.systemError(WebinCliMessage.Cli.EMPTY_DIRECTORY_ERROR.format(newDir));
+            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_EMPTY_DIRECTORY_ERROR.format(newDir));
         }
         return newDir;
     }

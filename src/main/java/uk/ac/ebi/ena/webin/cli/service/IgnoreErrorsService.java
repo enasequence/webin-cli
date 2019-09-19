@@ -58,7 +58,7 @@ IgnoreErrorsService extends WebinService {
     private boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.Service.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.format()));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text()));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 

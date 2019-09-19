@@ -12,10 +12,11 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import java.util.regex.Pattern;
 
-import uk.ac.ebi.embl.api.validation.ValidationResult;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 
 ASCIIFileNameProcessor implements ManifestFieldProcessor 
@@ -28,7 +29,7 @@ ASCIIFileNameProcessor implements ManifestFieldProcessor
         ValidationResult result = new ValidationResult();
         
         if( !pattern.matcher( fieldValue.getValue() ).matches() )
-            result.append( WebinCliMessage.error( WebinCliMessage.Manifest.INVALID_FILE_NAME_ERROR, fieldValue.getName(), fieldValue.getValue(), pattern.pattern() ) );
+            result.add( ValidationMessage.error( WebinCliMessage.ASCII_FILE_NAME_PROCESSOR_ERROR, fieldValue.getName(), fieldValue.getValue(), pattern.pattern() ) );
         
         return result;
     }

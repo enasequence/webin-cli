@@ -62,8 +62,8 @@ public class StudyService extends WebinService {
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                WebinCliMessage.Service.STUDY_SERVICE_VALIDATION_ERROR.format(studyId),
-                WebinCliMessage.Service.STUDY_SERVICE_SYSTEM_ERROR.format(studyId)));
+                WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId),
+                WebinCliMessage.STUDY_SERVICE_SYSTEM_ERROR.format(studyId)));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
@@ -77,7 +77,7 @@ public class StudyService extends WebinService {
         StudyResponse studyResponse = response.getBody();
         if (studyResponse == null || !studyResponse.canBeReferenced) {
             throw WebinCliException.userError(
-                    WebinCliMessage.Service.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
+                    WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
         }
         Study study = new Study();
         study.setBioProjectId(studyResponse.bioProjectId);

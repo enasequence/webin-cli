@@ -16,8 +16,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class 
@@ -38,7 +38,7 @@ RunServiceTest
     testGetRunUsingPrivateRunId()
     {
         assertThatThrownBy( () -> getRunUsingValidId( "ERR2864621" ) ).isInstanceOf( WebinCliException.class )
-                                                                      .hasMessageContaining( WebinCliMessage.Service.RUN_SERVICE_VALIDATION_ERROR.format( "ERR2864621" ) );
+                                                                      .hasMessageContaining( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( "ERR2864621" ) );
     }
 
     
@@ -69,7 +69,7 @@ RunServiceTest
                                               .build();
 
         assertThatThrownBy( () -> runService.getRun( runId ) ).isInstanceOf( WebinCliException.class )
-                                                              .hasMessageContaining( WebinCliMessage.Service.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
+                                                              .hasMessageContaining( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
     }
 
     
@@ -84,6 +84,6 @@ RunServiceTest
                                               .build();
 
         assertThatThrownBy( () -> runService.getRun( runId ) ).isInstanceOf( WebinCliException.class )
-                                                              .hasMessageContaining( WebinCliMessage.Cli.AUTHENTICATION_ERROR.format() );
+                                                              .hasMessageContaining( WebinCliMessage.CLI_AUTHENTICATION_ERROR.text() );
     }
 }

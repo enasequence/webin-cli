@@ -15,9 +15,9 @@ import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.crea
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
@@ -68,10 +68,10 @@ AnalysisProcessorTest
 
         final String analysis_id = "SOME_ANALYSIS_ID";
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", analysis_id );
-        ValidationResult vr = processor.process( fieldValue );
-        Assert.assertFalse( vr.isValid() );
-        Assert.assertEquals( 1, vr.count( Severity.ERROR ) );
-        Assert.assertTrue( vr.getMessages( Severity.ERROR ).iterator().next().getMessage().contains( analysis_id ) );
+        ValidationResult result = processor.process( fieldValue );
+        Assert.assertFalse( result.isValid() );
+        Assert.assertEquals( 1, result.count( Severity.ERROR ) );
+        Assert.assertTrue( result.getMessages( Severity.ERROR ).iterator().next().getMessage().contains( analysis_id ) );
         Assert.assertEquals( analysis_id, fieldValue.getValue() );
     }
     
@@ -82,13 +82,13 @@ AnalysisProcessorTest
         AnalysisProcessor processor = new AnalysisProcessor( parameters, Assert::assertNull );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "SOME_ANALYSIS_ID1, ERZ690500, SOME_ANALYSIS_ID2" );
-        ValidationResult vr = processor.process( fieldValue );
-        vr.getMessages( Severity.ERROR ).stream().forEach( System.out::println );
-        Assert.assertFalse( vr.isValid() );
-        Assert.assertEquals( 2, vr.count( Severity.ERROR ) );
-        Assert.assertTrue(  vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_ANALYSIS_ID1" ) ) );
-        Assert.assertFalse( vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "ERZ690500" ) ) );
-        Assert.assertTrue(  vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_ANALYSIS_ID2" ) ) );
+        ValidationResult result = processor.process( fieldValue );
+        result.getMessages( Severity.ERROR ).stream().forEach( System.out::println );
+        Assert.assertFalse( result.isValid() );
+        Assert.assertEquals( 2, result.count( Severity.ERROR ) );
+        Assert.assertTrue(  result.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_ANALYSIS_ID1" ) ) );
+        Assert.assertFalse( result.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "ERZ690500" ) ) );
+        Assert.assertTrue(  result.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_ANALYSIS_ID2" ) ) );
         Assert.assertEquals( "SOME_ANALYSIS_ID1, ERZ690500, SOME_ANALYSIS_ID2", fieldValue.getValue() );
     }
 

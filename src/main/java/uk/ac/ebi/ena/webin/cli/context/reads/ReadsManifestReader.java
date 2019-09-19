@@ -15,10 +15,9 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage.Manifest;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
@@ -185,7 +184,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                 QualityScore qs = QualityScore.valueOf(qsStr);
                 manifest.setQualityScore(qs);
             } catch (Exception ex) {
-                error(Manifest.READS_INVALID_QUALITY_SCORE, getResult().getValue(Field.QUALITY_SCORE));
+                error(WebinCliMessage.READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR, getResult().getValue(Field.QUALITY_SCORE));
             }
         }
 
@@ -206,7 +205,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
     {
         if( null == manifest.getPlatform()&& ( null == manifest.getInstrument() || manifest.getInstrument().equals(INSTRUMENT_UNSPECIFIED) ) )
         {
-            error(WebinCliMessage.Manifest.MISSING_PLATFORM_AND_INSTRUMENT_ERROR,
+            error(WebinCliMessage.READS_MANIFEST_READER_MISSING_PLATFORM_AND_INSTRUMENT_ERROR,
                     String.join(", ", CV_PLATFORM.keyList()),
                     String.join(", ", CV_INSTRUMENT.keyList()));
         }
@@ -218,7 +217,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
             String platforms = CV_INSTRUMENT.getValue( manifest.getInstrument() );
             if( StringUtils.isBlank( platforms ) )
             {
-                error(WebinCliMessage.Manifest.MISSING_PLATFORM_FOR_INSTRUMENT_ERROR, manifest.getInstrument());
+                error(WebinCliMessage.READS_MANIFEST_READER_MISSING_PLATFORM_FOR_INSTRUMENT_ERROR, manifest.getInstrument());
             }
 
             String[] platformList = platforms.split( "[;,]" );
@@ -228,7 +227,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                 manifest.setPlatform(CV_PLATFORM.getKey( platformList[ 0 ] ));
             } else if(Stream.of( platformList ).noneMatch(e -> e.equals( manifest.getPlatform() ) ))
             {
-                error( WebinCliMessage.Manifest.INVALID_PLATFORM_FOR_INSTRUMENT_ERROR,
+                error( WebinCliMessage.READS_MANIFEST_READER_INVALID_PLATFORM_FOR_INSTRUMENT_ERROR,
                         StringUtils.isBlank( manifest.getPlatform() ) ? "is not defined" : manifest.getPlatform() + " is not supported",
                         manifest.getInstrument(),
                         CV_INSTRUMENT.getValue( manifest.getInstrument() ) );

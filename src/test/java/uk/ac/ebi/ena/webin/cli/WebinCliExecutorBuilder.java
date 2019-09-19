@@ -11,8 +11,8 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import org.mockito.invocation.InvocationOnMock;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;

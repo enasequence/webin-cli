@@ -10,12 +10,12 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import uk.ac.ebi.embl.api.validation.Severity;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.io.File;
@@ -26,18 +26,12 @@ import static org.assertj.core.api.Assertions.*;
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class ManifestReaderTester<M extends Manifest> {
   private final Class<ManifestReader<M>> manifestReaderClass;
-  private boolean metadataProcessorsActive = true;
   private boolean manifestValidateMandatory = true;
   private boolean manifestValidateFileExist = true;
   private boolean manifestValidateFileCount = true;
 
   public ManifestReaderTester(Class<ManifestReader<M>> manifestReaderClass) {
     this.manifestReaderClass = manifestReaderClass;
-  }
-
-  public ManifestReaderTester metadataProcessorsActive(boolean metadataProcessorsActive) {
-    this.metadataProcessorsActive = metadataProcessorsActive;
-    return this;
   }
 
   public ManifestReaderTester manifestValidateMandatory(boolean manifestValidateMandatory) {
@@ -128,7 +122,9 @@ public class ManifestReaderTester<M extends Manifest> {
   public ManifestReader<M> testError(
       ManifestBuilder manifest, File inputDir, WebinCliMessage message) {
     ManifestReader<M> reader = test(manifest, inputDir);
-    assertThat(reader.getValidationResult().count(message.key(), Severity.ERROR))
+    assertThat(reader.getValidationResult().countRegex(
+            ValidationMessage.Severity.ERROR,
+            message.regex()))
         .isGreaterThanOrEqualTo(1);
     return reader;
   }

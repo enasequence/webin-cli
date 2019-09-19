@@ -42,7 +42,7 @@ public class NotFoundErrorHandler implements ResponseErrorHandler {
         switch (httpResponse.getStatusCode()) {
             case UNAUTHORIZED:
             case FORBIDDEN:
-                throw WebinCliException.userError(WebinCliMessage.Cli.AUTHENTICATION_ERROR.format());
+                throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
             case NOT_FOUND:
                 throw WebinCliException.validationError(validationError);
             default:

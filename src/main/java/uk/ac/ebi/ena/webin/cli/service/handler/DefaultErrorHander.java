@@ -40,7 +40,7 @@ public class DefaultErrorHander implements ResponseErrorHandler {
         switch (httpResponse.getStatusCode()) {
             case UNAUTHORIZED:
             case FORBIDDEN:
-                throw WebinCliException.userError(WebinCliMessage.Cli.AUTHENTICATION_ERROR.format());
+                throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
             default:
                 throw WebinCliException.systemError(systemError);
         }

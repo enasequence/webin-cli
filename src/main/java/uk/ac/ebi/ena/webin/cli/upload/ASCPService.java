@@ -107,11 +107,11 @@ ASCPService implements UploadService
             vars.put( "PATH", System.getenv( "PATH" ) );
             int exitVal = new ShellExec( cmd, vars ).exec( true );
             if( 0 != exitVal )
-                throw WebinCliException.systemError(WebinCliMessage.Aspera.UPLOAD_ERROR.format());
+                throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
             
         } catch( Exception ex )
         {
-            throw WebinCliException.systemError(WebinCliMessage.Aspera.UPLOAD_ERROR.format(), ex.getMessage());
+            throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text(), ex.getMessage());
         }
     }
 

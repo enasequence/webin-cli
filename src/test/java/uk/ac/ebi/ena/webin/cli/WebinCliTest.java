@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.UUID;
 
 public class WebinCliTest {
@@ -57,8 +56,7 @@ public class WebinCliTest {
         assertThatThrownBy(() -> new WebinCli(cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
-                        MessageFormat.format(
-                                WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text,
+                        WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(
                                 cmd.inputDir.getAbsoluteFile()));
     }
 
@@ -71,8 +69,7 @@ public class WebinCliTest {
         assertThatThrownBy(() -> new WebinCli(cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
-                        MessageFormat.format(
-                                WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
+                    WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(
                                 cmd.outputDir.getAbsoluteFile()));
     }
 
@@ -85,8 +82,8 @@ public class WebinCliTest {
         assertThatThrownBy(() -> new WebinCli(cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
-                        MessageFormat.format(
-                                WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.text, cmd.inputDir.getName()));
+                        WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(
+                                cmd.inputDir.getName()));
     }
 
     @Test
@@ -98,8 +95,7 @@ public class WebinCliTest {
         assertThatThrownBy(() -> new WebinCli(cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
-                        MessageFormat.format(
-                                WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.text,
+                        WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(
                                 cmd.outputDir.getName()));
     }
 }

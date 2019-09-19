@@ -64,8 +64,8 @@ RunService extends WebinService
     getRun( String runId, String userName, String password, boolean test )
     {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler( new NotFoundErrorHandler( WebinCliMessage.Service.RUN_SERVICE_VALIDATION_ERROR.format( runId ),
-                                                                WebinCliMessage.Service.RUN_SERVICE_SYSTEM_ERROR.format( runId ) ) );
+        restTemplate.setErrorHandler( new NotFoundErrorHandler( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ),
+                                                                WebinCliMessage.RUN_SERVICE_SYSTEM_ERROR.format( runId ) ) );
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( userName, password ).build();
 
@@ -77,7 +77,7 @@ RunService extends WebinService
 
         RunResponse runResponse = response.getBody();
         if( runResponse == null || !runResponse.canBeReferenced )
-            throw WebinCliException.userError( WebinCliMessage.Service.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
+            throw WebinCliException.userError( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
 
         Run run = new Run();
         run.setRunId(runResponse.id);

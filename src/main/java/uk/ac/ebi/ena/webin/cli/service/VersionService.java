@@ -12,8 +12,8 @@ package uk.ac.ebi.ena.webin.cli.service;
 
 import org.springframework.web.client.RestTemplate;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 
 public class 
@@ -41,7 +41,7 @@ VersionService extends WebinService
 
     private Version getVersion(String version, boolean test ) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.Service.VERSION_SERVICE_SYSTEM_ERROR.format()));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.VERSION_SERVICE_SYSTEM_ERROR.text()));
         return restTemplate.getForObject(
                 getWebinRestUri("/cli/{version}", test), Version.class, version);
     }

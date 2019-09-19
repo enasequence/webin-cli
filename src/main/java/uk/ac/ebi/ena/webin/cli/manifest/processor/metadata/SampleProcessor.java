@@ -10,12 +10,13 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
-import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.SampleService;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
@@ -64,10 +65,10 @@ SampleProcessor implements ManifestFieldProcessor
             
         } catch( WebinCliException e )
         {
-            if (WebinCliMessage.Cli.AUTHENTICATION_ERROR.text.equals(e.getMessage())) {
-                return new ValidationResult().append(WebinCliMessage.error(WebinCliMessage.Cli.AUTHENTICATION_ERROR));
+            if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
+                return new ValidationResult(ValidationMessage.error(e));
             }
-            return new ValidationResult().append( WebinCliMessage.error( WebinCliMessage.Manifest.SAMPLE_LOOKUP_ERROR, value, e.getMessage() ) );
+            return new ValidationResult(ValidationMessage.error( WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage() ) );
         }
     }
 }

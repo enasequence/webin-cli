@@ -10,14 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 
 public interface
 ManifestFieldProcessor
 {
     /** Validates and fixes a manifest field.
      */
-    ValidationResult process( ManifestFieldValue fieldValue );
+    ValidationResult process(ManifestFieldValue fieldValue );
 
     /** Interface to notify the user of the field processor.
      */

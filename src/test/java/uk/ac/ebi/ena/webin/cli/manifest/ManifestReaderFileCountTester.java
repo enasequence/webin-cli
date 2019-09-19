@@ -25,7 +25,6 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
     this.fileTypes = Arrays.asList(fileTypes);
     this.manifestReaderTester =
         new ManifestReaderTester(manifestReaderClass)
-            .metadataProcessorsActive(false)
             .manifestValidateMandatory(false)
             .manifestValidateFileExist(false);
   }
@@ -97,14 +96,14 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
       ManifestReader manifestReader;
       if (files.isEmpty()) {
         manifestReader =
-            manifestReaderTester.testError(manifest, WebinCliMessage.Manifest.NO_DATA_FILES_ERROR);
+            manifestReaderTester.testError(manifest, WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR);
 
       } else if (isValidFileGroup(files)) {
         manifestReader = manifestReaderTester.test(manifest);
       } else {
         manifestReader =
             manifestReaderTester.testError(
-                    manifest, WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR);
+                    manifest, WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR);
       }
 
       for (FileType fileType : fileTypes) {

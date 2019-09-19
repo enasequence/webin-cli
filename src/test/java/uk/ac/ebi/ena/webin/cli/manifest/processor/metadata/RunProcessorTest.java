@@ -15,9 +15,9 @@ import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.crea
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.validation.Severity;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
+import static uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
@@ -87,7 +87,7 @@ RunProcessorTest
         Assert.assertEquals( 2, vr.count( Severity.ERROR ) );
         Assert.assertTrue(  vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_RUN_ID1" ) ) );
         Assert.assertFalse( vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "ERR2836765" ) ) );
-        Assert.assertTrue(  vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_RUN_ID2" ) ) );
+        Assert.assertTrue(  vr.getMessages( Severity.ERROR ).stream().anyMatch(e -> e.getMessage().contains( "SOME_RUN_ID2" ) ) );
         Assert.assertEquals( "SOME_RUN_ID1, ERR2836765, SOME_RUN_ID2", fieldValue.getValue() );
     }
 

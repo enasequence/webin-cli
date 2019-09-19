@@ -79,7 +79,7 @@ public class SubmitService extends WebinService {
     public void
     doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.Service.SUBMISSION_SERVICE_SYSTEM_ERROR.format()));
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text()));
         // restTemplate.setInterceptors(Collections.singletonList(new HttpLoggingInterceptor()));
         // restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
 
@@ -134,12 +134,12 @@ public class SubmitService extends WebinService {
                     String xmlFileType = String.valueOf( xmlFile.getType() );
                     String accession = rootNode.getChild( xmlFileType ).getAttributeValue( "accession" );
 
-                    String msg = ( getTest() ? WebinCliMessage.Cli.SUBMIT_SUCCESS_TEST 
-                                             : WebinCliMessage.Cli.SUBMIT_SUCCESS ).format( xmlFileType.toLowerCase(), accession );
+                    String msg = ( getTest() ? WebinCliMessage.SUBMIT_SERVICE_SUCCESS_TEST
+                                             : WebinCliMessage.SUBMIT_SERVICE_SUCCESS).format( xmlFileType.toLowerCase(), accession );
                    
                     if( null == accession || accession.isEmpty() ) 
-                        msg = ( getTest() ? WebinCliMessage.Cli.SUBMIT_SUCCESS_TEST_NOACC 
-                                          : WebinCliMessage.Cli.SUBMIT_SUCCESS_NOACC ).format( xmlFileType.toLowerCase() );
+                        msg = ( getTest() ? WebinCliMessage.SUBMIT_SERVICE_SUCCESS_TEST_NOACC
+                                          : WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC).format( xmlFileType.toLowerCase() );
                     
                     log.info( msg );
                 }

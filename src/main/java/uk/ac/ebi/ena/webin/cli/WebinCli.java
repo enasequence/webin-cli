@@ -35,8 +35,6 @@ import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
 import picocli.CommandLine;
 
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.service.SubmitService;
 import uk.ac.ebi.ena.webin.cli.service.VersionService;
@@ -66,9 +64,6 @@ public class WebinCli {
     private static int
     __main( String... args )
     {
-        ValidationMessage.setDefaultMessageFormatter( ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END );
-        ValidationResult.setDefaultMessageFormatter( null );
-
         try 
         {
             WebinCliCommand params = parseParameters( args );
@@ -118,9 +113,9 @@ public class WebinCli {
 
 	private static WebinCliParameters initParameters(WebinCliCommand cmd) {
 		if( !cmd.inputDir.isDirectory() )
-			throw WebinCliException.userError( WebinCliMessage.Parameters.INPUT_PATH_NOT_DIR.format( cmd.inputDir.getPath() ) );
+			throw WebinCliException.userError( WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format( cmd.inputDir.getPath() ) );
 		if( !cmd.outputDir.isDirectory() )
-			throw WebinCliException.userError( WebinCliMessage.Parameters.OUTPUT_PATH_NOT_DIR.format( cmd.outputDir.getPath() ) );
+			throw WebinCliException.userError( WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format( cmd.outputDir.getPath() ) );
 		WebinCliParameters parameters = new WebinCliParameters();
 		parameters.setContext( cmd.context );
 		parameters.setManifestFile( cmd.manifest );
@@ -197,27 +192,27 @@ public class WebinCli {
 
 		   executor.prepareSubmissionBundle();
 
-           log.info( WebinCliMessage.Cli.VALIDATE_SUCCESS.format() );
+           log.info( WebinCliMessage.CLI_VALIDATE_SUCCESS.text() );
            
 	   } catch( WebinCliException ex )
 	   {
 	      switch( ex.getErrorType() )
 	      { 
 	          case USER_ERROR:
-				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()):
-						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
+				  throw WebinCliException.userError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()):
+						  WebinCliMessage.CLI_VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
 	          case VALIDATION_ERROR:
-				  throw WebinCliException.validationError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.Cli.VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()):
-						  WebinCliMessage.Cli.VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
+				  throw WebinCliException.validationError( ex, StringUtils.isBlank(ex.getMessage())? WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()):
+						  WebinCliMessage.CLI_VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
 	               
 	          case SYSTEM_ERROR:
-	               throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), executor.getValidationDir()));
+	               throw WebinCliException.systemError( ex, WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), executor.getValidationDir()));
 	      }
 	   } catch( Exception ex )
 	   {
 	       StringWriter sw = new StringWriter();
 	       ex.printStackTrace( new PrintWriter( sw ) );
-	      throw WebinCliException.systemError( ex, WebinCliMessage.Cli.VALIDATE_SYSTEM_ERROR.format( null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir()));
+	      throw WebinCliException.systemError( ex, WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR.format( null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir()));
 	   }
 	}
 
@@ -232,11 +227,11 @@ public class WebinCli {
         {
             ftpService.connect( parameters.getUsername(), parameters.getPassword() );
             ftpService.upload( bundle.getUploadFileList(), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath() );
-			log.info( WebinCliMessage.Cli.UPLOAD_SUCCESS.format() );
+			log.info( WebinCliMessage.CLI_UPLOAD_SUCCESS.text() );
 
         } catch( WebinCliException e ) 
         {
-        	throw WebinCliException.error(e, WebinCliMessage.Cli.UPLOAD_ERROR.format(e.getErrorType().text));
+        	throw WebinCliException.error(e, WebinCliMessage.CLI_UPLOAD_ERROR.format(e.getErrorType().text));
         } finally
         {
             ftpService.disconnect();
@@ -254,7 +249,7 @@ public class WebinCli {
 
         } catch( WebinCliException e ) 
         {
-			throw WebinCliException.error(e, WebinCliMessage.Cli.SUBMIT_ERROR.format(e.getErrorType().text));
+			throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
         }
     }
 	
@@ -382,22 +377,22 @@ public class WebinCli {
 				.setTest( test )
 				.build().getVersion( currentVersion );
 
-		log.info(WebinCliMessage.Cli.CURRENT_VERSION.format(currentVersion));
+		log.info(WebinCliMessage.CLI_CURRENT_VERSION.format(currentVersion));
 
 		if (!version.valid) {
-			throw WebinCliException.userError(WebinCliMessage.Cli.UNSUPPORTED_VERSION.format(
+			throw WebinCliException.userError(WebinCliMessage.CLI_UNSUPPORTED_VERSION.format(
 					version.minVersion,
 					version.latestVersion));
 		}
 
 		if (version.expire) {
-			log.info(WebinCliMessage.Cli.EXPIRYING_VERSION.format(
+			log.info(WebinCliMessage.CLI_EXPIRYING_VERSION.format(
 					new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate),
 					version.nextMinVersion,
 					version.latestVersion));
 		}
 		else if (version.update) {
-			log.info(WebinCliMessage.Cli.NEW_VERSION.format(version.latestVersion));
+			log.info(WebinCliMessage.CLI_NEW_VERSION.format(version.latestVersion));
 		}
 
 		if (version.comment != null) {
@@ -410,7 +405,7 @@ public class WebinCli {
 	getReportFile( File dir, String filename, String suffix )
 	{
 		if( dir == null || !dir.isDirectory() )
-			throw WebinCliException.systemError( WebinCliMessage.Cli.INVALID_REPORT_DIR_ERROR.format(filename ));
+			throw WebinCliException.systemError( WebinCliMessage.CLI_INVALID_REPORT_DIR_ERROR.format(filename ));
 
 		return new File( dir, Paths.get( filename ).getFileName().toString() + suffix );
 	}
@@ -420,7 +415,7 @@ public class WebinCli {
 	createOutputDir( File outputDir, String... dirs ) throws WebinCliException
 	{
 		if (outputDir == null) {
-			throw WebinCliException.systemError( WebinCliMessage.Cli.MISSING_OUTPUT_DIR_ERROR.format());
+			throw WebinCliException.systemError( WebinCliMessage.CLI_MISSING_OUTPUT_DIR_ERROR.text());
 		}
 
 		String[] safeDirs = getSafeOutputDirs(dirs);
@@ -430,13 +425,13 @@ public class WebinCli {
 		try {
 			p = Paths.get(outputDir.getPath(), safeDirs);
 		} catch (InvalidPathException ex) {
-			throw WebinCliException.systemError( WebinCliMessage.Cli.CREATE_DIR_ERROR.format(ex.getInput()));
+			throw WebinCliException.systemError( WebinCliMessage.CLI_CREATE_DIR_ERROR.format(ex.getInput()));
 		}
 
 		File dir = p.toFile();
 
 		if (!dir.exists() && !dir.mkdirs()) {
-			throw WebinCliException.systemError( WebinCliMessage.Cli.CREATE_DIR_ERROR.format(dir.getPath()));
+			throw WebinCliException.systemError( WebinCliMessage.CLI_CREATE_DIR_ERROR.format(dir.getPath()));
 		}
 
 		return dir;

@@ -18,8 +18,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.embl.api.validation.ValidationMessage;
-import uk.ac.ebi.embl.api.validation.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
@@ -70,8 +68,6 @@ ReadsManifestReaderTest {
     @Before
     public void
     before() {
-        ValidationMessage.setDefaultMessageFormatter(ValidationMessage.TEXT_TIME_MESSAGE_FORMATTER_TRAILING_LINE_END);
-        ValidationResult.setDefaultMessageFormatter(null);
         Locale.setDefault(Locale.UK);
     }
 
@@ -208,7 +204,7 @@ ReadsManifestReaderTest {
                 new ManifestBuilder()
                         .field(Field.INSERT_SIZE, "-1")
                         .build(),
-                "ERROR: Invalid INSERT_SIZE field value: \"-1\". Non-negative integer expected");
+                "ERROR: Invalid field value. Non-negative integer expected.");
     }
 
     @Test
@@ -239,7 +235,7 @@ ReadsManifestReaderTest {
                     new ManifestBuilder()
                             .file(fileType, "missing")
                             .build(),
-                    "ERROR: Invalid " + fileType.name() + " file name");
+                    "ERROR: Could not read file.");
         }
     }
 
@@ -252,7 +248,7 @@ ReadsManifestReaderTest {
                     new ManifestBuilder()
                             .file(fileType, dir)
                             .build(),
-                    "ERROR: Invalid " + fileType.name() + " file name");
+                    "ERROR: Could not read file.");
         }
     }
 

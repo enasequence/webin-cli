@@ -63,8 +63,8 @@ SampleXmlService extends WebinService
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
-                WebinCliMessage.Service.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
+                WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
+                WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
@@ -130,7 +130,7 @@ SampleXmlService extends WebinService
             return sample;
         } catch (Exception ex) {
             throw WebinCliException.userError(
-                    WebinCliMessage.Service.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
+                    WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
         }
     }
 }

@@ -10,24 +10,27 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import uk.ac.ebi.embl.api.validation.Origin;
+import java.util.ArrayList;
+import java.util.List;
 
-public class 
+public class
 ManifestFieldValue 
 {
     private ManifestFieldDefinition definition;
     private String value;
-    private Origin origin;
+    private ArrayList<String> origin = new ArrayList<>();
     private boolean validFieldValueOrFileSuffix = true;
 
     public 
-    ManifestFieldValue( ManifestFieldDefinition definition, String value, Origin origin )
+    ManifestFieldValue( ManifestFieldDefinition definition, String value, String origin )
     {
         assert( definition != null );
         assert( value != null );
         this.definition = definition;
         this.value = value;
-        this.origin = origin;
+        this.origin.add(origin);
+        this.origin.add("field: " + definition.getName());
+        this.origin.add("value: " + value);
     }
     
     public String 
@@ -72,16 +75,9 @@ ManifestFieldValue
     }
 
     
-    public Origin 
+    public List<String>
     getOrigin() 
     {
         return origin;
-    }
-    
-    
-    public String
-    toString()
-    {
-        return String.format( "%s = %s [%s], %s", definition, value, null != origin ? String.valueOf( origin ) : "", validFieldValueOrFileSuffix );
     }
 }

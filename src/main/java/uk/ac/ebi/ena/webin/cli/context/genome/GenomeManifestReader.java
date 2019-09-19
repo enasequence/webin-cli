@@ -15,9 +15,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
@@ -215,7 +215,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 		if (getParameters().isManifestValidateMandatory()) {
 			if( StringUtils.isBlank( name ) )
 			{
-				error( WebinCliMessage.Manifest.MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
+				error( WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
 			}
 		}
 
@@ -225,7 +225,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 				manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
 				manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
 			} else {
-				error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
+				error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
 			}
 		}
 
@@ -267,7 +267,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 		    if(submissionFiles.get()
 					.stream()
 					.anyMatch(file -> GenomeManifest.FileType.FASTA != file.getFileType() )) {
-				error(WebinCliMessage.Manifest.INVALID_FILE_GROUP_ERROR,
+				error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR,
 						getFileGroupText(PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS),
 						" for assembly types: \"" +
 								ASSEMBLY_TYPE_PRIMARY_METAGENOME + "\" and \"" +

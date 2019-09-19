@@ -12,9 +12,9 @@ package uk.ac.ebi.ena.webin.cli.context.sequence;
 
 import java.util.Map;
 
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
@@ -112,7 +112,7 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
                 manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
                 manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
             } else {
-                error(WebinCliMessage.Manifest.MISSING_ADDRESS_OR_AUTHOR_ERROR);
+                error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
             }
         }
 		manifest.setName(getResult().getValue( Field.NAME ));

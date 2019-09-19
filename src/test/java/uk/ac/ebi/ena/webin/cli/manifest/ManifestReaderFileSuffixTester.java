@@ -12,7 +12,7 @@ public class ManifestReaderFileSuffixTester {
                         .manifestValidateFileExist(false)
                         .manifestValidateFileCount(false);
         ManifestBuilder manifestBuilder = new ManifestBuilder().file(fileType, fileName);
-        tester.testError(manifestBuilder, WebinCliMessage.Manifest.INVALID_FILE_SUFFIX_ERROR);
+        tester.testError(manifestBuilder, WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR);
     }
 
     public static <FileType extends Enum<FileType>, T extends ManifestReader>
