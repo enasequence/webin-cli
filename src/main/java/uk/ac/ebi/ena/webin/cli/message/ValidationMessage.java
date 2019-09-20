@@ -27,7 +27,7 @@ public class ValidationMessage {
     private List<String> origins = new ArrayList<>();
     private final Exception ex;
 
-    public ValidationMessage(Severity severity, ValidationMessageSource message, Object... arguments) {
+    public ValidationMessage(Severity severity, MessageSource message, Object... arguments) {
         this.severity = severity;
         this.message = message.format(arguments);
         this.ex = null;
@@ -75,7 +75,7 @@ public class ValidationMessage {
         return ex;
     }
 
-    public static ValidationMessage error(ValidationMessageSource message, Object... arguments) {
+    public static ValidationMessage error(MessageSource message, Object... arguments) {
         return new ValidationMessage(Severity.ERROR, message, arguments);
     }
 
@@ -91,7 +91,7 @@ public class ValidationMessage {
         return new ValidationMessage(Severity.ERROR, ex);
     }
 
-    public static ValidationMessage info(ValidationMessageSource message, Object... arguments) {
+    public static ValidationMessage info(MessageSource message, Object... arguments) {
         return new ValidationMessage(Severity.INFO, message, arguments);
     }
 

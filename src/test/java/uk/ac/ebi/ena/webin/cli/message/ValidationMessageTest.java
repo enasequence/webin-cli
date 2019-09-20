@@ -18,7 +18,7 @@ import uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
 
 public class ValidationMessageTest {
 
-    private static class TestMessage implements ValidationMessageSource {
+    private static class TestMessage implements MessageFormatSource {
         private final String text;
 
         public TestMessage(String text) {

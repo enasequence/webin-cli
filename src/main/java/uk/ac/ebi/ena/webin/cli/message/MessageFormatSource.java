@@ -2,8 +2,7 @@ package uk.ac.ebi.ena.webin.cli.message;
 
 import java.text.MessageFormat;
 
-public interface ValidationMessageSource {
-    String text();
+public interface MessageFormatSource extends MessageSource {
 
     default String format(Object... arguments) {
         return MessageFormat.format(text(), arguments);

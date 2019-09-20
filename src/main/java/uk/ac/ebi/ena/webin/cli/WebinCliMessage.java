@@ -1,8 +1,8 @@
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.webin.cli.message.ValidationMessageSource;
+import uk.ac.ebi.ena.webin.cli.message.MessageFormatSource;
 
-public enum WebinCliMessage implements ValidationMessageSource {
+public enum WebinCliMessage implements MessageFormatSource {
 
     CLI_CURRENT_VERSION("Your application version is {0}"),
     CLI_NEW_VERSION("A new application version is available. Please download the latest version {0} from https://github.com/enasequence/webin-cli/releases"),
