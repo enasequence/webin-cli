@@ -96,8 +96,8 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                        .meta().required().name(Field.STUDY).desc(Description.STUDY).processor(factory.getStudyProcessor()).and()
                        .meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(factory.getSampleProcessor()).and()
                        .meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
-                       .meta().optional().requiredInSpreadsheet().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).and()
-                       .meta().optional().notInSpreadsheet().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).and()
+                       .meta().optional().recommended().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).and()
+                       .meta().optional().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).and()
                        .meta().required().name(Field.LIBRARY_SOURCE).desc(Description.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).and()
                        .meta().required().name(Field.LIBRARY_SELECTION).desc(Description.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).and()
                        .meta().required().name(Field.LIBRARY_STRATEGY).desc(Description.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).and()
@@ -107,8 +107,8 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                        .file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors()).and()
                        .file().optional().name(Field.BAM).desc(Description.BAM).processor(getBamProcessors()).and()
                        .file().optional().name(Field.CRAM).desc(Description.CRAM).processor(getCramProcessors()).and()
-                       .meta().optional().notInSpreadsheet().name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).and()
-                       .meta().optional().notInSpreadsheet().name(Field.__HORIZON).desc(Description.__HORIZON).build()
+                       .meta().optional().hidden().name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).and()
+                       .meta().optional().hidden().name(Field.__HORIZON).desc(Description.__HORIZON).build()
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()

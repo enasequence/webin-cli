@@ -21,38 +21,49 @@ import org.springframework.util.Assert;
 public class ManifestFieldDefinition {
 
   private final String name;
+  private final String synonym;
   private final String description;
   private final ManifestFieldType type;
   private final int minCount;
   private final int maxCount;
-  private final int spreadsheetMinCount;
-  private final int spreadsheetMaxCount;
+  private final int recommendedMinCount;
+  private final int recommendedMaxCount;
   private final List<ManifestFieldProcessor> processors;
 
   private ManifestFieldDefinition(
       String name,
+      String synonym,
       String description,
       ManifestFieldType type,
       int minCount,
       int maxCount,
-      int spreadsheetMinCount,
-      int spreadsheetMaxCount,
+      int recommendedMinCount,
+      int recommendedMaxCount,
       List<ManifestFieldProcessor> processors) {
     Assert.notNull(name, "Field name must not be null");
     Assert.notNull(description, "Field description must not be null");
     Assert.notNull(type, "Field type must not be null");
     this.name = name;
+    this.synonym = synonym;
     this.description = description;
     this.type = type;
     this.minCount = minCount;
     this.maxCount = maxCount;
-    this.spreadsheetMinCount = spreadsheetMinCount;
-    this.spreadsheetMaxCount = spreadsheetMaxCount;
+    this.recommendedMinCount = recommendedMinCount;
+    this.recommendedMaxCount = recommendedMaxCount;
     this.processors = processors;
   }
 
   public String getName() {
     return name;
+  }
+
+  public String getSynonym() {
+    return synonym;
+  }
+
+  public boolean matchSynonym(String name) {
+    return synonym != null && synonym.equalsIgnoreCase(name);
   }
 
   public String getDescription() {
@@ -71,12 +82,12 @@ public class ManifestFieldDefinition {
     return maxCount;
   }
 
-  public int getSpreadsheetMinCount() {
-    return spreadsheetMinCount;
+  public int getRecommendedMinCount() {
+    return recommendedMinCount;
   }
 
-  public int getSpreadsheetMaxCount() {
-    return spreadsheetMaxCount;
+  public int getRecommendedMaxCount() {
+    return recommendedMaxCount;
   }
 
   public List<ManifestFieldProcessor> getFieldProcessors() {
@@ -103,11 +114,12 @@ public class ManifestFieldDefinition {
       private final Builder builder;
       private final ManifestFieldType type;
       private String name;
+      private String synonym;
       private String description;
       private Integer minCount;
       private Integer maxCount;
-      private boolean notInSpreadsheet = false;
-      private boolean requiredInSpreadsheet = false;
+      private boolean hidden = false;
+      private boolean recommended = false;
       private List<ManifestFieldProcessor> processors = new ArrayList<>();
 
       private Field(Builder builder, ManifestFieldType type) {
@@ -117,6 +129,11 @@ public class ManifestFieldDefinition {
 
       public Field name(String name) {
         this.name = name;
+        return this;
+      }
+
+      public Field synonym(String synonym) {
+        this.synonym = synonym;
         return this;
       }
 
@@ -143,13 +160,13 @@ public class ManifestFieldDefinition {
         return this;
       }
 
-      public Field notInSpreadsheet() {
-        this.notInSpreadsheet = true;
+      public Field hidden() {
+        this.hidden = true;
         return this;
       }
 
-      public Field requiredInSpreadsheet() {
-        this.requiredInSpreadsheet = true;
+      public Field recommended() {
+        this.recommended = true;
         return this;
       }
 
@@ -170,17 +187,27 @@ public class ManifestFieldDefinition {
       }
 
       private void add() {
-        int spreadsheetMinCount = minCount;
-        int spreadsheetMaxCount = maxCount;
-        if (notInSpreadsheet) {
-          spreadsheetMinCount = 0;
-          spreadsheetMaxCount = 0;
+        int recommendedMinCount = minCount;
+        int recommendedMaxCount = maxCount;
+        if (recommended) {
+          recommendedMinCount = 1;
+          if (recommendedMaxCount < 1) {
+            recommendedMaxCount = 1;
+          }
         }
-        else if (requiredInSpreadsheet) {
-          spreadsheetMinCount = 1;
+        else if (hidden) {
+          recommendedMinCount = 0;
+          recommendedMaxCount = 0;
         }
+
         builder.fields.add(new ManifestFieldDefinition(
-                name, description, type, minCount, maxCount, spreadsheetMinCount, spreadsheetMaxCount, processors));
+                name,
+                synonym,
+                description,
+                type,
+                minCount, maxCount,
+                recommendedMinCount, recommendedMaxCount,
+                processors));
       }
     }
   }

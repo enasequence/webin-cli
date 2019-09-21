@@ -91,7 +91,7 @@ public class SpreadsheetWriter {
         List<ManifestFieldDefinition> manifestFields = manifest.getFields();
 
         for (ManifestFieldDefinition field : manifestFields) {
-            for (int i = 0 ; i < field.getSpreadsheetMaxCount() ; ++i) {
+            for (int i = 0 ; i < field.getRecommendedMaxCount() ; ++i) {
                 fields.add(field);
             }
         }
@@ -134,7 +134,7 @@ public class SpreadsheetWriter {
         for (ManifestFieldDefinition field : fields) {
             Cell cell = headerRow.createCell(columnNumber);
             cell.setCellValue(field.getName());
-            cell.setCellStyle(field.getSpreadsheetMinCount() > 0 ? requiredHeaderStyle : optionalHeaderStyle);
+            cell.setCellStyle(field.getRecommendedMinCount() > 0 ? requiredHeaderStyle : optionalHeaderStyle);
             sheet.autoSizeColumn(columnNumber);
             columnNumber++;
         }
@@ -162,7 +162,7 @@ public class SpreadsheetWriter {
             RichTextString commentStr;
             if (field.getType() == ManifestFieldType.META) {
                     commentStr = creationHelper.createRichTextString(field.getDescription() +
-                    (field.getSpreadsheetMinCount() > 0 ? " (mandatory field)" : "(optional field)"));
+                    (field.getRecommendedMinCount() > 0 ? " (mandatory field)" : "(optional field)"));
             }
             else {
                 commentStr = creationHelper.createRichTextString(spreadsheetContext.getFileGroupText());

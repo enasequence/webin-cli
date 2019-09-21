@@ -68,6 +68,9 @@ WebinCliCommand
     @Option(names = Options.help, description = Descriptions.help, usageHelp = true, order = 100)
     public boolean help;
 
+    @Option(names = Options.fields, description = Descriptions.fields, usageHelp = true, order = 101)
+    public boolean fields;
+
     @Option(names = Options.version, description = Descriptions.version, versionHelp = true, order = 101)
     public boolean version;
 
@@ -83,8 +86,9 @@ WebinCliCommand
         String validate   = "-validate";
         String test       = "-test";
         String ascp       = "-ascp";
-        String version    = "-version";
         String help       = "-help";
+        String fields     = "-fields";
+        String version    = "-version";
         String userNameSynonym   = "-username";
         String centerNameSynonym = "-centername";
         String outputDirSynonym  = "-outputdir";
@@ -113,9 +117,11 @@ WebinCliCommand
         String ascp =
                 "Use Aspera (if Aspera Cli is available) instead of FTP when uploading files. " +
                 "The path to the installed \"ascp\" program must be in the PATH variable.";
-        String version =
-                "Print version information and exit.";
         String help =
                 "Show this help message and exit.";
+        String fields =
+                "Show manifest fields for all contexts or for the given -context.";
+        String version =
+                "Print version information and exit.";
     }
 }

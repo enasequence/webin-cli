@@ -56,11 +56,10 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 	Description 
 	{
 		String NAME             = "Unique genome assembly name";
-		String ASSEMBLYNAME     = "Unique genome assembly name";
 		String STUDY            = "Study accession or name";
 		String SAMPLE           = "Sample accession or name";
-	    String RUN_REF          = "Run accession or name comma-separated list";
-	    String ANALYSIS_REF     = "Analysis accession or name comma-separated list";
+	    String RUN_REF          = "Run accession or name as a comma-separated list";
+	    String ANALYSIS_REF     = "Analysis accession or name as a comma-separated list";
 		String DESCRIPTION      = "Genome assembly description";
 		String COVERAGE         = "Sequencing coverage";
 		String PROGRAM          = "Assembly program";
@@ -111,27 +110,26 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 		super( parameters,
 				// Fields.
 				new ManifestFieldDefinition.Builder()
-					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
+					.meta().required().name( Field.NAME             ).desc( Description.NAME             ).synonym(Field.ASSEMBLYNAME).and()
 					.meta().required().name( Field.STUDY            ).desc( Description.STUDY            ).processor( factory.getStudyProcessor() ).and()
 					.meta().required().name( Field.SAMPLE           ).desc( Description.SAMPLE           ).processor( factory.getSampleProcessor(), factory.getSampleXmlProcessor()).and()
-					.meta().optional().name( Field.RUN_REF          ).desc( Description.RUN_REF          ).processor( factory.getRunProcessor() ).and()
-					.meta().optional().name( Field.ANALYSIS_REF     ).desc( Description.ANALYSIS_REF     ).processor( factory.getAnalysisProcessor() ).and()
+					.meta().optional().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) ).and()
 					.meta().optional().name( Field.DESCRIPTION      ).desc( Description.DESCRIPTION      ).and()
 					.meta().required().name( Field.COVERAGE         ).desc( Description.COVERAGE         ).and()
 					.meta().required().name( Field.PROGRAM          ).desc( Description.PROGRAM          ).and()
 					.meta().required().name( Field.PLATFORM         ).desc( Description.PLATFORM         ).and()
 					.meta().optional().name( Field.MINGAPLENGTH     ).desc( Description.MINGAPLENGTH     ).and()
 					.meta().optional().name( Field.MOLECULETYPE     ).desc( Description.MOLECULETYPE     ).processor( new CVFieldProcessor( CV_MOLECULE_TYPE ) ).and()
-					.meta().optional().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) ).and()
-					.file().optional().name( Field.CHROMOSOME_LIST  ).desc( Description.CHROMOSOME_LIST  ).processor( getChromosomeListProcessors() ).and()
-					.file().optional().name( Field.UNLOCALISED_LIST ).desc( Description.UNLOCALISED_LIST ).processor( getUnlocalisedListProcessors() ).and()
+					.meta().optional().name( Field.RUN_REF          ).desc( Description.RUN_REF          ).processor( factory.getRunProcessor() ).and()
+					.meta().optional().name( Field.ANALYSIS_REF     ).desc( Description.ANALYSIS_REF     ).processor( factory.getAnalysisProcessor() ).and()
 					.file().optional().name( Field.FASTA            ).desc( Description.FASTA            ).processor( getFastaProcessors() ).and()
 					.file().optional().name( Field.FLATFILE         ).desc( Description.FLATFILE         ).processor( getFlatfileProcessors() ).and()
 					.file().optional().name( Field.AGP              ).desc( Description.AGP              ).processor( getAgpProcessors() ).and()
-					.meta().optional().notInSpreadsheet().name( Field.ASSEMBLYNAME ).desc( Description.ASSEMBLYNAME ).and()
-					.meta().optional().notInSpreadsheet().name( Field.TPA          ).desc( Description.TPA          ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
-					.meta().optional().name( Field.AUTHORS ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
-					.meta().optional().name( Field.ADDRESS ).desc( Description.ADDRESS )
+					.file().optional().name( Field.CHROMOSOME_LIST  ).desc( Description.CHROMOSOME_LIST  ).processor( getChromosomeListProcessors() ).and()
+					.file().optional().name( Field.UNLOCALISED_LIST ).desc( Description.UNLOCALISED_LIST ).processor( getUnlocalisedListProcessors() ).and()
+					.meta().optional().name( Field.TPA          ).desc( Description.TPA                  ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
+					.meta().optional().name( Field.AUTHORS ).desc( Description.AUTHORS                   ).processor(new AuthorProcessor()).and()
+					.meta().optional().name( Field.ADDRESS ).desc( Description.ADDRESS                   )
 					.build()
 				,
 				// File groups.
@@ -211,14 +209,6 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
     @Override public void
 	processManifest() 
 	{
-		String name = StringUtils.isBlank( getResult().getValue( Field.NAME ) ) ? getResult().getValue(Field.ASSEMBLYNAME ) : getResult().getValue( Field.NAME );
-		if (getParameters().isManifestValidateMandatory()) {
-			if( StringUtils.isBlank( name ) )
-			{
-				error( WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
-			}
-		}
-
 		Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
 		if (!authorAndAddress.isEmpty()) {
 			if (authorAndAddress.size() == 2) {
@@ -229,10 +219,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 			}
 		}
 
-		if( name != null ) {
-			manifest.setName(name);
-		}
-
+		manifest.setName( getResult().getValue( Field.NAME ));
 		manifest.setDescription( getResult().getValue( Field.DESCRIPTION ) );
 		manifest.setPlatform( getResult().getValue( Field.PLATFORM ) );
 		manifest.setProgram( getResult().getValue( Field.PROGRAM ) );

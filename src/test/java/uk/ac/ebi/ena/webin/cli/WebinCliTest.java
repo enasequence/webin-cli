@@ -18,7 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.UUID;
 
 public class WebinCliTest {
@@ -97,5 +99,371 @@ public class WebinCliTest {
                 .hasMessage(
                         WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(
                                 cmd.outputDir.getName()));
+    }
+
+    @Test
+    public void testPrintManifestHelpGenome() {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        WebinCli.printManifestHelp(WebinCliContext.genome, new PrintStream(os));
+        assertThat(os.toString().replaceAll("\r", "")).isEqualTo(
+            "\n" +
+            "Manifest fields for 'genome' context:\n" +
+            "\n" +
+            "┌────────────────────┬───────────┬─────────────────────────────────────────────┐\n" +
+            "│Field               │Cardinality│Description                                  │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│NAME (ASSEMBLYNAME) │Mandatory  │Unique genome assembly name                  │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│STUDY               │Mandatory  │Study accession or name                      │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│SAMPLE              │Mandatory  │Sample accession or name                     │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│COVERAGE            │Mandatory  │Sequencing coverage                          │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│PROGRAM             │Mandatory  │Assembly program                             │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│PLATFORM            │Mandatory  │Sequencing platform                          │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│ASSEMBLY_TYPE       │Optional   │Assembly type:                               │\n" +
+            "│                    │           │* clone or isolate                           │\n" +
+            "│                    │           │* primary metagenome                         │\n" +
+            "│                    │           │* binned metagenome                          │\n" +
+            "│                    │           │* Metagenome-Assembled Genome (MAG)          │\n" +
+            "│                    │           │* Environmental Single-Cell Amplified Genome │\n" +
+            "│                    │           │(SAG)                                        │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│DESCRIPTION         │Optional   │Genome assembly description                  │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│MINGAPLENGTH        │Optional   │Minimum gap length                           │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│MOLECULETYPE        │Optional   │Molecule type:                               │\n" +
+            "│                    │           │* genomic DNA                                │\n" +
+            "│                    │           │* genomic RNA                                │\n" +
+            "│                    │           │* viral cRNA                                 │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│RUN_REF             │Optional   │Run accession or name as a comma-separated   │\n" +
+            "│                    │           │list                                         │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│ANALYSIS_REF        │Optional   │Analysis accession or name as a              │\n" +
+            "│                    │           │comma-separated list                         │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│TPA                 │Optional   │Third party annotation:                      │\n" +
+            "│                    │           │* yes                                        │\n" +
+            "│                    │           │* no                                         │\n" +
+            "│                    │           │* true                                       │\n" +
+            "│                    │           │* false                                      │\n" +
+            "│                    │           │* Y                                          │\n" +
+            "│                    │           │* N                                          │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│AUTHORS             │Optional   │Author names, comma-separated list           │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│ADDRESS             │Optional   │Author address                               │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│FASTA               │0-1 files  │Fasta file                                   │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│FLATFILE            │0-1 files  │Flat file                                    │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│AGP                 │0-1 files  │AGP file                                     │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│CHROMOSOME_LIST     │0-1 files  │Chromosome list file                         │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│UNLOCALISED_LIST    │0-1 files  │Unlocalised sequence list file               │\n" +
+            "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
+            "\n" +
+            "File groups for 'genome' context:\n" +
+            "\n" +
+            "┌────────────────┬───┬───┬───┬───┐\n" +
+            "│FASTA           │   │1  │   │1  │\n" +
+            "├────────────────┼───┼───┼───┼───┤\n" +
+            "│FLATFILE        │1  │0-1│1  │0-1│\n" +
+            "├────────────────┼───┼───┼───┼───┤\n" +
+            "│AGP             │0-1│0-1│0-1│0-1│\n" +
+            "├────────────────┼───┼───┼───┼───┤\n" +
+            "│CHROMOSOME_LIST │   │   │1  │1  │\n" +
+            "├────────────────┼───┼───┼───┼───┤\n" +
+            "│UNLOCALISED_LIST│   │   │0-1│0-1│\n" +
+            "└────────────────┴───┴───┴───┴───┘\n");
+    }
+
+    @Test
+    public void testPrintManifestHelpTranscriptome() {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        WebinCli.printManifestHelp(WebinCliContext.transcriptome, new PrintStream(os));
+        System.out.println(os.toString());
+        assertThat(os.toString().replaceAll("\r", "")).isEqualTo(
+                "\n" +
+                "Manifest fields for 'transcriptome' context:\n" +
+                "\n" +
+                "┌────────────────────┬───────────┬─────────────────────────────────────────────┐\n" +
+                "│Field               │Cardinality│Description                                  │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│NAME (ASSEMBLYNAME) │Mandatory  │Unique transcriptome assembly name           │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│STUDY               │Mandatory  │Study accession or name                      │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SAMPLE              │Mandatory  │Sample accession or name                     │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│PROGRAM             │Mandatory  │Assembly program                             │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│PLATFORM            │Mandatory  │Sequencing platform                          │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│RUN_REF             │Optional   │Run accession or name as a comma-separated   │\n" +
+                "│                    │           │list                                         │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│ANALYSIS_REF        │Optional   │Analysis accession or name as a              │\n" +
+                "│                    │           │comma-separated list                         │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│DESCRIPTION         │Optional   │Transcriptome assembly description           │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│TPA                 │Optional   │Third party annotation:                      │\n" +
+                "│                    │           │* yes                                        │\n" +
+                "│                    │           │* no                                         │\n" +
+                "│                    │           │* true                                       │\n" +
+                "│                    │           │* false                                      │\n" +
+                "│                    │           │* Y                                          │\n" +
+                "│                    │           │* N                                          │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│AUTHORS             │Optional   │Author names, comma-separated list           │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│ADDRESS             │Optional   │Author address                               │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│FASTA               │0-1 files  │Fasta file                                   │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│FLATFILE            │0-1 files  │Flat file                                    │\n" +
+                "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
+                "\n" +
+                "File groups for 'transcriptome' context:\n" +
+                "\n" +
+                "┌────────┬─┬─┐\n" +
+                "│FASTA   │1│ │\n" +
+                "├────────┼─┼─┤\n" +
+                "│FLATFILE│ │1│\n" +
+                "└────────┴─┴─┘\n");
+    }
+
+    @Test
+    public void testPrintManifestHelpSequence() {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        WebinCli.printManifestHelp(WebinCliContext.sequence, new PrintStream(os));
+        System.out.println(os.toString());
+        assertThat(os.toString().replaceAll("\r", "")).isEqualTo(
+                "\n" +
+                "Manifest fields for 'sequence' context:\n" +
+                "\n" +
+                "┌────────────────────┬───────────┬─────────────────────────────────────────────┐\n" +
+                "│Field               │Cardinality│Description                                  │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│NAME                │Mandatory  │Unique sequence submission name              │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│STUDY               │Mandatory  │Study accession or name                      │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│RUN_REF             │Optional   │Run accession or name as a comma-separated   │\n" +
+                "│                    │           │list                                         │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│ANALYSIS_REF        │Optional   │Analysis accession or name as a              │\n" +
+                "│                    │           │comma-separated list                         │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│DESCRIPTION         │Optional   │Sequence submission description              │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│AUTHORS             │Optional   │Author names, comma-separated list           │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│ADDRESS             │Optional   │Author address                               │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│TAB                 │0-1 files  │Tabulated file                               │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│FLATFILE            │0-1 files  │Flat file                                    │\n" +
+                "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
+                "\n" +
+                "File groups for 'sequence' context:\n" +
+                "\n" +
+                "┌────────┬─┬─┐\n" +
+                "│TAB     │1│ │\n" +
+                "├────────┼─┼─┤\n" +
+                "│FLATFILE│ │1│\n" +
+                "└────────┴─┴─┘\n");
+    }
+
+    @Test
+    public void testPrintManifestHelpReads() {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        WebinCli.printManifestHelp(WebinCliContext.reads, new PrintStream(os));
+        System.out.println(os.toString());
+        assertThat(os.toString().replaceAll("\r", "")).isEqualTo(
+                "\n" +
+                "Manifest fields for 'reads' context:\n" +
+                "\n" +
+                "┌────────────────────┬───────────┬─────────────────────────────────────────────┐\n" +
+                "│Field               │Cardinality│Description                                  │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│NAME                │Mandatory  │Unique sequencing experiment name            │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│STUDY               │Mandatory  │Study accession or name                      │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SAMPLE              │Mandatory  │Sample accession or name                     │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│INSTRUMENT          │Mandatory  │Sequencing instrument:                       │\n" +
+                "│                    │           │* HiSeq X Five                               │\n" +
+                "│                    │           │* HiSeq X Ten                                │\n" +
+                "│                    │           │* Illumina Genome Analyzer                   │\n" +
+                "│                    │           │* Illumina Genome Analyzer II                │\n" +
+                "│                    │           │* Illumina Genome Analyzer IIx               │\n" +
+                "│                    │           │* Illumina HiScanSQ                          │\n" +
+                "│                    │           │* Illumina HiSeq 1000                        │\n" +
+                "│                    │           │* Illumina HiSeq 1500                        │\n" +
+                "│                    │           │* Illumina HiSeq 2000                        │\n" +
+                "│                    │           │* Illumina HiSeq 2500                        │\n" +
+                "│                    │           │* Illumina HiSeq 3000                        │\n" +
+                "│                    │           │* Illumina HiSeq 4000                        │\n" +
+                "│                    │           │* Illumina MiSeq                             │\n" +
+                "│                    │           │* Illumina MiniSeq                           │\n" +
+                "│                    │           │* Illumina NovaSeq 6000                      │\n" +
+                "│                    │           │* NextSeq 500                                │\n" +
+                "│                    │           │* NextSeq 550                                │\n" +
+                "│                    │           │* Illumina iSeq 100                          │\n" +
+                "│                    │           │* MinION                                     │\n" +
+                "│                    │           │* GridION                                    │\n" +
+                "│                    │           │* PromethION                                 │\n" +
+                "│                    │           │* PacBio RS                                  │\n" +
+                "│                    │           │* PacBio RS II                               │\n" +
+                "│                    │           │* Sequel                                     │\n" +
+                "│                    │           │* Sequel II                                  │\n" +
+                "│                    │           │* BGISEQ-500                                 │\n" +
+                "│                    │           │* 454 GS                                     │\n" +
+                "│                    │           │* 454 GS 20                                  │\n" +
+                "│                    │           │* 454 GS FLX                                 │\n" +
+                "│                    │           │* 454 GS FLX+                                │\n" +
+                "│                    │           │* 454 GS FLX Titanium                        │\n" +
+                "│                    │           │* 454 GS Junior                              │\n" +
+                "│                    │           │* Ion Torrent PGM                            │\n" +
+                "│                    │           │* Ion Torrent Proton                         │\n" +
+                "│                    │           │* Ion Torrent S5                             │\n" +
+                "│                    │           │* Ion Torrent S5 XL                          │\n" +
+                "│                    │           │* AB 3730xL Genetic Analyzer                 │\n" +
+                "│                    │           │* AB 3730 Genetic Analyzer                   │\n" +
+                "│                    │           │* AB 3500xL Genetic Analyzer                 │\n" +
+                "│                    │           │* AB 3500 Genetic Analyzer                   │\n" +
+                "│                    │           │* AB 3130xL Genetic Analyzer                 │\n" +
+                "│                    │           │* AB 3130 Genetic Analyzer                   │\n" +
+                "│                    │           │* AB 310 Genetic Analyzer                    │\n" +
+                "│                    │           │* unspecified                                │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│LIBRARY_SOURCE      │Mandatory  │Source material:                             │\n" +
+                "│                    │           │* GENOMIC                                    │\n" +
+                "│                    │           │* GENOMIC SINGLE CELL                        │\n" +
+                "│                    │           │* TRANSCRIPTOMIC                             │\n" +
+                "│                    │           │* TRANSCRIPTOMIC SINGLE CELL                 │\n" +
+                "│                    │           │* METAGENOMIC                                │\n" +
+                "│                    │           │* METATRANSCRIPTOMIC                         │\n" +
+                "│                    │           │* SYNTHETIC                                  │\n" +
+                "│                    │           │* VIRAL RNA                                  │\n" +
+                "│                    │           │* OTHER                                      │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│LIBRARY_SELECTION   │Mandatory  │Method used to select or enrich the source   │\n" +
+                "│                    │           │material:                                    │\n" +
+                "│                    │           │* RANDOM                                     │\n" +
+                "│                    │           │* PCR                                        │\n" +
+                "│                    │           │* RANDOM PCR                                 │\n" +
+                "│                    │           │* RT-PCR                                     │\n" +
+                "│                    │           │* HMPR                                       │\n" +
+                "│                    │           │* MF                                         │\n" +
+                "│                    │           │* repeat fractionation                       │\n" +
+                "│                    │           │* size fractionation                         │\n" +
+                "│                    │           │* MSLL                                       │\n" +
+                "│                    │           │* cDNA                                       │\n" +
+                "│                    │           │* cDNA_randomPriming                         │\n" +
+                "│                    │           │* cDNA_oligo_dT                              │\n" +
+                "│                    │           │* PolyA                                      │\n" +
+                "│                    │           │* Oligo-dT                                   │\n" +
+                "│                    │           │* Inverse rRNA                               │\n" +
+                "│                    │           │* Inverse rRNA selection                     │\n" +
+                "│                    │           │* ChIP                                       │\n" +
+                "│                    │           │* ChIP-Seq                                   │\n" +
+                "│                    │           │* MNase                                      │\n" +
+                "│                    │           │* DNase                                      │\n" +
+                "│                    │           │* Hybrid Selection                           │\n" +
+                "│                    │           │* Reduced Representation                     │\n" +
+                "│                    │           │* Restriction Digest                         │\n" +
+                "│                    │           │* 5-methylcytidine antibody                  │\n" +
+                "│                    │           │* MBD2 protein methyl-CpG binding domain     │\n" +
+                "│                    │           │* CAGE                                       │\n" +
+                "│                    │           │* RACE                                       │\n" +
+                "│                    │           │* MDA                                        │\n" +
+                "│                    │           │* padlock probes capture method              │\n" +
+                "│                    │           │* other                                      │\n" +
+                "│                    │           │* unspecified                                │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│LIBRARY_STRATEGY    │Mandatory  │Sequencing technique:                        │\n" +
+                "│                    │           │* WGS                                        │\n" +
+                "│                    │           │* WGA                                        │\n" +
+                "│                    │           │* WXS                                        │\n" +
+                "│                    │           │* RNA-Seq                                    │\n" +
+                "│                    │           │* ssRNA-seq                                  │\n" +
+                "│                    │           │* miRNA-Seq                                  │\n" +
+                "│                    │           │* ncRNA-Seq                                  │\n" +
+                "│                    │           │* FL-cDNA                                    │\n" +
+                "│                    │           │* EST                                        │\n" +
+                "│                    │           │* Hi-C                                       │\n" +
+                "│                    │           │* ATAC-seq                                   │\n" +
+                "│                    │           │* WCS                                        │\n" +
+                "│                    │           │* RAD-Seq                                    │\n" +
+                "│                    │           │* CLONE                                      │\n" +
+                "│                    │           │* POOLCLONE                                  │\n" +
+                "│                    │           │* AMPLICON                                   │\n" +
+                "│                    │           │* CLONEEND                                   │\n" +
+                "│                    │           │* FINISHING                                  │\n" +
+                "│                    │           │* ChIP-Seq                                   │\n" +
+                "│                    │           │* MNase-Seq                                  │\n" +
+                "│                    │           │* DNase-Hypersensitivity                     │\n" +
+                "│                    │           │* Bisulfite-Seq                              │\n" +
+                "│                    │           │* CTS                                        │\n" +
+                "│                    │           │* MRE-Seq                                    │\n" +
+                "│                    │           │* MeDIP-Seq                                  │\n" +
+                "│                    │           │* MBD-Seq                                    │\n" +
+                "│                    │           │* Tn-Seq                                     │\n" +
+                "│                    │           │* VALIDATION                                 │\n" +
+                "│                    │           │* FAIRE-seq                                  │\n" +
+                "│                    │           │* SELEX                                      │\n" +
+                "│                    │           │* RIP-Seq                                    │\n" +
+                "│                    │           │* ChIA-PET                                   │\n" +
+                "│                    │           │* Synthetic-Long-Read                        │\n" +
+                "│                    │           │* Targeted-Capture                           │\n" +
+                "│                    │           │* Tethered Chromatin Conformation Capture    │\n" +
+                "│                    │           │* NOMe-seq                                   │\n" +
+                "│                    │           │* OTHER                                      │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│DESCRIPTION         │Optional   │Experiment description                       │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│PLATFORM            │Optional   │Sequencing platform:                         │\n" +
+                "│                    │           │* ILLUMINA                                   │\n" +
+                "│                    │           │* PACBIO_SMRT                                │\n" +
+                "│                    │           │* OXFORD_NANOPORE                            │\n" +
+                "│                    │           │* BGISEQ                                     │\n" +
+                "│                    │           │* LS454                                      │\n" +
+                "│                    │           │* ION_TORRENT                                │\n" +
+                "│                    │           │* CAPILLARY                                  │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│LIBRARY_CONSTRUCTION│Optional   │Protocol used to construct the sequencing    │\n" +
+                "│_PROTOCOL           │           │library                                      │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│LIBRARY_NAME        │Optional   │Library name                                 │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│INSERT_SIZE         │Optional   │Insert size for paired reads                 │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│FASTQ               │0-2 files  │Fastq file                                   │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│BAM                 │0-1 files  │BAM file                                     │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│CRAM                │0-1 files  │CRAM file                                    │\n" +
+                "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
+                "\n" +
+                "File groups for 'reads' context:\n" +
+                "\n" +
+                "┌─────┬───┬─┬─┐\n" +
+                "│FASTQ│1-2│ │ │\n" +
+                "├─────┼───┼─┼─┤\n" +
+                "│BAM  │   │ │1│\n" +
+                "├─────┼───┼─┼─┤\n" +
+                "│CRAM │   │1│ │\n" +
+                "└─────┴───┴─┴─┘\n");
     }
 }

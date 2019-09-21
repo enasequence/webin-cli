@@ -77,6 +77,10 @@ public enum WebinCliContext {
     return manifestClass;
   }
 
+  public Class<? extends ManifestReader> getManifestReaderClass() {
+    return manifestReaderClass;
+  }
+
   public static <M extends Manifest, R extends ValidationResponse> WebinCliExecutor<M, R> createExecutor(
       Class<M> manifestClass, WebinCliParameters parameters) {
     for (WebinCliContext context : WebinCliContext.values()) {

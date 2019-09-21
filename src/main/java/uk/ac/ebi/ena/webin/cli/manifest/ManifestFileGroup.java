@@ -24,4 +24,8 @@ public class ManifestFileGroup {
     public List<ManifestFileCount> getFileCounts() {
         return fileCounts;
     }
+
+    public int getFileCountsSize() {
+        return fileCounts.size();
+    }
 }

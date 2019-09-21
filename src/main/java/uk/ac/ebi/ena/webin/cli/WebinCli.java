@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
@@ -19,10 +20,17 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import de.vandermeer.asciitable.AT_Renderer;
+import de.vandermeer.asciitable.AsciiTable;
+import de.vandermeer.asciitable.CWC_FixedWidth;
+import de.vandermeer.asciitable.CWC_LongestWord;
+import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
@@ -36,6 +44,8 @@ import ch.qos.logback.core.OutputStreamAppender;
 import picocli.CommandLine;
 
 import uk.ac.ebi.ena.webin.cli.entity.Version;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.service.SubmitService;
 import uk.ac.ebi.ena.webin.cli.service.VersionService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -64,13 +74,14 @@ public class WebinCli {
     private static int
     __main( String... args )
     {
+    	System.setProperty("picocli.trace", "OFF");
         try 
         {
             WebinCliCommand params = parseParameters( args );
 			if( null == params )
 				return USER_ERROR;
 
-            if (params.help || params.version)
+            if (params.help || params.fields || params.version)
 				return SUCCESS;
             
             checkVersion( params.test );
@@ -272,14 +283,24 @@ public class WebinCli {
 		{
 			commandLine.parse(args);
 			if (commandLine.isUsageHelpRequested()) {
-				commandLine.usage(System.out);
-				params.help = true;
+				if (params.help) {
+					commandLine.usage(System.out);
+				}
+				if (params.fields) {
+					if (params.context != null) {
+						printManifestHelp(params.context, System.out);
+					}
+					else {
+						for (WebinCliContext context: WebinCliContext.values()) {
+							printManifestHelp(context, System.out);
+						}
+					}
+				}
 				return params;
 			}
 
 			if (commandLine.isVersionHelpRequested()) {
 				commandLine.printVersionHelp(System.out);
-				params.version = true;
 				return params;
 			}
 
@@ -326,6 +347,148 @@ public class WebinCli {
 			printHelp();
 			return null;
 		}
+	}
+
+	public static void printManifestHelp(WebinCliContext context, PrintStream out) {
+		ManifestReader<?> manifestReader =
+				new ManifestReaderBuilder(context.getManifestReaderClass()).build();
+		out.println();
+		out.println("Manifest fields for '" + context.name() + "' context:");
+		out.println();
+		printManifestFieldHelp(manifestReader, out);
+		out.println();
+		out.println("File groups for '" + context.name() + "' context:");
+		out.println();
+		printManifestFileGroupHelp(manifestReader, out);
+	}
+
+	private static void printManifestFieldHelp(ManifestReader<?> manifestReader, PrintStream out) {
+		AsciiTable table = new AsciiTable();
+		AT_Renderer renderer = AT_Renderer.create();
+		CWC_FixedWidth cwc = new CWC_FixedWidth();
+		cwc.add(20);
+		cwc.add(11);
+		cwc.add(45);
+		renderer.setCWC(cwc);
+		table.setRenderer(renderer);
+		table.addRule();
+		table.addRow("Field", "Cardinality", "Description");
+
+		Comparator<ManifestFieldDefinition> comparator = (f1, f2) ->
+		{
+			ManifestFieldType t1 = f1.getType();
+			ManifestFieldType t2 = f2.getType();
+			int min1 = f1.getRecommendedMinCount();
+			int min2 = f2.getRecommendedMinCount();
+			if(t1 == t2 && min1 == min2) {
+				return 0;
+			}
+			if(t1 == t2 && min1 > min2) {
+				return -1;
+			}
+			if(t1 == t2 && min1 < min2) {
+				return 1;
+			}
+			if(t1 == ManifestFieldType.META) {
+				return -1;
+			}
+			return 1;
+		};
+		manifestReader.getFields().stream()
+				.filter(field -> field.getRecommendedMaxCount() > 0)
+				.sorted(comparator)
+				.forEach(field ->
+			printManifestFieldHelp(table, field)
+		);
+		table.addRule();
+		table.setPadding(0);
+		table.setTextAlignment(TextAlignment.LEFT);
+		out.println(table.render());
+	}
+
+	private static void printManifestFieldHelp(AsciiTable table, ManifestFieldDefinition field) {
+    	String name = field.getName();
+		if (field.getSynonym() != null) {
+			name  += " (" + field.getSynonym() + ")";
+		}
+
+		String cardinality;
+    	int minCount = field.getRecommendedMinCount();
+		int maxCount = field.getRecommendedMaxCount();
+		if (field.getType() == ManifestFieldType.META) {
+			cardinality = minCount > 0 ? "Mandatory" : "Optional";
+		}
+		else {
+			if (minCount == maxCount) {
+				cardinality = minCount + " file";
+			}
+			else {
+				cardinality = minCount + "-" + maxCount + " files";
+			}
+		}
+		String value = "";
+		if (field.getType() == ManifestFieldType.META) {
+			for (ManifestFieldProcessor processor : field.getFieldProcessors()) {
+				if (processor instanceof CVFieldProcessor) {
+					value = ": <br/>* " + ((CVFieldProcessor) processor).getValues().stream().collect(Collectors.joining("<br/>* "));
+				}
+			}
+		}
+		table.addRule();
+		table.addRow(name, cardinality, field.getDescription() + value);
+	}
+
+	private static void printManifestFileGroupHelp(ManifestReader<?> manifestReader, PrintStream out) {
+		AsciiTable table = new AsciiTable();
+		AT_Renderer renderer = AT_Renderer.create();
+		CWC_LongestWord cwc = new CWC_LongestWord();
+		renderer.setCWC(cwc);
+		table.setRenderer(renderer);
+		table.addRule();
+
+		List<ManifestFieldDefinition> fields = manifestReader.getFields()
+				.stream()
+				.filter(field -> field.getType() == ManifestFieldType.FILE)
+				.collect(Collectors.toList());
+
+		List<ManifestFileGroup> groups =
+				manifestReader.getFileGroups()
+						.stream()
+						.sorted(Comparator.comparingInt(ManifestFileGroup::getFileCountsSize))
+						.collect(Collectors.toList());
+
+		fields.stream().forEach( field -> {
+			ArrayList<String> list = new ArrayList<>();
+			list.add(field.getName());
+			groups
+					.stream()
+					.forEach( group -> list.add(printManifestFileCountHelp(field, group)));
+			table.addRow(list);
+			table.addRule();
+		} );
+		table.setPadding(0);
+		table.setTextAlignment(TextAlignment.LEFT);
+		out.println(table.render());
+	}
+
+	private static String printManifestFileCountHelp(ManifestFieldDefinition field, ManifestFileGroup group) {
+		ManifestFileCount count = null;
+		for (ManifestFileCount fileCount : group.getFileCounts()) {
+			if (field.getName().equals(fileCount.getFileType())) {
+				count = fileCount;
+				break;
+			}
+		}
+		if (count == null) {
+			return "";
+		}
+		if (count.getMaxCount() != null) {
+			if (count.getMinCount() == count.getMaxCount()) {
+				return String.valueOf(count.getMinCount());
+			}
+			return count.getMinCount() + "-" + count.getMaxCount();
+		}
+		return ">=" + count.getMinCount();
 	}
 
 	public WebinCliParameters getParameters() {

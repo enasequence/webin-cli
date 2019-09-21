@@ -247,10 +247,13 @@ ManifestReader<M extends Manifest> {
 
         try
         {
-            ManifestFieldDefinition fieldDefinition = Stream.concat( infoFields.stream(), fields.stream() )
-                                                            .filter( field -> field.getName().equalsIgnoreCase( fieldName ) )
-                                                            .findFirst()
-                                                            .get();
+            ManifestFieldDefinition fieldDefinition = Stream
+                    .concat( infoFields.stream(), fields.stream() )
+                    .filter(
+                            field -> field.getName().equalsIgnoreCase( fieldName ) ||
+                                     field.matchSynonym( fieldName ))
+                    .findFirst()
+                    .get();
 
             if( fieldValue != null )
             {

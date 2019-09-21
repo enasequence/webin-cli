@@ -26,7 +26,7 @@ public class AuthorProcessorTest {
         ManifestFieldDefinition fieldDef = new ManifestFieldDefinition.Builder().
                 type(ManifestFieldType.META).
                 name(GenomeManifestReader.Field.AUTHORS).
-                desc(GenomeManifestReader.Description.AUTHORS).optional().notInSpreadsheet().
+                desc(GenomeManifestReader.Description.AUTHORS).optional().
                 build().get(0);
         ManifestFieldValue manifestField = new ManifestFieldValue(fieldDef,"Senthil .V", null);
         new AuthorProcessor().process(manifestField);

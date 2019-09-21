@@ -48,11 +48,10 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 	Description 
 	{
 		String NAME         = "Unique transcriptome assembly name";
-		String ASSEMBLYNAME = "Unique transcriptome assembly name";
 		String STUDY        = "Study accession or name";
 		String SAMPLE       = "Sample accession or name";
-		String RUN_REF      = "Run accession or name comma-separated list";
-		String ANALYSIS_REF = "Analysis accession or name comma-separated list";
+		String RUN_REF      = "Run accession or name as a comma-separated list";
+		String ANALYSIS_REF = "Analysis accession or name as a comma-separated list";
 
 		String DESCRIPTION  = "Transcriptome assembly description";
 		String PROGRAM      = "Assembly program";
@@ -73,7 +72,7 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		super(parameters,
 				// Fields.
 				new ManifestFieldDefinition.Builder()
-					.meta().optional().requiredInSpreadsheet().name( Field.NAME ).desc( Description.NAME ).and()
+					.meta().required().name( Field.NAME         ).desc( Description.NAME ).synonym(Field.ASSEMBLYNAME).and()
 					.meta().required().name( Field.STUDY        ).desc( Description.STUDY        ).processor( factory.getStudyProcessor()).and()
 					.meta().required().name( Field.SAMPLE       ).desc( Description.SAMPLE       ).processor( factory.getSampleProcessor(), factory.getSampleXmlProcessor()).and()
                     .meta().optional().name( Field.RUN_REF      ).desc( Description.RUN_REF      ).processor( factory.getRunProcessor() ).and()
@@ -83,10 +82,9 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 					.meta().required().name( Field.PLATFORM     ).desc( Description.PLATFORM     ).and()
 					.file().optional().name( Field.FASTA        ).desc( Description.FASTA        ).processor(getFastaProcessors()).and()
 					.file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor(getFlatfileProcessors()).and()
-					.meta().optional().notInSpreadsheet().name( Field.ASSEMBLYNAME ).desc( Description.ASSEMBLYNAME ).and()
-					.meta().optional().notInSpreadsheet().name( Field.TPA ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
-					.meta().optional().name( Field.AUTHORS ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
-					.meta().optional().name( Field.ADDRESS ).desc( Description.ADDRESS )
+					.meta().optional().name( Field.TPA          ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
+					.meta().optional().name( Field.AUTHORS      ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
+					.meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS )
 					.build()
 				,
 				// File groups.
@@ -135,19 +133,6 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 	processManifest() 
 	{
 		manifest.setName(getResult().getValue( Field.NAME ));
-		
-		if( StringUtils.isBlank( manifest.getName() ) )
-		{
-			manifest.setName(getResult().getValue( Field.ASSEMBLYNAME ));
-		}
-
-		if (getParameters().isManifestValidateMandatory()) {
-			if( StringUtils.isBlank( manifest.getName() ) )
-			{
-				error( WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR, Field.NAME + " or " + Field.ASSEMBLYNAME );
-			}
-		}
-
 		manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
 		
 		Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);

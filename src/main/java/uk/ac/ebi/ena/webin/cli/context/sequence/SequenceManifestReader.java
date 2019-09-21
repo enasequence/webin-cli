@@ -42,8 +42,8 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
     {
         String NAME         = "Unique sequence submission name";
         String STUDY        = "Study accession or name";
-        String RUN_REF      = "Run accession or name comma-separated list";
-        String ANALYSIS_REF = "Analysis accession or name comma-separated list";
+        String RUN_REF      = "Run accession or name as a comma-separated list";
+        String ANALYSIS_REF = "Analysis accession or name as a comma-separated list";
         String DESCRIPTION  = "Sequence submission description";
         String TAB          = "Tabulated file";
         String FLATFILE     = "Flat file";

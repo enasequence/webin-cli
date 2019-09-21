@@ -10,24 +10,40 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class ManifestCVList
 {
-    private final Properties p = new Properties();
+    private final Properties cvMap = new Properties();
+    private final ArrayList<String> cvList = new ArrayList();
+
+    private static InputStream getResourceAsStream( File resource ) {
+        return ManifestCVList.class.getClassLoader().getResourceAsStream(
+                resource.getPath().replaceAll( "\\\\+", "/" ));
+    }
 
     public ManifestCVList( File resource )
     {
-        try
-        {
-            this.p.load( ManifestCVList.class.getClassLoader().getResourceAsStream( resource.getPath().replaceAll( "\\\\+", "/" ) ) );
-        } catch( IOException e )
-        {
+        try (InputStream in = getResourceAsStream( resource )) {
+            this.cvMap.load(in);
+        }
+        catch( IOException e ) {
+            throw new RuntimeException( e );
+        }
+
+        try (InputStream in = getResourceAsStream( resource )) {
+                new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8))
+                        .lines()
+                        .forEach(line -> cvList.add(line.split("\\s*=\\s*")[0]
+                                .replaceAll("\\\\", "")));
+        }
+        catch( IOException e ) {
             throw new RuntimeException( e );
         }
     }
@@ -35,7 +51,8 @@ public class ManifestCVList
     public ManifestCVList( String ... values )
     {
         for (String value: values) {
-            p.setProperty(value, value);
+            cvMap.setProperty(value, value);
+            cvList.add(value);
         }
     }
 
@@ -50,40 +67,36 @@ public class ManifestCVList
     public boolean
     contains( String key )
     {
-        return p.keySet().stream().anyMatch( e -> normalizeString( e ).equals( normalizeString( key ) ) );
+        return cvMap.keySet().stream().anyMatch(e -> normalizeString( e ).equals( normalizeString( key ) ) );
     }
-
 
     public String
     getKey( String key )
     {
-        return p.entrySet().stream()
+        return cvMap.entrySet().stream()
                 .map( e -> new AbstractMap.SimpleEntry<>( normalizeString( e.getKey() ), String.valueOf( e.getKey() ) ) )
                 .filter( e -> e.getKey().equals( normalizeString( key ) ) ).findFirst()
                 .orElse( new AbstractMap.SimpleEntry<>( null, null ) ).getValue();
     }
 
-
     public String
     getValue( String key )
     {
-        return p.entrySet().stream()
+        return cvMap.entrySet().stream()
                 .map( e -> new AbstractMap.SimpleEntry<>( normalizeString( e.getKey() ), String.valueOf( e.getValue() ) ) )
                 .filter( e -> e.getKey().equals( normalizeString( key ) ) ).findFirst()
                 .orElse( new AbstractMap.SimpleEntry<>( null, null ) ).getValue();
     }
 
-
     public List<String>
     keyList()
     {
-        return p.keySet().stream().map( String::valueOf ).collect( Collectors.toList() );
+        return cvList.stream().collect( Collectors.toList() );
     }
-
 
     public String
     toString()
     {
-        return String.valueOf( p.entrySet() );
+        return String.valueOf( cvMap.entrySet() );
     }
 }
