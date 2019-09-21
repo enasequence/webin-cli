@@ -273,12 +273,10 @@ public class WebinCli {
 		CommandLine commandLine = new CommandLine(params);
 		commandLine.setExpandAtFiles(false);
 		commandLine.parse(args);
-		
-		List<String> jvm_args  = ManagementFactory.getRuntimeMXBean().getInputArguments();
-		String classpath = ManagementFactory.getRuntimeMXBean().getClassPath();
-		
-		commandLine.setCommandName( "java " + ( jvm_args.isEmpty() ? "" : jvm_args.stream().collect( Collectors.joining( " ", "", " " ) ) ) + "-jar " + classpath );
-				
+
+        String cmd = "java -jar webin-cli-" + getVersionForUsage() + ".jar";
+        commandLine.setCommandName(cmd);
+
 		try
 		{
 			commandLine.parse(args);
@@ -518,7 +516,7 @@ public class WebinCli {
 	getVersionForUsage() 
 	{
 		String version = getVersion();
-		return String.format( "%s", null == version ? "no version declared" : version );
+		return String.format( "%s", null == version ? "?" : version );
 	}
 
 	

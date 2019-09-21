@@ -19,7 +19,10 @@ import picocli.CommandLine.Option;
         headerHeading = "%n",
         descriptionHeading = "%nDescription:%n%n",
         optionListHeading = "%nOptions:%n",
-        description = "Validate and submit files to ENA using the Webin submission service. Detailed instructions are available from:\nhttps://ena-docs.readthedocs.io/en/latest/cli.html",
+        description =
+                "Validate and submit files to ENA using the Webin submission service. "+
+                "Use the -fields option to see supported manifest fields for all contexts or for a specific -context. " +
+                "Detailed instructions are available from:\nhttps://ena-docs.readthedocs.io/en/latest/cli.html",
         versionProvider = WebinCliCommand.VersionProvider.class,
         footer=" Exit codes: 0=SUCCESS, 1=INTERNAL ERROR, 2=USER ERROR, 3=VALIDATION ERROR",
         sortOptions = false)
