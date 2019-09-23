@@ -25,8 +25,12 @@ public class HttpHeaderBuilder {
     }
 
     public HttpHeaderBuilder basicAuth(String userName, String password) {
+        return set("Authorization", basicAuthHeaderValue(userName, password));
+    }
+
+    public static String basicAuthHeaderValue(String userName, String password) {
         String auth = userName + ":" + password;
-        return set("Authorization", "Basic " + Base64.getEncoder().encodeToString(auth.getBytes()));
+        return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
     }
 
     public HttpHeaderBuilder multipartFormData() {

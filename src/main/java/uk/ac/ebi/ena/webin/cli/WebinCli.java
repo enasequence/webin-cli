@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 import de.vandermeer.asciitable.AT_Renderer;
 import de.vandermeer.asciitable.AsciiTable;
 import de.vandermeer.asciitable.CWC_FixedWidth;
-import de.vandermeer.asciitable.CWC_LongestWord;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.AnsiConsole;
@@ -46,6 +44,7 @@ import picocli.CommandLine;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.service.LoginService;
 import uk.ac.ebi.ena.webin.cli.service.SubmitService;
 import uk.ac.ebi.ena.webin.cli.service.VersionService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
@@ -83,7 +82,8 @@ public class WebinCli {
 
             if (params.help || params.fields || params.version)
 				return SUCCESS;
-            
+
+            checkLogin( params );
             checkVersion( params.test );
 
             WebinCli webinCli = new WebinCli( params );
@@ -536,7 +536,16 @@ public class WebinCli {
 		return WebinCli.class.getPackage().getImplementationVersion();
 	}
 
-	
+
+	private static void checkLogin( WebinCliCommand parameters )
+	{
+		// Replace user name with the Webin-N submission account name.
+		parameters.userName = new LoginService(
+				parameters.userName,
+				parameters.password,
+				parameters.test).login();
+	}
+
 	private static void checkVersion( boolean test )
 	{
 		String currentVersion = getVersion();
