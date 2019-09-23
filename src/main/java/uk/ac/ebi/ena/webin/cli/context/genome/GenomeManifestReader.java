@@ -97,7 +97,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 	);
 
 	public static final ArrayList<ManifestFileGroup> PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS = new ManifestFileCount.Builder()
-			.group()
+			.group("Sequences in a fasta file.")
 			.required(Field.FASTA)
 			.build();
 
@@ -134,20 +134,23 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 				,
 				// File groups.
 				new ManifestFileCount.Builder()
-					.group()
+					.group("Sequences in a fasta file. No chromosomes. An optional AGP file and an optional annotated flat file.")
 					.required(Field.FASTA)
 					.optional(Field.AGP)
 					.optional(Field.FLATFILE)
-					.and().group()
+					.and()
+					.group("Sequences in a fasta file. A list of chromosomes. An optional AGP file, an optional annotated flat file and an optional list of unlocalised sequences.")
 					.required(Field.FASTA)
 					.required(Field.CHROMOSOME_LIST)
 					.optional(Field.UNLOCALISED_LIST)
 					.optional(Field.AGP)
 					.optional(Field.FLATFILE)
-					.and().group()
+					.and()
+					.group("Sequences in an annotated flat file. An optional AGP file.")
 					.required(Field.FLATFILE)
 					.optional(Field.AGP)
-					.and().group()
+					.and()
+					.group("Sequences in an annotated flat file. A list of chromosomes. An optional AGP file and an optional list of unlocalised sequences.")
 					.required(Field.FLATFILE)
 					.required(Field.CHROMOSOME_LIST)
 					.optional(Field.UNLOCALISED_LIST)

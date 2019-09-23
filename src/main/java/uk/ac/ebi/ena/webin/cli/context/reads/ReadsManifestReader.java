@@ -112,11 +112,13 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
-                        .group()
+                        .group("Single or paired sequence reads in one or two fastq files.")
                         .required(Field.FASTQ, 2)
-                        .and().group()
+                        .and()
+                        .group("Sequence reads in a CRAM file.")
                         .required(Field.CRAM)
-                        .and().group()
+                        .and()
+                        .group("Sequence reads in a BAM file.")
                         .required(Field.BAM)
                         .build()
         );

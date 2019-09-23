@@ -72,9 +72,10 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
-                    .group()
+                    .group("Annotated sequences in a comma separated file.")
                     .required( Field.TAB )
-                    .and().group()
+                    .and()
+                    .group("Annotated sequences in a flat file.")
                     .required( Field.FLATFILE )
                     .build()
         );

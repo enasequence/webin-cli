@@ -16,6 +16,11 @@ import java.util.List;
 public class ManifestFileGroup {
 
     private final List<ManifestFileCount> fileCounts = new ArrayList<>();
+    private final String description;
+
+    public ManifestFileGroup(String description) {
+        this.description = description;
+    }
 
     public void addFileCount(ManifestFileCount fileCount) {
         fileCounts.add(fileCount);
@@ -27,5 +32,9 @@ public class ManifestFileGroup {
 
     public int getFileCountsSize() {
         return fileCounts.size();
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

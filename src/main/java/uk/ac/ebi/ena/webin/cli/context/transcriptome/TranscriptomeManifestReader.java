@@ -89,9 +89,10 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 				,
 				// File groups.
 				new ManifestFileCount.Builder()
-					.group()
+					.group("Sequences in a fasta file.")
 					.required(Field.FASTA)
-					.and().group()
+					.and()
+					.group("Sequences in an annotated flat file.")
 					.required(Field.FLATFILE)
 					.build()
 		);

@@ -38,10 +38,11 @@ public class ManifestFileCount {
 
         public static class Group {
             private final Builder builder;
-            private final ManifestFileGroup fileGroup = new ManifestFileGroup();
+            private final ManifestFileGroup fileGroup;
 
-            private Group(Builder builder) {
+            private Group(Builder builder, String description) {
                 this.builder = builder;
+                this.fileGroup = new ManifestFileGroup(description);
                 builder.fileGroups.add(this.fileGroup);
             }
 
@@ -79,8 +80,8 @@ public class ManifestFileCount {
             }
         }
 
-        public Group group() {
-            return new Group(this);
+        public Group group(String description) {
+            return new Group(this, description);
         }
     }
 }

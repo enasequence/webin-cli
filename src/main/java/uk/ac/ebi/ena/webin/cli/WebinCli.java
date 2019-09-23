@@ -355,7 +355,7 @@ public class WebinCli {
 		out.println();
 		printManifestFieldHelp(manifestReader, out);
 		out.println();
-		out.println("File groups for '" + context.name() + "' context:");
+		out.println("Data files for '" + context.name() + "' context:");
 		out.println();
 		printManifestFileGroupHelp(manifestReader, out);
 	}
@@ -437,13 +437,6 @@ public class WebinCli {
 	}
 
 	private static void printManifestFileGroupHelp(ManifestReader<?> manifestReader, PrintStream out) {
-		AsciiTable table = new AsciiTable();
-		AT_Renderer renderer = AT_Renderer.create();
-		CWC_LongestWord cwc = new CWC_LongestWord();
-		renderer.setCWC(cwc);
-		table.setRenderer(renderer);
-		table.addRule();
-
 		List<ManifestFieldDefinition> fields = manifestReader.getFields()
 				.stream()
 				.filter(field -> field.getType() == ManifestFieldType.FILE)
@@ -455,13 +448,30 @@ public class WebinCli {
 						.sorted(Comparator.comparingInt(ManifestFileGroup::getFileCountsSize))
 						.collect(Collectors.toList());
 
-		fields.stream().forEach( field -> {
-			ArrayList<String> list = new ArrayList<>();
-			list.add(field.getName());
-			groups
-					.stream()
-					.forEach( group -> list.add(printManifestFileCountHelp(field, group)));
-			table.addRow(list);
+		AsciiTable table = new AsciiTable();
+		AT_Renderer renderer = AT_Renderer.create();
+		CWC_FixedWidth cwc = new CWC_FixedWidth();
+		int tableWidth = 80;
+		int descriptionWidth = 30;
+		cwc.add(descriptionWidth);
+		fields.forEach( field ->
+				cwc.add((tableWidth - descriptionWidth - 2 - fields.size())/fields.size()));
+		renderer.setCWC(cwc);
+		table.setRenderer(renderer);
+		table.addRule();
+
+		ArrayList<String> row = new ArrayList<>();
+		row.add("Data files");
+		fields.stream().forEach( field -> row.add(field.getName()));
+		table.addRow(row);
+		table.addRule();
+
+		groups.stream().forEach( group -> {
+			row.clear();
+			row.add(group.getDescription());
+			fields.stream().forEach( field ->
+				row.add(printManifestFileCountHelp(field, group)));
+			table.addRow(row);
 			table.addRule();
 		} );
 		table.setPadding(0);

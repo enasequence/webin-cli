@@ -105,6 +105,7 @@ public class WebinCliTest {
     public void testPrintManifestHelpGenome() {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         WebinCli.printManifestHelp(WebinCliContext.genome, new PrintStream(os));
+        System.out.println(os.toString());
         assertThat(os.toString().replaceAll("\r", "")).isEqualTo(
             "\n" +
             "Manifest fields for 'genome' context:\n" +
@@ -170,19 +171,33 @@ public class WebinCliTest {
             "│UNLOCALISED_LIST    │0-1 files  │Unlocalised sequence list file               │\n" +
             "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
             "\n" +
-            "File groups for 'genome' context:\n" +
+            "Data files for 'genome' context:\n" +
             "\n" +
-            "┌────────────────┬───┬───┬───┬───┐\n" +
-            "│FASTA           │   │1  │   │1  │\n" +
-            "├────────────────┼───┼───┼───┼───┤\n" +
-            "│FLATFILE        │1  │0-1│1  │0-1│\n" +
-            "├────────────────┼───┼───┼───┼───┤\n" +
-            "│AGP             │0-1│0-1│0-1│0-1│\n" +
-            "├────────────────┼───┼───┼───┼───┤\n" +
-            "│CHROMOSOME_LIST │   │   │1  │1  │\n" +
-            "├────────────────┼───┼───┼───┼───┤\n" +
-            "│UNLOCALISED_LIST│   │   │0-1│0-1│\n" +
-            "└────────────────┴───┴───┴───┴───┘\n");
+            "┌──────────────────────────────┬────────┬────────┬────────┬────────┬────────┐\n" +
+            "│Data files                    │FASTA   │FLATFILE│AGP     │CHROMOSO│UNLOCALI│\n" +
+            "│                              │        │        │        │ME_LIST │SED_LIST│\n" +
+            "├──────────────────────────────┼────────┼────────┼────────┼────────┼────────┤\n" +
+            "│Sequences in an annotated flat│        │1       │0-1     │        │        │\n" +
+            "│file. An optional AGP file.   │        │        │        │        │        │\n" +
+            "├──────────────────────────────┼────────┼────────┼────────┼────────┼────────┤\n" +
+            "│Sequences in a fasta file. No │1       │0-1     │0-1     │        │        │\n" +
+            "│chromosomes. An optional AGP  │        │        │        │        │        │\n" +
+            "│file and an optional annotated│        │        │        │        │        │\n" +
+            "│flat file.                    │        │        │        │        │        │\n" +
+            "├──────────────────────────────┼────────┼────────┼────────┼────────┼────────┤\n" +
+            "│Sequences in an annotated flat│        │1       │0-1     │1       │0-1     │\n" +
+            "│file. A list of chromosomes.  │        │        │        │        │        │\n" +
+            "│An optional AGP file and an   │        │        │        │        │        │\n" +
+            "│optional list of unlocalised  │        │        │        │        │        │\n" +
+            "│sequences.                    │        │        │        │        │        │\n" +
+            "├──────────────────────────────┼────────┼────────┼────────┼────────┼────────┤\n" +
+            "│Sequences in a fasta file. A  │1       │0-1     │0-1     │1       │0-1     │\n" +
+            "│list of chromosomes. An       │        │        │        │        │        │\n" +
+            "│optional AGP file, an optional│        │        │        │        │        │\n" +
+            "│annotated flat file and an    │        │        │        │        │        │\n" +
+            "│optional list of unlocalised  │        │        │        │        │        │\n" +
+            "│sequences.                    │        │        │        │        │        │\n" +
+            "└──────────────────────────────┴────────┴────────┴────────┴────────┴────────┘\n");
     }
 
     @Test
@@ -232,13 +247,16 @@ public class WebinCliTest {
                 "│FLATFILE            │0-1 files  │Flat file                                    │\n" +
                 "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
                 "\n" +
-                "File groups for 'transcriptome' context:\n" +
+                "Data files for 'transcriptome' context:\n" +
                 "\n" +
-                "┌────────┬─┬─┐\n" +
-                "│FASTA   │1│ │\n" +
-                "├────────┼─┼─┤\n" +
-                "│FLATFILE│ │1│\n" +
-                "└────────┴─┴─┘\n");
+                "┌──────────────────────────────┬───────────────────────┬───────────────────────┐\n" +
+                "│Data files                    │FASTA                  │FLATFILE               │\n" +
+                "├──────────────────────────────┼───────────────────────┼───────────────────────┤\n" +
+                "│Sequences in a fasta file.    │1                      │                       │\n" +
+                "├──────────────────────────────┼───────────────────────┼───────────────────────┤\n" +
+                "│Sequences in an annotated flat│                       │1                      │\n" +
+                "│file.                         │                       │                       │\n" +
+                "└──────────────────────────────┴───────────────────────┴───────────────────────┘\n");
     }
 
     @Test
@@ -274,13 +292,17 @@ public class WebinCliTest {
                 "│FLATFILE            │0-1 files  │Flat file                                    │\n" +
                 "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
                 "\n" +
-                "File groups for 'sequence' context:\n" +
+                "Data files for 'sequence' context:\n" +
                 "\n" +
-                "┌────────┬─┬─┐\n" +
-                "│TAB     │1│ │\n" +
-                "├────────┼─┼─┤\n" +
-                "│FLATFILE│ │1│\n" +
-                "└────────┴─┴─┘\n");
+                "┌──────────────────────────────┬───────────────────────┬───────────────────────┐\n" +
+                "│Data files                    │TAB                    │FLATFILE               │\n" +
+                "├──────────────────────────────┼───────────────────────┼───────────────────────┤\n" +
+                "│Annotated sequences in a comma│1                      │                       │\n" +
+                "│separated file.               │                       │                       │\n" +
+                "├──────────────────────────────┼───────────────────────┼───────────────────────┤\n" +
+                "│Annotated sequences in a flat │                       │1                      │\n" +
+                "│file.                         │                       │                       │\n" +
+                "└──────────────────────────────┴───────────────────────┴───────────────────────┘\n");
     }
 
     @Test
@@ -456,14 +478,18 @@ public class WebinCliTest {
                 "│CRAM                │0-1 files  │CRAM file                                    │\n" +
                 "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n" +
                 "\n" +
-                "File groups for 'reads' context:\n" +
+                "Data files for 'reads' context:\n" +
                 "\n" +
-                "┌─────┬───┬─┬─┐\n" +
-                "│FASTQ│1-2│ │ │\n" +
-                "├─────┼───┼─┼─┤\n" +
-                "│BAM  │   │ │1│\n" +
-                "├─────┼───┼─┼─┤\n" +
-                "│CRAM │   │1│ │\n" +
-                "└─────┴───┴─┴─┘\n");
+                "┌──────────────────────────────┬───────────────┬───────────────┬───────────────┐\n" +
+                "│Data files                    │FASTQ          │BAM            │CRAM           │\n" +
+                "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +
+                "│Single or paired sequence     │1-2            │               │               │\n" +
+                "│reads in one or two fastq     │               │               │               │\n" +
+                "│files.                        │               │               │               │\n" +
+                "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +
+                "│Sequence reads in a CRAM file.│               │               │1              │\n" +
+                "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +
+                "│Sequence reads in a BAM file. │               │1              │               │\n" +
+                "└──────────────────────────────┴───────────────┴───────────────┴───────────────┘\n");
     }
 }
