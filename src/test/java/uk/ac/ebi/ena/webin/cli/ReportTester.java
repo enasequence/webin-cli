@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,33 +22,85 @@ public class ReportTester {
         this.executor = executor;
     }
 
-    public void inFileReport(String dataFile, String message) {
-        inFileReport(Paths.get(dataFile), message);
+    // Submission report
+    //
+
+    public void textInSubmissionReport(String message) {
+        textInReport(executor.getSubmissionReportFile(), message);
     }
 
-    public void inFileReport(File dataFile, String message) {
-        inFileReport(dataFile.toPath(), message);
+    public void textNotInSubmissionReport(String message) {
+        textNotInReport(executor.getSubmissionReportFile(), message);
     }
 
-    public void inFileReport(Path dataFile, String message) {
-        Path reportFile = executor.getValidationDir().toPath()
-                .resolve(dataFile.getFileName().toString() + ".report");
-        assertThat(readFile(reportFile)).contains(message);
+    public void regexInSubmissionReport(String message) {
+        regexInReport(executor.getSubmissionReportFile(), message);
     }
 
-    public void inSubmissionReport(String message) {
-        Path reportFile = executor.getSubmissionReportFile().toPath();
-        assertThat(readFile(reportFile)).contains(message);
+    public void regexNotInSubmissionReport(String message) {
+        regexNotInReport(executor.getSubmissionReportFile(), message);
     }
 
-    public void inManifestReport(String message) {
-        Path reportFile = executor.getManifestReportFile().toPath();
-        assertThat(readFile(reportFile)).contains(message);
+    // Manifest report
+    //
+
+    public void textInManifestReport(String message) {
+        textInReport(executor.getManifestReportFile(), message);
     }
 
-    public void notInManifestReport(String message) {
-        Path reportFile = executor.getManifestReportFile().toPath();
-        assertThat(readFile(reportFile)).doesNotContain(message);
+    public void textNotInManifestReport(String message) {
+        textNotInReport(executor.getManifestReportFile(), message);
+    }
+
+    public void regexInManifestReport(String regex) {
+        regexInReport(executor.getManifestReportFile(), regex);
+    }
+
+    public void regexNotInManifestReport(String regex) {
+        regexNotInReport(executor.getManifestReportFile(), regex);
+    }
+
+    // Data file report
+    //
+
+    private File getFileReport(Path dataFile) {
+        return executor.getValidationDir().toPath()
+                .resolve(dataFile.getFileName().toString() + ".report").toFile();
+    }
+
+    public void textInFileReport(String dataFile, String message) {
+        textInReport(getFileReport(Paths.get(dataFile)), message);
+    }
+
+    public void textNotInFileReport(String dataFile, String message) {
+        textNotInReport(getFileReport(Paths.get(dataFile)), message);
+    }
+
+    public void regexInFileReport(String dataFile, String message) {
+        regexInReport(getFileReport(Paths.get(dataFile)), message);
+    }
+
+    public void regexNotInFileReport(String dataFile, String message) {
+        regexNotInReport(getFileReport(Paths.get(dataFile)), message);
+    }
+
+    // Generic report
+    //
+
+    private static void textInReport(File reportFile, String message) {
+        assertThat(readFile(reportFile.toPath())).contains(message);
+    }
+
+    private static void textNotInReport(File reportFile, String message) {
+        assertThat(readFile(reportFile.toPath())).doesNotContain(message);
+    }
+
+    private static void regexInReport(File reportFile, String regex) {
+        assertThat(readFile(reportFile.toPath())).containsPattern(Pattern.compile(regex));
+    }
+
+    private static void regexNotInReport(File reportFile, String regex) {
+        assertThat(readFile(reportFile.toPath())).doesNotContainPattern(Pattern.compile(regex));
     }
 
     private static String

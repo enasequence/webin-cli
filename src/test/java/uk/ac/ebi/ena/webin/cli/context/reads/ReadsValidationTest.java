@@ -53,7 +53,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).inFileReport("invalid.bam", "File contains no valid reads");
+        new ReportTester(executor).textInFileReport("invalid.bam", "File contains no valid reads");
     }
 
     @Test
@@ -90,7 +90,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).inFileReport("invalid.fastq.gz", "does not match FASTQ regexp");
+        new ReportTester(executor).textInFileReport("invalid.fastq.gz", "does not match FASTQ regexp");
     }
 
     @Test
@@ -163,9 +163,9 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).inFileReport("invalid_not_paired_1.fastq.gz",
+        new ReportTester(executor).textInFileReport("invalid_not_paired_1.fastq.gz",
             "Detected paired fastq submission with less than 20% of paired reads");
-        new ReportTester(executor).inFileReport("invalid_not_paired_2.fastq.gz",
+        new ReportTester(executor).textInFileReport("invalid_not_paired_2.fastq.gz",
             "Detected paired fastq submission with less than 20% of paired reads");
     }
 
@@ -190,7 +190,7 @@ public class ReadsValidationTest {
                 .hasMessage("");
 
         System.out.println(executor.getValidationDir().getAbsolutePath());
-        new ReportTester(executor).inFileReport("valid.fastq.gz", "Multiple (1) occurance of read name");
+        new ReportTester(executor).textInFileReport("valid.fastq.gz", "Multiple (1) occurance of read name");
     }
 
     @Test
@@ -212,7 +212,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).inFileReport("invalid.cram", "File contains no valid reads");
+        new ReportTester(executor).textInFileReport("invalid.cram", "File contains no valid reads");
     }
 
     @Test

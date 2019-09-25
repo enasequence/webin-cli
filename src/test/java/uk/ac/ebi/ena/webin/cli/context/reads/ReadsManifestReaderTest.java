@@ -43,7 +43,7 @@ ReadsManifestReaderTest {
             new WebinCliExecutorBuilder(
                     ReadsManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK);
 
-    private void assertManifestError(File manifestFile, String message) {
+    private void assertErrorTextInManifestReport(File manifestFile, String message) {
         WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
                 executorBuilder.build(manifestFile, WebinCliTestUtils.createTempDir());
 
@@ -51,10 +51,21 @@ ReadsManifestReaderTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessageStartingWith("Invalid manifest file");
 
-        new ReportTester(executor).inManifestReport(message);
+        new ReportTester(executor).textInManifestReport(message);
     }
 
-    private void assertNoManifestError(File manifestFile, String message) {
+    private void assertErrorRegexInManifestReport(File manifestFile, String regex) {
+        WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
+                executorBuilder.build(manifestFile, WebinCliTestUtils.createTempDir());
+
+        assertThatThrownBy(executor::readManifest)
+                .isInstanceOf(WebinCliException.class)
+                .hasMessageStartingWith("Invalid manifest file");
+
+        new ReportTester(executor).regexInManifestReport(regex);
+    }
+
+    private void assertErrorTextNotInManifestError(File manifestFile, String message) {
         WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
                 executorBuilder.build(manifestFile, RESOURCE_DIR);
 
@@ -62,7 +73,7 @@ ReadsManifestReaderTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessageStartingWith("Invalid manifest file");
 
-        new ReportTester(executor).notInManifestReport(message);
+        new ReportTester(executor).textNotInManifestReport(message);
     }
 
     @Before
@@ -181,36 +192,36 @@ ReadsManifestReaderTest {
     @Test
     public void
     missingPlatformAndInstrument() {
-        assertManifestError(
+        assertErrorRegexInManifestReport(
                 new ManifestBuilder()
                         .build(),
-                "ERROR: Platform and/or instrument should be defined");
+                WebinCliMessage.READS_MANIFEST_READER_MISSING_PLATFORM_AND_INSTRUMENT_ERROR.regex());
     }
 
     @Test
     public void
     unspecifiedInstrumentMissingPlatform() {
-        assertManifestError(
+        assertErrorRegexInManifestReport(
                 new ManifestBuilder()
                         .field(Field.INSTRUMENT, "unspecified")
                         .build(),
-                "ERROR: Platform and/or instrument should be defined");
+                WebinCliMessage.READS_MANIFEST_READER_MISSING_PLATFORM_AND_INSTRUMENT_ERROR.regex());
     }
 
     @Test
     public void
     negativeInsertSize() {
-        assertManifestError(
+        assertErrorRegexInManifestReport(
                 new ManifestBuilder()
                         .field(Field.INSERT_SIZE, "-1")
                         .build(),
-                "ERROR: Invalid field value. Non-negative integer expected.");
+                WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_INTEGER_ERROR.regex());
     }
 
     @Test
     public void
     invalidQualityScore() {
-        assertManifestError(
+        assertErrorTextInManifestReport(
                 new ManifestBuilder()
                         .field(Field.QUALITY_SCORE, "PHRED_34")
                         .build(),
@@ -220,7 +231,7 @@ ReadsManifestReaderTest {
     @Test
     public void
     validQualityScore() {
-        assertNoManifestError(
+        assertErrorTextNotInManifestError(
                 new ManifestBuilder()
                         .field(Field.QUALITY_SCORE, "PHRED_33")
                         .build(),
@@ -231,11 +242,11 @@ ReadsManifestReaderTest {
     public void
     dataFileIsMissing() {
         for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
-            assertManifestError(
+            assertErrorRegexInManifestReport(
                     new ManifestBuilder()
                             .file(fileType, "missing")
                             .build(),
-                    "ERROR: Could not read data file");
+                    WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR.regex());
         }
     }
 
@@ -244,11 +255,11 @@ ReadsManifestReaderTest {
     dataFileIsDirectory() {
         File dir = WebinCliTestUtils.createTempDir();
         for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
-            assertManifestError(
+            assertErrorRegexInManifestReport(
                     new ManifestBuilder()
                             .file(fileType, dir)
                             .build(),
-                    "ERROR: Could not read data file");
+                    WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR.regex());
         }
     }
 
@@ -256,7 +267,7 @@ ReadsManifestReaderTest {
     public void
     dataFileNoPath() {
         for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
-            assertManifestError(
+            assertErrorTextInManifestReport(
                     new ManifestBuilder()
                             .file(fileType, "")
                             .build(),
@@ -268,7 +279,7 @@ ReadsManifestReaderTest {
     public void
     dataFileNonASCIIPath() {
         for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
-            assertManifestError(
+            assertErrorTextInManifestReport(
                     new ManifestBuilder()
                             .file(fileType, TempFileBuilder.empty("Š"))
                             .build(),

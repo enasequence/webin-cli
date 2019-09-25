@@ -187,7 +187,7 @@ public class GenomeValidationTest {
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).inSubmissionReport("fasta file validation failed");
+    new ReportTester(executor).textInSubmissionReport("fasta file validation failed");
   }
 
   @Test
@@ -201,7 +201,7 @@ public class GenomeValidationTest {
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).inSubmissionReport("flatfile file validation failed");
+    new ReportTester(executor).textInSubmissionReport("flatfile file validation failed");
   }
 
   @Test
@@ -218,7 +218,7 @@ public class GenomeValidationTest {
     assertThatThrownBy(executor::validateSubmission)
         .isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).inSubmissionReport("agp file validation failed");
+    new ReportTester(executor).textInSubmissionReport("agp file validation failed");
   }
 
   @Test
@@ -236,7 +236,7 @@ public class GenomeValidationTest {
     assertThatThrownBy(executor::validateSubmission)
             .isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).inSubmissionReport("Sequenceless chromosomes are not allowed in assembly");
+    new ReportTester(executor).textInSubmissionReport("Sequenceless chromosomes are not allowed in assembly");
 
   }
 }
