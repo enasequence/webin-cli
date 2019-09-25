@@ -384,14 +384,14 @@ ManifestReader<M extends Manifest> {
                 field.setValue(inputDir.resolve(Paths.get(fieldValue)).toString());
             }
             else {
-                error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR);
+                error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR, fieldValue);
                 return;
             }
 
             validateFileCompression(result, field.getValue());
         }
         catch (Throwable ex) {
-            error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR);
+            error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR, fieldValue);
         }
     }
 
@@ -615,6 +615,9 @@ ManifestReader<M extends Manifest> {
                 .filter(field -> field.getDefinition().getType() == ManifestFieldType.FILE &&
                         field.getName().equals(fieldName))
                 .map(field -> getFile(inputDir, field))
+                .map(file -> file.toPath())
+                .map(path -> path.normalize())
+                .map(path -> path.toFile())
                 .collect(Collectors.toList());
     }
 

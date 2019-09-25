@@ -98,6 +98,13 @@ public class WebinCliSubmissionTest {
     }
 
     @Test
+    public void testReadsSubmissionCramNormalizePath() {
+        ManifestBuilder manifest = readsManifest()
+                .file("CRAM", "../" + READS_RESOURCE_DIR.getName() + "/valid.cram");
+        WebinCliBuilder.READS.build(READS_RESOURCE_DIR, manifest).execute();
+    }
+
+    @Test
     public void testReadsSubmissionCramWithInfo() {
         File infoFile = readsManifest().build();
         ManifestBuilder manifest = new ManifestBuilder()

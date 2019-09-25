@@ -235,7 +235,7 @@ ReadsManifestReaderTest {
                     new ManifestBuilder()
                             .file(fileType, "missing")
                             .build(),
-                    "ERROR: Could not read file.");
+                    "ERROR: Could not read data file");
         }
     }
 
@@ -248,7 +248,7 @@ ReadsManifestReaderTest {
                     new ManifestBuilder()
                             .file(fileType, dir)
                             .build(),
-                    "ERROR: Could not read file.");
+                    "ERROR: Could not read data file");
         }
     }
 

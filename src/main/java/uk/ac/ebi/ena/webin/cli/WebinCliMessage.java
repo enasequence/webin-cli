@@ -58,7 +58,7 @@ public enum WebinCliMessage implements MessageFormatSource {
     MANIFEST_READER_INFO_FILE_READ_ERROR("Could not read info file: \"{0}\"."),
     MANIFEST_READER_INVALID_MANIFEST_FILE_ERROR("Invalid manifest file. Please see the error report file \"{0}\"."),
     MANIFEST_READER_UNKNOWN_FIELD_ERROR("Unknown field: {0}."),
-    MANIFEST_READER_INVALID_FILE_FIELD_ERROR("Could not read file."),
+    MANIFEST_READER_INVALID_FILE_FIELD_ERROR("Could not read data file: \"{0}\"."),
     MANIFEST_READER_INVALID_POSITIVE_INTEGER_ERROR("Invalid field value. Non-negative integer expected."),
     MANIFEST_READER_INVALID_POSITIVE_FLOAT_ERROR("Invalid field value. Non-negative float expected."),
     MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR("Missing mandatory field {0}."),
