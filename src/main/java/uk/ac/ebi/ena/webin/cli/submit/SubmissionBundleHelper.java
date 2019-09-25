@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationOrigin;
 import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
@@ -59,9 +60,9 @@ SubmissionBundleHelper
                 return null;
             }
 
-            ValidationResult result = new ValidationResult();
-            result.add(sb.validate(), submissionBundleFile.getAbsolutePath());
-            result.log();
+            ValidationResult result = new ValidationResult(
+                    new ValidationOrigin("submission bundle", submissionBundleFile.getAbsolutePath()));
+            sb.validate(result);
 
             if(result.count(ValidationMessage.Severity.INFO) > 0) // TODO: potentially dangerous comparison
             {

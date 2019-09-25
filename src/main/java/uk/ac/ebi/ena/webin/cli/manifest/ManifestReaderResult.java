@@ -21,8 +21,12 @@ public class
 ManifestReaderResult 
 {
 
-    private final ValidationResult validationResult = new ValidationResult();
+    private final ValidationResult validationResult;
     private Collection<ManifestFieldValue> fields = new ArrayList<>();
+
+    public ManifestReaderResult(ValidationResult validationResult) {
+        this.validationResult = validationResult;
+    }
 
     public ValidationResult
     getValidationResult()

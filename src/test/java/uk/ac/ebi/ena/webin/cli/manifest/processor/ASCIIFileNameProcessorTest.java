@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 
 public class 
 ASCIIFileNameProcessorTest
@@ -27,20 +28,30 @@ ASCIIFileNameProcessorTest
         ASCIIFileNameProcessor processor = new ASCIIFileNameProcessor();
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.bam" );
-        Assert.assertEquals( 0, processor.process( fieldValue ).count() );
+        ValidationResult result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertEquals( 0, result.count() );
         Assert.assertEquals( "a.bam", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "/a/b/c.bam" );
-        Assert.assertEquals( 0, processor.process( fieldValue ).count() );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertEquals( 0, result.count() );
         
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a:\\B\\c.bam" );
-        Assert.assertEquals( 0, processor.process( fieldValue ).count() );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertEquals( 0, result.count() );
         
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a|b.cram" );
-        Assert.assertEquals( false, processor.process( fieldValue ).isValid() );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertEquals( false, result.isValid() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a&b.cram" );
-        Assert.assertEquals( false, processor.process( fieldValue ).isValid() );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertEquals( false, result.isValid() );
         Assert.assertEquals( "a&b.cram", fieldValue.getValue() );
     }
 }

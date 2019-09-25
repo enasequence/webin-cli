@@ -49,15 +49,14 @@ AnalysisProcessor implements ManifestFieldProcessor
         this.callback = callback;
     }
 
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue )
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
         String[] ids = value.split( ", *" );
         Set<String> idsSet = new HashSet<>();
         List<Analysis> analysis_list = new ArrayList<>( ids.length );
-        ValidationResult result = new ValidationResult();
-        
+
         for( String a : ids )
         {
             String id = a.trim();
@@ -86,7 +85,5 @@ AnalysisProcessor implements ManifestFieldProcessor
                                               .collect( Collectors.joining( ", " ) ) );
             callback.notify( analysis_list );
         }
-        
-        return result;
     }
 }

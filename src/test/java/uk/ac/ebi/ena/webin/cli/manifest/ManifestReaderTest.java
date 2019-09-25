@@ -25,6 +25,7 @@ import uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.message.listener.MessageCounter;
 
 public class ManifestReaderTest {
 
@@ -80,137 +81,167 @@ public class ManifestReaderTest {
 
     @Test public void ErrorReadingManifest() {
         ManifestReader reader = new ManifestReaderOneMetaFieldMin0Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_MANIFEST_FILE_READ_ERROR.regex());
+        reader.addListener(counter);
         File manifest = new File("MISSING_MANIFEST");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_MANIFEST_FILE_READ_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void ErrorReadingInfo() {
         ManifestReader reader = new ManifestReaderOneMetaFieldMin0Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INFO_FILE_READ_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("INFO MISSING_INFO");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INFO_FILE_READ_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void UnknownField() {
         ManifestReader reader = new ManifestReaderOneMetaFieldMin0Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_UNKNOWN_FIELD_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("UNKNOWN_FIELD_1 VALUE_1");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_UNKNOWN_FIELD_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void InvalidField() {
         ManifestReader reader = new ManifestReaderOneMetaFieldMin0Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.CV_FIELD_PROCESSOR_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("META_FIELD_1 INVALID_VALUE");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.CV_FIELD_PROCESSOR_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void MissingField() {
         ManifestReader reader = new ManifestReaderTwoMetaFieldMin1Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("META_FIELD_1\nMETA_FIELD_2 \n");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR.regex()), 2);
+        Assert.assertEquals(counter.getCount(), 2);
     }
 
     @Test public void TooManyFields() {
         ManifestReader reader = new ManifestReaderTwoMetaFieldMin1Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_TOO_MANY_FIELDS_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("META_FIELD_1 VALUE1\nMETA_FIELD_2 VALUE2\nMETA_FIELD_2 VALUE3\n");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_TOO_MANY_FIELDS_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void InvalidFileField() {
         ManifestReader reader = new ManifestReaderOneFileFieldMin0Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_1 MISSING_FILE.txt\n");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void InvalidFileSuffix() {
         ManifestReader reader = new ManifestReaderOneFileFieldMin0Max1();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_1 MISSING_FILE.bam\n");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void MissingFiles() {
         ManifestReader reader = new ManifestReaderFiles();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("\n");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void ValidFileGroup() {
         ManifestReader reader = new ManifestReaderFiles();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_1 MISSING_FILE");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex()), 0);
+        Assert.assertEquals(counter.getCount(), 0);
     }
 
     @Test public void ValidFileGroup2() {
         ManifestReader reader = new ManifestReaderFiles();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_2 MISSING_FILE\nFILE_FIELD_2 MISSING_FILE");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex()), 0);
+        Assert.assertEquals(counter.getCount(), 0);
     }
 
     @Test public void ValidFileGroup3() {
         ManifestReader reader = new ManifestReaderFiles();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_3 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex()), 0);
+        Assert.assertEquals(counter.getCount(), 0);
     }
 
     @Test public void InvalidFileGroup_DifferentGroups() {
         ManifestReader reader = new ManifestReaderFiles();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_1 MISSING_FILE\nFILE_FIELD_2 MISSING_FILE");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void InvalidFileGroup_TooManyFiles() {
         ManifestReader reader = new ManifestReaderFiles();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_1 MISSING_FILE\nFILE_FIELD_1 MISSING_FILE");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     @Test public void InvalidFileGroup_TooManyFiles2() {
         ManifestReader reader = new ManifestReaderFiles();
+        MessageCounter counter = MessageCounter.regex(
+                Severity.ERROR,
+                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex());
+        reader.addListener(counter);
         File manifest = createManifest("FILE_FIELD_3 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE");
         reader.readManifest(inputDir, manifest);
-        Assert.assertEquals(reader.getValidationResult().countRegex(
-                Severity.ERROR,
-                WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR.regex()), 1);
+        Assert.assertEquals(counter.getCount(), 1);
     }
 
     private static File createManifest(String contents) {

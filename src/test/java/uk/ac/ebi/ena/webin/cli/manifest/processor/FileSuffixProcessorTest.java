@@ -18,23 +18,26 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 
 public class 
 FileSuffixProcessorTest 
 {
-
     @Test public void 
     test() 
     {
+        ValidationResult result = new ValidationResult();
 
         FileSuffixProcessor processor = new FileSuffixProcessor( ManifestFileSuffix.BAM_FILE_SUFFIX );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.bam" );
-        Assert.assertTrue( processor.process( fieldValue ).isValid() );
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
         Assert.assertEquals( "a.bam", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.cram" );
-        Assert.assertFalse( processor.process( fieldValue ).isValid() );
+        processor.process( result, fieldValue );
+        Assert.assertFalse( result.isValid() );
         Assert.assertEquals( "a.cram", fieldValue.getValue() );
     }
 }

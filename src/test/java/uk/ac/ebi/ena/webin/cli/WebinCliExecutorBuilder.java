@@ -47,11 +47,11 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
             this.runProcessor = mock(RunProcessor.class);
             this.analysisProcessor = mock(AnalysisProcessor.class);
 
-            when(this.sampleProcessor.process(any())).thenReturn(new ValidationResult());
-            when(this.studyProcessor.process(any())).thenReturn(new ValidationResult());
-            when(this.sampleXmlProcessor.process(any())).thenReturn(new ValidationResult());
-            when(this.runProcessor.process(any())).thenReturn(new ValidationResult());
-            when(this.analysisProcessor.process(any())).thenReturn(new ValidationResult());
+            doNothing().when(this.sampleProcessor).process(any(), any());
+            doNothing().when(this.studyProcessor).process(any(), any());
+            doNothing().when(this.sampleXmlProcessor).process(any(), any());
+            doNothing().when(this.runProcessor).process(any(), any());
+            doNothing().when(this.analysisProcessor).process(any(), any());
         }
     }
 
@@ -61,9 +61,9 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
                 {
                     StudyProcessor processor = (StudyProcessor)invocation.getMock();
                     processor.getCallback().notify(study);
-                    return new ValidationResult();
+                    return null;
                 }
-        ).when(this.studyProcessor).process(any());
+        ).when(this.studyProcessor).process(any(), any());
         return this;
     }
 
@@ -73,9 +73,9 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
                 {
                     SampleProcessor processor = (SampleProcessor)invocation.getMock();
                     processor.getCallback().notify(sample);
-                    return new ValidationResult();
+                    return null;
                 }
-        ).when(this.sampleProcessor).process(any());
+        ).when(this.sampleProcessor).process(any(), any());
         return this;
     }
 

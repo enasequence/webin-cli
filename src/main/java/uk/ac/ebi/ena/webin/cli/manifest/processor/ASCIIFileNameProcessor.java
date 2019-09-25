@@ -23,14 +23,10 @@ ASCIIFileNameProcessor implements ManifestFieldProcessor
 {
     static final Pattern pattern = Pattern.compile( "^([\\p{Alnum}]|\\\\|\\]|\\[|#|-|_|\\.|,|\\/|:|@|\\+| |\\(|\\)|'|~|<|%|\\?)+$" );
 
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue )
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue )
     {
-        ValidationResult result = new ValidationResult();
-        
         if( !pattern.matcher( fieldValue.getValue() ).matches() )
             result.add( ValidationMessage.error( WebinCliMessage.ASCII_FILE_NAME_PROCESSOR_ERROR, fieldValue.getName(), fieldValue.getValue(), pattern.pattern() ) );
-        
-        return result;
     }
 }

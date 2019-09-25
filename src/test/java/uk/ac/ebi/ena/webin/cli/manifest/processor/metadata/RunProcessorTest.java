@@ -15,12 +15,16 @@ import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.crea
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
+
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.message.listener.MessageCounter;
 
 public class
 RunProcessorTest
@@ -37,7 +41,9 @@ RunProcessorTest
                                                        } );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "ERR2836765" /*"ena-RUN-UNIVERSITY OF MINNESOTA-11-10-2018-17:17:11:460-400"*/ );
-        Assert.assertTrue( processor.process( fieldValue ).isValid() );
+        ValidationResult result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
         Assert.assertEquals( "ERR2836765", fieldValue.getValue() );
     }
     
@@ -54,41 +60,41 @@ RunProcessorTest
                                                        } );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "ERR2836765, ERR2836764, ERR2836763,ERR2836763" /*"ena-RUN-UNIVERSITY OF MINNESOTA-11-10-2018-17:17:11:460-400"*/ );
-        Assert.assertTrue( processor.process( fieldValue ).isValid() );
+        ValidationResult result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
         Assert.assertEquals( "ERR2836765, ERR2836764, ERR2836763", fieldValue.getValue() );
     }
 
-    
-    
     @Test public void
     testIncorrect()
     {
         RunProcessor processor = new RunProcessor( parameters, Assert::assertNull );
-
-        final String run_id = "SOME_RUN_ID";
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", run_id );
-        ValidationResult vr = processor.process( fieldValue );
-        Assert.assertFalse( vr.isValid() );
-        Assert.assertEquals( 1, vr.count( Severity.ERROR ) );
-        Assert.assertTrue( vr.getMessages( Severity.ERROR ).iterator().next().getMessage().contains( run_id ) );
-        Assert.assertEquals( run_id, fieldValue.getValue() );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "INVALID" );
+        ValidationResult result = new ValidationResult();
+        MessageCounter counter = MessageCounter.regex(Severity.ERROR,
+                WebinCliMessage.RUN_PROCESSOR_LOOKUP_ERROR.regex());
+        result.add(counter);
+        processor.process( result, fieldValue );
+        Assert.assertFalse( result.isValid() );
+        assertThat( result.count( Severity.ERROR ) ).isOne();
+        assertThat( counter.getCount()).isOne();
     }
-    
     
     @Test public void
     testIncorrectList()
     {
         RunProcessor processor = new RunProcessor( parameters, Assert::assertNull );
 
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "SOME_RUN_ID1, ERR2836765, SOME_RUN_ID2" );
-        ValidationResult vr = processor.process( fieldValue );
-        vr.getMessages( Severity.ERROR ).stream().forEach( System.out::println );
-        Assert.assertFalse( vr.isValid() );
-        Assert.assertEquals( 2, vr.count( Severity.ERROR ) );
-        Assert.assertTrue(  vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_RUN_ID1" ) ) );
-        Assert.assertFalse( vr.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "ERR2836765" ) ) );
-        Assert.assertTrue(  vr.getMessages( Severity.ERROR ).stream().anyMatch(e -> e.getMessage().contains( "SOME_RUN_ID2" ) ) );
-        Assert.assertEquals( "SOME_RUN_ID1, ERR2836765, SOME_RUN_ID2", fieldValue.getValue() );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "INVALID1, ERR2836765, INVALID2" );
+        ValidationResult result = new ValidationResult();
+        MessageCounter counter = MessageCounter.regex(Severity.ERROR,
+                WebinCliMessage.RUN_PROCESSOR_LOOKUP_ERROR.regex());
+        result.add(counter);
+        processor.process( result, fieldValue );
+        Assert.assertFalse( result.isValid() );
+        assertThat( result.count( Severity.ERROR ) ).isEqualTo(2);
+        assertThat( counter.getCount()).isEqualTo(2);
     }
 
 }

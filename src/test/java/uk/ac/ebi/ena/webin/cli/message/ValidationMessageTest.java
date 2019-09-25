@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
+import uk.ac.ebi.ena.webin.cli.message.source.MessageFormatSource;
 
 public class ValidationMessageTest {
 
@@ -51,30 +52,30 @@ public class ValidationMessageTest {
     public void testErrorWithValidationMessage() {
         ValidationMessage message = ValidationMessage.error(new TestMessage("Test"));
         assertThat(message.getSeverity()).isEqualTo(Severity.ERROR);
-        assertThat(message.getOrigins()).hasSize(0);
+        assertThat(message.getOrigin()).hasSize(0);
         assertThat(message.getMessage()).isEqualTo("Test");
-        message.addOrigin("TEST");
-        assertThat(message.getOrigins()).hasSize(1);
-        assertThat(message.getOrigins().get(0)).isEqualTo("TEST");
+        message.appendOrigin(new ValidationOrigin("TEST", "TEST"));
+        assertThat(message.getOrigin()).hasSize(1);
+        assertThat(message.getOrigin().get(0)).hasToString("TEST: TEST");
 
         message = ValidationMessage.error(new TestMessage("Test {0}"), "TEST");
         assertThat(message.getSeverity()).isEqualTo(Severity.ERROR);
-        assertThat(message.getOrigins()).hasSize(0);
+        assertThat(message.getOrigin()).hasSize(0);
         assertThat(message.getMessage()).isEqualTo("Test TEST");
-        message.addOrigin("TEST");
-        assertThat(message.getOrigins()).hasSize(1);
-        assertThat(message.getOrigins().get(0)).isEqualTo("TEST");
+        message.appendOrigin(new ValidationOrigin("TEST", "TEST"));
+        assertThat(message.getOrigin()).hasSize(1);
+        assertThat(message.getOrigin().get(0)).hasToString("TEST: TEST");
     }
 
     @Test
     public void testErrorWithStringMessage() {
         ValidationMessage message = ValidationMessage.error("Test");
         assertThat(message.getSeverity()).isEqualTo(Severity.ERROR);
-        assertThat(message.getOrigins()).hasSize(0);
+        assertThat(message.getOrigin()).hasSize(0);
         assertThat(message.getMessage()).isEqualTo("Test");
-        message.addOrigin("TEST");
-        assertThat(message.getOrigins()).hasSize(1);
-        assertThat(message.getOrigins().get(0)).isEqualTo("TEST");
+        message.appendOrigin(new ValidationOrigin("TEST", "TEST"));
+        assertThat(message.getOrigin()).hasSize(1);
+        assertThat(message.getOrigin().get(0)).hasToString("TEST: TEST");
     }
 
     @Test
@@ -82,40 +83,40 @@ public class ValidationMessageTest {
         Exception ex = new RuntimeException("Test");
         ValidationMessage message = ValidationMessage.error(ex);
         assertThat(message.getSeverity()).isEqualTo(Severity.ERROR);
-        assertThat(message.getOrigins()).hasSize(0);
+        assertThat(message.getOrigin()).hasSize(0);
         assertThat(message.getMessage()).isEqualTo("Test");
-        message.addOrigin("TEST");
-        assertThat(message.getOrigins()).hasSize(1);
-        assertThat(message.getOrigins().get(0)).isEqualTo("TEST");
+        message.appendOrigin(new ValidationOrigin("TEST", "TEST"));
+        assertThat(message.getOrigin()).hasSize(1);
+        assertThat(message.getOrigin().get(0)).hasToString("TEST: TEST");
     }
 
     @Test
     public void testInfoWithValidationMessage() {
         ValidationMessage message = ValidationMessage.info(new TestMessage("Test"));
         assertThat(message.getSeverity()).isEqualTo(Severity.INFO);
-        assertThat(message.getOrigins()).hasSize(0);
+        assertThat(message.getOrigin()).hasSize(0);
         assertThat(message.getMessage()).isEqualTo("Test");
-        message.addOrigin("TEST");
-        assertThat(message.getOrigins()).hasSize(1);
-        assertThat(message.getOrigins().get(0)).isEqualTo("TEST");
+        message.appendOrigin(new ValidationOrigin("TEST", "TEST"));
+        assertThat(message.getOrigin()).hasSize(1);
+        assertThat(message.getOrigin().get(0)).hasToString("TEST: TEST");
 
         message = ValidationMessage.info(new TestMessage("Test {0}"), "TEST");
         assertThat(message.getSeverity()).isEqualTo(Severity.INFO);
-        assertThat(message.getOrigins()).hasSize(0);
+        assertThat(message.getOrigin()).hasSize(0);
         assertThat(message.getMessage()).isEqualTo("Test TEST");
-        message.addOrigin("TEST");
-        assertThat(message.getOrigins()).hasSize(1);
-        assertThat(message.getOrigins().get(0)).isEqualTo("TEST");
+        message.appendOrigin(new ValidationOrigin("TEST", "TEST"));
+        assertThat(message.getOrigin()).hasSize(1);
+        assertThat(message.getOrigin().get(0)).hasToString("TEST: TEST");
     }
 
     @Test
     public void testInfoWithStringMessage() {
         ValidationMessage message = ValidationMessage.info("Test");
         assertThat(message.getSeverity()).isEqualTo(Severity.INFO);
-        assertThat(message.getOrigins()).hasSize(0);
+        assertThat(message.getOrigin()).hasSize(0);
         assertThat(message.getMessage()).isEqualTo("Test");
-        message.addOrigin("TEST");
-        assertThat(message.getOrigins()).hasSize(1);
-        assertThat(message.getOrigins().get(0)).isEqualTo("TEST");
+        message.appendOrigin(new ValidationOrigin("TEST", "TEST"));
+        assertThat(message.getOrigin()).hasSize(1);
+        assertThat(message.getOrigin().get(0)).hasToString("TEST: TEST");
     }
 }

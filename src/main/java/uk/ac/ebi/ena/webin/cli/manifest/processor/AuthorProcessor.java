@@ -18,15 +18,12 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
 public class AuthorProcessor implements ManifestFieldProcessor {
 
-
-
-    @Override
-    public ValidationResult process(ManifestFieldValue fieldValue) {
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue ) {
         if(null != fieldValue.getValue()) {
             fieldValue.setValue(replaceMultiplePeriods(
                     replaceMultipleSpaces(fieldValue.getValue().replaceAll(";", ""))));
         }
-        return new ValidationResult();
     }
 
     private String replaceMultipleSpaces(String string) {

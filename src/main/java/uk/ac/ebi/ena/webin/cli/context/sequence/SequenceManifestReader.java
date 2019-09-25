@@ -107,7 +107,7 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
     @Override public void
     processManifest() 
     {
-        Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+        Map<String, String> authorAndAddress = getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
         if (!authorAndAddress.isEmpty()) {
             if (authorAndAddress.size() == 2) {
                 manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
@@ -116,13 +116,13 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
                 error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
             }
         }
-		manifest.setName(getResult().getValue( Field.NAME ));
-		manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
+		manifest.setName(getManifestReaderResult().getValue( Field.NAME ));
+		manifest.setDescription(getManifestReaderResult().getValue( Field.DESCRIPTION ));
 
         SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.TAB,fastaFile ) ) );
-		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(flatFile->submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.FLATFILE,flatFile ) ) );
+		getFiles( getInputDir(), getManifestReaderResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.TAB,fastaFile ) ) );
+		getFiles( getInputDir(), getManifestReaderResult(), Field.FLATFILE ).forEach(flatFile->submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.FLATFILE,flatFile ) ) );
     }
 
     @Override

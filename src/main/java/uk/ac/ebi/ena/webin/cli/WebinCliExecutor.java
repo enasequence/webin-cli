@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.message.ValidationReporter;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
@@ -70,18 +69,14 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifestReportFile.delete();
 
         try {
-            getManifestReader().readManifest( getParameters().getInputDir().toPath(), getParameters().getManifestFile()  );
+            getManifestReader().readManifest(
+                    getParameters().getInputDir().toPath(),
+                    getParameters().getManifestFile(),
+                    getManifestReportFile());
         } catch (WebinCliException ex) {
             throw ex;
         } catch (Exception ex) {
             throw WebinCliException.systemError(ex, WebinCliMessage.EXECUTOR_INIT_ERROR.format(ex.getMessage()));
-        } finally {
-            if (manifestReader != null && !manifestReader.getValidationResult().isValid()) {
-                manifestReader.getValidationResult().log();
-                try (ValidationReporter reporter = new ValidationReporter(manifestReportFile)) {
-                    reporter.write(manifestReader.getValidationResult());
-                }
-            }
         }
 
         if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {

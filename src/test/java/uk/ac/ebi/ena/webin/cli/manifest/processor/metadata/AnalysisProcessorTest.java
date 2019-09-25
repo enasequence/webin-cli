@@ -10,17 +10,20 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.message.listener.MessageCounter;
 
 public class
 AnalysisProcessorTest
@@ -38,7 +41,9 @@ AnalysisProcessorTest
                                                             } );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", analysis_id );
-        Assert.assertTrue( processor.process( fieldValue ).isValid() );
+        ValidationResult result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
         Assert.assertEquals( analysis_id, fieldValue.getValue() );
     }
     
@@ -55,41 +60,41 @@ AnalysisProcessorTest
                                                              } );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "ERZ690501, ERZ690500, ERZ690500, ERZ690502" );
-        Assert.assertTrue( processor.process( fieldValue ).isValid() );
+        ValidationResult result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
         Assert.assertEquals( "ERZ690501, ERZ690500, ERZ690502", fieldValue.getValue() );
     }
 
-    
-    
     @Test public void
     testIncorrect()
     {
         AnalysisProcessor processor = new AnalysisProcessor( parameters, Assert::assertNull );
 
-        final String analysis_id = "SOME_ANALYSIS_ID";
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", analysis_id );
-        ValidationResult result = processor.process( fieldValue );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "INVALID" );
+        ValidationResult result = new ValidationResult();
+        MessageCounter counter = MessageCounter.regex(Severity.ERROR,
+                WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR.regex());
+        result.add(counter);
+        processor.process( result, fieldValue );
         Assert.assertFalse( result.isValid() );
-        Assert.assertEquals( 1, result.count( Severity.ERROR ) );
-        Assert.assertTrue( result.getMessages( Severity.ERROR ).iterator().next().getMessage().contains( analysis_id ) );
-        Assert.assertEquals( analysis_id, fieldValue.getValue() );
+        assertThat( result.count( Severity.ERROR ) ).isOne();
+        assertThat( counter.getCount()).isOne();
     }
-    
-    
+
     @Test public void
     testIncorrectList()
     {
         AnalysisProcessor processor = new AnalysisProcessor( parameters, Assert::assertNull );
 
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "SOME_ANALYSIS_ID1, ERZ690500, SOME_ANALYSIS_ID2" );
-        ValidationResult result = processor.process( fieldValue );
-        result.getMessages( Severity.ERROR ).stream().forEach( System.out::println );
+        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "INVALID1, ERZ690500, INVALID2" );
+        ValidationResult result = new ValidationResult();
+        MessageCounter counter = MessageCounter.regex(Severity.ERROR,
+                WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR.regex());
+        result.add(counter);
+        processor.process( result, fieldValue );
         Assert.assertFalse( result.isValid() );
-        Assert.assertEquals( 2, result.count( Severity.ERROR ) );
-        Assert.assertTrue(  result.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_ANALYSIS_ID1" ) ) );
-        Assert.assertFalse( result.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "ERZ690500" ) ) );
-        Assert.assertTrue(  result.getMessages( Severity.ERROR ).stream().anyMatch( e -> e.getMessage().contains( "SOME_ANALYSIS_ID2" ) ) );
-        Assert.assertEquals( "SOME_ANALYSIS_ID1, ERZ690500, SOME_ANALYSIS_ID2", fieldValue.getValue() );
+        assertThat( result.count( Severity.ERROR ) ).isEqualTo(2);
+        assertThat( counter.getCount()).isEqualTo(2);
     }
-
 }

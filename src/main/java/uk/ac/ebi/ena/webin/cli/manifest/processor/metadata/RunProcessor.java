@@ -46,10 +46,9 @@ RunProcessor implements ManifestFieldProcessor
         this.callback = callback;
     }
 
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue )
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue )
     {
-        ValidationResult result = new ValidationResult();
         String value = fieldValue.getValue();
         String[] ids = value.split( ", *" );
         Set<String> idsSet = new HashSet<>();
@@ -85,7 +84,5 @@ RunProcessor implements ManifestFieldProcessor
             
             callback.notify( run_list );
         }
-        
-        return result;
     }
 }

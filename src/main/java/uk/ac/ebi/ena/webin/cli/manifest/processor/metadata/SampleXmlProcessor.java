@@ -41,8 +41,8 @@ SampleXmlProcessor implements ManifestFieldProcessor
         this.callback = callback;
     }
 
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue )
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
 
@@ -54,11 +54,10 @@ SampleXmlProcessor implements ManifestFieldProcessor
                                                                                 .build();
             Sample source = sampleXmlService.getSample( value );
             callback.notify( source );
-            return new ValidationResult();
-            
+
         } catch( WebinCliException e )
         {
-            return new ValidationResult(ValidationMessage.error(WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage() ) );
+            result.add(ValidationMessage.error(WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
         }
     }
 }

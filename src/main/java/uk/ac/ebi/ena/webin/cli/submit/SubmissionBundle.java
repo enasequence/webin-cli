@@ -193,11 +193,9 @@ SubmissionBundle implements Serializable
     }
 
 
-    public ValidationResult
-    validate( )
+    public void
+    validate( ValidationResult result )
     {
-        ValidationResult result = new ValidationResult();
-
         String current = getVersion();
         if( null != current && !current.equals( this.version ) )
             result.add(ValidationMessage.info( "Program version has changed" ) );
@@ -235,7 +233,6 @@ SubmissionBundle implements Serializable
                 result.add( ValidationMessage.info("Error confirming length for: " + file.getPath() + ", expected: " + fileSize + " got: " + file.length() ) );
 
         }
-        return result;
     }
 
     public static SubmissionBundle read(File submitDir, String manifestMd5) {

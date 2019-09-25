@@ -18,35 +18,32 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
-public class 
-FileSuffixProcessor implements ManifestFieldProcessor 
-{
+public class
+FileSuffixProcessor implements ManifestFieldProcessor {
     private final List<String> suffixes;
 
 
-    public 
-    FileSuffixProcessor( List<String> suffixes ) 
-    {
+    public FileSuffixProcessor(List<String> suffixes) {
         this.suffixes = suffixes;
     }
 
-    
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue ) 
-    {
 
-        if( null == suffixes || suffixes.isEmpty() )
-            return new ValidationResult();
-
-        for( String suffix : suffixes )
-        {
-            if( fieldValue.getValue().endsWith( suffix ) )
-                return new ValidationResult();
+    @Override
+    public void
+    process(ValidationResult result, ManifestFieldValue fieldValue) {
+        if (null == suffixes || suffixes.isEmpty()) {
+            return;
         }
 
-        return new ValidationResult(ValidationMessage.error( WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR,
-                                                         fieldValue.getName(),
-                                                         fieldValue.getValue(),
-                                                         String.join( ", ", suffixes ) ) );
+        for (String suffix : suffixes) {
+            if (fieldValue.getValue().endsWith(suffix)) {
+                return;
+            }
+        }
+
+        result.add(ValidationMessage.error(WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR,
+                fieldValue.getName(),
+                fieldValue.getValue(),
+                String.join(", ", suffixes)));
     }
 }

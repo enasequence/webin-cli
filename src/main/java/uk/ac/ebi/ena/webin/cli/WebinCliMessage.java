@@ -1,6 +1,6 @@
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.ena.webin.cli.message.MessageFormatSource;
+import uk.ac.ebi.ena.webin.cli.message.source.MessageFormatSource;
 
 public enum WebinCliMessage implements MessageFormatSource {
 

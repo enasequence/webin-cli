@@ -10,10 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli.message;
 
+import uk.ac.ebi.ena.webin.cli.message.source.MessageSource;
+
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class ValidationMessage {
 
@@ -24,7 +24,7 @@ public class ValidationMessage {
 
     private final Severity severity;
     private final String message;
-    private List<String> origins = new ArrayList<>();
+    private LinkedList<ValidationOrigin> origin = new LinkedList<>();
     private final Exception ex;
 
     public ValidationMessage(Severity severity, MessageSource message, Object... arguments) {
@@ -45,16 +45,26 @@ public class ValidationMessage {
         this.ex = ex;
     }
 
-    public ValidationMessage addOrigin(String ... origins) {
-        for (String origin: origins) {
-            this.origins.add(origin);
+    public ValidationMessage appendOrigin(ValidationOrigin ... origin) {
+        this.origin.addAll(Arrays.asList(origin));
+        return this;
+    }
+
+    public ValidationMessage appendOrigin(List<ValidationOrigin> origin) {
+        this.origin.addAll(origin);
+        return this;
+    }
+
+    public ValidationMessage prependOrigin(ValidationOrigin ... origin) {
+        for (int i = origin.length - 1; i >= 0; i--) {
+            this.origin.addFirst(origin[i]);
         }
         return this;
     }
 
-    public ValidationMessage addOrigin(Collection<String> origins) {
-        for (String origin: origins) {
-            this.origins.add(origin);
+    public ValidationMessage prependOrigin(List<ValidationOrigin> origin) {
+        for (int i = origin.size() - 1; i >= 0; i--) {
+            this.origin.addFirst(origin.get(i));
         }
         return this;
     }
@@ -67,8 +77,8 @@ public class ValidationMessage {
         return message;
     }
 
-    public List<String> getOrigins() {
-        return origins;
+    public List<ValidationOrigin> getOrigin() {
+        return origin;
     }
 
     public Exception getException() {

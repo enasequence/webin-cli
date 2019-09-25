@@ -47,8 +47,8 @@ StudyProcessor implements ManifestFieldProcessor
         return callback;
     }
 
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue )
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
 
@@ -61,13 +61,14 @@ StudyProcessor implements ManifestFieldProcessor
             Study study = studyService.getStudy( value );
             fieldValue.setValue( study.getBioProjectId() );
             callback.notify( study );
-            return new ValidationResult();
-            
+
         } catch( WebinCliException e ) {
             if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
-                return new ValidationResult(ValidationMessage.error(e));
+                result.add(ValidationMessage.error(e));
             }
-            return new ValidationResult(ValidationMessage.error(WebinCliMessage.STUDY_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
+            else {
+                result.add(ValidationMessage.error(WebinCliMessage.STUDY_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
+            }
         }
     }
 }

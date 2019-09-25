@@ -31,43 +31,50 @@ CVFieldProcessorTest
         CVFieldProcessor processor = new CVFieldProcessor( new ManifestCVList( "TEST1", "test2" ) );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST1" );
-        ValidationResult vr = processor.process( fieldValue );
-        Assert.assertTrue( vr.isValid() );
+        ValidationResult result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "test1" );
-        vr = processor.process( fieldValue );
-        Assert.assertTrue( vr.isValid() );
-        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
+        Assert.assertEquals( 1, result.count( Severity.INFO ) );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "te_st1" );
-        vr = processor.process( fieldValue );
-        Assert.assertTrue( vr.isValid() );
-        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
+        Assert.assertEquals( 1, result.count( Severity.INFO ) );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "test2" );
-        vr = processor.process( fieldValue );
-        Assert.assertTrue( vr.isValid() );
-        Assert.assertEquals( 0, vr.count( Severity.INFO ) );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
+        Assert.assertEquals( 0, result.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST2" );
-        vr = processor.process( fieldValue );
-        Assert.assertTrue( vr.isValid() );
-        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
+        Assert.assertEquals( 1, result.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TE_ST2" );
-        vr = processor.process( fieldValue );
-        Assert.assertTrue( vr.isValid() );
-        Assert.assertEquals( 1, vr.count( Severity.INFO ) );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertTrue( result.isValid() );
+        Assert.assertEquals( 1, result.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST3" );
-        vr = processor.process( fieldValue );
-        Assert.assertFalse( vr.isValid() );
+        result = new ValidationResult();
+        processor.process( result, fieldValue );
+        Assert.assertFalse( result.isValid() );
         Assert.assertEquals( "TEST3", fieldValue.getValue() );
     }
 }

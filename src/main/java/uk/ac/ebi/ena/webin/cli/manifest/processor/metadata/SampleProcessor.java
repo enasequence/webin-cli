@@ -47,8 +47,8 @@ SampleProcessor implements ManifestFieldProcessor
         return callback;
     }
 
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue )
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
 
@@ -61,14 +61,15 @@ SampleProcessor implements ManifestFieldProcessor
             Sample sample = sampleService.getSample( value );
             fieldValue.setValue( sample.getBioSampleId() );
             callback.notify( sample );
-            return new ValidationResult();
-            
+
         } catch( WebinCliException e )
         {
             if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
-                return new ValidationResult(ValidationMessage.error(e));
+                result.add(ValidationMessage.error(e));
             }
-            return new ValidationResult(ValidationMessage.error( WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage() ) );
+            else {
+                result.add(ValidationMessage.error(WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
+            }
         }
     }
 }

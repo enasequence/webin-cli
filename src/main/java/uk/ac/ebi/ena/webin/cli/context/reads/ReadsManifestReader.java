@@ -152,54 +152,54 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
     @Override public void
     processManifest()
     {
-        manifest.setName(getResult().getValue( Field.NAME ));
-        manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
+        manifest.setName(getManifestReaderResult().getValue( Field.NAME ));
+        manifest.setDescription(getManifestReaderResult().getValue( Field.DESCRIPTION ));
 
-        if (getResult().getCount(Field.INSTRUMENT) > 0 &&
-                getResult().getField(Field.INSTRUMENT).isValidFieldValueOrFileSuffix())
-            manifest.setInstrument(getResult().getValue(Field.INSTRUMENT));
+        if (getManifestReaderResult().getCount(Field.INSTRUMENT) > 0 &&
+                getManifestReaderResult().getField(Field.INSTRUMENT).isValidFieldValueOrFileSuffix())
+            manifest.setInstrument(getManifestReaderResult().getValue(Field.INSTRUMENT));
 
-        if (getResult().getCount(Field.PLATFORM) > 0 &&
-                getResult().getField(Field.PLATFORM).isValidFieldValueOrFileSuffix())
-            manifest.setPlatform(getResult().getValue(Field.PLATFORM));
+        if (getManifestReaderResult().getCount(Field.PLATFORM) > 0 &&
+                getManifestReaderResult().getField(Field.PLATFORM).isValidFieldValueOrFileSuffix())
+            manifest.setPlatform(getManifestReaderResult().getValue(Field.PLATFORM));
 
-        manifest.setInsertSize(getAndValidatePositiveInteger(getResult().getField(Field.INSERT_SIZE)));
+        manifest.setInsertSize(getAndValidatePositiveInteger(getManifestReaderResult().getField(Field.INSERT_SIZE)));
 
-        if (getResult().getCount(Field.LIBRARY_SOURCE) > 0 &&
-                getResult().getField(Field.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
-            manifest.setLibrarySource(getResult().getValue(Field.LIBRARY_SOURCE));
+        if (getManifestReaderResult().getCount(Field.LIBRARY_SOURCE) > 0 &&
+                getManifestReaderResult().getField(Field.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
+            manifest.setLibrarySource(getManifestReaderResult().getValue(Field.LIBRARY_SOURCE));
 
-        if (getResult().getCount(Field.LIBRARY_SELECTION) > 0 &&
-                getResult().getField(Field.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
-            manifest.setLibrarySelection(getResult().getValue(Field.LIBRARY_SELECTION));
+        if (getManifestReaderResult().getCount(Field.LIBRARY_SELECTION) > 0 &&
+                getManifestReaderResult().getField(Field.LIBRARY_SELECTION).isValidFieldValueOrFileSuffix())
+            manifest.setLibrarySelection(getManifestReaderResult().getValue(Field.LIBRARY_SELECTION));
 
-        if (getResult().getCount(Field.LIBRARY_STRATEGY) > 0 &&
-                getResult().getField(Field.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
-            manifest.setLibraryStrategy(getResult().getValue(Field.LIBRARY_STRATEGY));
+        if (getManifestReaderResult().getCount(Field.LIBRARY_STRATEGY) > 0 &&
+                getManifestReaderResult().getField(Field.LIBRARY_STRATEGY).isValidFieldValueOrFileSuffix())
+            manifest.setLibraryStrategy(getManifestReaderResult().getValue(Field.LIBRARY_STRATEGY));
 
-        manifest.setLibraryConstructionProtocol(getResult().getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL));
-        manifest.setLibraryName(getResult().getValue(Field.LIBRARY_NAME));
+        manifest.setLibraryConstructionProtocol(getManifestReaderResult().getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL));
+        manifest.setLibraryName(getManifestReaderResult().getValue(Field.LIBRARY_NAME));
 
-        if (getResult().getCount(Field.QUALITY_SCORE) > 0) {
-            String qsStr = getResult().getValue(Field.QUALITY_SCORE);
+        if (getManifestReaderResult().getCount(Field.QUALITY_SCORE) > 0) {
+            String qsStr = getManifestReaderResult().getValue(Field.QUALITY_SCORE);
             try {
                 QualityScore qs = QualityScore.valueOf(qsStr);
                 manifest.setQualityScore(qs);
             } catch (Exception ex) {
-                error(WebinCliMessage.READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR, getResult().getValue(Field.QUALITY_SCORE));
+                error(WebinCliMessage.READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR, getManifestReaderResult().getValue(Field.QUALITY_SCORE));
             }
         }
 
-        if (getResult().getCount(Field.__HORIZON) > 0)
-            manifest.setPairingHorizon(getAndValidatePositiveInteger(getResult().getField(Field.__HORIZON)));
+        if (getManifestReaderResult().getCount(Field.__HORIZON) > 0)
+            manifest.setPairingHorizon(getAndValidatePositiveInteger(getManifestReaderResult().getField(Field.__HORIZON)));
 
         processInstrumentAndPlatform();
 
         SubmissionFiles<ReadsManifest.FileType> submissionFiles = manifest.files();
 
-        getFiles( getInputDir(), getResult(), ReadsManifestReader.Field.BAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.BAM, file ) ) );
-        getFiles( getInputDir(), getResult(), ReadsManifestReader.Field.CRAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.CRAM, file ) ) );
-        getFiles( getInputDir(), getResult(), ReadsManifestReader.Field.FASTQ ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.FASTQ, file ) ) );
+        getFiles( getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.BAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.BAM, file ) ) );
+        getFiles( getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.CRAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.CRAM, file ) ) );
+        getFiles( getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.FASTQ ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.FASTQ, file ) ) );
     }
 
     private void

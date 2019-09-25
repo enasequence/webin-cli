@@ -16,6 +16,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.message.listener.MessageCounter;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.io.File;
@@ -121,11 +122,13 @@ public class ManifestReaderTester<M extends Manifest> {
 
   public ManifestReader<M> testError(
       ManifestBuilder manifest, File inputDir, WebinCliMessage message) {
-    ManifestReader<M> reader = test(manifest, inputDir);
-    assertThat(reader.getValidationResult().countRegex(
-            ValidationMessage.Severity.ERROR,
-            message.regex()))
-        .isGreaterThanOrEqualTo(1);
+      MessageCounter counter = MessageCounter.regex(
+              ValidationMessage.Severity.ERROR,
+              message.regex());
+      ManifestReader<M> reader = create();
+      reader.addListener(counter);
+      reader.readManifest(inputDir.toPath(), manifest.build(inputDir));
+     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
     return reader;
   }
 }

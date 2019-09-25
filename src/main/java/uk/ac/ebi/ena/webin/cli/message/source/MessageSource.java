@@ -1,4 +1,4 @@
-package uk.ac.ebi.ena.webin.cli.message;
+package uk.ac.ebi.ena.webin.cli.message.source;
 
 public interface MessageSource {
     /** Message text with optional argument placeholders.

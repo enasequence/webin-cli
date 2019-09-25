@@ -28,8 +28,10 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 
 import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.message.ValidationOrigin;
 import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.message.listener.MessageListener;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public abstract class
@@ -73,7 +75,8 @@ ManifestReader<M extends Manifest> {
     private final ManifestReaderParameters parameters;
     private final List<ManifestFieldDefinition> fields;
     private final List<ManifestFileGroup> fileGroups;
-    private ManifestReaderResult result;
+    private List<MessageListener> listener = new ArrayList<>();
+    private ManifestReaderResult manifestReaderResult;
     private ManifestReaderState state;
 
 
@@ -97,7 +100,6 @@ ManifestReader<M extends Manifest> {
         this.fields = fields;
         this.fileGroups = null;
     }
-
 
     public
     ManifestReader( ManifestReaderParameters parameters,
@@ -123,33 +125,46 @@ ManifestReader<M extends Manifest> {
         return fileGroups;
     }
 
-    public final ManifestReaderResult
-    getResult()
-    {
-        return result;
+    public void addListener(MessageListener listener) {
+        this.listener.add(listener);
     }
 
+    public final ManifestReaderResult
+    getManifestReaderResult()
+    {
+        return manifestReaderResult;
+    }
 
     public final ValidationResult
     getValidationResult()
     {
-        return result.getValidationResult();
+        return manifestReaderResult.getValidationResult();
     }
 
+    public final void
+    readManifest( Path inputDir, File manifestFile ) {
+        readManifest(inputDir, manifestFile, null);
+    }
 
     public final void
-    readManifest( Path inputDir, File file )
+    readManifest( Path inputDir, File manifestFile, File reportFile )
     {
-        state = new ManifestReaderState( inputDir, file.getPath() );
-        result = new ManifestReaderResult();
+        state = new ManifestReaderState( inputDir, manifestFile.getPath() );
+
+        ValidationOrigin origin = new ValidationOrigin("manifest file", state.fileName);
+        ValidationResult result = new ValidationResult(reportFile, origin);
+
+        listener.forEach(l -> result.add(l));
+
+        manifestReaderResult = new ManifestReaderResult(result);
 
         List<String> manifestLines;
         try
         {
-            manifestLines = Files.readAllLines( file.toPath() );
+            manifestLines = Files.readAllLines( manifestFile.toPath() );
         } catch( IOException ex )
         {
-            error( WebinCliMessage.MANIFEST_READER_MANIFEST_FILE_READ_ERROR, file.getPath() );
+            error( WebinCliMessage.MANIFEST_READER_MANIFEST_FILE_READ_ERROR, manifestFile.getPath() );
             return;
         }
 
@@ -159,7 +174,7 @@ ManifestReader<M extends Manifest> {
 
         // Expand info fields.
 
-        List<ManifestFieldValue> infoFields = result.getFields()
+        List<ManifestFieldValue> infoFields = manifestReaderResult.getFields()
                                                     .stream()
                                                     .filter( field -> field.getName().equalsIgnoreCase( INFO ) )
                                                     .collect( Collectors.toList() );
@@ -196,7 +211,7 @@ ManifestReader<M extends Manifest> {
 
         // Remove info fields.
 
-        result.setFields( result.getFields()
+        manifestReaderResult.setFields( manifestReaderResult.getFields()
                                 .stream()
                                 .filter( field -> !field.getName().equalsIgnoreCase( INFO ) )
                                 .collect( Collectors.toList() ) );
@@ -218,7 +233,7 @@ ManifestReader<M extends Manifest> {
         {
             ManifestFieldValue field = parseManifestLine( inputDir, line );
             if( null != field )
-                result.getFields().add( field );
+                manifestReaderResult.getFields().add( field );
         }
     }
 
@@ -257,13 +272,16 @@ ManifestReader<M extends Manifest> {
 
             if( fieldValue != null )
             {
-                ManifestFieldValue field = new ManifestFieldValue( fieldDefinition, fieldValue, createParseOrigin() );
+                ManifestFieldValue field = new ManifestFieldValue(
+                        fieldDefinition,
+                        fieldValue,
+                        new ValidationOrigin("line number", state.lineNo));
+
+                ValidationResult result = getValidationResult().create(field.getOrigin());
 
                 if( field.getDefinition().getType() == ManifestFieldType.FILE )
                 {
-
                     // Validate file exists.
-
                     if (parameters.isManifestValidateFileExist()) {
                         validateFileExists( inputDir, field );
                     }
@@ -294,7 +312,7 @@ ManifestReader<M extends Manifest> {
             fields.stream()
                   .filter( field -> field.getMinCount() > 0 )
                   .forEach( minCountField -> {
-                      if( result.getFields()
+                      if( manifestReaderResult.getFields()
                                 .stream()
                                 .filter( field -> field.getName().equals( minCountField.getName() ) )
                                 .count() < 1 )
@@ -309,7 +327,7 @@ ManifestReader<M extends Manifest> {
         fields.stream()
               .filter( field -> field.getMaxCount() > 0 )
               .forEach( maxCountField -> {
-                  List<ManifestFieldValue> matchingFields = result.getFields()
+                  List<ManifestFieldValue> matchingFields = manifestReaderResult.getFields()
                                                                   .stream()
                                                                   .filter( field -> field.getName().equals( maxCountField.getName() ) )
                                                                   .collect( Collectors.toList() );
@@ -324,15 +342,15 @@ ManifestReader<M extends Manifest> {
 
        // Validate and fix fields.
 
-        for( ManifestFieldValue fieldValue : result.getFields() )
+        for( ManifestFieldValue fieldValue : manifestReaderResult.getFields() )
         {
             ManifestFieldDefinition field = fieldValue.getDefinition();
 
-            for( ManifestFieldProcessor v : field.getFieldProcessors() )
+            for( ManifestFieldProcessor processor : field.getFieldProcessors() )
             {
-                ValidationResult vr = v.process( fieldValue );
-                fieldValue.setValidFieldValueOrFileSuffix( vr.isValid() );
-                result.getValidationResult().add( vr, fieldValue.getOrigin() );
+                ValidationResult result = getValidationResult().create(fieldValue.getOrigin());
+                processor.process( result, fieldValue );
+                fieldValue.setValidFieldValueOrFileSuffix( result.isValid() );
             }
         }
 
@@ -349,6 +367,8 @@ ManifestReader<M extends Manifest> {
     private void
     validateFileExists( Path inputDir, ManifestFieldValue field )
     {
+        ValidationResult result = getValidationResult().create(field.getOrigin());
+
         String fieldValue = field.getValue();
 
         try
@@ -364,14 +384,14 @@ ManifestReader<M extends Manifest> {
                 field.setValue(inputDir.resolve(Paths.get(fieldValue)).toString());
             }
             else {
-                fieldError(WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR, field);
+                error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR);
                 return;
             }
 
-            validateFileCompression(field.getValue());
+            validateFileCompression(result, field.getValue());
         }
         catch (Throwable ex) {
-            fieldError(WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR, field);
+            error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR);
         }
     }
 
@@ -383,14 +403,14 @@ ManifestReader<M extends Manifest> {
 
         if (parameters.isManifestValidateFileCount()) {
 
-            Map<String, Long> fileCountMap = result.getFields()
+            Map<String, Long> fileCountMap = manifestReaderResult.getFields()
                                                    .stream()
                                                    .filter( field -> field.getDefinition().getType().equals( ManifestFieldType.FILE ) )
                                                    .collect( Collectors.groupingBy( ManifestFieldValue::getName, Collectors.counting() ) );
 
             if( fileCountMap == null || fileCountMap.isEmpty() )
             {
-                error( WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR, getFileGroupText(fileGroups) );
+                error(WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR, getFileGroupText(fileGroups));
                 return;
             }
 
@@ -423,22 +443,22 @@ ManifestReader<M extends Manifest> {
                 return; // Valid
             }
 
-            error( WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
+            error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
         }
     }
 
-    private void validateFileCompression(String filePath) {
+    private void validateFileCompression(ValidationResult result, String filePath) {
         if (filePath.endsWith(ManifestFileSuffix.GZIP_FILE_SUFFIX)) {
             try (GZIPInputStream gz = new GZIPInputStream(new FileInputStream(filePath))) {
             } catch (Exception e) {
-                error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_COMPRESSION_ERROR, filePath, "gzip");
+                error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_COMPRESSION_ERROR, filePath, "gzip");
             }
         }
         else if (filePath.endsWith(ManifestFileSuffix.BZIP2_FILE_SUFFIX)) {
             try( BZip2CompressorInputStream bz2 = new BZip2CompressorInputStream(new FileInputStream(filePath))) {
             }
             catch (Exception e) {
-                error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_COMPRESSION_ERROR, filePath, "bzip2");
+                error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_COMPRESSION_ERROR, filePath, "bzip2");
             }
         }
     }
@@ -453,18 +473,20 @@ ManifestReader<M extends Manifest> {
             return null;
         }
 
+        ValidationResult result = getValidationResult().create(field.getOrigin());
+
         try
         {
             int value = Integer.valueOf( fieldValue );
             if( value <= 0 ) {
-                fieldError(WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_INTEGER_ERROR, field);
+                error(result, WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_INTEGER_ERROR);
                 return null;
             }
             return value;
         }
         catch( NumberFormatException nfe )
         {
-            fieldError(WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_INTEGER_ERROR, field);
+            error(result, WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_INTEGER_ERROR);
         }
 
         return null;
@@ -480,18 +502,20 @@ ManifestReader<M extends Manifest> {
             return null;
         }
 
+        ValidationResult result = getValidationResult().create(field.getOrigin());
+
         try
         {
             float value = Float.valueOf( fieldValue );
             if( value <= 0 ) {
-                fieldError(WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_FLOAT_ERROR, field);
+                error(result, WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_FLOAT_ERROR);
                 return null;
             }
             return value;
         }
         catch( NumberFormatException nfe )
         {
-            fieldError(WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_FLOAT_ERROR, field);
+            error(result, WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_FLOAT_ERROR);
         }
 
         return null;
@@ -608,53 +632,20 @@ ManifestReader<M extends Manifest> {
             return new File(fileName);
     }
 
+    /** Adds an error to the validation result.
+     */
     protected final void
-    fieldError(WebinCliMessage message, ManifestFieldValue fieldValue ) {
-        ValidationMessage error = ValidationMessage.error(message);
-        error.addOrigin(fieldValue.getOrigin());
-        addReaderOrigin(error);
-        result.getValidationResult().add(error);
+    error(ValidationResult result, WebinCliMessage message, String... arguments )
+    {
+        result.add(ValidationMessage.error(message, arguments));
     }
 
+    /** Adds an error to the manifest level validation result.
+     */
     protected final void
     error(WebinCliMessage message, String... arguments )
     {
-        ValidationMessage error = ValidationMessage.error(message, arguments);
-        addReaderOrigin(error);
-        result.getValidationResult().add(error);
-    }
-
-    private void addReaderOrigin(ValidationMessage error) {
-        String origin = null;
-        switch( state.state )
-        {
-            default:
-                break;
-
-            case PARSE:
-                origin = createParseOrigin();
-                break;
-
-            case VALIDATE:
-                origin = createValidateOrigin();
-                break;
-        }
-
-        if (origin != null) {
-            error.addOrigin(origin);
-        }
-    }
-
-    private String
-    createParseOrigin()
-    {
-        return "File name: " + state.fileName + ", line number: " + state.lineNo;
-    }
-
-    private String
-    createValidateOrigin()
-    {
-        return "File name: " + state.fileName;
+        getValidationResult().add(ValidationMessage.error(message, arguments));
     }
 
     public ManifestReaderParameters getParameters() {

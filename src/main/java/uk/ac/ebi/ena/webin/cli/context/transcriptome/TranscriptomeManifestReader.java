@@ -12,8 +12,6 @@ package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
@@ -133,10 +131,10 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 	@Override public void
 	processManifest() 
 	{
-		manifest.setName(getResult().getValue( Field.NAME ));
-		manifest.setDescription(getResult().getValue( Field.DESCRIPTION ));
+		manifest.setName(getManifestReaderResult().getValue( Field.NAME ));
+		manifest.setDescription(getManifestReaderResult().getValue( Field.DESCRIPTION ));
 		
-		Map<String, String> authorAndAddress = getResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+		Map<String, String> authorAndAddress = getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
 		if (!authorAndAddress.isEmpty()) {
 			if (authorAndAddress.size() == 2) {
 				manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
@@ -146,18 +144,18 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 			}
 		}
 
-		manifest.setProgram( getResult().getValue( Field.PROGRAM ) );
-		manifest.setPlatform( getResult().getValue( Field.PLATFORM ) );
+		manifest.setProgram( getManifestReaderResult().getValue( Field.PROGRAM ) );
+		manifest.setPlatform( getManifestReaderResult().getValue( Field.PLATFORM ) );
 
-		if( getResult().getCount(Field.TPA) > 0 )
+		if( getManifestReaderResult().getCount(Field.TPA) > 0 )
 		{
-			manifest.setTpa( getAndValidateBoolean( getResult().getField(Field.TPA ) ) );
+			manifest.setTpa( getAndValidateBoolean( getManifestReaderResult().getField(Field.TPA ) ) );
 		}
 
 		SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getResult(), Field.FASTA ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, file ) ) );
-		getFiles( getInputDir(), getResult(), Field.FLATFILE ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, file) ) );
+		getFiles( getInputDir(), getManifestReaderResult(), Field.FASTA ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, file ) ) );
+		getFiles( getInputDir(), getManifestReaderResult(), Field.FLATFILE ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, file) ) );
 	}
 
 

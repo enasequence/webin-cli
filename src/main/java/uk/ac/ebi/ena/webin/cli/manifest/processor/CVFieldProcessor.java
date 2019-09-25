@@ -42,13 +42,14 @@ CVFieldProcessor implements ManifestFieldProcessor
         this.cvList = cvList;
     }
 
-    @Override public ValidationResult
-    process( ManifestFieldValue fieldValue )
+    @Override public void
+    process( ValidationResult result, ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
         
         if( !cvList.contains( value ) ) {
-            return new ValidationResult(ValidationMessage.error( WebinCliMessage.CV_FIELD_PROCESSOR_ERROR, fieldValue.getName(), value, cvList.keyList() ) );
+            result.add(ValidationMessage.error( WebinCliMessage.CV_FIELD_PROCESSOR_ERROR, fieldValue.getName(), value, cvList.keyList() ) );
+            return;
         }
 
         String corrected = cvList.getKey( value );
@@ -56,10 +57,8 @@ CVFieldProcessor implements ManifestFieldProcessor
         if( !value.equals( corrected ) )
         {
             fieldValue.setValue( corrected );
-            return new ValidationResult(ValidationMessage.info( WebinCliMessage.CV_FIELD_PROCESSOR_FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected ) );
+            result.add(ValidationMessage.info( WebinCliMessage.CV_FIELD_PROCESSOR_FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected ) );
         }
-
-        return new ValidationResult();
     }
 
     

@@ -18,38 +18,41 @@ import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
 
 public class AuthorProcessorTest {
 
     @Test
     public void testProcess() {
+        ValidationResult result = new ValidationResult();
+
         ManifestFieldDefinition fieldDef = new ManifestFieldDefinition.Builder().
                 type(ManifestFieldType.META).
                 name(GenomeManifestReader.Field.AUTHORS).
                 desc(GenomeManifestReader.Description.AUTHORS).optional().
                 build().get(0);
         ManifestFieldValue manifestField = new ManifestFieldValue(fieldDef,"Senthil .V", null);
-        new AuthorProcessor().process(manifestField);
+        new AuthorProcessor().process(result, manifestField);
         assertEquals("Senthil .V", manifestField.getValue());
 
         manifestField = new ManifestFieldValue(fieldDef,"Senthil .V,   nathan vijay.", null);
-        new AuthorProcessor().process(manifestField);
+        new AuthorProcessor().process(result, manifestField);
         assertEquals("Senthil .V, nathan vijay.", manifestField.getValue());
 
         manifestField = new ManifestFieldValue(fieldDef,"Senthil .V...,nathan", null);
-        new AuthorProcessor().process(manifestField);
+        new AuthorProcessor().process(result, manifestField);
         assertEquals("Senthil .V.,nathan", manifestField.getValue());
 
         manifestField = new ManifestFieldValue(fieldDef,"Senthil .V.", null);
-        new AuthorProcessor().process(manifestField);
+        new AuthorProcessor().process(result, manifestField);
         assertEquals("Senthil .V.", manifestField.getValue());
 
         manifestField = new ManifestFieldValue(fieldDef,"..Senthil Vija.  vija; nathan", null);
-        new AuthorProcessor().process(manifestField);
+        new AuthorProcessor().process(result, manifestField);
         assertEquals(".Senthil Vija. vija nathan", manifestField.getValue());
 
         manifestField = new ManifestFieldValue(fieldDef,"", null);
-        new AuthorProcessor().process(manifestField);
+        new AuthorProcessor().process(result, manifestField);
         assertEquals( "",manifestField.getValue());
     }
 
