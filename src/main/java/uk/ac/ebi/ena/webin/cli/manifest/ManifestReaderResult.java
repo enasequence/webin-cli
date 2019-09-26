@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
-import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class 
 ManifestReaderResult 

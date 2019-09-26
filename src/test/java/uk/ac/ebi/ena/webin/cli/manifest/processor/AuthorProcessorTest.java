@@ -18,7 +18,7 @@ import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class AuthorProcessorTest {
 

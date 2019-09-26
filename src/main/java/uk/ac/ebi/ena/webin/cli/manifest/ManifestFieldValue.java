@@ -10,7 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import uk.ac.ebi.ena.webin.cli.message.ValidationOrigin;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
 
 import java.util.ArrayList;
 import java.util.List;

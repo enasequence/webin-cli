@@ -10,7 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public interface
 ManifestFieldProcessor {

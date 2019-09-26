@@ -11,12 +11,12 @@
 package uk.ac.ebi.ena.webin.cli.manifest;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.message.listener.MessageCounter;
+import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.io.File;

@@ -21,11 +21,11 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uk.ac.ebi.ena.webin.cli.message.ValidationMessage.Severity;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage.Severity;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.message.listener.MessageCounter;
+import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
 
 public class ManifestReaderTest {
 

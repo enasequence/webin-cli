@@ -16,9 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.message.ValidationOrigin;
-import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class 

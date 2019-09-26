@@ -110,7 +110,7 @@ dependencies {
     implementation( 'info.picocli:picocli:3.9.1' )
     implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.37-snapshot' )
     implementation( "org.jdom:jdom:2.0.2" )
-    implementation( group: 'uk.ac.ebi.ena.webin-cli', name: 'webin-cli-validator', version: '1.0.5' )
+    implementation( group: 'uk.ac.ebi.ena.webin-cli', name: 'webin-cli-validator', version: '1.0.6' )
     implementation( 'de.vandermeer:asciitable:0.3.2' )
 
     // implementation(group: 'com.opencsv', name: 'opencsv', version: '4.5')

@@ -18,7 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class 
 FileSuffixProcessorTest 
