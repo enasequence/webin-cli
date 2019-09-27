@@ -20,7 +20,7 @@ wrapper{
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.project_name = 'webin-cli'
-ext.version_base = '2.0.0-rc-1'
+ext.version_base = '2.0.0-rc-2'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -190,15 +190,16 @@ task writePom {
 
 compileJava.dependsOn( writePom )
 
+// Build and deploy docker image:
+// gradle docker
+// gradle dockerTag
+// gradle dockerTagsPush
+
 docker {
     dependsOn build
+    tags 'latest'
     def repository = "enasequence/webin-cli"
     name "${repository}:${version}"
-    // tag 'latest', "${repository}"
     files bootJar.archiveFile
     buildArgs(['JAR_FILE': "webin-cli-${version}.jar"])
 }
-
-// docker tag 84f9af503ff3 enasequence/webin-cli:latest
-// docker push enasequence/webin-cli:latest
-// docker push enasequence/webin-cli:<version>
