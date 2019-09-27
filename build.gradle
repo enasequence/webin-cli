@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.1.1.RELEASE'
     id "io.github.ddimtirov.codacy" version "0.1.0"
     id "com.diffplug.gradle.spotless" version "3.18.0"
+    id "com.palantir.docker" version "0.22.1"
 }
 
 apply plugin: 'java'
@@ -19,7 +20,7 @@ wrapper{
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.project_name = 'webin-cli'
-ext.version_base = '1.8.12'
+ext.version_base = '2.0.0-rc-1'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -188,3 +189,16 @@ task writePom {
 
 
 compileJava.dependsOn( writePom )
+
+docker {
+    dependsOn build
+    def repository = "enasequence/webin-cli"
+    name "${repository}:${version}"
+    // tag 'latest', "${repository}"
+    files bootJar.archiveFile
+    buildArgs(['JAR_FILE': "webin-cli-${version}.jar"])
+}
+
+// docker tag 84f9af503ff3 enasequence/webin-cli:latest
+// docker push enasequence/webin-cli:latest
+// docker push enasequence/webin-cli:<version>

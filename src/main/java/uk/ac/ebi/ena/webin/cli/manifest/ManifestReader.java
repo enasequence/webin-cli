@@ -638,7 +638,7 @@ ManifestReader<M extends Manifest> {
     /** Adds an error to the validation result.
      */
     protected final void
-    error(ValidationResult result, WebinCliMessage message, String... arguments )
+    error(ValidationResult result, WebinCliMessage message, Object... arguments )
     {
         result.add(ValidationMessage.error(message, arguments));
     }
@@ -646,7 +646,7 @@ ManifestReader<M extends Manifest> {
     /** Adds an error to the manifest level validation result.
      */
     protected final void
-    error(WebinCliMessage message, String... arguments )
+    error(WebinCliMessage message, Object... arguments )
     {
         getValidationResult().add(ValidationMessage.error(message, arguments));
     }

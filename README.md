@@ -1,20 +1,26 @@
-# Webin command line submission interface
+# Webin command line submission interface (Webin-CLI)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4fa2bcf5593436da9ea27149f84ee6e)](https://app.codacy.com/app/enasequence/webin-cli?utm_source=github.com&utm_medium=referral&utm_content=enasequence/webin-cli&utm_campaign=badger)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The Webin command line submission interface can be used to validate, upload and submit files to the European Nucleotide Archive (ENA).
+## Introduction
 
-Webin submission account credentials are required to use the Webin command line submission interface.
+Data submissions to ENA can be made using the Webin command line submission interface (Webin-CLI). Webin submission account credentials are required to use the program.
 
 The following types of submissions are supported:
 
 - genome assemblies
 - transcriptome assemblies
-- sequence assemblies
-- read data submissions
+- annotated sequences
+- read data submissions (Fastq, BAM, CRAM)
 
-The latest version of the Webin command line submission interface can be downloaded from: 
+For further information about Webin-CLI please refer to:
+
+<https://ena-docs.readthedocs.io/en/latest/submit/general-guide/webin-cli.html>
+
+## Executable Java JAR
+
+The latest version of the Webin-CLI can be downloaded from:
 
 <https://github.com/enasequence/webin-cli/releases>
 
@@ -22,6 +28,26 @@ The program requires Java 1.8 or a newer which can be downloaded from:
 
 <https://java.com/en/download/>
 
-For further information please refer to:
 
-<http://ena-docs.readthedocs.io/>
+The program is run using the java command:
+
+```
+java -jar webin-cli-<version>.jar <options>
+```
+
+for example:
+
+```
+java -jar webin-cli-1.7.3.jar -help
+```
+
+Please note that the command must include the location of the jar file.
+
+## Docker file
+
+Webin-CLI 2.0.0 and later will also be available as a docker image:
+
+```
+docker pull enasequence/webin-cli
+docker run --rm -v <local data directory>:/data enasequence/webin-cli -help
+```
