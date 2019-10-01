@@ -38,10 +38,14 @@ java -jar webin-cli-<version>.jar <options>
 for example:
 
 ```
-java -jar webin-cli-1.7.3.jar -help
+java -jar webin-cli-2.0.0.jar -help
 ```
 
-Please note that the command must include the location of the jar file.
+To increase the memory available to Webin-CLI please use the -Xms java option:
+
+```
+java -Xms2G -jar webin-cli-2.0.0.jar -help
+```
 
 ## Docker file
 
@@ -50,4 +54,10 @@ Webin-CLI 2.0.0 and later will also be available as a docker image:
 ```
 docker pull enasequence/webin-cli
 docker run --rm -v <local data directory>:/data enasequence/webin-cli -help
+```
+
+To increase the memory available to Webin-CLI please set the JAVA_TOOL_OPTIONS environment variable:
+
+```
+docker run --rm -v <local data directory>:/data -e JAVA_TOOL_OPTIONS="-Xms2G" enasequence/webin-cli -help
 ```
