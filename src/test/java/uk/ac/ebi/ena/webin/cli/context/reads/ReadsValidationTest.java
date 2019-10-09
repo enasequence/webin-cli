@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
@@ -163,10 +164,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).textInFileReport("invalid_not_paired_1.fastq.gz",
-            "Detected paired fastq submission with less than 20% of paired reads");
-        new ReportTester(executor).textInFileReport("invalid_not_paired_2.fastq.gz",
-            "Detected paired fastq submission with less than 20% of paired reads");
+        new ReportTester(executor).textInSubmissionReport("Detected paired fastq submission with less than 20% of paired reads");
     }
 
     @Test
@@ -190,7 +188,7 @@ public class ReadsValidationTest {
                 .hasMessage("");
 
         System.out.println(executor.getValidationDir().getAbsolutePath());
-        new ReportTester(executor).textInFileReport("valid.fastq.gz", "Multiple (1) occurance of read name");
+        new ReportTester(executor).textInSubmissionReport("Multiple (1) occurrences of read name");
     }
 
     @Test
