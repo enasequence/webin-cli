@@ -156,9 +156,11 @@ public class WebinCliTest {
             "│                    │           │* Y                                          │\n" +
             "│                    │           │* N                                          │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-            "│AUTHORS             │Optional   │Author names, comma-separated list           │\n" +
+            "│AUTHORS             │Optional   │For submission brokers only. Submitter's     │\n" +
+            "│                    │           │names as a comma-separated list              │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-            "│ADDRESS             │Optional   │Author address                               │\n" +
+            "│ADDRESS             │Optional   │For submission brokers only. Submitter's     │\n" +
+            "│                    │           │address                                      │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
             "│FASTA               │0-1 files  │Fasta file                                   │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
@@ -238,9 +240,11 @@ public class WebinCliTest {
                 "│                    │           │* Y                                          │\n" +
                 "│                    │           │* N                                          │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-                "│AUTHORS             │Optional   │Author names, comma-separated list           │\n" +
+                "│AUTHORS             │Optional   │For submission brokers only. Submitter's     │\n" +
+                "│                    │           │names as a comma-separated list              │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-                "│ADDRESS             │Optional   │Author address                               │\n" +
+                "│ADDRESS             │Optional   │For submission brokers only. Submitter's     │\n" +
+                "│                    │           │address                                      │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│FASTA               │0-1 files  │Fasta file                                   │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
@@ -283,9 +287,11 @@ public class WebinCliTest {
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│DESCRIPTION         │Optional   │Sequence submission description              │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-                "│AUTHORS             │Optional   │Author names, comma-separated list           │\n" +
+                "│AUTHORS             │Optional   │For submission brokers only. Submitter's     │\n" +
+                "│                    │           │names as a comma-separated list              │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-                "│ADDRESS             │Optional   │Author address                               │\n" +
+                "│ADDRESS             │Optional   │For submission brokers only. Submitter's     │\n" +
+                "│                    │           │address                                      │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│TAB                 │0-1 files  │Tabulated file                               │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +

@@ -47,8 +47,8 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
         String DESCRIPTION  = "Sequence submission description";
         String TAB          = "Tabulated file";
         String FLATFILE     = "Flat file";
-        String AUTHORS          = "Author names, comma-separated list";
-        String ADDRESS          = "Author address";
+        String AUTHORS      = "For submission brokers only. Submitter's names as a comma-separated list";
+        String ADDRESS      = "For submission brokers only. Submitter's address";
     }
 
     private final SequenceManifest manifest = new SequenceManifest();

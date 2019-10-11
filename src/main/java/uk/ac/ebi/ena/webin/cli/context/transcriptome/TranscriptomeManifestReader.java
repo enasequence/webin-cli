@@ -55,10 +55,10 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		String PROGRAM      = "Assembly program";
 		String PLATFORM     = "Sequencing platform";
 		String TPA          = "Third party annotation";
-		String FASTA = "Fasta file";
-		String FLATFILE = "Flat file";
-		String AUTHORS          = "Author names, comma-separated list";
-		String ADDRESS          = "Author address";
+		String FASTA        = "Fasta file";
+		String FLATFILE     = "Flat file";
+		String AUTHORS      = "For submission brokers only. Submitter's names as a comma-separated list";
+		String ADDRESS      = "For submission brokers only. Submitter's address";
 	}
 
 	private final TranscriptomeManifest manifest = new TranscriptomeManifest();

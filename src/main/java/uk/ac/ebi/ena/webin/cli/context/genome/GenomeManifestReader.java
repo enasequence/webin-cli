@@ -71,8 +71,8 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 		String FASTA            = "Fasta file";
 		String FLATFILE         = "Flat file";
 		String AGP              = "AGP file";
-		String AUTHORS          = "Author names, comma-separated list";
-		String ADDRESS          = "Author address";
+		String AUTHORS          = "For submission brokers only. Submitter's names as a comma-separated list";
+		String ADDRESS          = "For submission brokers only. Submitter's address";
 	}
 
 	
