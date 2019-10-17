@@ -93,6 +93,7 @@ public class WebinCli {
 			return SUCCESS;
 		}
         catch( WebinCliException ex ) {
+			log.error( ex.getMessage() );
 			switch( ex.getErrorType() )
 			{
 				case USER_ERROR:
@@ -105,7 +106,7 @@ public class WebinCli {
         }
         catch( Throwable e )
         {
-            log.error( e.getMessage(), e );
+			log.error( e.getMessage(), e );
             return SYSTEM_ERROR;
         }
     }
