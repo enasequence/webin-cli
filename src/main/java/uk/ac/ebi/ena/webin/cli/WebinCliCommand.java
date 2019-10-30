@@ -44,8 +44,14 @@ WebinCliCommand
     @Option(names = { Options.userName, Options.userNameSynonym }, paramLabel= "USER", description = Descriptions.userName, required = true, order = 2)
     public String userName;
 
-    @Option(names = Options.password, description = Descriptions.password, paramLabel= "PASSWORD", required = true, order = 3)
+    @Option(names = Options.password, description = Descriptions.password, paramLabel= "PASSWORD", order = 3)
     public String password;
+
+    @Option(names = Options.passwordFile, description = Descriptions.passwordFile, paramLabel= "FILE", order = 3)
+    public File passwordFile;
+
+    @Option(names = Options.passwordEnv, description = Descriptions.passwordEnv, paramLabel= "VAR", order = 3)
+    public String passwordEnv;
 
     @Option(names = { Options.inputDir, Options.inputDirSynonym }, description = Descriptions.inputDir, paramLabel= "DIRECTORY", order = 4)
     public File inputDir;
@@ -82,6 +88,8 @@ WebinCliCommand
         String manifest   = "-manifest";
         String userName   = "-userName";
         String password   = "-password";
+        String passwordFile = "-passwordFile";
+        String passwordEnv = "-passwordEnv";
         String inputDir   = "-inputDir";
         String outputDir  = "-outputDir";
         String centerName = "-centerName";
@@ -104,6 +112,8 @@ WebinCliCommand
                 "Manifest text file containing file and metadata fields.";
         String userName = "Webin submission account name or e-mail address.";
         String password = "Webin submission account password.";
+        String passwordEnv = "Environment variable containing the Webin submission account password.";
+        String passwordFile = "File containing the Webin submission account password.";
         String inputDir =
                 "Root directory for the files declared in the manifest file. " +
                 "By default the current working directory is used as the input directory.";

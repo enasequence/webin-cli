@@ -106,34 +106,32 @@ task printWebinTestCredentials {
 }
 
 dependencies {
-    implementation( "commons-net:commons-net:3.4" )
-    implementation( group: 'org.fusesource.jansi', name: 'jansi', version: '1.18' )
-    implementation( 'info.picocli:picocli:3.9.1' )
-    implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.37-snapshot' )
-    implementation( "org.jdom:jdom:2.0.2" )
+
     implementation( group: 'uk.ac.ebi.ena.webin-cli', name: 'webin-cli-validator', version: '1.0.7' )
+    implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.37-snapshot' )
+    implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.8' )
+    implementation( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
+
+    implementation( 'org.springframework.boot:spring-boot-starter' )
+    implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+
+    implementation( "commons-net:commons-net:3.4" )
+
+    implementation( 'info.picocli:picocli:3.9.1' )
+    implementation( group: 'org.fusesource.jansi', name: 'jansi', version: '1.18' )
     implementation( 'de.vandermeer:asciitable:0.3.2' )
+
+    implementation( "org.jdom:jdom:2.0.2" )
 
     // implementation(group: 'com.opencsv', name: 'opencsv', version: '4.5')
     implementation( group: 'org.apache.poi', name: 'poi', version: '4.0.1' )
     implementation( group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.1' )
 
-
-    implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.8' )
-    implementation( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
-    implementation( 'org.springframework.boot:spring-boot-starter' )
-    implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
-    }
     testImplementation( 'org.springframework.boot:spring-boot-starter-test' )
     testImplementation( 'org.assertj:assertj-core:3.11.1' )
     testImplementation( 'org.mockito:mockito-core:2.23.4' )
-}
-
-configurations.all {
-    resolutionStrategy {
-      force "commons-net:commons-net:3.4"
-    }
 }
 
 tasks.withType(JavaCompile) {
