@@ -20,7 +20,7 @@ wrapper{
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.project_name = 'webin-cli'
-ext.version_base = '2.0.0-rc-2'
+ext.version_base = '1.8.12'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -108,8 +108,8 @@ task printWebinTestCredentials {
 dependencies {
 
     implementation( group: 'uk.ac.ebi.ena.webin-cli', name: 'webin-cli-validator', version: '1.0.7' )
-    implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.37-snapshot' )
-    implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.8' )
+    implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.47' )
+    implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.9' )
     implementation( group: 'com.github.samtools', name: 'htsjdk', version: '2.15.0' )
 
     implementation( 'org.springframework.boot:spring-boot-starter' )
