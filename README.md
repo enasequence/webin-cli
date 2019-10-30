@@ -49,7 +49,7 @@ java -Xms2G -jar webin-cli-2.0.0.jar -help
 
 ## Docker file
 
-Webin-CLI 2.0.0 and later will also be available as a docker image:
+Since version 1.8.12 Webin-CLI is available as a docker image:
 
 ```
 docker pull enasequence/webin-cli
