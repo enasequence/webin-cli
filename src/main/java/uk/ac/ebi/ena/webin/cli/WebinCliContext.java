@@ -18,6 +18,9 @@ import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.taxrefset.PlaceHolderForTaxRefSetValidator;
+import uk.ac.ebi.ena.webin.cli.context.taxrefset.TaxRefSetManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.taxrefset.TaxRefSetXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
@@ -51,7 +54,13 @@ public enum WebinCliContext {
       ReadsManifestReader.class,
       ReadsXmlWriter.class,
       ReadsValidator.class,
-      "Raw reads");
+      "Raw reads"),
+  taxrefset(
+          TaxRefSetManifest.class,
+          TaxRefSetManifestReader.class,
+          TaxRefSetXmlWriter.class,
+          PlaceHolderForTaxRefSetValidator.class,//TODO: add proper implementation of TaxXrefSetValidator here
+          "Taxonomy reference set");
 
   private final Class<? extends Manifest> manifestClass;
   private final Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass;

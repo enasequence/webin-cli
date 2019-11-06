@@ -154,6 +154,7 @@ ManifestReader<M extends Manifest> {
         ValidationOrigin origin = new ValidationOrigin("manifest file", state.fileName);
         ValidationResult result = new ValidationResult(reportFile, origin);
 
+        //used for testing purpose
         listener.forEach(l -> result.add(l));
 
         manifestReaderResult = new ManifestReaderResult(result);
