@@ -2,42 +2,42 @@ package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.CustomFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
-import java.util.Collection;
-
 public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
 
+    private static CustomFieldProcessor customFieldProcessor;
     public interface
     Field
     {
-        String NAME                 = "NAME";
-        String STUDY                = "STUDY";
-        String DESCRIPTION          = "DESCRIPTION";
-        String LOCALTAXONOMY        = "LOCALTAXONOMY";
-        String LOCALTAXONOMYVERSION = "LOCALTAXONOMYVERSION";
-        String FASTA                = "FASTA";
-        String TAB                  = "TAB";
-        String CUSTOMFIELD          = "CUSTOMFIELD";
+        String NAME                     = "NAME";
+        String STUDY                    = "STUDY";
+        String DESCRIPTION              = "DESCRIPTION";
+        String TAXONOMY_SYSTEM          = "TAXONOMY_SYSTEM";
+        String TAXONOMY_SYSTEM_VERSION  = "TAXONOMY_SYSTEM_VERSION";
+        String FASTA                    = "FASTA";
+        String TAB                      = "TAB";
+        String CUSTOM_FIELD             = "CUSTOM_FIELD";
     }
 
 
     public interface
     Description
     {
-        String NAME                 = "Unique taxonomy reference set name";
-        String STUDY                = "Study accession or name";
-        String DESCRIPTION          = "Taxonomy reference set description";
-        String LOCALTAXONOMY        = "";
-        String LOCALTAXONOMYVERSION = "";
-        String FASTA                = "Fasta file";
-        String TAB                  = "TSV file";
-        String CUSTOMFIELD          = "";
+        String NAME                     = "Unique taxonomy reference set name";
+        String STUDY                    = "Study accession or name";
+        String DESCRIPTION              = "Taxonomy reference set description";
+        String TAXONOMY_SYSTEM          = "Name of taxonomy system or database from which names are drawn. NCBI taxonomy is preferred.";
+        String TAXONOMY_SYSTEM_VERSION  = "Version identifier for the taxonomy system or database.";
+        String FASTA                    = "Fasta file";
+        String TAB                      = "TSV file";
+        String CUSTOM_FIELD             = "Custom column in the sequence metadata file. Must be described in format <column name>:<column description>. " +
+                "For example, column1:description1. The column names must match exactly the ones used in the sequence metadata file.";
 
     }
 
@@ -51,11 +51,11 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
                         .meta().required().name( Field.NAME                 ).desc( Description.NAME                ).and()
                         .meta().required().name( Field.STUDY                ).desc( Description.STUDY               ).processor( factory.getStudyProcessor() ).and()
                         .meta().required().name( Field.DESCRIPTION          ).desc( Description.DESCRIPTION         ).and()
-                        .meta().required().name( Field.LOCALTAXONOMY        ).desc( Description.LOCALTAXONOMY       ).and()
-                        .meta().optional().name( Field.LOCALTAXONOMYVERSION ).desc( Description.LOCALTAXONOMYVERSION).and()
+                        .meta().required().name( Field.TAXONOMY_SYSTEM        ).desc( Description.TAXONOMY_SYSTEM       ).and()
+                        .meta().optional().name( Field.TAXONOMY_SYSTEM_VERSION ).desc( Description.TAXONOMY_SYSTEM_VERSION).and()
                         .file().required().name( Field.FASTA                ).desc( Description.FASTA               ).processor(getFastaProcessors()).and()
                         .file().required().name( Field.TAB                  ).desc( Description.TAB               ).processor(getTabProcessors()).and()
-                        .meta().optional().name( Field.CUSTOMFIELD          ).desc( Description.CUSTOMFIELD).processor( CVFieldProcessor.CV_BOOLEAN )
+                        .meta().optional(100).name( Field.CUSTOM_FIELD          ).desc( Description.CUSTOM_FIELD).processor(getCustomFieldProcessor())
                         .build()
                 ,
                 // File groups.
@@ -70,6 +70,14 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
             factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
         }
 
+        getCustomFieldProcessor().setCallback(keyVal-> manifest.addCustomField(keyVal.left,keyVal.right));
+
+    }
+
+    private static CustomFieldProcessor getCustomFieldProcessor() {
+        if(customFieldProcessor == null)
+            customFieldProcessor = new CustomFieldProcessor();
+        return  customFieldProcessor;
     }
 
     private static ManifestFieldProcessor[] getFastaProcessors() {
@@ -92,17 +100,8 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
     protected void processManifest() {
         manifest.setName( getManifestReaderResult().getValue( Field.NAME ));
         manifest.setDescription( getManifestReaderResult().getValue( Field.DESCRIPTION ) );
-        manifest.setLocalTaxonomy( getManifestReaderResult().getValue( Field.LOCALTAXONOMY ) );
-        manifest.setLocalTaxonomyMyVersion( getManifestReaderResult().getValue( Field.LOCALTAXONOMYVERSION ) );
-        Collection<String> customFields = getManifestReaderResult().getValues( Field.CUSTOMFIELD );
-        if (customFields != null && !customFields.isEmpty()) {
-            customFields.forEach(cf -> {
-                if (cf != null) {
-                    String keyVal[] = cf.split(":");
-                    manifest.addCustomField(keyVal[0], keyVal.length == 2 ? keyVal[1] : "");
-                }
-            });
-        }
+        manifest.setTaxonomySystem( getManifestReaderResult().getValue( Field.TAXONOMY_SYSTEM ) );
+        manifest.setTaxonomySystemVersion( getManifestReaderResult().getValue( Field.TAXONOMY_SYSTEM_VERSION ) );
 
         SubmissionFiles<TaxRefSetManifest.FileType> submissionFiles = manifest.files();
 

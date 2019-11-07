@@ -19,9 +19,9 @@ public class TaxRefSetXmlWriter extends SequenceToolsXmlWriter<TaxRefSetManifest
         Element e = new Element("TAXONOMIC_REFERENCE_SET");
 
         e.addContent(createTextElement("NAME", manifest.getName()));
-        e.addContent(createTextElement("LOCAL_TAXONOMY", manifest.getLocalTaxonomy()));
-        if (null != manifest.getLocalTaxonomyMyVersion() && !manifest.getLocalTaxonomyMyVersion().trim().isEmpty())
-            e.addContent(createTextElement("LOCAL_TAXONOMY_VERSION", manifest.getLocalTaxonomyMyVersion()));
+        e.addContent(createTextElement("TAXONOMY_SYSTEM", manifest.getTaxonomySystem()));
+        if (null != manifest.getTaxonomySystemVersion() && !manifest.getTaxonomySystemVersion().trim().isEmpty())
+            e.addContent(createTextElement("TAXONOMY_SYSTEM_VERSION", manifest.getTaxonomySystemVersion()));
         if (null != manifest.getCustomFields() && !manifest.getCustomFields().isEmpty()) {
 
             Element customFieldsE = new Element("CUSTOM_FIELDS");

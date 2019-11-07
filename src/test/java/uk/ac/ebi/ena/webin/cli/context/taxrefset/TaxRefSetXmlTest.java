@@ -41,7 +41,7 @@ public class TaxRefSetXmlTest {
     manifest.setStudy(new Study());
     manifest.getStudy().setBioProjectId("test_study");
     manifest.setDescription("test_description");
-    manifest.setLocalTaxonomy("12345");
+    manifest.setTaxonomySystem("12345");
     Map<String,String> customFields = new LinkedHashMap<>();
     customFields.put("test_key_1","test_val_1");
     customFields.put("test_key_2","test_val_2");
@@ -89,7 +89,7 @@ public class TaxRefSetXmlTest {
                     "<ANALYSIS_TYPE>\n" +
                     "<TAXONOMIC_REFERENCE_SET>\n" +
                     "<NAME>test_taxon_xref_set</NAME>\n" +
-                    "<LOCAL_TAXONOMY>12345</LOCAL_TAXONOMY>\n" +
+                    "<TAXONOMY_SYSTEM>12345</TAXONOMY_SYSTEM>\n" +
                     "<CUSTOM_FIELDS>\n" +
                       "<FIELD>\n" +
                         "<NAME>test_key_1</NAME>\n" +

@@ -25,6 +25,7 @@ public class MetadataProcessorFactory {
   private SampleXmlProcessor sampleXmlProcessor;
   private RunProcessor runProcessor;
   private AnalysisProcessor analysisProcessor;
+  private CustomFieldProcessor customFieldProcessor;
 
   public SampleProcessor getSampleProcessor() {
     if (parameters != null && parameters.getSampleProcessor() != null) {
@@ -74,5 +75,13 @@ public class MetadataProcessorFactory {
       analysisProcessor = new AnalysisProcessor(parameters);
     }
     return analysisProcessor;
+  }
+
+  public CustomFieldProcessor getCustomFieldProcessor() {
+
+    if ( customFieldProcessor == null) {
+      customFieldProcessor = new CustomFieldProcessor();
+    }
+    return customFieldProcessor;
   }
 }
