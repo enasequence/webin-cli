@@ -41,18 +41,23 @@ public class WebinCliSubmissionTest {
     }
 
     private ManifestBuilder genomeManifest() {
-        return new ManifestBuilder()
-                .name()
-                .field("COVERAGE", "45")
-                .field("PROGRAM", "assembly")
-                .field("PLATFORM", "fghgf")
-                .field("MINGAPLENGTH", "34")
-                .field("MOLECULETYPE", "genomic DNA")
-                .field("SAMPLE", "SAMN04526268")
-                .field("STUDY", "PRJEB20083")
-                .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
-                .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-                .field("DESCRIPTION", "Some genome assembly description");
+        return genomeManifest("clone or isolate");
+    }
+
+    private ManifestBuilder genomeManifest(String assemblyType) {
+    return new ManifestBuilder()
+            .name()
+            .field("ASSEMBLY_TYPE", assemblyType)
+            .field("COVERAGE", "45")
+            .field("PROGRAM", "assembly")
+            .field("PLATFORM", "fghgf")
+            .field("MINGAPLENGTH", "34")
+            .field("MOLECULETYPE", "genomic DNA")
+            .field("SAMPLE", "SAMN04526268")
+            .field("STUDY", "PRJEB20083")
+            .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+            .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+            .field("DESCRIPTION", "Some genome assembly description");
     }
 
     private ManifestBuilder transcriptomeManifest() {
@@ -164,10 +169,8 @@ public class WebinCliSubmissionTest {
         Path inputDir = WebinCliTestUtils.createTempDir().toPath();
         Path fastaFile = TempFileBuilder.gzip(
                 inputDir,"test.fasta.gz", ">A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-        ManifestBuilder manifest = genomeManifest()
-                .file("FASTA", fastaFile)
-                .field("ASSEMBLY_TYPE", "primary metagenome");
-        WebinCliBuilder.GENOME.build(inputDir, manifest).execute();
+        ManifestBuilder manifest = genomeManifest("primary metagenome")
+                .file("FASTA", fastaFile);
     }
 
     @Test

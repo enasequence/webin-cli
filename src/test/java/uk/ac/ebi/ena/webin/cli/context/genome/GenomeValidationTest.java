@@ -36,6 +36,7 @@ public class GenomeValidationTest {
     return new ManifestBuilder()
             .field("STUDY", "test")
             .field("SAMPLE", "test")
+            .field("ASSEMBLY_TYPE", "clone or isolate")
             .field("COVERAGE", "1")
             .field("PROGRAM", "test")
             .field("PLATFORM", "test")

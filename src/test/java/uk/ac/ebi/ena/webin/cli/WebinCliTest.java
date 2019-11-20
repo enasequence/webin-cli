@@ -119,19 +119,19 @@ public class WebinCliTest {
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
             "│SAMPLE              │Mandatory  │Sample accession or name                     │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-            "│COVERAGE            │Mandatory  │Sequencing coverage                          │\n" +
-            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-            "│PROGRAM             │Mandatory  │Assembly program                             │\n" +
-            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-            "│PLATFORM            │Mandatory  │Sequencing platform                          │\n" +
-            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-            "│ASSEMBLY_TYPE       │Optional   │Assembly type:                               │\n" +
+            "│ASSEMBLY_TYPE       │Mandatory  │Assembly type:                               │\n" +
             "│                    │           │* clone or isolate                           │\n" +
             "│                    │           │* primary metagenome                         │\n" +
             "│                    │           │* binned metagenome                          │\n" +
             "│                    │           │* Metagenome-Assembled Genome (MAG)          │\n" +
             "│                    │           │* Environmental Single-Cell Amplified Genome │\n" +
             "│                    │           │(SAG)                                        │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│COVERAGE            │Mandatory  │Sequencing coverage                          │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│PROGRAM             │Mandatory  │Assembly program                             │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│PLATFORM            │Mandatory  │Sequencing platform                          │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
             "│DESCRIPTION         │Optional   │Genome assembly description                  │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
