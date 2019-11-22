@@ -56,22 +56,10 @@ bootJar {
 }
 
 configurations.all {
-	
-	if( !hasProperty( 'artifactoryUsername' ) )
-		project.ext.properties.artifactoryUsername = ''
-	else
-		project.ext.properties.artifactoryUsername = artifactoryUsername;
-		
-	if( !hasProperty( 'artifactoryPassword' ) )
-		project.ext.properties.artifactoryPassword = ''
-	else
-	 	project.ext.properties.artifactoryPassword = artifactoryPassword;
-
 	if( !hasProperty( 'gitlab_private_token' ) )
 		project.ext.properties.gitlab_private_token = ''
 	else
 		project.ext.properties.gitlab_private_token = gitlab_private_token;
-    
 }
 
 
