@@ -48,6 +48,7 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
 public class WebinCli {
     public final static int SUCCESS = 0;
