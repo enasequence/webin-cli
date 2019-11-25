@@ -50,7 +50,7 @@ public class TaxRefSetXmlWriter extends SequenceToolsXmlWriter<TaxRefSetManifest
                 .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "fasta")));
         manifest.files(TaxRefSetManifest.FileType.TAB).stream()
                 .map(file -> file.getFile().toPath())
-                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "tsv")));
+                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "tab")));
 
         return list;
     }
