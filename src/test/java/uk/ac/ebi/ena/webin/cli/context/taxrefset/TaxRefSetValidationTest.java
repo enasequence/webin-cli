@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
@@ -20,6 +21,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
@@ -27,17 +29,17 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 public class TaxRefSetValidationTest {
 
-  private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/taxxrefset");
+  private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/taxxrefset/valid");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
             .field("NAME", "test")
             .field("DESCRIPTION", "test_desc")
-            .field("STUDY", "test")
-            .field("TAXONOMY_SYSTEM", "test_TAXON")
+            .field("STUDY", "ERP115786")
+            .field("TAXONOMY_SYSTEM", "NCBI")
             .field("TAXONOMY_SYSTEM_VERSION", "1")
-            .field("CUSTOM_FIELD", "custom_field1:val1")
-            .field("CUSTOM_FIELD", "custom_field2:val2");
+            .field("CUSTOM_FIELD", "Annotation:Source of annotation")
+            .field("CUSTOM_FIELD", "ITSoneDB URL:URL within ITSoneDB");
   }
 
   private static final WebinCliExecutorBuilder<TaxRefSetManifest, ValidationResponse> executorBuilder =
@@ -50,12 +52,12 @@ public class TaxRefSetValidationTest {
   }
 
   @Test
-  public void testValidTab() {
+  public void testValidSubmission() {
     File[] files = VALID_DIR.listFiles((dir, name) -> name.endsWith(".tsv.gz"));
     assertThat(files.length).isEqualTo(1);
     String tsvFileName = files[0].getName();
 
-    files = VALID_DIR.listFiles((dir, name) -> name.endsWith(".fa.gz"));
+    files = VALID_DIR.listFiles((dir, name) -> name.endsWith(".fasta.gz"));
     assertThat(files.length).isEqualTo(1);
     String fastaFileName = files[0].getName();
 
@@ -70,6 +72,10 @@ public class TaxRefSetValidationTest {
     assertThat(executor.getManifestReader().getManifest().files().get(TaxRefSetManifest.FileType.FASTA))
             .size()
             .isOne();
+    Map<String,String> customFields = executor.getManifestReader().getManifest().getCustomFields();
+    Assert.assertEquals(2, customFields.size());
+    Assert.assertEquals("Source of annotation", customFields.get("Annotation"));
+    Assert.assertEquals("URL within ITSoneDB", customFields.get("ITSoneDB URL"));
 
   }
 }

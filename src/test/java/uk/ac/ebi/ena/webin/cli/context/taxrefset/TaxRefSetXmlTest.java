@@ -106,7 +106,7 @@ public class TaxRefSetXmlTest {
                      "      <FILE filename=\"webin-cli/taxrefset/"+ NAME+ "/"+ fastaFile.getFileName()+
                     "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"+
                      "      <FILE filename=\"webin-cli/taxrefset/"+ NAME+ "/"+ tsvFile.getFileName()+
-                     "\" filetype=\"tsv\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"+
+                     "\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"+
                      "</FILES>\n"+
                      "</ANALYSIS>\n"+
                      "</ANALYSIS_SET>");
