@@ -28,12 +28,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TaxRefSetXmlTest {
+
+  private static final String NAME = "test_taxon_xref_set";
+
   @Before
   public void before() {
     Locale.setDefault(Locale.UK);
   }
 
-  private static final String NAME = "test_taxon_xref_set";
 
   private static TaxRefSetManifest getDefaultManifest() {
     TaxRefSetManifest manifest = new TaxRefSetManifest();

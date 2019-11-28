@@ -30,6 +30,9 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 public class TaxRefSetValidationTest {
 
   private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/taxxrefset/valid");
+  private static final WebinCliExecutorBuilder<TaxRefSetManifest, ValidationResponse> executorBuilder =
+          new WebinCliExecutorBuilder(TaxRefSetManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
+                  .sample(getDefaultSample());
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
@@ -41,10 +44,6 @@ public class TaxRefSetValidationTest {
             .field("CUSTOM_FIELD", "Annotation:Source of annotation")
             .field("CUSTOM_FIELD", "ITSoneDB URL:URL within ITSoneDB");
   }
-
-  private static final WebinCliExecutorBuilder<TaxRefSetManifest, ValidationResponse> executorBuilder =
-      new WebinCliExecutorBuilder(TaxRefSetManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-          .sample(getDefaultSample());
 
   @Before
   public void before() {

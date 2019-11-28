@@ -11,7 +11,9 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
 public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
 
+    private final TaxRefSetManifest manifest = new TaxRefSetManifest();
     private static CustomFieldProcessor customFieldProcessor;
+
     public interface
     Field
     {
@@ -40,8 +42,6 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
                 "For example, column1:description1. The column names must match exactly the ones used in the sequence metadata file.";
 
     }
-
-    private final TaxRefSetManifest manifest = new TaxRefSetManifest();
 
     public TaxRefSetManifestReader(ManifestReaderParameters parameters,
                                    MetadataProcessorFactory factory) {

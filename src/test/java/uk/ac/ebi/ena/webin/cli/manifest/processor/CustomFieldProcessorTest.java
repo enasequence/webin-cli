@@ -48,6 +48,6 @@ public class CustomFieldProcessorTest {
 
     @Test(expected = AssertionError.class)
     public void testInValidNullValue() {
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "CUSTOM_FIELD", null );
+        createFieldValue( ManifestFieldType.META, "CUSTOM_FIELD", null );
     }
 }

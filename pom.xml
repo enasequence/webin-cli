@@ -15,9 +15,15 @@
   </licenses>
   <dependencies>
     <dependency>
+      <groupId>uk.ac.ebi.ena.txmbtools</groupId>
+      <artifactId>txmbtools</artifactId>
+      <version>1.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>uk.ac.ebi.ena.webin-cli</groupId>
       <artifactId>webin-cli-validator</artifactId>
-      <version>1.0.8-snapshot</version>
+      <version>1.0.8-snapshot7</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
