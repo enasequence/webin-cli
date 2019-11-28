@@ -20,7 +20,7 @@ wrapper{
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.project_name = 'webin-cli'
-ext.version_base = '1.8.12'
+ext.version_base = '2.0.0'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -56,22 +56,10 @@ bootJar {
 }
 
 configurations.all {
-	
-	if( !hasProperty( 'artifactoryUsername' ) )
-		project.ext.properties.artifactoryUsername = ''
-	else
-		project.ext.properties.artifactoryUsername = artifactoryUsername;
-		
-	if( !hasProperty( 'artifactoryPassword' ) )
-		project.ext.properties.artifactoryPassword = ''
-	else
-	 	project.ext.properties.artifactoryPassword = artifactoryPassword;
-
 	if( !hasProperty( 'gitlab_private_token' ) )
 		project.ext.properties.gitlab_private_token = ''
 	else
 		project.ext.properties.gitlab_private_token = gitlab_private_token;
-    
 }
 
 
@@ -110,8 +98,7 @@ dependencies {
     implementation( group: 'uk.ac.ebi.ena.webin-cli', name: 'webin-cli-validator', version: '1.0.8-snapshot7' )
     implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.48' )
     compile( group: 'uk.ac.ebi.ena.txmbtools', name: 'txmbtools', version: '1.0.0' )
-    implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.10' )
-
+    implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.11' )
     implementation( 'org.springframework.boot:spring-boot-starter' )
     implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'

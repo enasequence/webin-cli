@@ -77,8 +77,9 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 
 	
 	private static final String MOLECULE_TYPE_DEFAULT = "genomic DNA";
-	private static final String ASSEMBLY_TYPE_PRIMARY_METAGENOME = "primary metagenome";
-	private static final String ASSEMBLY_TYPE_BINNED_METAGENOME = "binned metagenome";
+	public static final String ASSEMBLY_TYPE_PRIMARY_CLONE_OR_ISOLATE = "clone or isolate";
+	public static final String ASSEMBLY_TYPE_PRIMARY_METAGENOME = "primary metagenome";
+	public static final String ASSEMBLY_TYPE_BINNED_METAGENOME = "binned metagenome";
 
 	private static final ManifestCVList CV_MOLECULE_TYPE = new ManifestCVList(
 			"genomic DNA",
@@ -87,7 +88,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 	);
 
 	private static final ManifestCVList CV_ASSEMBLY_TYPE = new ManifestCVList(
-			"clone or isolate",
+	ASSEMBLY_TYPE_PRIMARY_CLONE_OR_ISOLATE,
 			ASSEMBLY_TYPE_PRIMARY_METAGENOME,
 			ASSEMBLY_TYPE_BINNED_METAGENOME,
 			"Metagenome-Assembled Genome (MAG)",
@@ -111,7 +112,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 					.meta().required().name( Field.NAME             ).desc( Description.NAME             ).synonym(Field.ASSEMBLYNAME).and()
 					.meta().required().name( Field.STUDY            ).desc( Description.STUDY            ).processor( factory.getStudyProcessor() ).and()
 					.meta().required().name( Field.SAMPLE           ).desc( Description.SAMPLE           ).processor( factory.getSampleProcessor(), factory.getSampleXmlProcessor()).and()
-					.meta().optional().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) ).and()
+					.meta().required().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new AssemblyTypeProcessor(), new CVFieldProcessor( CV_ASSEMBLY_TYPE ) ).and()
 					.meta().optional().name( Field.DESCRIPTION      ).desc( Description.DESCRIPTION      ).and()
 					.meta().required().name( Field.COVERAGE         ).desc( Description.COVERAGE         ).and()
 					.meta().required().name( Field.PROGRAM          ).desc( Description.PROGRAM          ).and()
