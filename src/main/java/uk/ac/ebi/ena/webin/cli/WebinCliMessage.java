@@ -79,7 +79,8 @@ public enum WebinCliMessage implements MessageFormatSource {
     READS_MANIFEST_READER_MISSING_PLATFORM_AND_INSTRUMENT_ERROR("Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),
     READS_MANIFEST_READER_INVALID_PLATFORM_FOR_INSTRUMENT_ERROR("Platform {0} for instrument {1}. Valid platforms are: {2}."),
     READS_MANIFEST_READER_MISSING_PLATFORM_FOR_INSTRUMENT_ERROR("Missing platform for instrument: {0}."),
-    READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR("Invalid quality score: {0}");
+    READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR("Invalid quality score: {0}"),
+    CUSTOM_FIELD_PROCESSOR_INCORRECT_FIELD_VALUE("Field \"{0}\" value \"{1}\" format is incorrect \"{2}\". Expected format: \"CUSTOM_FIELD name:value\" ");
 
     private final String text;
 
