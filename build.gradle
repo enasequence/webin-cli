@@ -20,7 +20,7 @@ wrapper{
 
 group = 'uk.ac.ebi.ena.webin-cli'
 ext.project_name = 'webin-cli'
-ext.version_base = '2.1.0'
+ext.version_base = '2.2.0'
 version = version_base
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
