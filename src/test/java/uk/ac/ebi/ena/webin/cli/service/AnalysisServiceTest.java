@@ -37,11 +37,10 @@ AnalysisServiceTest
     @Test public void 
     testGetAnalysisUsingPrivateAnalysisId()
     {
-        assertThatThrownBy( () -> getAnalysisUsingValidId( "ERZ000883" ) ).isInstanceOf( WebinCliException.class )
-                                                                          .hasMessageContaining( WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( "ERZ000883" ) );
+        Analysis analysis = getAnalysisUsingValidId( "ERZ000883" );
+        assertThat( analysis.getAnalysisId() ).isEqualTo( "ERZ000883" );
     }
 
-    
     private Analysis 
     getAnalysisUsingValidId( String id )
     {

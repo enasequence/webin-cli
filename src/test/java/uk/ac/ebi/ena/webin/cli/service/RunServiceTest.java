@@ -37,8 +37,8 @@ RunServiceTest
     @Test public void 
     testGetRunUsingPrivateRunId()
     {
-        assertThatThrownBy( () -> getRunUsingValidId( "ERR2864621" ) ).isInstanceOf( WebinCliException.class )
-                                                                      .hasMessageContaining( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( "ERR2864621" ) );
+        Run run = getRunUsingValidId( "ERR2864621" );
+        assertThat( run.getRunId() ).isEqualTo( "ERR2864621" );
     }
 
     
