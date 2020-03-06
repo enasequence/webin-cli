@@ -3,25 +3,15 @@ plugins {
     id "io.github.ddimtirov.codacy" version "0.1.0"
     id "com.diffplug.gradle.spotless" version "3.18.0"
     id "com.palantir.docker" version "0.22.1"
+    id 'java'
+    id 'maven-publish'
+    id 'idea'
 }
 
-apply plugin: 'java'
-apply plugin: 'maven-publish'
-apply plugin: 'maven'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: "jacoco"
 apply plugin: 'io.spring.dependency-management'
 
-wrapper{
-    gradleVersion = '5.2.1'
-    distributionType = Wrapper.DistributionType.BIN
-}
-
 group = 'uk.ac.ebi.ena.webin-cli'
-ext.project_name = 'webin-cli'
-ext.version_base = '2.2.0'
-version = version_base
+version = '2.2.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -44,24 +34,15 @@ targetCompatibility = '1.8'
 //}
 
 bootJar {
-
     mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
     excludeDevtools = true
    	manifest {
-        attributes 'Implementation-Title': 'webin-cli',
-                   'Implementation-Version': version_base,
+        attributes 'Implementation-Title': project.name,
+                   'Implementation-Version': project.version,
                    'Built-By': System.getProperty('user.name'),
                    'Built-Date': new Date()
     }
 }
-
-configurations.all {
-	if( !hasProperty( 'gitlab_private_token' ) )
-		project.ext.properties.gitlab_private_token = ''
-	else
-		project.ext.properties.gitlab_private_token = gitlab_private_token;
-}
-
 
 test {
 	jvmArgs "-Dfile.encoding=UTF-8"
@@ -94,27 +75,22 @@ task printWebinTestCredentials {
 }
 
 dependencies {
-
-    implementation( group: 'uk.ac.ebi.ena.webin-cli', name: 'webin-cli-validator', version: '1.0.8' )
-    implementation( group: 'uk.ac.ebi.ena.sequence', name: 'sequencetools', version: '2.0.50' )
-    compile( group: 'uk.ac.ebi.ena.txmbtools', name: 'txmbtools', version: '1.0.0' )
-    implementation( group: 'uk.ac.ebi.ena', name: 'readtools', version: '1.1.11' )
+    implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.0.8' )
+    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.0.50' )
+    implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.0' )
+    implementation( 'uk.ac.ebi.ena:readtools:1.1.11' )
     implementation( 'org.springframework.boot:spring-boot-starter' )
     implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
-
     implementation( "commons-net:commons-net:3.4" )
-
     implementation( 'info.picocli:picocli:3.9.1' )
-    implementation( group: 'org.fusesource.jansi', name: 'jansi', version: '1.18' )
+    implementation( 'org.fusesource.jansi:jansi:1.18' )
     implementation( 'de.vandermeer:asciitable:0.3.2' )
-
     implementation( "org.jdom:jdom:2.0.2" )
-
-    // implementation(group: 'com.opencsv', name: 'opencsv', version: '4.5')
-    implementation( group: 'org.apache.poi', name: 'poi', version: '4.0.1' )
-    implementation( group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.1' )
+    // implementation('com.opencsv:opencsv:4.5')
+    implementation( 'org.apache.poi:poi:4.0.1' )
+    implementation( 'org.apache.poi:poi-ooxml:4.0.1' )
 
     testImplementation( 'org.springframework.boot:spring-boot-starter-test' )
     testImplementation( 'org.assertj:assertj-core:3.11.1' )
@@ -133,19 +109,17 @@ task sourceJar(type: Jar) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-        	artifactId project_name
+        	artifactId project.name
             from components.java
             artifact sourceJar
         }
     }
     repositories {
 	    maven {
-            // Project specific maven repository in Gitlab.
             url "https://gitlab.ebi.ac.uk/api/v4/projects/811/packages/maven"
-            // Developer token in Gitlab.
             credentials(HttpHeaderCredentials) {
                 name = "Private-Token"
-                value = project.ext.properties.gitlab_private_token
+                value = gitlab_private_token // .gradle/gradle.properties
             }
             authentication {
                 header( HttpHeaderAuthentication )
@@ -153,27 +127,6 @@ publishing {
 	    }
     }
 }
-
-task writePom {
-    doLast {
-        pom {
-            project {
-                artifactId project_name
-                inceptionYear '2019'
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-            }
-        }.writeTo( "pom.xml" )
-    }
-}   
-
-
-compileJava.dependsOn( writePom )
 
 // Build and deploy docker image:
 // gradle docker
