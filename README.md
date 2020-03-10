@@ -13,6 +13,7 @@ The following types of submissions are supported:
 - transcriptome assemblies
 - annotated sequences
 - read data submissions (Fastq, BAM, CRAM)
+- taxonomy reference sets
 
 For further information about Webin-CLI please refer to:
 
