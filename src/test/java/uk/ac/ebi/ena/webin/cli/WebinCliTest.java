@@ -457,6 +457,8 @@ public class WebinCliTest {
                 "│                    │           │* Targeted-Capture                           │\n" +
                 "│                    │           │* Tethered Chromatin Conformation Capture    │\n" +
                 "│                    │           │* NOMe-seq                                   │\n" +
+                "│                    │           │* ChM-Seq                                    │\n" +
+                "│                    │           │* GBS                                        │\n" +
                 "│                    │           │* OTHER                                      │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│DESCRIPTION         │Optional   │Experiment description                       │\n" +
