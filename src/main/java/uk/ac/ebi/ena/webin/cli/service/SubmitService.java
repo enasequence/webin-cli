@@ -77,7 +77,7 @@ public class SubmitService extends WebinService {
     
 
     public void
-    doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool) {
+    doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool, String manifestMd5, String manifestFileContent) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text()));
         // restTemplate.setInterceptors(Collections.singletonList(new HttpLoggingInterceptor()));
@@ -98,6 +98,14 @@ public class SubmitService extends WebinService {
 
         if (null != submissionTool && !submissionTool.isEmpty()) {
             body.add("ENA_SUBMISSION_TOOL", submissionTool);
+        }
+
+        if (null != manifestFileContent && !manifestFileContent.isEmpty()) {
+            body.add("ENA_MANIFEST_FILE", manifestFileContent);
+        }
+
+        if (null != manifestMd5 && !manifestMd5.isEmpty()) {
+            body.add("ENA_MANIFEST_FILE_MD5", manifestMd5);
         }
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
