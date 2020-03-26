@@ -240,9 +240,8 @@ public class WebinCli {
     }
 
     String getManifestFileContent() {
-        String manifestFileContent = "  <![CDATA[ \n%s\n ]] >";
         try {
-            return String.format(manifestFileContent, new String(Files.readAllBytes(getParameters().getManifestFile().toPath())));
+            return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
         } catch(IOException ioe) {
             throw WebinCliException.userError( "Exception thrown while reading manifest file", ioe.getMessage());
         }
