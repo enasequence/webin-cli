@@ -92,7 +92,8 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 			ASSEMBLY_TYPE_PRIMARY_METAGENOME,
 			ASSEMBLY_TYPE_BINNED_METAGENOME,
 			"Metagenome-Assembled Genome (MAG)",
-			"Environmental Single-Cell Amplified Genome (SAG)"
+			"Environmental Single-Cell Amplified Genome (SAG)",
+			"COVID-19 outbreak"
 	);
 
 	public static final ArrayList<ManifestFileGroup> PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS = new ManifestFileCount.Builder()
