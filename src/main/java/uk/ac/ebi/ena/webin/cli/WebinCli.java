@@ -232,13 +232,20 @@ public class WebinCli {
                     .setPassword(parameters.getPassword())
                     .setTest(parameters.isTest())
                     .build();
-            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(), getVersionForSubmission());
+            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(), getVersionForSubmission(), bundle.getManifestMd5(), getManifestFileContent());
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
         }
     }
 
+    String getManifestFileContent() {
+        try {
+            return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
+        } catch(IOException ioe) {
+            throw WebinCliException.userError( "Exception thrown while reading manifest file", ioe.getMessage());
+        }
+    }
 
     private static WebinCliCommand
     parseParameters(String... args) {
