@@ -126,6 +126,7 @@ public class WebinCliTest {
             "│                    │           │* Metagenome-Assembled Genome (MAG)          │\n" +
             "│                    │           │* Environmental Single-Cell Amplified Genome │\n" +
             "│                    │           │(SAG)                                        │\n" +
+            "│                    │           │* COVID-19 outbreak                          │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
             "│COVERAGE            │Mandatory  │Sequencing coverage                          │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
