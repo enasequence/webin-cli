@@ -52,8 +52,8 @@ ManifestCVListTest
         Assert.assertEquals( "unspecified", cvList.getKey( "uns_pecified" ) );
         Assert.assertEquals( "unspecified", cvList.getKey( "unspecified" ) );
         Assert.assertEquals( "unspecified", cvList.getKey( "UNSPECIFIED" ) );
-        Assert.assertEquals( "LS454,ILLUMINA,PACBIO_SMRT,ION_TORRENT,OXFORD_NANOPORE", cvList.getValue( "unspecified" ) );
-        Assert.assertEquals( "LS454,ILLUMINA,PACBIO_SMRT,ION_TORRENT,OXFORD_NANOPORE", cvList.getValue( "UNSPECIFIED" ) );
+        Assert.assertEquals( "LS454,ILLUMINA,PACBIO_SMRT,ION_TORRENT,OXFORD_NANOPORE,DNBSEQ", cvList.getValue( "unspecified" ) );
+        Assert.assertEquals( "LS454,ILLUMINA,PACBIO_SMRT,ION_TORRENT,OXFORD_NANOPORE,DNBSEQ", cvList.getValue( "UNSPECIFIED" ) );
 
         Assert.assertTrue( cvList.contains("Illumina Genome Analyzer") );
         Assert.assertTrue( cvList.contains("illumina genome analyzer") );

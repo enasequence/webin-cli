@@ -374,6 +374,10 @@ public class WebinCliTest {
                 "│                    │           │* AB 3130xL Genetic Analyzer                 │\n" +
                 "│                    │           │* AB 3130 Genetic Analyzer                   │\n" +
                 "│                    │           │* AB 310 Genetic Analyzer                    │\n" +
+                "│                    │           │* DNBSEQ-T7                                  │\n" +
+                "│                    │           │* DNBSEQ-G400                                │\n" +
+                "│                    │           │* DNBSEQ-G50                                 │\n" +
+                "│                    │           │* DNBSEQ-G400 FAST                           │\n" +
                 "│                    │           │* unspecified                                │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│LIBRARY_SOURCE      │Mandatory  │Source material:                             │\n" +
@@ -472,6 +476,7 @@ public class WebinCliTest {
                 "│                    │           │* LS454                                      │\n" +
                 "│                    │           │* ION_TORRENT                                │\n" +
                 "│                    │           │* CAPILLARY                                  │\n" +
+                "│                    │           │* DNBSEQ                                     │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│LIBRARY_CONSTRUCTION│Optional   │Protocol used to construct the sequencing    │\n" +
                 "│_PROTOCOL           │           │library                                      │\n" +
