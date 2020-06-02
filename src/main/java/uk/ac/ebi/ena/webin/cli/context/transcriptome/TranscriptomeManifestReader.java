@@ -39,6 +39,7 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		String FLATFILE     = "FLATFILE";
 		String AUTHORS          = "AUTHORS";
 		String ADDRESS          = "ADDRESS";
+		String ASSEMBLY_TYPE    = "ASSEMBLY_TYPE";
 	}
 
 	
@@ -59,7 +60,13 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		String FLATFILE     = "Flat file";
 		String AUTHORS      = "For submission brokers only. Submitter's names as a comma-separated list";
 		String ADDRESS      = "For submission brokers only. Submitter's address";
+		String ASSEMBLY_TYPE    = "Assembly type";
 	}
+
+	private static final ManifestCVList CV_ASSEMBLY_TYPE = new ManifestCVList(
+			"isolate",
+			"metatranscriptome"
+	);
 
 	private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
@@ -82,7 +89,8 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 					.file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor(getFlatfileProcessors()).and()
 					.meta().optional().name( Field.TPA          ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
 					.meta().optional().name( Field.AUTHORS      ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
-					.meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS )
+					.meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS ).and()
+						.meta().required().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) )
 					.build()
 				,
 				// File groups.
@@ -146,6 +154,7 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 
 		manifest.setProgram( getManifestReaderResult().getValue( Field.PROGRAM ) );
 		manifest.setPlatform( getManifestReaderResult().getValue( Field.PLATFORM ) );
+		manifest.setAssemblyType( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) );
 
 		if( getManifestReaderResult().getCount(Field.TPA) > 0 )
 		{

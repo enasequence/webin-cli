@@ -56,10 +56,11 @@ public class TranscriptomeValidationTest {
       String fileName = file.getName();
       // System.out.println(fileName);
       File manifestFile =
-          manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, fileName).build();
+          manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, fileName).
+                  field(TranscriptomeManifestReader.Field.ASSEMBLY_TYPE, "isolate").build();
       WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
           executorBuilder.build(manifestFile, VALID_DIR);
-      executor.readManifest();
+       executor.readManifest();
       executor.validateSubmission();
       assertThat(
               executor

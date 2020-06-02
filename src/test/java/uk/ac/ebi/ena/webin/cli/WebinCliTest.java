@@ -225,6 +225,10 @@ public class WebinCliTest {
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│PLATFORM            │Mandatory  │Sequencing platform                          │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│ASSEMBLY_TYPE       │Mandatory  │Assembly type:                               │\n" +
+                "│                    │           │* isolate                                    │\n" +
+                "│                    │           │* metatranscriptome                          │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"+
                 "│RUN_REF             │Optional   │Run accession or name as a comma-separated   │\n" +
                 "│                    │           │list                                         │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +

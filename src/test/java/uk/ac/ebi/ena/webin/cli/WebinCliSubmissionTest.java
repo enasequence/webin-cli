@@ -69,7 +69,8 @@ public class WebinCliSubmissionTest {
                 .field("STUDY", "PRJEB20083")
                 .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
                 .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-                .field("DESCRIPTION", "Some transcriptome assembly description");
+                .field("DESCRIPTION", "Some transcriptome assembly description")
+                .field("ASSEMBLY_TYPE", "isolate");
     }
 
     private ManifestBuilder sequenceManifest() {

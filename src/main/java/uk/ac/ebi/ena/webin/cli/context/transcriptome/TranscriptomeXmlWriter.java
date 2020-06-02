@@ -39,6 +39,8 @@ public class TranscriptomeXmlWriter extends SequenceToolsXmlWriter<Transcriptome
       e.addContent(createTextElement("AUTHORS", manifest.getAuthors()));
       e.addContent(createTextElement("ADDRESS", manifest.getAddress()));
     }
+    if (null != manifest.getAssemblyType() && !manifest.getAssemblyType().isEmpty())
+      e.addContent(createTextElement("TYPE", manifest.getAssemblyType()));
     return e;
   }
 
