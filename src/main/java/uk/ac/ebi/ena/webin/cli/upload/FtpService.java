@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +30,15 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class FtpService implements UploadService {
-    private final static String SERVER = "webin.ebi.ac.uk";
+    private final static String SERVER = "webin2.ebi.ac.uk";
     private final static int FTP_PORT = 21;
-    private final FTPClient ftpClient = new FTPClient() ;
+    private final FTPSClient ftpClient = new FTPSClient() ;
 
     private static final Logger log = LoggerFactory.getLogger(FtpService.class);
 
     @Override public void connect(String userName, String password) {
         try {
+            ftpClient.setRemoteVerificationEnabled(true);
             ftpClient.connect(SERVER, FTP_PORT);
         } catch (IOException e) {
             throw WebinCliException.systemError(WebinCliMessage.FTP_CONNECT_ERROR.text());
