@@ -10,11 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
-import org.jdom2.Element;
-import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
-
 import static uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
@@ -22,6 +17,12 @@ import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jdom2.Element;
+
+import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 public class GenomeXmlWriter extends SequenceToolsXmlWriter<GenomeManifest, ValidationResponse> {
 

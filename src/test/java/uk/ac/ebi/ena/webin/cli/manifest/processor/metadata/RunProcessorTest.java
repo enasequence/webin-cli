@@ -10,20 +10,19 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
+import static uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage.Severity;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage.Severity;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
 
 public class

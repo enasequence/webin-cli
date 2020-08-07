@@ -10,18 +10,18 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.io.File;
+
 import org.mockito.invocation.InvocationOnMock;
+
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
-
-import java.io.File;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationResponse> {
     private final Class<M> manifestClass;

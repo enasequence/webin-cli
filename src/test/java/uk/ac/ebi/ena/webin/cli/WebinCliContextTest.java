@@ -10,7 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
+
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
@@ -19,8 +22,6 @@ import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeXmlWriter;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class WebinCliContextTest {
 

@@ -12,8 +12,8 @@ package uk.ac.ebi.ena.webin.cli.service;
 
 import org.springframework.web.client.RestTemplate;
 
-import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 
 public class 

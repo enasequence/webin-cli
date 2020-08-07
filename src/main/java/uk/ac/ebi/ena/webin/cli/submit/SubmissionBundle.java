@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 public class
 SubmissionBundle implements Serializable

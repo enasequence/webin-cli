@@ -22,10 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import de.vandermeer.asciitable.AT_Renderer;
-import de.vandermeer.asciitable.AsciiTable;
-import de.vandermeer.asciitable.CWC_FixedWidth;
-import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
@@ -36,6 +32,10 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.OutputStreamAppender;
+import de.vandermeer.asciitable.AT_Renderer;
+import de.vandermeer.asciitable.AsciiTable;
+import de.vandermeer.asciitable.CWC_FixedWidth;
+import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import picocli.CommandLine;
 
 import uk.ac.ebi.ena.webin.cli.entity.Version;

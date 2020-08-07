@@ -10,19 +10,19 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.File;
 import java.nio.file.Path;
 
-import static org.assertj.core.api.Assertions.*;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
 
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class ManifestReaderTester<M extends Manifest> {

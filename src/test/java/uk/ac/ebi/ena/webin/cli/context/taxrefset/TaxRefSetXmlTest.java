@@ -10,22 +10,23 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
-import org.junit.Before;
-import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.*;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
+
+import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class TaxRefSetXmlTest {
 

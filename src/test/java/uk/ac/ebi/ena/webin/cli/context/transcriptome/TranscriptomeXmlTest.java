@@ -10,6 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.nio.file.Path;
 import java.util.Locale;
 
@@ -24,9 +27,6 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TranscriptomeXmlTest {
 

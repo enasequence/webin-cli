@@ -10,6 +10,11 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
+import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
+
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Locale;
@@ -23,12 +28,6 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class
 ReadsManifestReaderTest {

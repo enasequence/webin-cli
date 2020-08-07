@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
 import org.junit.Test;
+
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 

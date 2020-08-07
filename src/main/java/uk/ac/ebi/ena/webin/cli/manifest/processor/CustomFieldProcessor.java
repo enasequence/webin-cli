@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;

@@ -10,18 +10,19 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.sequence;
 
-import org.jdom2.Element;
-import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
+import static uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
+import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
-import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
+import org.jdom2.Element;
+
+import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class SequenceXmlWriter extends SequenceToolsXmlWriter<SequenceManifest, ValidationResponse> {
 

@@ -10,9 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-
 import java.util.List;
+
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public class TestManifestReader extends ManifestReader {
 

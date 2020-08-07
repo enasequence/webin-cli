@@ -10,17 +10,18 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
-import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
+
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
+import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 
 public class
 LoginService

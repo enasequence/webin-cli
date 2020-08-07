@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 
 import org.junit.Assert;
 import org.junit.Test;
+
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 
 public class 

@@ -14,10 +14,10 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Assert;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class WebinCliTestUtils {

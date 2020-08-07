@@ -10,22 +10,23 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
+import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
 public class TaxRefSetValidationTest {
 

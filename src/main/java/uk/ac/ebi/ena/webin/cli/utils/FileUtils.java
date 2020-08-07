@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class 

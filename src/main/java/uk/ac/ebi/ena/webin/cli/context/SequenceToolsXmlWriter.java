@@ -10,10 +10,18 @@
  */
 package uk.ac.ebi.ena.webin.cli.context;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -21,13 +29,6 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends ValidationResponse> implements XmlWriter<M, R> {
 

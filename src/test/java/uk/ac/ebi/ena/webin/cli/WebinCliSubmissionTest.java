@@ -10,11 +10,11 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.nio.file.Path;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
+
+import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.Test;
 

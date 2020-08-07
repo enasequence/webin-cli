@@ -11,9 +11,9 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class AssemblyTypeProcessor implements ManifestFieldProcessor {
 

@@ -10,6 +10,8 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.Locale;
 
@@ -18,12 +20,10 @@ import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class TranscriptomeValidationTest {
 

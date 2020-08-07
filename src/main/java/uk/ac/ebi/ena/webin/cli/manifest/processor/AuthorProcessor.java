@@ -12,9 +12,9 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import java.util.regex.Pattern;
 
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class AuthorProcessor implements ManifestFieldProcessor {
 

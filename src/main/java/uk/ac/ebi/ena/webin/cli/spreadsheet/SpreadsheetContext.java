@@ -11,11 +11,11 @@
 package uk.ac.ebi.ena.webin.cli.spreadsheet;
 
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
-import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 
 public enum SpreadsheetContext {
 
