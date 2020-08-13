@@ -53,12 +53,16 @@ public class ManifestReaderTester<M extends Manifest> {
   private ManifestReader<M> create() {
     return new ManifestReaderBuilder(manifestReaderClass,
             new MetadataProcessorParameters() {
-                public String getUsername() {
-                    return System.getenv("webin-cli-username");
+                public String getWebinServiceUserName() {
+                    return WebinCliTestUtils.getTestWebinUsername();
+                }
+
+                public String getFileUploadServiceUserName() {
+                    return WebinCliTestUtils.getTestWebinUsername();
                 }
 
                 public String getPassword() {
-                    return System.getenv("webin-cli-password");
+                    return WebinCliTestUtils.getTestWebinPassword();
                 }
 
                 public boolean isTest() {

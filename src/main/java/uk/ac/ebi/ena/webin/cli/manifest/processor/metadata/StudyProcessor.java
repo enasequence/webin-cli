@@ -20,55 +20,50 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
-public class
-StudyProcessor implements ManifestFieldProcessor
-{
-    private final MetadataProcessorParameters parameters;
-    private ManifestFieldProcessor.Callback<Study> callback;
+public class StudyProcessor implements ManifestFieldProcessor {
+  private final MetadataProcessorParameters parameters;
+  private ManifestFieldProcessor.Callback<Study> callback;
 
-    public
-    StudyProcessor(MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<Study> callback )
-    {
-        this.parameters = parameters;
-        this.callback = callback;
+  public StudyProcessor(
+      MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<Study> callback) {
+    this.parameters = parameters;
+    this.callback = callback;
+  }
+
+  public StudyProcessor(MetadataProcessorParameters parameters) {
+    this.parameters = parameters;
+  }
+
+  public void setCallback(Callback<Study> callback) {
+    this.callback = callback;
+  }
+
+  public Callback<Study> getCallback() {
+    return callback;
+  }
+
+  @Override
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+    String value = fieldValue.getValue();
+
+    try {
+      StudyService studyService =
+          new StudyService.Builder()
+              .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
+              .setTest(parameters.isTest())
+              .build();
+      Study study = studyService.getStudy(value);
+      fieldValue.setValue(study.getBioProjectId());
+      callback.notify(study);
+
+    } catch (WebinCliException e) {
+      if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
+        result.add(ValidationMessage.error(e));
+      } else {
+        result.add(
+            ValidationMessage.error(
+                WebinCliMessage.STUDY_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
+      }
     }
-
-    public
-    StudyProcessor( MetadataProcessorParameters parameters )
-    {
-        this.parameters = parameters;
-    }
-
-    public void setCallback(Callback<Study> callback) {
-        this.callback = callback;
-    }
-
-    public Callback<Study> getCallback() {
-        return callback;
-    }
-
-    @Override public void
-    process( ValidationResult result, ManifestFieldValue fieldValue )
-    {
-        String value = fieldValue.getValue();
-
-        try
-        {
-            StudyService studyService = new StudyService.Builder()
-                                                        .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                        .setTest( parameters.isTest() )
-                                                        .build();
-            Study study = studyService.getStudy( value );
-            fieldValue.setValue( study.getBioProjectId() );
-            callback.notify( study );
-
-        } catch( WebinCliException e ) {
-            if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
-                result.add(ValidationMessage.error(e));
-            }
-            else {
-                result.add(ValidationMessage.error(WebinCliMessage.STUDY_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
-            }
-        }
-    }
+  }
 }

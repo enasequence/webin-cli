@@ -26,64 +26,55 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
-public class
-AnalysisProcessor implements ManifestFieldProcessor
-{
-    private final MetadataProcessorParameters parameters;
-    private ManifestFieldProcessor.Callback<List<Analysis>> callback;
+public class AnalysisProcessor implements ManifestFieldProcessor {
+  private final MetadataProcessorParameters parameters;
+  private ManifestFieldProcessor.Callback<List<Analysis>> callback;
 
-    public
-    AnalysisProcessor(MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<List<Analysis>> callback )
-    {
-        this.parameters = parameters;
-        this.callback = callback;
+  public AnalysisProcessor(
+      MetadataProcessorParameters parameters,
+      ManifestFieldProcessor.Callback<List<Analysis>> callback) {
+    this.parameters = parameters;
+    this.callback = callback;
+  }
+
+  public AnalysisProcessor(MetadataProcessorParameters parameters) {
+    this.parameters = parameters;
+  }
+
+  public void setCallback(Callback<List<Analysis>> callback) {
+    this.callback = callback;
+  }
+
+  @Override
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+    String value = fieldValue.getValue();
+    String[] ids = value.split(", *");
+    Set<String> idsSet = new HashSet<>();
+    List<Analysis> analysis_list = new ArrayList<>(ids.length);
+
+    for (String a : ids) {
+      String id = a.trim();
+      if (id.isEmpty()) continue;
+      if (!idsSet.add(id)) continue;
+      try {
+        AnalysisService analysisService =
+            new AnalysisService.Builder()
+                .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
+                .setTest(parameters.isTest())
+                .build();
+        analysis_list.add(analysisService.getAnalysis(id));
+
+      } catch (WebinCliException e) {
+        result.add(
+            ValidationMessage.error(
+                WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR, id, e.getMessage()));
+      }
     }
 
-    public
-    AnalysisProcessor( MetadataProcessorParameters parameters )
-    {
-        this.parameters = parameters;
+    if (result.isValid()) {
+      fieldValue.setValue(
+          analysis_list.stream().map(e -> e.getAnalysisId()).collect(Collectors.joining(", ")));
+      callback.notify(analysis_list);
     }
-
-    public void setCallback(Callback<List<Analysis>> callback) {
-        this.callback = callback;
-    }
-
-    @Override public void
-    process( ValidationResult result, ManifestFieldValue fieldValue )
-    {
-        String value = fieldValue.getValue();
-        String[] ids = value.split( ", *" );
-        Set<String> idsSet = new HashSet<>();
-        List<Analysis> analysis_list = new ArrayList<>( ids.length );
-
-        for( String a : ids )
-        {
-            String id = a.trim();
-            if( id.isEmpty() )
-                continue;
-            if(!idsSet.add(id))
-                continue;
-            try
-            {
-                AnalysisService analysisService = new AnalysisService.Builder()
-                                                                     .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                                     .setTest( parameters.isTest() )
-                                                                     .build();
-                analysis_list.add( analysisService.getAnalysis( id ) );
-                
-            } catch( WebinCliException e )
-            {
-                result.add( ValidationMessage.error( WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR, id, e.getMessage() ) );
-            }
-        }
-        
-        if( result.isValid() )
-        {
-            fieldValue.setValue( analysis_list.stream()
-                                              .map( e -> e.getAnalysisId() )
-                                              .collect( Collectors.joining( ", " ) ) );
-            callback.notify( analysis_list );
-        }
-    }
+  }
 }

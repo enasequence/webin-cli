@@ -23,66 +23,56 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
-public class
-RunProcessor implements ManifestFieldProcessor
-{
-    private final MetadataProcessorParameters parameters;
-    private ManifestFieldProcessor.Callback<List<Run>> callback;
+public class RunProcessor implements ManifestFieldProcessor {
+  private final MetadataProcessorParameters parameters;
+  private ManifestFieldProcessor.Callback<List<Run>> callback;
 
-    public
-    RunProcessor(MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<List<Run>> callback )
-    {
-        this.parameters = parameters;
-        this.callback = callback;
+  public RunProcessor(
+      MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<List<Run>> callback) {
+    this.parameters = parameters;
+    this.callback = callback;
+  }
+
+  public RunProcessor(MetadataProcessorParameters parameters) {
+    this.parameters = parameters;
+  }
+
+  public void setCallback(Callback<List<Run>> callback) {
+    this.callback = callback;
+  }
+
+  @Override
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+    String value = fieldValue.getValue();
+    String[] ids = value.split(", *");
+    Set<String> idsSet = new HashSet<>();
+    List<Run> run_list = new ArrayList<>(ids.length);
+
+    for (String r : ids) {
+      String id = r.trim();
+      if (id.isEmpty()) continue;
+
+      if (!idsSet.add(id)) continue;
+      try {
+        RunService runService =
+            new RunService.Builder()
+                .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
+                .setTest(parameters.isTest())
+                .build();
+        run_list.add(runService.getRun(id));
+
+      } catch (WebinCliException e) {
+        result.add(
+            ValidationMessage.error(
+                WebinCliMessage.RUN_PROCESSOR_LOOKUP_ERROR, id, e.getMessage()));
+      }
     }
 
-    public
-    RunProcessor( MetadataProcessorParameters parameters )
-    {
-        this.parameters = parameters;
-    }
+    if (result.isValid()) {
+      fieldValue.setValue(
+          run_list.stream().map(e -> e.getRunId()).collect(Collectors.joining(", ")));
 
-    public void setCallback(Callback<List<Run>> callback) {
-        this.callback = callback;
+      callback.notify(run_list);
     }
-
-    @Override public void
-    process( ValidationResult result, ManifestFieldValue fieldValue )
-    {
-        String value = fieldValue.getValue();
-        String[] ids = value.split( ", *" );
-        Set<String> idsSet = new HashSet<>();
-        List<Run> run_list = new ArrayList<>( ids.length );
-        
-        for( String r : ids )
-        {
-            String id = r.trim();
-            if( id.isEmpty() )
-                continue;
-
-            if(!idsSet.add(id))
-                continue;
-            try
-            {
-                RunService runService = new RunService.Builder()
-                                                      .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                      .setTest( parameters.isTest() )
-                                                      .build();
-                run_list.add( runService.getRun( id ) );
-                           
-            } catch( WebinCliException e )
-            {
-                result.add( ValidationMessage.error( WebinCliMessage.RUN_PROCESSOR_LOOKUP_ERROR, id, e.getMessage() ) );
-            }
-        }
-        
-        if( result.isValid() )
-        {
-            fieldValue.setValue( run_list.stream()
-                                         .map( e -> e.getRunId() )
-                                         .collect( Collectors.joining( ", " ) ) );
-            
-            callback.notify( run_list );
-        }
-    }
+  }
 }

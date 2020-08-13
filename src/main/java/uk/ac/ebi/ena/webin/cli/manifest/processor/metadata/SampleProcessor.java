@@ -20,56 +20,50 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
-public class
-SampleProcessor implements ManifestFieldProcessor
-{
-    private final MetadataProcessorParameters parameters;
-    private ManifestFieldProcessor.Callback<Sample> callback;
+public class SampleProcessor implements ManifestFieldProcessor {
+  private final MetadataProcessorParameters parameters;
+  private ManifestFieldProcessor.Callback<Sample> callback;
 
-    public
-    SampleProcessor(MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<Sample> callback )
-    {
-        this.parameters = parameters;
-        this.callback = callback;
+  public SampleProcessor(
+      MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<Sample> callback) {
+    this.parameters = parameters;
+    this.callback = callback;
+  }
+
+  public SampleProcessor(MetadataProcessorParameters parameters) {
+    this.parameters = parameters;
+  }
+
+  public void setCallback(Callback<Sample> callback) {
+    this.callback = callback;
+  }
+
+  public Callback<Sample> getCallback() {
+    return callback;
+  }
+
+  @Override
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+    String value = fieldValue.getValue();
+
+    try {
+      SampleService sampleService =
+          new SampleService.Builder()
+              .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
+              .setTest(parameters.isTest())
+              .build();
+      Sample sample = sampleService.getSample(value);
+      fieldValue.setValue(sample.getBioSampleId());
+      callback.notify(sample);
+
+    } catch (WebinCliException e) {
+      if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
+        result.add(ValidationMessage.error(e));
+      } else {
+        result.add(
+            ValidationMessage.error(
+                WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
+      }
     }
-
-    public
-    SampleProcessor( MetadataProcessorParameters parameters )
-    {
-        this.parameters = parameters;
-    }
-
-    public void setCallback(Callback<Sample> callback) {
-        this.callback = callback;
-    }
-
-    public Callback<Sample> getCallback() {
-        return callback;
-    }
-
-    @Override public void
-    process( ValidationResult result, ManifestFieldValue fieldValue )
-    {
-        String value = fieldValue.getValue();
-
-        try
-        {
-            SampleService sampleService = new SampleService.Builder()
-                                                           .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                           .setTest( parameters.isTest() )
-                                                           .build();
-            Sample sample = sampleService.getSample( value );
-            fieldValue.setValue( sample.getBioSampleId() );
-            callback.notify( sample );
-
-        } catch( WebinCliException e )
-        {
-            if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
-                result.add(ValidationMessage.error(e));
-            }
-            else {
-                result.add(ValidationMessage.error(WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
-            }
-        }
-    }
+  }
 }

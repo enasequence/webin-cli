@@ -17,6 +17,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 
 public class WebinCliParameters implements MetadataProcessorParameters
 {
+    private String submissionAccount;
     private WebinCliContext context;
     private File manifestFile;
     private String username;
@@ -38,6 +39,16 @@ public class WebinCliParameters implements MetadataProcessorParameters
     public WebinCliParameters() {
     }
 
+    /*
+    public String getSubmissionAccount() {
+        return submissionAccount;
+    }
+    */
+    
+    public void setSubmissionAccount(String submissionAccount) {
+        this.submissionAccount = submissionAccount;
+    }
+
     public WebinCliContext getContext() {
         return context;
     }
@@ -54,9 +65,11 @@ public class WebinCliParameters implements MetadataProcessorParameters
         this.manifestFile = manifestFile;
     }
 
+    /*
     public String getUsername() {
         return username;
     }
+    */
 
     public void setUsername(String username) {
         this.username = username;
@@ -164,5 +177,18 @@ public class WebinCliParameters implements MetadataProcessorParameters
 
     public void setAnalysisProcessor(AnalysisProcessor analysisProcessor) {
         this.analysisProcessor = analysisProcessor;
+    }
+
+    public String getWebinServiceUserName() {
+        // Use the submission account given by the Webin authentication
+        // service for web based authentication. Web based authentication
+        // supports superuser password for Webin-N submission accounts.
+        return submissionAccount;
+    }
+
+    public String getFileUploadServiceUserName() {
+        // Preserve su-Webin-N superuser submission account for FTP and Aspera authentication.
+        // FTP and Aspera only support superuser password for su-Webin-N submission accounts.
+        return username.startsWith("su-Webin") ? username : submissionAccount;
     }
 }

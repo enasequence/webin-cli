@@ -50,8 +50,8 @@ public class WebinCliBuilder {
     cmd.inputDir = inputDir.toFile();
     cmd.outputDir = outputDir.toFile();
     cmd.manifest = manifestBuilder.build(inputDir);
-    cmd.userName = System.getenv("webin-cli-username");
-    cmd.password = System.getenv("webin-cli-password");
+    cmd.userName = WebinCliTestUtils.getTestWebinUsername();
+    cmd.password = WebinCliTestUtils.getTestWebinPassword();
     cmd.test = true;
     cmd.validate = validate;
     cmd.submit = submit;
@@ -65,6 +65,6 @@ public class WebinCliBuilder {
 
   public WebinCli build(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
-    return new WebinCli(cmd);
+    return new WebinCli(WebinCliTestUtils.getTestWebinUsername(), cmd);
   }
 }

@@ -13,7 +13,8 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 
 public interface MetadataProcessorParameters {
-    String getUsername();
+    String getWebinServiceUserName();
+    String getFileUploadServiceUserName();
     String getPassword();
     boolean isTest();
     SampleProcessor getSampleProcessor();

@@ -77,10 +77,10 @@ public class WebinCli {
             if (params.help || params.fields || params.version)
                 return SUCCESS;
 
-            checkLogin(params);
+            String submissionAccount = checkLogin(params);
             checkVersion(params.test);
 
-            WebinCli webinCli = new WebinCli(params);
+            WebinCli webinCli = new WebinCli(submissionAccount, params);
 
             webinCli.execute();
 
@@ -101,8 +101,8 @@ public class WebinCli {
         }
     }
 
-    public WebinCli(WebinCliCommand cmd) {
-        this(initParameters(cmd));
+    public WebinCli(String submissionAccount, WebinCliCommand cmd) {
+        this(initParameters(submissionAccount, cmd));
     }
 
     public WebinCli(WebinCliParameters parameters) {
@@ -113,12 +113,13 @@ public class WebinCli {
         initTimedFileLogger(parameters);
     }
 
-    private static WebinCliParameters initParameters(WebinCliCommand cmd) {
+    private static WebinCliParameters initParameters(String submissionAccount, WebinCliCommand cmd) {
         if (!cmd.inputDir.isDirectory())
             throw WebinCliException.userError(WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(cmd.inputDir.getPath()));
         if (!cmd.outputDir.isDirectory())
             throw WebinCliException.userError(WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(cmd.outputDir.getPath()));
         WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setSubmissionAccount(submissionAccount);
         parameters.setContext(cmd.context);
         parameters.setManifestFile(cmd.manifest);
         parameters.setInputDir(cmd.inputDir);
@@ -212,23 +213,23 @@ public class WebinCli {
     submit(WebinCliExecutor<?, ?> executor) {
         SubmissionBundle bundle = executor.readSubmissionBundle();
 
-        UploadService ftpService = parameters.isAscp() && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
+        UploadService fileUploadService = parameters.isAscp() && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
 
         try {
-            ftpService.connect(parameters.getUsername(), parameters.getPassword());
-            ftpService.upload(bundle.getUploadFileList(), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath());
+            fileUploadService.connect(parameters.getFileUploadServiceUserName(), parameters.getPassword());
+            fileUploadService.upload(bundle.getUploadFileList(), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath());
             log.info(WebinCliMessage.CLI_UPLOAD_SUCCESS.text());
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_UPLOAD_ERROR.format(e.getErrorType().text));
         } finally {
-            ftpService.disconnect();
+            fileUploadService.disconnect();
         }
 
         try {
             SubmitService submitService = new SubmitService.Builder()
                     .setSubmitDir(bundle.getSubmitDir().getPath())
-                    .setUserName(parameters.getUsername())
+                    .setUserName(parameters.getWebinServiceUserName())
                     .setPassword(parameters.getPassword())
                     .setTest(parameters.isTest())
                     .build();
@@ -540,9 +541,11 @@ public class WebinCli {
     }
 
 
-    private static void checkLogin(WebinCliCommand parameters) {
-        // Replace user name with the Webin-N submission account name.
-        parameters.userName = new LoginService(
+    private static String checkLogin(WebinCliCommand parameters) {
+        // Return the Webin-N submission account returned by the login service.
+        // This may be different from the username used to login as email address
+        // or su-Webin- superuser can also be used as a username.
+       return new LoginService(
                 parameters.userName,
                 parameters.password,
                 parameters.test).login();

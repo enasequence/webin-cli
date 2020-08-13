@@ -54,7 +54,7 @@ public class WebinCliTest {
         cmd.inputDir = TempFileBuilder.file("test").toFile();
         cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-        assertThatThrownBy(() -> new WebinCli(cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                         WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(
@@ -67,7 +67,7 @@ public class WebinCliTest {
         cmd.inputDir = WebinCliTestUtils.createTempDir();
         cmd.outputDir = TempFileBuilder.file("test").toFile();
 
-        assertThatThrownBy(() -> new WebinCli(cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                     WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(
@@ -80,7 +80,7 @@ public class WebinCliTest {
         cmd.inputDir = new File(UUID.randomUUID().toString());
         cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-        assertThatThrownBy(() -> new WebinCli(cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                         WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(
@@ -93,7 +93,7 @@ public class WebinCliTest {
         cmd.inputDir = WebinCliTestUtils.createTempDir();
         cmd.outputDir = new File(UUID.randomUUID().toString());
 
-        assertThatThrownBy(() -> new WebinCli(cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                         WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(

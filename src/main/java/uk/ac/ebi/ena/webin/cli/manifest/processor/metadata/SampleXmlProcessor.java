@@ -20,44 +20,41 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
-public class
-SampleXmlProcessor implements ManifestFieldProcessor
-{
-    private final MetadataProcessorParameters parameters;
-    private ManifestFieldProcessor.Callback<Sample> callback;
+public class SampleXmlProcessor implements ManifestFieldProcessor {
+  private final MetadataProcessorParameters parameters;
+  private ManifestFieldProcessor.Callback<Sample> callback;
 
-    public SampleXmlProcessor(MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<Sample> callback )
-    {
-        this.parameters = parameters;
-        this.callback = callback;
+  public SampleXmlProcessor(
+      MetadataProcessorParameters parameters, ManifestFieldProcessor.Callback<Sample> callback) {
+    this.parameters = parameters;
+    this.callback = callback;
+  }
+
+  public SampleXmlProcessor(MetadataProcessorParameters parameters) {
+    this.parameters = parameters;
+  }
+
+  public void setCallback(Callback<Sample> callback) {
+    this.callback = callback;
+  }
+
+  @Override
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+    String value = fieldValue.getValue();
+
+    try {
+      SampleXmlService sampleXmlService =
+          new SampleXmlService.Builder()
+              .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
+              .setTest(parameters.isTest())
+              .build();
+      Sample source = sampleXmlService.getSample(value);
+      callback.notify(source);
+
+    } catch (WebinCliException e) {
+      result.add(
+          ValidationMessage.error(
+              WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
     }
-
-    public SampleXmlProcessor(MetadataProcessorParameters parameters)
-    {
-        this.parameters = parameters;
-    }
-
-    public void setCallback(Callback<Sample> callback) {
-        this.callback = callback;
-    }
-
-    @Override public void
-    process( ValidationResult result, ManifestFieldValue fieldValue )
-    {
-        String value = fieldValue.getValue();
-
-        try
-        {
-            SampleXmlService sampleXmlService = new SampleXmlService.Builder()
-                                                                                .setCredentials( parameters.getUsername(), parameters.getPassword() )
-                                                                                .setTest( parameters.isTest() )
-                                                                                .build();
-            Sample source = sampleXmlService.getSample( value );
-            callback.notify( source );
-
-        } catch( WebinCliException e )
-        {
-            result.add(ValidationMessage.error(WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
-        }
-    }
+  }
 }

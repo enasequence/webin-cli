@@ -114,7 +114,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifest.setIgnoreErrors(false);
         try {
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
-                    .setCredentials(getParameters().getUsername(),
+                    .setCredentials(getParameters().getWebinServiceUserName(),
                             getParameters().getPassword())
                     .setTest(getParameters().isTest())
                     .build();

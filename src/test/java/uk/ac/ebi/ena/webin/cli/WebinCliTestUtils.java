@@ -24,6 +24,7 @@ public class WebinCliTestUtils {
 
     public static WebinCliParameters getTestWebinCliParameters() {
         WebinCliParameters parameters = new WebinCliParameters();
+        parameters.setSubmissionAccount(getTestWebinUsername());
         parameters.setUsername(getTestWebinUsername());
         parameters.setPassword(getTestWebinPassword());
         parameters.setTest(true);
@@ -33,6 +34,7 @@ public class WebinCliTestUtils {
     public static String getTestWebinUsername() {
         String username = System.getenv("webin-cli-username");
         Assert.assertNotNull("please set up environment variable: webin-cli-username", username);
+        Assert.assertTrue( "please use Webin-N in environment variable: webin-cli-username", username.startsWith("Webin-"));
         return username;
     }
 
