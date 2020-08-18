@@ -11,11 +11,12 @@
 package uk.ac.ebi.ena.webin.cli.upload;
 
 import org.junit.Test;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 
 public class FtpServiceTest {
   @Test
-  public void test() {
+  public void testFtpService() {
     FtpService ftpService = new FtpService();
     ftpService.connect(
         WebinCliTestUtils.getTestWebinUsername(), WebinCliTestUtils.getTestWebinPassword());
