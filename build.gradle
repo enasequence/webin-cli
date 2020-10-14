@@ -76,9 +76,9 @@ task printWebinTestCredentials {
 
 dependencies {
     implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.0.9' )
-    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.0.77' )
-    implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.2' )
-    implementation( 'uk.ac.ebi.ena:readtools:1.2.1' )
+    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.0.86' )
+    implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
+    implementation( 'uk.ac.ebi.ena:readtools:1.4.0' )
     implementation( 'org.springframework.boot:spring-boot-starter' )
     implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
