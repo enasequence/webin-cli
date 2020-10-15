@@ -102,7 +102,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).textInFileReport("invalid.fastq.gz", "does not match FASTQ regexp");
+        new ReportTester(executor).textInFileReport("invalid.fastq.gz", "Sequence header must start with @");
     }
 
     @Test
