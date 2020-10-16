@@ -203,6 +203,23 @@ public class ReadsValidationTest {
     }
 
     @Test
+    public void uracilFastq() {
+        File manifestFile =
+                manifestBuilder()
+                        .file(FileType.FASTQ, "uracil-bases.fastq.gz")
+                        .build();
+
+        WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
+                executorBuilder.build(manifestFile, RESOURCE_DIR);
+        executor.readManifest();
+        SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+        assertThat(submissionFiles.get().size()).isEqualTo(1);
+        assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
+
+        executor.validateSubmission();
+    }
+
+    @Test
     public void
     invalidCram() {
         File manifestFile =
