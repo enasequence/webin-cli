@@ -102,7 +102,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).textInFileReport("invalid.fastq.gz", "does not match FASTQ regexp");
+        new ReportTester(executor).textInFileReport("invalid.fastq.gz", "Sequence header must start with @");
     }
 
     @Test
@@ -200,6 +200,23 @@ public class ReadsValidationTest {
 
         System.out.println(executor.getValidationDir().getAbsolutePath());
         new ReportTester(executor).textInSubmissionReport("Multiple (1) occurrences of read name");
+    }
+
+    @Test
+    public void uracilFastq() {
+        File manifestFile =
+                manifestBuilder()
+                        .file(FileType.FASTQ, "uracil-bases.fastq.gz")
+                        .build();
+
+        WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
+                executorBuilder.build(manifestFile, RESOURCE_DIR);
+        executor.readManifest();
+        SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+        assertThat(submissionFiles.get().size()).isEqualTo(1);
+        assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
+
+        executor.validateSubmission();
     }
 
     @Test
