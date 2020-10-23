@@ -83,7 +83,7 @@ dependencies {
     implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
-    implementation( "commons-net:commons-net:3.4" )
+    implementation( "commons-net:commons-net:3.7.2" )
     implementation( 'info.picocli:picocli:3.9.1' )
     implementation( 'org.fusesource.jansi:jansi:1.18' )
     implementation( 'de.vandermeer:asciitable:0.3.2' )
