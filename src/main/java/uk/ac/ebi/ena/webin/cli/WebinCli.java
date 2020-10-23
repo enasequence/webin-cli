@@ -86,7 +86,7 @@ public class WebinCli {
 
             return SUCCESS;
         } catch (WebinCliException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             switch (ex.getErrorType()) {
                 case USER_ERROR:
                     return USER_ERROR;
