@@ -15,180 +15,176 @@ import java.io.File;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 
-public class WebinCliParameters implements MetadataProcessorParameters
-{
-    private String submissionAccount;
-    private WebinCliContext context;
-    private File manifestFile;
-    private String username;
-    private String password;
-    private File outputDir;
-    private File inputDir = new File( "." );
-    private String centerName;
-    private boolean validate;
-    private boolean submit;
-    private boolean test;
-    private boolean ascp;
+public class WebinCliParameters implements MetadataProcessorParameters {
+  private String submissionAccount;
+  private WebinCliContext context;
+  private File manifestFile;
+  private String username;
+  private String password;
+  private File outputDir;
+  private File inputDir = new File(".");
+  private String centerName;
+  private boolean validate;
+  private boolean submit;
+  private boolean test;
+  private boolean ascp;
 
-    private SampleProcessor sampleProcessor;
-    private StudyProcessor studyProcessor;
-    private SampleXmlProcessor sampleXmlProcessor;
-    private RunProcessor runProcessor;
-    private AnalysisProcessor analysisProcessor;
+  private SampleProcessor sampleProcessor;
+  private StudyProcessor studyProcessor;
+  private SampleXmlProcessor sampleXmlProcessor;
+  private RunProcessor runProcessor;
+  private AnalysisProcessor analysisProcessor;
 
-    public WebinCliParameters() {
-    }
+  public WebinCliParameters() {}
 
-    /*
-    public String getSubmissionAccount() {
-        return submissionAccount;
-    }
-    */
-    
-    public void setSubmissionAccount(String submissionAccount) {
-        this.submissionAccount = submissionAccount;
-    }
+  /*
+  public String getSubmissionAccount() {
+      return submissionAccount;
+  }
+  */
 
-    public WebinCliContext getContext() {
-        return context;
-    }
+  public void setSubmissionAccount(String submissionAccount) {
+    this.submissionAccount = submissionAccount;
+  }
 
-    public void setContext(WebinCliContext context) {
-        this.context = context;
-    }
+  public WebinCliContext getContext() {
+    return context;
+  }
 
-    public File getManifestFile() {
-        return manifestFile;
-    }
+  public void setContext(WebinCliContext context) {
+    this.context = context;
+  }
 
-    public void setManifestFile(File manifestFile) {
-        this.manifestFile = manifestFile;
-    }
+  public File getManifestFile() {
+    return manifestFile;
+  }
 
-    /*
-    public String getUsername() {
-        return username;
-    }
-    */
+  public void setManifestFile(File manifestFile) {
+    this.manifestFile = manifestFile;
+  }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  /*
+  public String getUsername() {
+      return username;
+  }
+  */
 
-    public String getPassword() {
-        return password;
-    }
+  public void setUsername(String username) {
+    this.username = username;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public File getOutputDir() {
-        return outputDir;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 
-    public void setOutputDir(File outputDir) {
-        this.outputDir = outputDir;
-    }
+  public File getOutputDir() {
+    return outputDir;
+  }
 
-    public File getInputDir() {
-        return inputDir;
-    }
+  public void setOutputDir(File outputDir) {
+    this.outputDir = outputDir;
+  }
 
-    public void setInputDir(File inputDir) {
-        this.inputDir = inputDir;
-    }
+  public File getInputDir() {
+    return inputDir;
+  }
 
-    public String getCenterName() {
-        return centerName;
-    }
+  public void setInputDir(File inputDir) {
+    this.inputDir = inputDir;
+  }
 
-    public void setCenterName(String centerName) {
-        this.centerName = centerName;
-    }
+  public String getCenterName() {
+    return centerName;
+  }
 
-    public boolean isValidate() {
-        return validate;
-    }
+  public void setCenterName(String centerName) {
+    this.centerName = centerName;
+  }
 
-    public void setValidate(boolean validate) {
-        this.validate = validate;
-    }
+  public boolean isValidate() {
+    return validate;
+  }
 
-    public boolean isSubmit() {
-        return submit;
-    }
+  public void setValidate(boolean validate) {
+    this.validate = validate;
+  }
 
-    public void setSubmit(boolean submit) {
-        this.submit = submit;
-    }
+  public boolean isSubmit() {
+    return submit;
+  }
 
-    public boolean isTest() {
-        return test;
-    }
+  public void setSubmit(boolean submit) {
+    this.submit = submit;
+  }
 
-    public void setTest(boolean test) {
-        this.test = test;
-    }
+  public boolean isTest() {
+    return test;
+  }
 
-    public boolean isAscp() {
-        return ascp;
-    }
+  public void setTest(boolean test) {
+    this.test = test;
+  }
 
-    public void setAscp(boolean ascp) {
-        this.ascp = ascp;
-    }
+  public boolean isAscp() {
+    return ascp;
+  }
 
-    public SampleProcessor getSampleProcessor() {
-        return sampleProcessor;
-    }
+  public void setAscp(boolean ascp) {
+    this.ascp = ascp;
+  }
 
-    public void setSampleProcessor(SampleProcessor sampleProcessor) {
-        this.sampleProcessor = sampleProcessor;
-    }
+  public SampleProcessor getSampleProcessor() {
+    return sampleProcessor;
+  }
 
-    public StudyProcessor getStudyProcessor() {
-        return studyProcessor;
-    }
+  public void setSampleProcessor(SampleProcessor sampleProcessor) {
+    this.sampleProcessor = sampleProcessor;
+  }
 
-    public void setStudyProcessor(StudyProcessor studyProcessor) {
-        this.studyProcessor = studyProcessor;
-    }
+  public StudyProcessor getStudyProcessor() {
+    return studyProcessor;
+  }
 
-    public SampleXmlProcessor getSampleXmlProcessor() {
-        return sampleXmlProcessor;
-    }
+  public void setStudyProcessor(StudyProcessor studyProcessor) {
+    this.studyProcessor = studyProcessor;
+  }
 
-    public void setSampleXmlProcessor(SampleXmlProcessor sampleXmlProcessor) {
-        this.sampleXmlProcessor = sampleXmlProcessor;
-    }
+  public SampleXmlProcessor getSampleXmlProcessor() {
+    return sampleXmlProcessor;
+  }
 
-    public RunProcessor getRunProcessor() {
-        return runProcessor;
-    }
+  public void setSampleXmlProcessor(SampleXmlProcessor sampleXmlProcessor) {
+    this.sampleXmlProcessor = sampleXmlProcessor;
+  }
 
-    public void setRunProcessor(RunProcessor runProcessor) {
-        this.runProcessor = runProcessor;
-    }
+  public RunProcessor getRunProcessor() {
+    return runProcessor;
+  }
 
-    public AnalysisProcessor getAnalysisProcessor() {
-        return analysisProcessor;
-    }
+  public void setRunProcessor(RunProcessor runProcessor) {
+    this.runProcessor = runProcessor;
+  }
 
-    public void setAnalysisProcessor(AnalysisProcessor analysisProcessor) {
-        this.analysisProcessor = analysisProcessor;
-    }
+  public AnalysisProcessor getAnalysisProcessor() {
+    return analysisProcessor;
+  }
 
-    public String getWebinServiceUserName() {
-        // Use the submission account given by the Webin authentication
-        // service for web based authentication. Web based authentication
-        // supports superuser password for Webin-N submission accounts.
-        return submissionAccount;
-    }
+  public void setAnalysisProcessor(AnalysisProcessor analysisProcessor) {
+    this.analysisProcessor = analysisProcessor;
+  }
 
-    public String getFileUploadServiceUserName() {
-        // Preserve su-Webin-N superuser submission account for FTP and Aspera authentication.
-        // FTP and Aspera only support superuser password for su-Webin-N submission accounts.
-        return username.startsWith("su-Webin") ? username : submissionAccount;
-    }
+  public String getWebinServiceUserName() {
+    return username;
+  }
+
+  public String getFileUploadServiceUserName() {
+    // Preserve su-Webin-N and mg-Webin-N for FTP and Aspera authentication.
+    return (username.startsWith("su-Webin") || username.startsWith("mg-Webin"))
+        ? username
+        : submissionAccount;
+  }
 }
