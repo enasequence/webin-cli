@@ -26,8 +26,8 @@ import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 public class
 LoginService
 {
-    private final static String TEST_URL = "https://www.ebi.ac.uk/ena/auth";
-    private final static String PRODUCTION_URL = "https://www.ebi.ac.uk/ena/auth";
+    private final static String TEST_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth";
+    private final static String PRODUCTION_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth";
     private final String username;
     private final String password;
     private final boolean test;
@@ -38,7 +38,7 @@ LoginService
         public final String password;
 
         public LoginRequestBody(String username, String password) {
-            this.authRealms.add("SRA");
+            this.authRealms.add("ENA");
             this.username = username;
             this.password = password;
         }

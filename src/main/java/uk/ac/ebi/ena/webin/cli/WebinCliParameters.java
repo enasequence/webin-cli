@@ -182,7 +182,7 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   }
 
   public String getFileUploadServiceUserName() {
-    // Preserve su-Webin-N and mg-Webin-N for FTP and Aspera authentication.
+    // Use su-Webin-N, mg-Webin-N, or Webin-N for FTP and Aspera authentication.
     return (username.startsWith("su-Webin") || username.startsWith("mg-Webin"))
         ? username
         : submissionAccount;
