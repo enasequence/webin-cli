@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context.sequence;
 import java.util.Map;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -34,6 +35,8 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
         String FLATFILE     = "FLATFILE";
         String AUTHORS          = "AUTHORS";
         String ADDRESS          = "ADDRESS";
+        String SUBMISSION_TOOL = "SUBMISSION_TOOL";
+        String SUBMISSION_TOOL_VERSION = "SUBMISSION_TOOL_VERSION";
     }
 
     
@@ -49,6 +52,8 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
         String FLATFILE     = "Flat file";
         String AUTHORS      = "For submission brokers only. Submitter's names as a comma-separated list";
         String ADDRESS      = "For submission brokers only. Submitter's address";
+        String SUBMISSION_TOOL = "Name of third-party or developed tool used to submit to ENA";
+        String SUBMISSION_TOOL_VERSION = "Version number of the third-party or developed tool used to submit to ENA";
     }
 
     private final SequenceManifest manifest = new SequenceManifest();
@@ -67,7 +72,9 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
                     .file().optional().name( Field.TAB          ).desc( Description.TAB          ).processor( getTabProcessors() ).and()
                     .file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor( getFlatfileProcessors() ).and()
                     .meta().optional().name( Field.AUTHORS      ).desc( Description.AUTHORS      ).processor(new AuthorProcessor()).and()
-                    .meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS      )
+                    .meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS      ).and()
+                    .meta().optional().name(ReadsManifestReader.Field.SUBMISSION_TOOL).desc(ReadsManifestReader.Description.SUBMISSION_TOOL).and()
+                    .meta().optional().name(ReadsManifestReader.Field.SUBMISSION_TOOL_VERSION).desc(ReadsManifestReader.Description.SUBMISSION_TOOL_VERSION)
                     .build()
                 ,
                 // File groups.
@@ -118,6 +125,9 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
         }
 		manifest.setName(getManifestReaderResult().getValue( Field.NAME ));
 		manifest.setDescription(getManifestReaderResult().getValue( Field.DESCRIPTION ));
+
+        manifest.setSubmissionTool(getManifestReaderResult().getValue(ReadsManifestReader.Field.SUBMISSION_TOOL));
+        manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(ReadsManifestReader.Field.SUBMISSION_TOOL_VERSION));
 
         SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
 

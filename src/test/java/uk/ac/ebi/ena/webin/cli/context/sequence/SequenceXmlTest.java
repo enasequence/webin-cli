@@ -42,6 +42,8 @@ public class SequenceXmlTest {
     manifest.setStudy(new Study());
     manifest.getStudy().setBioProjectId("test_study");
     manifest.setDescription("test_description");
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
     return manifest;
   }
 
@@ -86,6 +88,16 @@ public class SequenceXmlTest {
             + "<SEQUENCE_FLATFILE/>\n"
             + "</ANALYSIS_TYPE>\n"
             + "    <FILES />\n"
+            + "    <ANALYSIS_ATTRIBUTES>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL</TAG>\n"
+            + "            <VALUE>ST-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
+            + "            <VALUE>STV-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "    </ANALYSIS_ATTRIBUTES>\n"
             + "</ANALYSIS>\n"
             + "</ANALYSIS_SET>");
   }

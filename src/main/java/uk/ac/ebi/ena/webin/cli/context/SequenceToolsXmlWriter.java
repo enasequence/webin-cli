@@ -100,6 +100,34 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
 
     for (Element e : createXmlFileElements(manifest, inputDir, uploadDir)) filesE.addContent(e);
 
+    Element analysisAttributesE = new Element("ANALYSIS_ATTRIBUTES");
+
+    if (manifest.getSubmissionTool() != null && !manifest.getSubmissionTool().isEmpty()) {
+      Element submissionToolAnalysisAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL");
+      Element submissionToolAnalysisAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionTool());
+
+      Element submissionToolAnalysisAttributeE = new Element("ANALYSIS_ATTRIBUTE");
+      submissionToolAnalysisAttributeE.addContent(submissionToolAnalysisAttributeTagE);
+      submissionToolAnalysisAttributeE.addContent(submissionToolAnalysisAttributeValueE);
+
+      analysisAttributesE.addContent(submissionToolAnalysisAttributeE);
+    }
+
+    if (manifest.getSubmissionToolVersion() != null && !manifest.getSubmissionToolVersion().isEmpty()) {
+      Element submissionToolVersionAnalysisAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
+      Element submissionToolVersionAnalysisAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionToolVersion());
+
+      Element submissionToolVersionAnalysisAttributeE = new Element("ANALYSIS_ATTRIBUTE");
+      submissionToolVersionAnalysisAttributeE.addContent(submissionToolVersionAnalysisAttributeTagE);
+      submissionToolVersionAnalysisAttributeE.addContent(submissionToolVersionAnalysisAttributeValueE);
+
+      analysisAttributesE.addContent(submissionToolVersionAnalysisAttributeE);
+    }
+
+    if (analysisAttributesE.getContentSize() > 0) {
+      analysisE.addContent(analysisAttributesE);
+    }
+
     XMLOutputter xmlOutput = new XMLOutputter();
     xmlOutput.setFormat(Format.getPrettyFormat());
     StringWriter stringWriter = new StringWriter();

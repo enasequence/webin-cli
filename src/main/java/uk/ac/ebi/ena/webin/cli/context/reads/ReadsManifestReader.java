@@ -44,6 +44,8 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
         String FASTQ = "FASTQ";
         String BAM = "BAM";
         String CRAM = "CRAM";
+        String SUBMISSION_TOOL = "SUBMISSION_TOOL";
+        String SUBMISSION_TOOL_VERSION = "SUBMISSION_TOOL_VERSION";
     }
 
     public interface Description {
@@ -64,6 +66,8 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
         String FASTQ = "Fastq file";
         String BAM = "BAM file";
         String CRAM = "CRAM file";
+        String SUBMISSION_TOOL = "Name of third-party or developed tool used to submit to ENA";
+        String SUBMISSION_TOOL_VERSION = "Version number of the third-party or developed tool used to submit to ENA";
     }
 
     private final static String INSTRUMENT_UNSPECIFIED = "unspecified";
@@ -108,7 +112,10 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                        .file().optional().name(Field.BAM).desc(Description.BAM).processor(getBamProcessors()).and()
                        .file().optional().name(Field.CRAM).desc(Description.CRAM).processor(getCramProcessors()).and()
                        .meta().optional().hidden().name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).and()
-                       .meta().optional().hidden().name(Field.__HORIZON).desc(Description.__HORIZON).build()
+                       .meta().optional().hidden().name(Field.__HORIZON).desc(Description.__HORIZON).and()
+                       .meta().optional().name(Field.SUBMISSION_TOOL).desc(Description.SUBMISSION_TOOL).and()
+                       .meta().optional().name(Field.SUBMISSION_TOOL_VERSION).desc(Description.SUBMISSION_TOOL_VERSION)
+                       .build()
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
@@ -192,6 +199,9 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
 
         if (getManifestReaderResult().getCount(Field.__HORIZON) > 0)
             manifest.setPairingHorizon(getAndValidatePositiveInteger(getManifestReaderResult().getField(Field.__HORIZON)));
+
+        manifest.setSubmissionTool(getManifestReaderResult().getValue(Field.SUBMISSION_TOOL));
+        manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Field.SUBMISSION_TOOL_VERSION));
 
         processInstrumentAndPlatform();
 

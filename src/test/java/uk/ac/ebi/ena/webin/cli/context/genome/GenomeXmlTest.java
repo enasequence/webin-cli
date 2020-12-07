@@ -46,6 +46,8 @@ public class GenomeXmlTest {
     manifest.setCoverage("1");
     manifest.setProgram("test_program");
     manifest.setPlatform("test_platform");
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
     return manifest;
   }
 
@@ -96,6 +98,16 @@ public class GenomeXmlTest {
             + "      </SEQUENCE_ASSEMBLY>\n"
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES />\n"
+            + "    <ANALYSIS_ATTRIBUTES>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL</TAG>\n"
+            + "            <VALUE>ST-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
+            + "            <VALUE>STV-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "    </ANALYSIS_ATTRIBUTES>\n"
             + "  </ANALYSIS>\n"
             + "</ANALYSIS_SET>\n");
   }

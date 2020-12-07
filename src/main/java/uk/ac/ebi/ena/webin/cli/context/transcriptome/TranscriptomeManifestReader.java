@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 import java.util.Map;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -40,6 +41,8 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		String AUTHORS          = "AUTHORS";
 		String ADDRESS          = "ADDRESS";
 		String ASSEMBLY_TYPE    = "ASSEMBLY_TYPE";
+		String SUBMISSION_TOOL = "SUBMISSION_TOOL";
+		String SUBMISSION_TOOL_VERSION = "SUBMISSION_TOOL_VERSION";
 	}
 
 	
@@ -61,6 +64,8 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		String AUTHORS      = "For submission brokers only. Submitter's names as a comma-separated list";
 		String ADDRESS      = "For submission brokers only. Submitter's address";
 		String ASSEMBLY_TYPE    = "Assembly type";
+		String SUBMISSION_TOOL = "Name of third-party or developed tool used to submit to ENA";
+		String SUBMISSION_TOOL_VERSION = "Version number of the third-party or developed tool used to submit to ENA";
 	}
 
 	private static final ManifestCVList CV_ASSEMBLY_TYPE = new ManifestCVList(
@@ -90,7 +95,9 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 					.meta().optional().name( Field.TPA          ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
 					.meta().optional().name( Field.AUTHORS      ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
 					.meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS ).and()
-						.meta().required().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) )
+					.meta().required().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) ).and()
+					.meta().optional().name(ReadsManifestReader.Field.SUBMISSION_TOOL).desc(ReadsManifestReader.Description.SUBMISSION_TOOL).and()
+					.meta().optional().name(ReadsManifestReader.Field.SUBMISSION_TOOL_VERSION).desc(ReadsManifestReader.Description.SUBMISSION_TOOL_VERSION)
 					.build()
 				,
 				// File groups.
@@ -160,6 +167,9 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		{
 			manifest.setTpa( getAndValidateBoolean( getManifestReaderResult().getField(Field.TPA ) ) );
 		}
+
+		manifest.setSubmissionTool(getManifestReaderResult().getValue(ReadsManifestReader.Field.SUBMISSION_TOOL));
+		manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(ReadsManifestReader.Field.SUBMISSION_TOOL_VERSION));
 
 		SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
 
