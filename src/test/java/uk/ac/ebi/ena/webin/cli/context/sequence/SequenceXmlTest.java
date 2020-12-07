@@ -42,8 +42,6 @@ public class SequenceXmlTest {
     manifest.setStudy(new Study());
     manifest.getStudy().setBioProjectId("test_study");
     manifest.setDescription("test_description");
-    manifest.setSubmissionTool("ST-001");
-    manifest.setSubmissionToolVersion("STV-001");
     return manifest;
   }
 
@@ -68,6 +66,8 @@ public class SequenceXmlTest {
         new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
         new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
     manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 

@@ -116,8 +116,8 @@ ReadsManifestReaderTest {
                         .field(Field.NAME, " SOME-FANCY-NAME")
                         .field(Field.DESCRIPTION, " description")
                         .file("BAM", TempFileBuilder.empty("bam"))
-                        .field(Field.SUBMISSION_TOOL, "ST-001")
-                        .field(Field.SUBMISSION_TOOL_VERSION, "STV-001")
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
                         .build());
 
         Assert.assertEquals("ILLUMINA", manifest.getPlatform());

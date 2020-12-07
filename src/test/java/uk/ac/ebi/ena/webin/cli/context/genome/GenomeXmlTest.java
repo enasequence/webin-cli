@@ -46,8 +46,6 @@ public class GenomeXmlTest {
     manifest.setCoverage("1");
     manifest.setProgram("test_program");
     manifest.setPlatform("test_platform");
-    manifest.setSubmissionTool("ST-001");
-    manifest.setSubmissionToolVersion("STV-001");
     return manifest;
   }
 
@@ -68,6 +66,9 @@ public class GenomeXmlTest {
   @Test
   public void testRunAndAnalysisRef() {
     GenomeManifest manifest = getDefaultManifest();
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
+
     manifest.addAnalysis(
         new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
         new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
