@@ -71,6 +71,8 @@ public class TranscriptomeXmlTest {
         new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
         new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
     manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
@@ -96,6 +98,16 @@ public class TranscriptomeXmlTest {
             + "      </TRANSCRIPTOME_ASSEMBLY>\n"
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES />\n"
+            + "    <ANALYSIS_ATTRIBUTES>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL</TAG>\n"
+            + "            <VALUE>ST-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
+            + "            <VALUE>STV-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "    </ANALYSIS_ATTRIBUTES>\n"
             + "  </ANALYSIS>\n"
             + "</ANALYSIS_SET>\n");
   }

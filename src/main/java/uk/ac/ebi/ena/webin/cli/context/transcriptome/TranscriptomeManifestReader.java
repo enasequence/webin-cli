@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 import java.util.Map;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -90,7 +91,9 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 					.meta().optional().name( Field.TPA          ).desc( Description.TPA ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
 					.meta().optional().name( Field.AUTHORS      ).desc( Description.AUTHORS ).processor(new AuthorProcessor()).and()
 					.meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS ).and()
-						.meta().required().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) )
+					.meta().required().name( Field.ASSEMBLY_TYPE    ).desc( Description.ASSEMBLY_TYPE    ).processor( new CVFieldProcessor( CV_ASSEMBLY_TYPE ) ).and()
+					.meta().optional().name(Fields.SUBMISSION_TOOL).desc(Descriptions.SUBMISSION_TOOL).and()
+					.meta().optional().name(Fields.SUBMISSION_TOOL_VERSION).desc(Descriptions.SUBMISSION_TOOL_VERSION)
 					.build()
 				,
 				// File groups.
@@ -160,6 +163,9 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		{
 			manifest.setTpa( getAndValidateBoolean( getManifestReaderResult().getField(Field.TPA ) ) );
 		}
+
+		manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
+		manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
 		SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
 

@@ -108,7 +108,10 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                        .file().optional().name(Field.BAM).desc(Description.BAM).processor(getBamProcessors()).and()
                        .file().optional().name(Field.CRAM).desc(Description.CRAM).processor(getCramProcessors()).and()
                        .meta().optional().hidden().name(Field.QUALITY_SCORE).desc(Description.QUALITY_SCORE).processor(new CVFieldProcessor(CV_QUALITY_SCORE)).and()
-                       .meta().optional().hidden().name(Field.__HORIZON).desc(Description.__HORIZON).build()
+                       .meta().optional().hidden().name(Field.__HORIZON).desc(Description.__HORIZON).and()
+                       .meta().optional().name(Fields.SUBMISSION_TOOL).desc(Descriptions.SUBMISSION_TOOL).and()
+                       .meta().optional().name(Fields.SUBMISSION_TOOL_VERSION).desc(Descriptions.SUBMISSION_TOOL_VERSION)
+                       .build()
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
@@ -192,6 +195,9 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
 
         if (getManifestReaderResult().getCount(Field.__HORIZON) > 0)
             manifest.setPairingHorizon(getAndValidatePositiveInteger(getManifestReaderResult().getField(Field.__HORIZON)));
+
+        manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
+        manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
         processInstrumentAndPlatform();
 

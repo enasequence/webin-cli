@@ -41,10 +41,14 @@ ManifestReader<M extends Manifest> {
 
     public interface Fields {
         String INFO = "INFO";
+        String SUBMISSION_TOOL = "SUBMISSION_TOOL";
+        String SUBMISSION_TOOL_VERSION = "SUBMISSION_TOOL_VERSION";
     }
 
     public interface Descriptions {
         String INFO = "Info file";
+        String SUBMISSION_TOOL = "Name of third-party or developed tool used to submit to ENA";
+        String SUBMISSION_TOOL_VERSION = "Version number of the third-party or developed tool used to submit to ENA";
     }
 
     private final List<ManifestFieldDefinition> infoFields = new ManifestFieldDefinition.Builder()

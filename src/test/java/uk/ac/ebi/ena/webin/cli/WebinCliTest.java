@@ -162,6 +162,12 @@ public class WebinCliTest {
             "│ADDRESS             │Optional   │For submission brokers only. Submitter's     │\n" +
             "│                    │           │address                                      │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│SUBMISSION_TOOL     │Optional   │Name of third-party or developed tool used to│\n" +
+            "│                    │           │submit to ENA                                │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+            "│SUBMISSION_TOOL_VERS│Optional   │Version number of the third-party or         │\n" +
+            "│ION                 │           │developed tool used to submit to ENA         │\n" +
+            "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
             "│FASTA               │0-1 files  │Fasta file                                   │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
             "│FLATFILE            │0-1 files  │Flat file                                    │\n" +
@@ -250,6 +256,12 @@ public class WebinCliTest {
                 "│ADDRESS             │Optional   │For submission brokers only. Submitter's     │\n" +
                 "│                    │           │address                                      │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SUBMISSION_TOOL     │Optional   │Name of third-party or developed tool used to│\n" +
+                "│                    │           │submit to ENA                                │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SUBMISSION_TOOL_VERS│Optional   │Version number of the third-party or         │\n" +
+                "│ION                 │           │developed tool used to submit to ENA         │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│FASTA               │0-1 files  │Fasta file                                   │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│FLATFILE            │0-1 files  │Flat file                                    │\n" +
@@ -296,6 +308,12 @@ public class WebinCliTest {
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│ADDRESS             │Optional   │For submission brokers only. Submitter's     │\n" +
                 "│                    │           │address                                      │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SUBMISSION_TOOL     │Optional   │Name of third-party or developed tool used to│\n" +
+                "│                    │           │submit to ENA                                │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SUBMISSION_TOOL_VERS│Optional   │Version number of the third-party or         │\n" +
+                "│ION                 │           │developed tool used to submit to ENA         │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│TAB                 │0-1 files  │Tabulated file                               │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
@@ -487,6 +505,12 @@ public class WebinCliTest {
                 "│LIBRARY_NAME        │Optional   │Library name                                 │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│INSERT_SIZE         │Optional   │Insert size for paired reads                 │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SUBMISSION_TOOL     │Optional   │Name of third-party or developed tool used to│\n" +
+                "│                    │           │submit to ENA                                │\n" +
+                "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
+                "│SUBMISSION_TOOL_VERS│Optional   │Version number of the third-party or         │\n" +
+                "│ION                 │           │developed tool used to submit to ENA         │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│FASTQ               │0-2 files  │Fastq file                                   │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +

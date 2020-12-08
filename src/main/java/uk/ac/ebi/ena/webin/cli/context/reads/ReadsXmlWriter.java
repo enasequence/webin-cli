@@ -153,6 +153,34 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       instrumentModelE.setText(instrument);
       platformRefE.addContent(instrumentModelE);
 
+      Element expAttributesE = new Element("EXPERIMENT_ATTRIBUTES");
+
+      if (manifest.getSubmissionTool() != null && !manifest.getSubmissionTool().isEmpty()) {
+        Element submissionToolExpAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL");
+        Element submissionToolExpAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionTool());
+
+        Element submissionToolExpAttributeE = new Element("EXPERIMENT_ATTRIBUTE");
+        submissionToolExpAttributeE.addContent(submissionToolExpAttributeTagE);
+        submissionToolExpAttributeE.addContent(submissionToolExpAttributeValueE);
+
+        expAttributesE.addContent(submissionToolExpAttributeE);
+      }
+
+      if (manifest.getSubmissionToolVersion() != null && !manifest.getSubmissionToolVersion().isEmpty()) {
+        Element submissionToolVersionExpAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
+        Element submissionToolVersionExpAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionToolVersion());
+
+        Element submissionToolVersionExpAttributeE = new Element("EXPERIMENT_ATTRIBUTE");
+        submissionToolVersionExpAttributeE.addContent(submissionToolVersionExpAttributeTagE);
+        submissionToolVersionExpAttributeE.addContent(submissionToolVersionExpAttributeValueE);
+
+        expAttributesE.addContent(submissionToolVersionExpAttributeE);
+      }
+
+      if (expAttributesE.getContentSize() > 0) {
+        experimentE.addContent(expAttributesE);
+      }
+
       XMLOutputter xmlOutput = new XMLOutputter();
       xmlOutput.setFormat(Format.getPrettyFormat());
       StringWriter stringWriter = new StringWriter();
@@ -206,6 +234,34 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
           .map(file -> file.getFile().toPath())
           .forEach(
               file -> filesE.addContent(createFileElement(inputDir, uploadDir, file, "fastq")));
+
+      Element runAttributesE = new Element("RUN_ATTRIBUTES");
+
+      if (manifest.getSubmissionTool() != null && !manifest.getSubmissionTool().isEmpty()) {
+        Element submissionToolRunAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL");
+        Element submissionToolRunAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionTool());
+
+        Element submissionToolRunAttributeE = new Element("RUN_ATTRIBUTE");
+        submissionToolRunAttributeE.addContent(submissionToolRunAttributeTagE);
+        submissionToolRunAttributeE.addContent(submissionToolRunAttributeValueE);
+
+        runAttributesE.addContent(submissionToolRunAttributeE);
+      }
+
+      if (manifest.getSubmissionToolVersion() != null && !manifest.getSubmissionToolVersion().isEmpty()) {
+        Element submissionToolVersionRunAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
+        Element submissionToolVersionRunAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionToolVersion());
+
+        Element submissionToolVersionRunAttributeE = new Element("RUN_ATTRIBUTE");
+        submissionToolVersionRunAttributeE.addContent(submissionToolVersionRunAttributeTagE);
+        submissionToolVersionRunAttributeE.addContent(submissionToolVersionRunAttributeValueE);
+
+        runAttributesE.addContent(submissionToolVersionRunAttributeE);
+      }
+
+      if (runAttributesE.getContentSize() > 0) {
+        runE.addContent(runAttributesE);
+      }
 
       XMLOutputter xmlOutput = new XMLOutputter();
       xmlOutput.setFormat(Format.getPrettyFormat());

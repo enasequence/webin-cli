@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context.sequence;
 import java.util.Map;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -67,7 +68,9 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
                     .file().optional().name( Field.TAB          ).desc( Description.TAB          ).processor( getTabProcessors() ).and()
                     .file().optional().name( Field.FLATFILE     ).desc( Description.FLATFILE     ).processor( getFlatfileProcessors() ).and()
                     .meta().optional().name( Field.AUTHORS      ).desc( Description.AUTHORS      ).processor(new AuthorProcessor()).and()
-                    .meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS      )
+                    .meta().optional().name( Field.ADDRESS      ).desc( Description.ADDRESS      ).and()
+                    .meta().optional().name(Fields.SUBMISSION_TOOL).desc(Descriptions.SUBMISSION_TOOL).and()
+                    .meta().optional().name(Fields.SUBMISSION_TOOL_VERSION).desc(Descriptions.SUBMISSION_TOOL_VERSION)
                     .build()
                 ,
                 // File groups.
@@ -118,6 +121,9 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
         }
 		manifest.setName(getManifestReaderResult().getValue( Field.NAME ));
 		manifest.setDescription(getManifestReaderResult().getValue( Field.DESCRIPTION ));
+
+        manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
+        manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
         SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
 

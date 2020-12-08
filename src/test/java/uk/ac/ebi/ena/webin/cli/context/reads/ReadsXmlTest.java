@@ -72,6 +72,8 @@ public class ReadsXmlTest {
     manifest.setLibraryStrategy("CLONEEND");
     manifest.setLibrarySource("OTHER");
     manifest.setLibrarySelection("Inverse rRNA selection");
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
@@ -102,8 +104,53 @@ public class ReadsXmlTest {
             + "       <INSTRUMENT_MODEL>unspecified</INSTRUMENT_MODEL>\n"
             + "     </ILLUMINA>\n"
             + "    </PLATFORM>\n"
+            + "    <EXPERIMENT_ATTRIBUTES>\n"
+            + "        <EXPERIMENT_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL</TAG>\n"
+            + "            <VALUE>ST-001</VALUE>\n"
+            + "        </EXPERIMENT_ATTRIBUTE>\n"
+            + "        <EXPERIMENT_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
+            + "            <VALUE>STV-001</VALUE>\n"
+            + "        </EXPERIMENT_ATTRIBUTE>\n"
+            + "    </EXPERIMENT_ATTRIBUTES>\n"
             + " </EXPERIMENT>\n"
             + "</EXPERIMENT_SET>");
+  }
+
+  @Test
+  public void testRun() {
+    ReadsManifest manifest = getDefaultManifest();
+    manifest.setPlatform("ILLUMINA");
+    manifest.setInstrument("unspecified");
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
+
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+
+    XmlTester.assertXml(
+            runXml,
+            "<RUN_SET>\n"
+                    + "  <RUN>\n"
+                    + "    <TITLE>Raw reads: test_reads</TITLE>\n"
+                    + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
+                    + "    <DATA_BLOCK>\n"
+                    + "        <FILES/>\n"
+                    + "    </DATA_BLOCK>\n"
+                    + "    <RUN_ATTRIBUTES>\n"
+                    + "        <RUN_ATTRIBUTE>\n"
+                    + "            <TAG>SUBMISSION_TOOL</TAG>\n"
+                    + "            <VALUE>ST-001</VALUE>\n"
+                    + "        </RUN_ATTRIBUTE>\n"
+                    + "        <RUN_ATTRIBUTE>\n"
+                    + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
+                    + "            <VALUE>STV-001</VALUE>\n"
+                    + "        </RUN_ATTRIBUTE>\n"
+                    + "    </RUN_ATTRIBUTES>\n"
+                    + "  </RUN>\n"
+                    + "</RUN_SET>");
   }
 
   @Test

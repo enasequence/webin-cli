@@ -100,6 +100,8 @@ ReadsManifestReaderTest {
         Assert.assertNull(manifest.getName());
         assertThat(manifest.files().files()).size().isZero();
         Assert.assertNull(manifest.getDescription());
+        Assert.assertNull(manifest.getSubmissionTool());
+        Assert.assertNull(manifest.getSubmissionToolVersion());
 
         manifestReader.readManifest(Paths.get("."),
                 new ManifestBuilder()
@@ -114,6 +116,8 @@ ReadsManifestReaderTest {
                         .field(Field.NAME, " SOME-FANCY-NAME")
                         .field(Field.DESCRIPTION, " description")
                         .file("BAM", TempFileBuilder.empty("bam"))
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
                         .build());
 
         Assert.assertEquals("ILLUMINA", manifest.getPlatform());
@@ -127,6 +131,8 @@ ReadsManifestReaderTest {
         Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());
         assertThat(manifest.files().files()).size().isOne();
         Assert.assertEquals("description", manifest.getDescription());
+        Assert.assertEquals("ST-001", manifest.getSubmissionTool());
+        Assert.assertEquals("STV-001", manifest.getSubmissionToolVersion());
     }
 
     @Test

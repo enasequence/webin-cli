@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -129,7 +130,9 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 					.file().optional().name( Field.UNLOCALISED_LIST ).desc( Description.UNLOCALISED_LIST ).processor( getUnlocalisedListProcessors() ).and()
 					.meta().optional().name( Field.TPA          ).desc( Description.TPA                  ).processor( CVFieldProcessor.CV_BOOLEAN ).and()
 					.meta().optional().name( Field.AUTHORS ).desc( Description.AUTHORS                   ).processor(new AuthorProcessor()).and()
-					.meta().optional().name( Field.ADDRESS ).desc( Description.ADDRESS                   )
+					.meta().optional().name( Field.ADDRESS ).desc( Description.ADDRESS                   ).and()
+					.meta().optional().name(Fields.SUBMISSION_TOOL).desc(Descriptions.SUBMISSION_TOOL).and()
+					.meta().optional().name(Fields.SUBMISSION_TOOL_VERSION).desc(Descriptions.SUBMISSION_TOOL_VERSION)
 					.build()
 				,
 				// File groups.
@@ -241,6 +244,9 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 		{
 			manifest.setTpa( getAndValidateBoolean( getManifestReaderResult().getField( Field.TPA ) ) );
 		}
+
+		manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
+		manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
 		SubmissionFiles<GenomeManifest.FileType> submissionFiles = manifest.files();
 
