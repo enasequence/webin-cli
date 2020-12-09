@@ -11,7 +11,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '3.3.0'
+version = '3.4.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -78,7 +78,7 @@ dependencies {
     implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.1.0' )
     implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.0.86' )
     implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
-    implementation( 'uk.ac.ebi.ena:readtools:1.8.0' )
+    implementation( 'uk.ac.ebi.ena:readtools:1.9.0' )
     implementation( 'org.springframework.boot:spring-boot-starter' )
     implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
