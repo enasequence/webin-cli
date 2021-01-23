@@ -10,29 +10,38 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.Fields.INFO;
-import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.PARSE;
-import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.VALIDATE;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageListener;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
+
+import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.Fields.INFO;
+import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.PARSE;
+import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.VALIDATE;
 
 public abstract class
 ManifestReader<M extends Manifest> {
@@ -76,41 +85,28 @@ ManifestReader<M extends Manifest> {
         int lineNo = 0;
     }
 
-    private final ManifestReaderParameters parameters;
+    private final WebinCliParameters webinCliParameters;
     private final List<ManifestFieldDefinition> fields;
     private final List<ManifestFileGroup> fileGroups;
     private List<MessageListener> listener = new ArrayList<>();
     private ManifestReaderResult manifestReaderResult;
     private ManifestReaderState state;
 
-
-    public static final ManifestReaderParameters DEFAULT_PARAMETERS =  new ManifestReaderParameters() {
-        public boolean isManifestValidateMandatory() {
-            return true;
-        }
-        public boolean isManifestValidateFileExist() {
-            return true;
-        }
-        public boolean isManifestValidateFileCount() {
-            return true;
-        }
-    };
-
     public
-    ManifestReader( ManifestReaderParameters parameters,
+    ManifestReader( WebinCliParameters webinCliParameters,
                     List<ManifestFieldDefinition> fields )
     {
-        this.parameters = parameters;
+        this.webinCliParameters = webinCliParameters;
         this.fields = fields;
         this.fileGroups = null;
     }
 
     public
-    ManifestReader( ManifestReaderParameters parameters,
+    ManifestReader( WebinCliParameters webinCliParameters,
                     List<ManifestFieldDefinition> fields,
                     List<ManifestFileGroup> fileGroups)
     {
-        this.parameters = parameters;
+        this.webinCliParameters = webinCliParameters;
         this.fields = fields;
         this.fileGroups = fileGroups;
     }
@@ -287,9 +283,7 @@ ManifestReader<M extends Manifest> {
                 if( field.getDefinition().getType() == ManifestFieldType.FILE )
                 {
                     // Validate file exists.
-                    if (parameters.isManifestValidateFileExist()) {
-                        validateFileExists( inputDir, field );
-                    }
+                    validateFileExists( inputDir, field );
                 }
 
                 return field;
@@ -312,20 +306,17 @@ ManifestReader<M extends Manifest> {
 
         // Validate min count.
 
-        if (parameters.isManifestValidateMandatory()) {
-
-            fields.stream()
-                  .filter( field -> field.getMinCount() > 0 )
-                  .forEach( minCountField -> {
-                      if( manifestReaderResult.getFields()
-                                .stream()
-                                .filter( field -> field.getName().equals( minCountField.getName() ) )
-                                .count() < 1 )
-                      {
-                          error( WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR, minCountField.getName() );
-                      }
-                  } );
-        }
+        fields.stream()
+              .filter( field -> field.getMinCount() > 0 )
+              .forEach( minCountField -> {
+                  if( manifestReaderResult.getFields()
+                            .stream()
+                            .filter( field -> field.getName().equals( minCountField.getName() ) )
+                            .count() < 1 )
+                  {
+                      error( WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR, minCountField.getName() );
+                  }
+              } );
 
         // Validate max count.
 
@@ -406,50 +397,47 @@ ManifestReader<M extends Manifest> {
         if( fileGroups == null || fileGroups.isEmpty() )
             return;
 
-        if (parameters.isManifestValidateFileCount()) {
+        Map<String, Long> fileCountMap = manifestReaderResult.getFields()
+                                               .stream()
+                                               .filter( field -> field.getDefinition().getType().equals( ManifestFieldType.FILE ) )
+                                               .collect( Collectors.groupingBy( ManifestFieldValue::getName, Collectors.counting() ) );
 
-            Map<String, Long> fileCountMap = manifestReaderResult.getFields()
-                                                   .stream()
-                                                   .filter( field -> field.getDefinition().getType().equals( ManifestFieldType.FILE ) )
-                                                   .collect( Collectors.groupingBy( ManifestFieldValue::getName, Collectors.counting() ) );
-
-            if( fileCountMap == null || fileCountMap.isEmpty() )
-            {
-                error(WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR, getFileGroupText(fileGroups));
-                return;
-            }
-
-            next:
-            for (ManifestFileGroup fileGroup : fileGroups) {
-                for (ManifestFileCount fileCount : fileGroup.getFileCounts()) {
-                    if (fileCountMap.get(fileCount.getFileType()) == null) {
-                        if (fileCount.getMinCount() > 0) {
-                            continue next; // Invalid because min is > 0.
-                        }
-                    } else {
-                        long manifestFileCount = fileCountMap.get(fileCount.getFileType());
-                        if ((fileCount.getMaxCount() != null && fileCount.getMaxCount() < manifestFileCount) ||
-                            (fileCount.getMinCount() > manifestFileCount)) {
-                            continue next; // Invalid because larger than max or smaller than min.
-                        }
-                    }
-                }
-
-                for( String manifestFileType : fileCountMap.keySet() )
-                {
-                    if( fileGroup.getFileCounts().stream()
-                         .filter( fileCount -> fileCount.getFileType().equals( manifestFileType ) )
-                         .count() < 1 )
-                    {
-                        continue next; // Invalid because unmatched file type.
-                    }
-                }
-
-                return; // Valid
-            }
-
-            error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
+        if( fileCountMap == null || fileCountMap.isEmpty() )
+        {
+            error(WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR, getFileGroupText(fileGroups));
+            return;
         }
+
+        next:
+        for (ManifestFileGroup fileGroup : fileGroups) {
+            for (ManifestFileCount fileCount : fileGroup.getFileCounts()) {
+                if (fileCountMap.get(fileCount.getFileType()) == null) {
+                    if (fileCount.getMinCount() > 0) {
+                        continue next; // Invalid because min is > 0.
+                    }
+                } else {
+                    long manifestFileCount = fileCountMap.get(fileCount.getFileType());
+                    if ((fileCount.getMaxCount() != null && fileCount.getMaxCount() < manifestFileCount) ||
+                        (fileCount.getMinCount() > manifestFileCount)) {
+                        continue next; // Invalid because larger than max or smaller than min.
+                    }
+                }
+            }
+
+            for( String manifestFileType : fileCountMap.keySet() )
+            {
+                if( fileGroup.getFileCounts().stream()
+                     .filter( fileCount -> fileCount.getFileType().equals( manifestFileType ) )
+                     .count() < 1 )
+                {
+                    continue next; // Invalid because unmatched file type.
+                }
+            }
+
+            return; // Valid
+        }
+
+        error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
     }
 
     private void validateFileCompression(ValidationResult result, String filePath) {
@@ -656,7 +644,7 @@ ManifestReader<M extends Manifest> {
         getValidationResult().add(ValidationMessage.error(message, arguments));
     }
 
-    public ManifestReaderParameters getParameters() {
-        return parameters;
+    public WebinCliParameters getWebinCliParameters() {
+        return webinCliParameters;
     }
 }

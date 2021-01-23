@@ -10,7 +10,12 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
-import uk.ac.ebi.ena.webin.cli.manifest.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CustomFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
@@ -53,7 +58,7 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
 
     }
 
-    public TaxRefSetManifestReader(ManifestReaderParameters parameters,
+    public TaxRefSetManifestReader(WebinCliParameters parameters,
                                    MetadataProcessorFactory factory) {
         super( parameters,
                 // Fields.
@@ -82,6 +87,7 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
 
         getCustomFieldProcessor().setCallback(keyVal-> manifest.addCustomField(keyVal.left,keyVal.right));
 
+        manifest.setQuick(parameters.isQuick());
     }
 
     private static CustomFieldProcessor getCustomFieldProcessor() {

@@ -10,100 +10,28 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.File;
-import java.nio.file.Path;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
 
+import java.io.File;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /** Creates the validator and reads the manifest file without using the command line parser. */
 public class ManifestReaderTester<M extends Manifest> {
   private final Class<ManifestReader<M>> manifestReaderClass;
-  private boolean manifestValidateMandatory = true;
-  private boolean manifestValidateFileExist = true;
-  private boolean manifestValidateFileCount = true;
 
   public ManifestReaderTester(Class<ManifestReader<M>> manifestReaderClass) {
     this.manifestReaderClass = manifestReaderClass;
   }
 
-  public ManifestReaderTester manifestValidateMandatory(boolean manifestValidateMandatory) {
-    this.manifestValidateMandatory = manifestValidateMandatory;
-    return this;
-  }
-
-  public ManifestReaderTester manifestValidateFileExist(boolean manifestValidateFileExist) {
-    this.manifestValidateFileExist = manifestValidateFileExist;
-    return this;
-  }
-
-  public ManifestReaderTester manifestValidateFileCount(boolean manifestValidateFileCount) {
-    this.manifestValidateFileCount = manifestValidateFileCount;
-    return this;
-  }
-
   private ManifestReader<M> create() {
-    return new ManifestReaderBuilder(manifestReaderClass,
-            new MetadataProcessorParameters() {
-                public String getWebinServiceUserName() {
-                    return WebinCliTestUtils.getTestWebinUsername();
-                }
-
-                public String getFileUploadServiceUserName() {
-                    return WebinCliTestUtils.getTestWebinUsername();
-                }
-
-                public String getPassword() {
-                    return WebinCliTestUtils.getTestWebinPassword();
-                }
-
-                public boolean isTest() {
-                    return true;
-                }
-
-                public SampleProcessor getSampleProcessor() {
-                    return null;
-                }
-
-                public StudyProcessor getStudyProcessor() {
-                    return null;
-                }
-
-                public SampleXmlProcessor getSampleXmlProcessor() {
-                    return null;
-                }
-
-                public RunProcessor getRunProcessor() {
-                    return null;
-                }
-
-                public AnalysisProcessor getAnalysisProcessor() {
-                    return null;
-                }
-            })
-        .setManifestReaderParameters(
-            new ManifestReaderParameters() {
-              public boolean isManifestValidateMandatory() {
-                return manifestValidateMandatory;
-              }
-
-              public boolean isManifestValidateFileExist() {
-                return manifestValidateFileExist;
-              }
-
-              public boolean isManifestValidateFileCount() {
-                return manifestValidateFileCount;
-              }
-            })
-        .build();
+    return new ManifestReaderBuilder(manifestReaderClass, WebinCliTestUtils.getTestWebinCliParameters()).build();
   }
 
   public ManifestReader<M> test(ManifestBuilder manifest) {

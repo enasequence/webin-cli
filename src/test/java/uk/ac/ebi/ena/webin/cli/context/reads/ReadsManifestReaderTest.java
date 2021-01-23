@@ -10,24 +10,31 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.ReportTester;
+import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import uk.ac.ebi.ena.webin.cli.*;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
-import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
+import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
 
 public class
 ReadsManifestReaderTest {
@@ -35,7 +42,7 @@ ReadsManifestReaderTest {
 
     private static ReadsManifestReader createManifestReader() {
         WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
-        return new ReadsManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
+        return new ReadsManifestReader(parameters, new MetadataProcessorFactory(parameters));
     }
 
     private static WebinCliExecutorBuilder<ReadsManifest, ReadsValidationResponse> executorBuilder =

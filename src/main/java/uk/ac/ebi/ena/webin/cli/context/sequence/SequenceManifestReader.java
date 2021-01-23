@@ -10,14 +10,22 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.sequence;
 
-import java.util.Map;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.*;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.AuthorProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
+
+import java.util.Map;
 
 public class
 SequenceManifestReader extends ManifestReader<SequenceManifest>
@@ -54,7 +62,7 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
     private final SequenceManifest manifest = new SequenceManifest();
 
     public SequenceManifestReader(
-            ManifestReaderParameters parameters,
+            WebinCliParameters parameters,
             MetadataProcessorFactory factory) {
         super(parameters,
                 // Fields.
@@ -90,6 +98,10 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
         }
         if (factory.getAnalysisProcessor() != null ) {
             factory.getAnalysisProcessor().setCallback(analysis -> manifest.setAnalysis(analysis));
+        }
+
+        if (parameters != null) {
+            manifest.setQuick(parameters.isQuick());
         }
     }
 

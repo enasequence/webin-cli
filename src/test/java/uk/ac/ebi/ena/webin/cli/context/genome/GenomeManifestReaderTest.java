@@ -10,16 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
-
-import java.nio.file.Paths;
-import java.util.Locale;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -28,11 +21,17 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
+import java.nio.file.Paths;
+import java.util.Locale;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
+
 public class
 GenomeManifestReaderTest {
     private static GenomeManifestReader createManifestReader() {
         WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
-        return new GenomeManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
+        return new GenomeManifestReader(parameters, new MetadataProcessorFactory(parameters));
     }
 
     @Before
