@@ -87,7 +87,9 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
 
         getCustomFieldProcessor().setCallback(keyVal-> manifest.addCustomField(keyVal.left,keyVal.right));
 
-        manifest.setQuick(parameters.isQuick());
+        if (parameters != null) {
+            manifest.setQuick(parameters.isQuick());
+        }
     }
 
     private static CustomFieldProcessor getCustomFieldProcessor() {
