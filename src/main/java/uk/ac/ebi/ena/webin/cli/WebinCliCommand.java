@@ -10,10 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
+
+import java.io.File;
 
 @CommandLine.Command(
         headerHeading = "%n",
@@ -62,16 +62,19 @@ WebinCliCommand
     @Option(names = { Options.centerName, Options.centerNameSynonym }, description = Descriptions.centerName, paramLabel= "CENTER", order = 6)
     public String centerName;
 
-    @Option(names = Options.validate, description = Descriptions.validate, order = 7)
+    @Option(names = Options.validate, description = Descriptions.validate, defaultValue = "false", order = 7)
     public boolean validate;
 
-    @Option(names = Options.submit, description = Descriptions.submit, order = 8)
+    @Option(names = Options.quick, description = Descriptions.quick, order = 8)
+    public boolean quick;
+
+    @Option(names = Options.submit, description = Descriptions.submit, order = 9)
     public boolean submit;
 
-    @Option(names = Options.test, description = Descriptions.test, order = 9)
+    @Option(names = Options.test, description = Descriptions.test, order = 10)
     public boolean test;
 
-    @Option(names = Options.ascp, description = Descriptions.ascp, order = 10)
+    @Option(names = Options.ascp, description = Descriptions.ascp, order = 11)
     public boolean ascp;
 
     @Option(names = Options.help, description = Descriptions.help, usageHelp = true, order = 100)
@@ -95,6 +98,7 @@ WebinCliCommand
         String centerName = "-centerName";
         String submit     = "-submit";
         String validate   = "-validate";
+        String quick      = "-quick";
         String test       = "-test";
         String ascp       = "-ascp";
         String help       = "-help";
@@ -126,6 +130,7 @@ WebinCliCommand
         String centerName = "Mandatory center name for broker accounts.";
         String submit = "Validate, upload and submit files.";
         String validate = "Validate files without uploading or submitting them.";
+        String quick = "Validates submitted read files (BAM, CRAM, Fastq) within a fixed time period (5 minutes). All CRAM reference sequence md5 checksums are always validated. When this option is used files may only be partially validated and may fail post-submission processing.";
         String test = "Use the test submission service.";
         String ascp =
                 "Use Aspera (if Aspera Cli is available) instead of FTP when uploading files. " +

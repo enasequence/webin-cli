@@ -10,14 +10,24 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
-import java.util.Map;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.*;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.AuthorProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
+
+import java.util.Map;
 
 public class
 TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
@@ -71,7 +81,7 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 	private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
 	public TranscriptomeManifestReader(
-			ManifestReaderParameters parameters,
+			WebinCliParameters parameters,
 			MetadataProcessorFactory factory)
 	{
 		super(parameters,
@@ -124,6 +134,9 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 			});
 		}
 
+		if (parameters != null) {
+			manifest.setQuick(parameters.isQuick());
+		}
 	}
 
 	private static ManifestFieldProcessor[] getFastaProcessors() {
