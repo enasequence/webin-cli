@@ -92,6 +92,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 	public static final String ASSEMBLY_TYPE_PRIMARY_CLONE_OR_ISOLATE = "clone or isolate";
 	public static final String ASSEMBLY_TYPE_PRIMARY_METAGENOME = "primary metagenome";
 	public static final String ASSEMBLY_TYPE_BINNED_METAGENOME = "binned metagenome";
+	public static final String ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY = "clinical isolate assembly";
 
 	private static final ManifestCVList CV_MOLECULE_TYPE = new ManifestCVList(
 			"genomic DNA",
@@ -105,10 +106,11 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 			ASSEMBLY_TYPE_BINNED_METAGENOME,
 			"Metagenome-Assembled Genome (MAG)",
 			"Environmental Single-Cell Amplified Genome (SAG)",
-			"COVID-19 outbreak"
+			"COVID-19 outbreak",
+			"clinical isolate assembly"
 	);
 
-	public static final ArrayList<ManifestFileGroup> PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS = new ManifestFileCount.Builder()
+	public static final ArrayList<ManifestFileGroup> PRIMARY_AND_BINNED_METAGENOME_AND_CLINICAL_ISOLATE_ASSEMBLY_FILE_GROUPS = new ManifestFileCount.Builder()
 			.group("Sequences in a fasta file.")
 			.required(Field.FASTA)
 			.build();
@@ -273,16 +275,18 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 
         // "primary metagenome" and "binned metagenome" checks
 		if( ASSEMBLY_TYPE_PRIMARY_METAGENOME.equals( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) ) ||
-			ASSEMBLY_TYPE_BINNED_METAGENOME.equals( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) ) )
+			ASSEMBLY_TYPE_BINNED_METAGENOME.equals( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) ) ||
+				ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY.equals( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE) ) )
 		{
 		    if(submissionFiles.get()
 					.stream()
 					.anyMatch(file -> GenomeManifest.FileType.FASTA != file.getFileType() )) {
 				error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR,
-						getFileGroupText(PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS),
+						getFileGroupText(PRIMARY_AND_BINNED_METAGENOME_AND_CLINICAL_ISOLATE_ASSEMBLY_FILE_GROUPS),
 						" for assembly types: \"" +
-								ASSEMBLY_TYPE_PRIMARY_METAGENOME + "\" and \"" +
-								ASSEMBLY_TYPE_BINNED_METAGENOME + "\"");
+								ASSEMBLY_TYPE_PRIMARY_METAGENOME + "\" , \"" +
+								ASSEMBLY_TYPE_BINNED_METAGENOME + "\" and \"" +
+								ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY + "\"");
 			}
 		}
 	}

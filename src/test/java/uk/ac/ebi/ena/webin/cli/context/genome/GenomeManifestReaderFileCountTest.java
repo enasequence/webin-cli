@@ -101,4 +101,14 @@ public class GenomeManifestReaderFileCountTest {
         .field("ASSEMBLY_TYPE", "primary metagenome")
         .test();
   }
+
+  @Test
+  public void testClinicalIsolateAssemblyFileCount() {
+    new ManifestReaderFileCountTester<>(
+            GenomeManifestReader.class, GenomeManifest.FileType.values())
+            // Supported file groups
+            .files(GenomeManifest.FileType.FASTA)
+            .field("ASSEMBLY_TYPE", "clinical isolate assembly")
+            .test();
+  }
 }
