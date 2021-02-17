@@ -62,3 +62,9 @@ To increase the memory available to Webin-CLI please set the JAVA_TOOL_OPTIONS e
 ```
 docker run --rm -v <local data directory>:/data -e JAVA_TOOL_OPTIONS="-Xms2G" enasequence/webin-cli -help
 ```
+
+## Testing
+
+Testing requires the following environmental variables to be set:
+- webin-cli-username or webinCliUsername
+- webin-cli-password or webinCliPassword
