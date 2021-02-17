@@ -10,18 +10,26 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import java.io.File;
-import java.util.stream.Stream;
-
 import org.apache.commons.lang.StringUtils;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.*;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.*;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.QualityScore;
+
+import java.io.File;
+import java.util.stream.Stream;
 
 public class
 ReadsManifestReader extends ManifestReader<ReadsManifest> {
@@ -86,7 +94,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
 
 
     public ReadsManifestReader(
-            ManifestReaderParameters parameters,
+            WebinCliParameters parameters,
             MetadataProcessorFactory factory)
     {
         super(parameters,
@@ -131,6 +139,10 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
         }
         if ( factory.getSampleProcessor() != null ) {
             factory.getSampleProcessor().setCallback(sample -> manifest.setSample(sample));
+        }
+
+        if (parameters != null) {
+            manifest.setQuick(parameters.isQuick());
         }
     }
 

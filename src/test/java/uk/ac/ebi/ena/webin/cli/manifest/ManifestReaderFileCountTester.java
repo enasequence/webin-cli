@@ -10,19 +10,18 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
-
-import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T extends ManifestReader> {
 
@@ -34,10 +33,7 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
 
   public ManifestReaderFileCountTester(Class<T> manifestReaderClass, FileType... fileTypes) {
     this.fileTypes = Arrays.asList(fileTypes);
-    this.manifestReaderTester =
-        new ManifestReaderTester(manifestReaderClass)
-            .manifestValidateMandatory(false)
-            .manifestValidateFileExist(false);
+    this.manifestReaderTester = new ManifestReaderTester(manifestReaderClass);
   }
 
   public ManifestReaderFileCountTester files(FileType... validFileGroup) {

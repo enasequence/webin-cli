@@ -10,16 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.sequence;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
-
-import java.nio.file.Paths;
-import java.util.Locale;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -28,12 +21,18 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
+import java.nio.file.Paths;
+import java.util.Locale;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
+
 public class
 SequenceManifestReaderTest {
 
     private static SequenceManifestReader createManifestReader() {
         WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
-        return new SequenceManifestReader(ManifestReader.DEFAULT_PARAMETERS, new MetadataProcessorFactory(parameters));
+        return new SequenceManifestReader(parameters, new MetadataProcessorFactory(parameters));
     }
 
     @Before

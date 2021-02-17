@@ -10,10 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.AnalysisProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.RunProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleXmlProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
+
+import java.io.File;
 
 public class WebinCliParameters implements MetadataProcessorParameters {
   private String submissionAccount;
@@ -25,6 +29,7 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private File inputDir = new File(".");
   private String centerName;
   private boolean validate;
+  private boolean quick;
   private boolean submit;
   private boolean test;
   private boolean ascp;
@@ -111,6 +116,14 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public void setValidate(boolean validate) {
     this.validate = validate;
+  }
+
+  public boolean isQuick() {
+    return quick;
+  }
+
+  public void setQuick(boolean quick) {
+    this.quick = quick;
   }
 
   public boolean isSubmit() {
