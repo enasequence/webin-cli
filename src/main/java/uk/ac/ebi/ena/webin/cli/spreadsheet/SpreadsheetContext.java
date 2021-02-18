@@ -22,8 +22,8 @@ public enum SpreadsheetContext {
     GENOME(
             new ManifestReaderBuilder(GenomeManifestReader.class).build(),
             "genome",
-            "Additionally, primary and binned metagenomes must have " +
-            ManifestReader.getFileGroupText( GenomeManifestReader.PRIMARY_AND_BINNED_METAGENOME_FILE_GROUPS ) + " files."
+            "Additionally, primary and binned metagenomes and clinical isolate assembly must have " +
+            ManifestReader.getFileGroupText( GenomeManifestReader.PRIMARY_AND_BINNED_METAGENOME_AND_CLINICAL_ISOLATE_ASSEMBLY_FILE_GROUPS ) + " files."
     ),
     TRANSCRIPTOME(
             new ManifestReaderBuilder(TranscriptomeManifestReader.class).build(),

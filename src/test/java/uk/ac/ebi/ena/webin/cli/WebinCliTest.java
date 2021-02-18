@@ -126,6 +126,7 @@ public class WebinCliTest {
             "│                    │           │* Environmental Single-Cell Amplified Genome │\n" +
             "│                    │           │(SAG)                                        │\n" +
             "│                    │           │* COVID-19 outbreak                          │\n" +
+            "│                    │           │* clinical isolate assembly                  │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
             "│COVERAGE            │Mandatory  │Sequencing coverage                          │\n" +
             "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
