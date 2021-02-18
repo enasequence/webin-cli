@@ -76,7 +76,7 @@ task printWebinTestCredentials {
 
 dependencies {
     implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.2.0' )
-    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.0.99' )
+    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.1.0' )
     implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
     implementation( 'uk.ac.ebi.ena:readtools:1.11.0' )
     implementation( 'org.springframework.boot:spring-boot-starter' )

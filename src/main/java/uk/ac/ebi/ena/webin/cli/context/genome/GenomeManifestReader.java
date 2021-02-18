@@ -107,7 +107,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 			"Metagenome-Assembled Genome (MAG)",
 			"Environmental Single-Cell Amplified Genome (SAG)",
 			"COVID-19 outbreak",
-			"clinical isolate assembly"
+			ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY
 	);
 
 	public static final ArrayList<ManifestFileGroup> PRIMARY_AND_BINNED_METAGENOME_AND_CLINICAL_ISOLATE_ASSEMBLY_FILE_GROUPS = new ManifestFileCount.Builder()
