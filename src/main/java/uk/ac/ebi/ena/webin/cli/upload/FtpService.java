@@ -38,7 +38,8 @@ public class FtpService implements UploadService {
 
     @Override public void connect(String userName, String password) {
         try {
-            ftpClient.setRemoteVerificationEnabled(true);
+            ftpClient.setRemoteVerificationEnabled(false);
+            ftpClient.setActivePortRange(40000, 50000);
             ftpClient.connect(SERVER, FTP_PORT);
         } catch (IOException e) {
             throw WebinCliException.systemError(WebinCliMessage.FTP_CONNECT_ERROR.text());
