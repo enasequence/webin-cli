@@ -11,6 +11,9 @@
 package uk.ac.ebi.ena.webin.cli.xml;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.jdom2.Element;
 
@@ -25,17 +28,29 @@ public class XmlWriterHelper {
   }
 
   private static Element createFileElement(
-      String fileName, String fileType, String digest, String checksum) {
+      String fileName, String fileType, String digest, String checksum, List<Map.Entry<String, String>> attributes) {
     Element e = new Element("FILE");
     e.setAttribute("filename", fileName);
     e.setAttribute("filetype", String.valueOf(fileType));
     e.setAttribute("checksum_method", digest);
     e.setAttribute("checksum", checksum);
+
+    if (attributes != null && !attributes.isEmpty()) {
+      attributes.stream()
+              .map(att -> createAttributeElement(att.getKey(), att.getValue()))
+              .filter(Objects::nonNull)
+              .forEach(attElement -> e.addContent(attElement));
+    }
+
     return e;
+  }
+  public static Element createFileElement(
+          Path inputDir, Path uploadDir, Path file, String fileType) {
+    return createFileElement(inputDir, uploadDir, file, fileType, null);
   }
 
   public static Element createFileElement(
-      Path inputDir, Path uploadDir, Path file, String fileType) {
+          Path inputDir, Path uploadDir, Path file, String fileType, List<Map.Entry<String, String>> attributes) {
     String path =
         file.startsWith(inputDir) ? inputDir.relativize(file).toString() : file.toFile().getName();
 
@@ -43,6 +58,21 @@ public class XmlWriterHelper {
         String.valueOf(uploadDir.resolve(path)).replaceAll("\\\\+", "/"),
         String.valueOf(fileType),
         "MD5",
-        FileUtils.calculateDigest("MD5", file.toFile()));
+        FileUtils.calculateDigest("MD5", file.toFile()),
+            attributes);
+  }
+
+  private static Element createAttributeElement(String attName, String attValue) {
+    switch (attName) {
+      case "READ_TYPE": {
+        Element e = new Element(attName);
+        e.addContent(attValue);
+
+        return e;
+      }
+
+      default:
+        return null;
+    }
   }
 }

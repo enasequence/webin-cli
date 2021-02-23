@@ -29,6 +29,7 @@ public class ManifestFieldDefinition {
   private final int recommendedMinCount;
   private final int recommendedMaxCount;
   private final List<ManifestFieldProcessor> processors;
+  private final List<ManifestFieldDefinition> attributes;
 
   private ManifestFieldDefinition(
       String name,
@@ -39,7 +40,8 @@ public class ManifestFieldDefinition {
       int maxCount,
       int recommendedMinCount,
       int recommendedMaxCount,
-      List<ManifestFieldProcessor> processors) {
+      List<ManifestFieldProcessor> processors,
+      List<ManifestFieldDefinition> attributes) {
     Assert.notNull(name, "Field name must not be null");
     Assert.notNull(description, "Field description must not be null");
     Assert.notNull(type, "Field type must not be null");
@@ -52,6 +54,7 @@ public class ManifestFieldDefinition {
     this.recommendedMinCount = recommendedMinCount;
     this.recommendedMaxCount = recommendedMaxCount;
     this.processors = processors;
+    this.attributes = attributes;
   }
 
   public String getName() {
@@ -94,6 +97,10 @@ public class ManifestFieldDefinition {
     return processors;
   }
 
+  public List<ManifestFieldDefinition> getFieldAttributes() {
+    return attributes;
+  }
+
   public static class Builder {
 
     private final List<ManifestFieldDefinition> fields = new ArrayList<>();
@@ -104,6 +111,10 @@ public class ManifestFieldDefinition {
 
     public Field file() {
       return new Field(this, ManifestFieldType.FILE);
+    }
+
+    public Field attribute() {
+      return new Field(this, ManifestFieldType.ATTRIBUTE);
     }
 
     public Field type(ManifestFieldType type) {
@@ -121,6 +132,7 @@ public class ManifestFieldDefinition {
       private boolean hidden = false;
       private boolean recommended = false;
       private List<ManifestFieldProcessor> processors = new ArrayList<>();
+      private List<ManifestFieldDefinition> attributes = new ArrayList<>();
 
       private Field(Builder builder, ManifestFieldType type) {
         this.builder = builder;
@@ -176,6 +188,12 @@ public class ManifestFieldDefinition {
         return this;
       }
 
+      public Field attributes(List<ManifestFieldDefinition> attributes) {
+        this.attributes.addAll(attributes.stream().filter(Objects::nonNull).collect(Collectors.toList()));
+
+        return this;
+      }
+
       public Builder and() {
         add();
         return builder;
@@ -207,7 +225,8 @@ public class ManifestFieldDefinition {
                 type,
                 minCount, maxCount,
                 recommendedMinCount, recommendedMaxCount,
-                processors));
+                processors,
+                attributes));
       }
     }
   }

@@ -77,6 +77,8 @@ public enum WebinCliMessage implements MessageFormatSource {
     MANIFEST_READER_INVALID_FILE_GROUP_ERROR("An invalid set of files has been specified{1}. Expected data files are: {0}."),
     MANIFEST_READER_INVALID_FILE_COMPRESSION_ERROR("Failed to uncompress file: \"{0}\". The file must be compressed with {1}."),
     MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR("Please provide both address and author details or neither."),
+    MANIFEST_READER_MANIFEST_FILE_MALFORMED("Malformed manifest file content."),
+    MANIFEST_READER_UNKNOWN_ATTRIBUTE_FIELD_ERROR("Unknown attribute field: {0}."),
 
     FILE_SUFFIX_PROCESSOR_ERROR("Invalid {0} file suffix: \"{1}\". Valid file suffixes are: {2}."),
     CV_FIELD_PROCESSOR_ERROR("Invalid {0} field value: \"{1}\". Valid values are: {2}."),

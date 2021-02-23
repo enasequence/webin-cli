@@ -14,7 +14,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -284,4 +289,41 @@ public class ReadsXmlTest {
                     + "</RUN_SET>");
   }
 
+  @Test
+  public void testRunWithReadTypeFastqFile() {
+    List<Map.Entry<String, String>> readTypeAttributes = new ArrayList<>();
+    Stream.of("single", "sample_barcode").forEach(readType -> {
+      Map<String, String> map = new HashMap<>();
+      map.put("READ_TYPE", readType);
+
+      readTypeAttributes.add(map.entrySet().stream().findFirst().get());
+    });
+
+    ReadsManifest manifest = getDefaultManifest();
+    manifest.setPlatform("ILLUMINA");
+    manifest.setInstrument("unspecified");
+    Path file =  TempFileBuilder.empty("fastq");
+    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), readTypeAttributes));
+
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+
+    XmlTester.assertXml(
+            runXml,
+            "<RUN_SET>\n"
+                    + "  <RUN>\n"
+                    + "    <TITLE>Raw reads: test_reads</TITLE>\n"
+                    + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
+                    + "    <DATA_BLOCK>\n"
+                    + "      <FILES>\n"
+                    + "        <FILE filename=\"webin-cli/reads/" + NAME + "/" + file.getFileName() + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
+                    + "          <READ_TYPE>single</READ_TYPE>\n"
+                    + "          <READ_TYPE>sample_barcode</READ_TYPE>\n"
+                    + "        </FILE>\n"
+                    + "      </FILES>\n"
+                    + "    </DATA_BLOCK>\n"
+                    + "  </RUN>\n"
+                    + "</RUN_SET>");
+  }
 }
