@@ -298,4 +298,45 @@ ReadsManifestReaderTest {
                     "File name should conform following regular expression");
         }
     }
+
+    @Test
+    public void testValidManifestNew() {
+        ReadsManifestReader manifestReader = createManifestReader();
+        ReadsManifest manifest = manifestReader.getManifest();
+
+        manifestReader.readManifest(Paths.get("."),
+                new ManifestBuilder().newFormat()
+                        .field(Field.PLATFORM, "illumina")
+                        .field(Field.INSTRUMENT, "Illumina HiScanSQ")
+                        .field(Field.LIBRARY_STRATEGY, "CLONEEND")
+                        .field(Field.LIBRARY_SOURCE, "OTHER")
+                        .field(Field.LIBRARY_SELECTION, "Inverse rRNA selection")
+                        .field(Field.LIBRARY_NAME, "Name library")
+                        .field(Field.LIBRARY_CONSTRUCTION_PROTOCOL, "library construction protocol")
+                        .field(Field.INSERT_SIZE, "100500")
+                        .field(Field.NAME, "SOME-FANCY-NAME")
+                        .field(Field.DESCRIPTION, "description")
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
+                        .file("FASTQ", TempFileBuilder.empty("fastq"))
+                        .attribute("FASTQ", "READ_TYPE", "single")
+                        .attribute("FASTQ", "READ_TYPE", "sample_barcode")
+                        .build());
+
+        Assert.assertEquals("ILLUMINA", manifest.getPlatform());
+        Assert.assertEquals("Illumina HiScanSQ", manifest.getInstrument());
+        Assert.assertEquals("CLONEEND", manifest.getLibraryStrategy());
+        Assert.assertEquals("OTHER", manifest.getLibrarySource());
+        Assert.assertEquals("Inverse rRNA selection", manifest.getLibrarySelection());
+        Assert.assertEquals("Name library", manifest.getLibraryName());
+        Assert.assertEquals("library construction protocol", manifest.getLibraryConstructionProtocol());
+        Assert.assertEquals(Integer.valueOf(100500), manifest.getInsertSize());
+        Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());
+        Assert.assertEquals("description", manifest.getDescription());
+        Assert.assertEquals("ST-001", manifest.getSubmissionTool());
+        Assert.assertEquals("STV-001", manifest.getSubmissionToolVersion());
+        assertThat(manifest.files().files()).size().isOne();
+        Assert.assertTrue(manifest.files().get().get(0).getAttributes().stream().anyMatch(att -> att.getValue().equals("single")));
+        Assert.assertTrue(manifest.files().get().get(0).getAttributes().stream().anyMatch(att -> att.getValue().equals("sample_barcode")));
+    }
 }

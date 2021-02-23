@@ -10,26 +10,28 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
 
 public class
 ManifestFieldValue 
 {
     private final ManifestFieldDefinition definition;
     private String value;
+    private List<ManifestFieldValue> attributes;
     private final List<ValidationOrigin> origin = new ArrayList<>();
     private boolean validFieldValueOrFileSuffix = true;
 
-    public 
-    ManifestFieldValue( ManifestFieldDefinition definition, String value, ValidationOrigin origin )
-    {
+    public ManifestFieldValue(
+            ManifestFieldDefinition definition, String value, List<ManifestFieldValue> attributes, ValidationOrigin origin ) {
+
         assert( definition != null );
         assert( value != null );
         this.definition = definition;
         this.value = value;
+        this.attributes = attributes;
         this.origin.add(origin);
         this.origin.add(new ValidationOrigin("field", definition.getName()));
         this.origin.add(new ValidationOrigin("value", value));
@@ -81,5 +83,13 @@ ManifestFieldValue
     getOrigin()
     {
         return origin;
+    }
+
+    public List<ManifestFieldValue> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(List<ManifestFieldValue> attributes) {
+        this.attributes = attributes;
     }
 }

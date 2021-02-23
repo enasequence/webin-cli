@@ -445,12 +445,30 @@ public class WebinCli {
         if (field.getType() == ManifestFieldType.META) {
             for (ManifestFieldProcessor processor : field.getFieldProcessors()) {
                 if (processor instanceof CVFieldProcessor) {
-                    value = ": <br/>* " + ((CVFieldProcessor) processor).getValues().stream().collect(Collectors.joining("<br/>* "));
+                    value = ": <br/>* " + ((CVFieldProcessor) processor).getValues().stream()
+                            .collect(Collectors.joining("<br/>* "));
                 }
             }
         }
+
+        StringBuilder attHelpText = new StringBuilder();
+        if (!field.getFieldAttributes().isEmpty()) {
+            //attHelpText.append("<br/><br/>Attributes:");
+
+            field.getFieldAttributes().stream().forEach(att -> {
+                attHelpText.append("<br/>" + att.getName() + " attribute");
+
+                for (ManifestFieldProcessor processor : att.getFieldProcessors()) {
+                    if (processor instanceof CVFieldProcessor) {
+                        attHelpText.append(":<br/>  * " + ((CVFieldProcessor) processor).getValues().stream()
+                                .collect(Collectors.joining("<br/>  * ")));
+                    }
+                }
+            });
+        }
+
         table.addRule();
-        table.addRow(name, cardinality, field.getDescription() + value);
+        table.addRow(name, cardinality, field.getDescription() + value + attHelpText);
     }
 
     private static void printManifestFileGroupHelp(ManifestReader<?> manifestReader, PrintStream out) {

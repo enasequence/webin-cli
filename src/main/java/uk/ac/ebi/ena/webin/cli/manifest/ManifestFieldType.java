@@ -12,5 +12,6 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 
 public enum ManifestFieldType {
     META,
-    FILE
+    FILE,
+    ATTRIBUTE
 }

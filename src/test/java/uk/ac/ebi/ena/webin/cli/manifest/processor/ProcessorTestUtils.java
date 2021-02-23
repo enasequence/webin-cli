@@ -14,11 +14,13 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
+import java.util.ArrayList;
+
 public class ProcessorTestUtils {
 
     public static ManifestFieldValue
     createFieldValue(ManifestFieldType type, String name, String value) {
         return new ManifestFieldValue(
-                new ManifestFieldDefinition.Builder().type(type).optional().name(name).desc(name).build().get(0), value, null);
+                new ManifestFieldDefinition.Builder().type(type).optional().name(name).desc(name).build().get(0), value, new ArrayList<>(), null);
     }
 }

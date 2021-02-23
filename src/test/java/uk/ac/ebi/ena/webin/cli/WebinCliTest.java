@@ -514,6 +514,13 @@ public class WebinCliTest {
                 "│ION                 │           │developed tool used to submit to ENA         │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│FASTQ               │0-2 files  │Fastq file                                   │\n" +
+                "│                    │           │READ_TYPE attribute:                         │\n" +
+                "│                    │           │* single                                     │\n" +
+                "│                    │           │* paired                                     │\n" +
+                "│                    │           │* cell_barcode                               │\n" +
+                "│                    │           │* umi_barcode                                │\n" +
+                "│                    │           │* feature_barcode                            │\n" +
+                "│                    │           │* sample_barcode                             │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│BAM                 │0-1 files  │BAM file                                     │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +

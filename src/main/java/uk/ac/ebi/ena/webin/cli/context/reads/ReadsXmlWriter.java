@@ -224,16 +224,16 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
 
       manifest.files(FileType.BAM).stream()
           .map(file -> file.getFile().toPath())
-          .forEach(file -> filesE.addContent(createFileElement(inputDir, uploadDir, file, "bam")));
+          .forEach(file -> filesE.addContent(createFileElement(inputDir, uploadDir, file, "bam", null)));
 
       manifest.files(FileType.CRAM).stream()
           .map(file -> file.getFile().toPath())
-          .forEach(file -> filesE.addContent(createFileElement(inputDir, uploadDir, file, "cram")));
+          .forEach(file -> filesE.addContent(createFileElement(inputDir, uploadDir, file, "cram", null)));
 
       manifest.files(FileType.FASTQ).stream()
-          .map(file -> file.getFile().toPath())
           .forEach(
-              file -> filesE.addContent(createFileElement(inputDir, uploadDir, file, "fastq")));
+              file -> filesE.addContent(createFileElement(
+                      inputDir, uploadDir, file.getFile().toPath(), "fastq", file.getAttributes())));
 
       Element runAttributesE = new Element("RUN_ATTRIBUTES");
 
