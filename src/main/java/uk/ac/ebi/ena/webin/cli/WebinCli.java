@@ -453,8 +453,6 @@ public class WebinCli {
 
         StringBuilder attHelpText = new StringBuilder();
         if (!field.getFieldAttributes().isEmpty()) {
-            //attHelpText.append("<br/><br/>Attributes:");
-
             field.getFieldAttributes().stream().forEach(att -> {
                 attHelpText.append("<br/>" + att.getName() + " attribute");
 

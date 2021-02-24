@@ -17,10 +17,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
@@ -242,6 +244,62 @@ public class ManifestReaderTest {
         File manifest = createManifest("FILE_FIELD_3 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE");
         reader.readManifest(inputDir, manifest);
         Assert.assertEquals(counter.getCount(), 1);
+    }
+
+    @Test public void testKeyValueManifestFileWithPunctuations() {
+        TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
+                .meta().required().name("FIELD_NAME_1").desc("some desc").and()
+                .meta().required().name("FIELD_NAME_2").desc("some desc").and()
+                .meta().required().name("FIELD_NAME_3").desc("some desc").build());
+
+        manifestReader.readManifest(Paths.get("."), new ManifestBuilder()
+                .field("fieldName1", "val1")
+                .field("field_name_2", "val2")
+                .field("field-name-3", "val3")
+                .build());
+
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getValue(), "val1");
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getValue(), "val2");
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getValue(), "val3");
+    }
+
+    @Test public void testJsonManifestFileWithPunctuations() {
+        TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
+                .meta().required().name("FIELD_NAME_1").desc("some desc").attributes(new ManifestFieldDefinition.Builder()
+                        .attribute().optional().name("ATT_NAME_1").desc("some desc").build())
+
+                .and()
+                .meta().required().name("FIELD_NAME_2").desc("some desc").attributes(new ManifestFieldDefinition.Builder()
+                        .attribute().optional().name("ATT_NAME_2").desc("some desc").build())
+
+                .and()
+                .meta().required().name("FIELD_NAME_3").desc("some desc").attributes(new ManifestFieldDefinition.Builder()
+                        .attribute().optional().name("ATT_NAME_3").desc("some desc").build())
+                .build());
+
+        manifestReader.readManifest(Paths.get("."), new ManifestBuilder().jsonFormat()
+                .field("fieldName1", "val1").attribute("fieldName1", "attName1", "attval1")
+                .field("field_name_2", "val2").attribute("field_name_2", "att_name_2", "attval2")
+                .field("field-name-3", "val3").attribute("field-name-3", "att-name-3", "attval3")
+                .build());
+
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getValue(), "val1");
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getAttributes().get(0).getValue(), "attval1");
+
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getValue(), "val2");
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getAttributes().get(0).getValue(), "attval2");
+
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getValue(), "val3");
+        Assert.assertEquals(
+                manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getAttributes().get(0).getValue(), "attval3");
     }
 
     private static File createManifest(String contents) {

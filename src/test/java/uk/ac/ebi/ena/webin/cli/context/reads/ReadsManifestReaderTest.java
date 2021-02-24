@@ -305,7 +305,7 @@ ReadsManifestReaderTest {
         ReadsManifest manifest = manifestReader.getManifest();
 
         manifestReader.readManifest(Paths.get("."),
-                new ManifestBuilder().newFormat()
+                new ManifestBuilder().jsonFormat()
                         .field(Field.PLATFORM, "illumina")
                         .field(Field.INSTRUMENT, "Illumina HiScanSQ")
                         .field(Field.LIBRARY_STRATEGY, "CLONEEND")

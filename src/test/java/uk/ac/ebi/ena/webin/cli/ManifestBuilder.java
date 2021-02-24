@@ -21,14 +21,19 @@ import java.nio.file.Path;
 
 public class ManifestBuilder {
 
-    private boolean isNew;
+    public enum ManifestFormat {
+        KEY_VALUE,
+        JSON
+    }
+
+    private ManifestFormat manifestFormat = ManifestFormat.KEY_VALUE;
 
     private String manifest = "";
 
     private ObjectNode jsonManifest;
 
-    public ManifestBuilder newFormat() {
-        isNew = true;
+    public ManifestBuilder jsonFormat() {
+        manifestFormat = ManifestFormat.JSON;
         return this;
     }
 
@@ -51,7 +56,7 @@ public class ManifestBuilder {
     }
 
     public ManifestBuilder field(String field, String value) {
-        if (!isNew) {
+        if (manifestFormat == ManifestFormat.KEY_VALUE) {
             if (field != null && value != null) {
                 manifest += field + "\t" + value + "\n";
             }
@@ -67,7 +72,7 @@ public class ManifestBuilder {
     }
 
     public ManifestBuilder attribute(String field, String attributeKey, String attributeValue) {
-        if (!isNew) {
+        if (manifestFormat != ManifestFormat.JSON) {
             return this;
         }
 
@@ -182,7 +187,7 @@ public class ManifestBuilder {
     }
 
     public File build() {
-        if (!isNew) {
+        if (manifestFormat == ManifestFormat.KEY_VALUE) {
             return TempFileBuilder.file(manifest).toFile();
         } else {
             try {

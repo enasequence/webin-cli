@@ -49,7 +49,7 @@ import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderStat
 public abstract class
 ManifestReader<M extends Manifest> {
 
-    public static final String FIELD_NAME_REGEX = "^[\\s]*(#|;|\\/\\/).*$";
+    public static final String KEY_VALUE_COMMENT_REGEX = "^[\\s]*(#|;|\\/\\/).*$";
 
     public abstract M getManifest();
 
@@ -234,9 +234,9 @@ ManifestReader<M extends Manifest> {
     parseManifest( Path inputDir, List<String> lines )
     {
         if (isJsonBasedFormat(inputDir, lines)) {
-            parseManifestNew(inputDir, lines);
+            parseJsonManifest(inputDir, lines);
         } else {
-            parseManifestOld(inputDir, lines);
+            parseKeyValueManifest(inputDir, lines);
         }
     }
 
@@ -249,7 +249,7 @@ ManifestReader<M extends Manifest> {
     }
 
 
-    private void parseManifestOld( Path inputDir, List<String> lines )
+    private void parseKeyValueManifest(Path inputDir, List<String> lines )
     {
         state.state = PARSE;
 
@@ -281,7 +281,7 @@ ManifestReader<M extends Manifest> {
         String fieldName = StringUtils.stripEnd( tokens[ 0 ].trim().toUpperCase(), ": " );
         String fieldValue = ( tokens.length == 2 ) ? tokens[ 1 ].trim() : null;
 
-        if( fieldName.matches( FIELD_NAME_REGEX ) )
+        if( fieldName.matches(KEY_VALUE_COMMENT_REGEX) ) // Ignore comment lines.
             return null;
 
         try
@@ -289,7 +289,7 @@ ManifestReader<M extends Manifest> {
             ManifestFieldDefinition fieldDefinition = Stream
                     .concat( infoFields.stream(), fields.stream() )
                     .filter(
-                            field -> field.getName().equalsIgnoreCase( fieldName ) ||
+                            field -> matchNameCaseAndPunctuationInsensitively(field.getName(), fieldName) ||
                                      field.matchSynonym( fieldName ))
                     .findFirst()
                     .get();
@@ -321,7 +321,7 @@ ManifestReader<M extends Manifest> {
         return null;
     }
 
-    private void parseManifestNew( Path inputDir, List<String> lines ) {
+    private void parseJsonManifest(Path inputDir, List<String> lines ) {
         state.state = PARSE;
 
         try {
@@ -332,12 +332,9 @@ ManifestReader<M extends Manifest> {
             jsonNode.fields().forEachRemaining(field -> {
                 String fieldName = field.getKey();
 
-                if( fieldName.matches( FIELD_NAME_REGEX ) )
-                    return;
-
                 //find field definition
                 ManifestFieldDefinition fieldDefinition = Stream.concat( infoFields.stream(), fields.stream() )
-                        .filter(fieldDef -> fieldDef.getName().equalsIgnoreCase( fieldName ) ||
+                        .filter(fieldDef -> matchNameCaseAndPunctuationInsensitively(fieldDef.getName(), fieldName) ||
                                         fieldDef.matchSynonym( fieldName ))
                         .findFirst().orElse(null);
                 if (fieldDefinition == null) {
@@ -358,12 +355,10 @@ ManifestReader<M extends Manifest> {
                     if (fieldData.has("attributes") && !fieldDefinition.getFieldAttributes().isEmpty()) {
                         fieldData.get("attributes").fields().forEachRemaining(att -> {
                             String attName = att.getKey();
-                            if( attName.matches( FIELD_NAME_REGEX ) )
-                                return;
 
                             //find attribute definition in field's attributes definitions.
                             ManifestFieldDefinition attDef = fieldDefinition.getFieldAttributes().stream()
-                                    .filter(attFieldDef -> attFieldDef.getName().equalsIgnoreCase( attName ) ||
+                                    .filter(attFieldDef -> matchNameCaseAndPunctuationInsensitively(attFieldDef.getName(), attName) ||
                                             attFieldDef.matchSynonym( attName ))
                                     .findFirst().orElse(null);
                             if (attDef == null) {
@@ -777,5 +772,10 @@ ManifestReader<M extends Manifest> {
 
     public WebinCliParameters getWebinCliParameters() {
         return webinCliParameters;
+    }
+
+    private boolean matchNameCaseAndPunctuationInsensitively(String name1, String name2) {
+        return name1.replaceAll("[ _-]+", "")
+                .equalsIgnoreCase(name2.replaceAll("[ _-]+", ""));
     }
 }
