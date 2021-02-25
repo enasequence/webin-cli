@@ -370,6 +370,8 @@ public class WebinCliTest {
                 "│                    │           │* Illumina NovaSeq 6000                      │\n" +
                 "│                    │           │* NextSeq 500                                │\n" +
                 "│                    │           │* NextSeq 550                                │\n" +
+                "│                    │           │* NextSeq 1000                               │\n" +
+                "│                    │           │* NextSeq 2000                               │\n" +
                 "│                    │           │* Illumina iSeq 100                          │\n" +
                 "│                    │           │* MinION                                     │\n" +
                 "│                    │           │* GridION                                    │\n" +
