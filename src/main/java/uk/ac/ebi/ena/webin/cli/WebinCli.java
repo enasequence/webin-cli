@@ -89,7 +89,6 @@ public class WebinCli {
             checkVersion(params.test);
 
             WebinCli webinCli = new WebinCli(submissionAccount, params);
-
             webinCli.execute();
 
             return SUCCESS;
@@ -171,7 +170,7 @@ public class WebinCli {
         logger.addAppender(fileAppender);
     }
 
-    void
+    public void
     execute() {
         try {
             executor.readManifest();
