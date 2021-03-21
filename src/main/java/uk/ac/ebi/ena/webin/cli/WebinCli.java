@@ -607,16 +607,6 @@ public class WebinCli {
         }
     }
 
-    // Directory creation.
-    static File
-    getReportFile(File dir, String filename, String suffix) {
-        if (dir == null || !dir.isDirectory())
-            throw WebinCliException.systemError(WebinCliMessage.CLI_INVALID_REPORT_DIR_ERROR.format(filename));
-
-        return new File(dir, Paths.get(filename).getFileName().toString() + suffix);
-    }
-
-
     public static File
     createOutputDir(File outputDir, String... dirs) throws WebinCliException {
         if (outputDir == null) {

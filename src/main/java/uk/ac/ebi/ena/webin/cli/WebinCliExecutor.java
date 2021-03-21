@@ -228,11 +228,17 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         return Paths.get(getValidationDir().getPath()).resolve(REPORT_FILE).toFile();
     }
 
-    public File
-    getManifestReportFile( )
-    {
-        File manifestFile = getParameters().getManifestFile();
-        return WebinCli.getReportFile( this.validationDir, manifestFile.getName(), WebinCliConfig.REPORT_FILE_SUFFIX );
+    public File getManifestReportFile() {
+      File manifestFile = getParameters().getManifestFile();
+
+      if (this.validationDir == null || !this.validationDir.isDirectory()) {
+        throw WebinCliException.systemError(
+                WebinCliMessage.CLI_INVALID_REPORT_DIR_ERROR.format(manifestFile.getName()));
+      }
+      return new File(
+              this.validationDir,
+              Paths.get(manifestFile.getName()).getFileName().toString()
+                      + WebinCliConfig.REPORT_FILE_SUFFIX);
     }
 
     public WebinCliParameters
