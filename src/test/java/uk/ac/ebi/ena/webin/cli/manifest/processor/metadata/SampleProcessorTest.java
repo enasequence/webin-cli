@@ -19,7 +19,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
@@ -33,9 +33,9 @@ SampleProcessorTest
         SampleProcessor processor = new SampleProcessor( parameters, (Sample sample) -> Assert.assertEquals( "SAMEA749881", sample.getBioSampleId() ) );
         
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "ERS000002" );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue(result.isValid() );
+        ValidationReport report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue(report.isValid() );
         Assert.assertEquals( "SAMEA749881", fieldValue.getValue() );
     }
 
@@ -45,9 +45,9 @@ SampleProcessorTest
     {
         SampleProcessor processor = new SampleProcessor( parameters, Assert::assertNull );
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "SRP000392" );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertFalse(result.isValid() );
+        ValidationReport report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertFalse(report.isValid() );
         Assert.assertEquals( "SRP000392", fieldValue.getValue() );
     }
 }

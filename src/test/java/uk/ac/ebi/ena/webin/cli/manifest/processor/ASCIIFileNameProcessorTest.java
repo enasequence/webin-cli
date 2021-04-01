@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class 
 ASCIIFileNameProcessorTest
@@ -28,30 +28,30 @@ ASCIIFileNameProcessorTest
         ASCIIFileNameProcessor processor = new ASCIIFileNameProcessor();
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.bam" );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( 0, result.count() );
+        ValidationReport report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertEquals( 0, report.count() );
         Assert.assertEquals( "a.bam", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "/a/b/c.bam" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( 0, result.count() );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertEquals( 0, report.count() );
         
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a:\\B\\c.bam" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( 0, result.count() );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertEquals( 0, report.count() );
         
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a|b.cram" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( false, result.isValid() );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertEquals( false, report.isValid() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a&b.cram" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( false, result.isValid() );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertEquals( false, report.isValid() );
         Assert.assertEquals( "a&b.cram", fieldValue.getValue() );
     }
 }

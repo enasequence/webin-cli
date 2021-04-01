@@ -18,7 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class
 AssemblyTypeProcessorTest {
@@ -30,16 +30,16 @@ AssemblyTypeProcessorTest {
         for (String value : new String[]{"clone", "CLONE", "isolate", "ISOLATE"}) {
             ManifestFieldValue fieldValue =
                     createFieldValue(ManifestFieldType.META, GenomeManifestReader.Field.ASSEMBLY_TYPE, value);
-            ValidationResult result = new ValidationResult();
-            processor.process(result, fieldValue);
-            Assert.assertEquals(0, result.count());
+            ValidationReport report = new ValidationReport();
+            processor.process(report, fieldValue);
+            Assert.assertEquals(0, report.count());
             Assert.assertEquals(GenomeManifestReader.ASSEMBLY_TYPE_PRIMARY_CLONE_OR_ISOLATE, fieldValue.getValue());
         }
         ManifestFieldValue fieldValue =
                 createFieldValue(ManifestFieldType.META, GenomeManifestReader.Field.ASSEMBLY_TYPE, "test");
-        ValidationResult result = new ValidationResult();
-        processor.process(result, fieldValue);
-        Assert.assertEquals(0, result.count());
+        ValidationReport report = new ValidationReport();
+        processor.process(report, fieldValue);
+        Assert.assertEquals(0, report.count());
             Assert.assertEquals("test", fieldValue.getValue());
     }
 }

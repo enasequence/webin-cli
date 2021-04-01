@@ -16,7 +16,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class 
 ASCIIFileNameProcessor implements ManifestFieldProcessor 
@@ -24,9 +24,9 @@ ASCIIFileNameProcessor implements ManifestFieldProcessor
     static final Pattern pattern = Pattern.compile( "^([\\p{Alnum}]|\\\\|\\]|\\[|#|-|_|\\.|,|\\/|:|@|\\+| |\\(|\\)|'|~|<|%|\\?)+$" );
 
     @Override public void
-    process( ValidationResult result, ManifestFieldValue fieldValue )
+    process( ValidationReport report, ManifestFieldValue fieldValue )
     {
         if( !pattern.matcher( fieldValue.getValue() ).matches() )
-            result.add( ValidationMessage.error( WebinCliMessage.ASCII_FILE_NAME_PROCESSOR_ERROR, fieldValue.getName(), fieldValue.getValue(), pattern.pattern() ) );
+            report.add( ValidationMessage.error( WebinCliMessage.ASCII_FILE_NAME_PROCESSOR_ERROR, fieldValue.getName(), fieldValue.getValue(), pattern.pattern() ) );
     }
 }

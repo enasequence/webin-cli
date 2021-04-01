@@ -19,12 +19,12 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class 
 SubmissionBundleHelper 
 {
-    final private File submissionBundleFile;
+    private final File submissionBundleFile;
 
     private static final Logger log = LoggerFactory.getLogger(SubmissionBundleHelper.class);
 
@@ -41,14 +41,14 @@ SubmissionBundleHelper
     }
 
     public SubmissionBundle
-    read()
+    read(ValidationReport submissionBundleReport)
     { 
-        return read( null );
+        return read( null, submissionBundleReport );
     }
     
     
     public SubmissionBundle
-    read( String manifestMd5 )
+    read( String manifestMd5, ValidationReport submissionBundleReport )
     {
         try( ObjectInputStream os = new ObjectInputStream( new FileInputStream(submissionBundleFile) ) )
         {
@@ -60,11 +60,9 @@ SubmissionBundleHelper
                 return null;
             }
 
-            ValidationResult result = new ValidationResult(
-                    new ValidationOrigin("submission bundle", submissionBundleFile.getAbsolutePath()));
-            sb.validate(result);
+            sb.validate(submissionBundleReport);
 
-            if(result.count(ValidationMessage.Severity.INFO) > 0) // TODO: potentially dangerous comparison
+            if(submissionBundleReport.count(ValidationMessage.Severity.INFO) > 0) // TODO: potentially dangerous comparison
             {
                 log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
                 return null;

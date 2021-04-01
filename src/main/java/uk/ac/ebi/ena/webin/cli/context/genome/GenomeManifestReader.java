@@ -232,7 +232,7 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
     @Override public void
 	processManifest() 
 	{
-		Map<String, String> authorAndAddress = getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+		Map<String, String> authorAndAddress = getManifestReaderFields().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
 		if (!authorAndAddress.isEmpty()) {
 			if (authorAndAddress.size() == 2) {
 				manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
@@ -242,41 +242,41 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 			}
 		}
 
-		manifest.setName( getManifestReaderResult().getValue( Field.NAME ));
-		manifest.setDescription( getManifestReaderResult().getValue( Field.DESCRIPTION ) );
-		manifest.setPlatform( getManifestReaderResult().getValue( Field.PLATFORM ) );
-		manifest.setProgram( getManifestReaderResult().getValue( Field.PROGRAM ) );
-		manifest.setMoleculeType( getManifestReaderResult().getValue( Field.MOLECULETYPE ) == null ? MOLECULE_TYPE_DEFAULT :  getManifestReaderResult().getValue( Field.MOLECULETYPE ) );
-		getAndValidatePositiveFloat( getManifestReaderResult().getField( Field.COVERAGE ) );
-		manifest.setCoverage(getManifestReaderResult().getValue( Field.COVERAGE ) );
+		manifest.setName( getManifestReaderFields().getValue( Field.NAME ));
+		manifest.setDescription( getManifestReaderFields().getValue( Field.DESCRIPTION ) );
+		manifest.setPlatform( getManifestReaderFields().getValue( Field.PLATFORM ) );
+		manifest.setProgram( getManifestReaderFields().getValue( Field.PROGRAM ) );
+		manifest.setMoleculeType( getManifestReaderFields().getValue( Field.MOLECULETYPE ) == null ? MOLECULE_TYPE_DEFAULT :  getManifestReaderFields().getValue( Field.MOLECULETYPE ) );
+		getAndValidatePositiveFloat( getManifestReaderFields().getField( Field.COVERAGE ) );
+		manifest.setCoverage(getManifestReaderFields().getValue( Field.COVERAGE ) );
 		
-		if( getManifestReaderResult().getCount( Field.MINGAPLENGTH ) > 0 )
+		if( getManifestReaderFields().getCount( Field.MINGAPLENGTH ) > 0 )
 		{
-			manifest.setMinGapLength( getAndValidatePositiveInteger( getManifestReaderResult().getField( Field.MINGAPLENGTH ) ) );
+			manifest.setMinGapLength( getAndValidatePositiveInteger( getManifestReaderFields().getField( Field.MINGAPLENGTH ) ) );
 		}
 
-		manifest.setAssemblyType( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) );
+		manifest.setAssemblyType( getManifestReaderFields().getValue( Field.ASSEMBLY_TYPE ) );
 		
-		if( getManifestReaderResult().getCount( Field.TPA ) > 0 )
+		if( getManifestReaderFields().getCount( Field.TPA ) > 0 )
 		{
-			manifest.setTpa( getAndValidateBoolean( getManifestReaderResult().getField( Field.TPA ) ) );
+			manifest.setTpa( getAndValidateBoolean( getManifestReaderFields().getField( Field.TPA ) ) );
 		}
 
-		manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
-		manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
+		manifest.setSubmissionTool(getManifestReaderFields().getValue(Fields.SUBMISSION_TOOL));
+		manifest.setSubmissionToolVersion(getManifestReaderFields().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
 		SubmissionFiles<GenomeManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getManifestReaderResult(), Field.FASTA ).forEach(fastaFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile ) ) );
-		getFiles( getInputDir(), getManifestReaderResult(), Field.AGP ).forEach(agpFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.AGP,agpFile ) ) );
-		getFiles( getInputDir(), getManifestReaderResult(), Field.FLATFILE ).forEach(flatFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.FLATFILE,flatFile ) ) );
-		getFiles( getInputDir(), getManifestReaderResult(), Field.CHROMOSOME_LIST ).forEach(chromosomeListFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.CHROMOSOME_LIST, chromosomeListFile ) ) );
-		getFiles( getInputDir(), getManifestReaderResult(), Field.UNLOCALISED_LIST ).forEach(unlocalisedListFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.UNLOCALISED_LIST, unlocalisedListFile ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.FASTA ).forEach(fastaFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.AGP ).forEach(agpFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.AGP,agpFile ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.FLATFILE ).forEach(flatFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.FLATFILE,flatFile ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.CHROMOSOME_LIST ).forEach(chromosomeListFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.CHROMOSOME_LIST, chromosomeListFile ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.UNLOCALISED_LIST ).forEach(unlocalisedListFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.UNLOCALISED_LIST, unlocalisedListFile ) ) );
 
         // "primary metagenome" and "binned metagenome" checks
-		if( ASSEMBLY_TYPE_PRIMARY_METAGENOME.equals( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) ) ||
-			ASSEMBLY_TYPE_BINNED_METAGENOME.equals( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) ) ||
-				ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY.equals( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE) ) )
+		if( ASSEMBLY_TYPE_PRIMARY_METAGENOME.equals( getManifestReaderFields().getValue( Field.ASSEMBLY_TYPE ) ) ||
+			ASSEMBLY_TYPE_BINNED_METAGENOME.equals( getManifestReaderFields().getValue( Field.ASSEMBLY_TYPE ) ) ||
+				ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY.equals( getManifestReaderFields().getValue( Field.ASSEMBLY_TYPE) ) )
 		{
 		    if(submissionFiles.get()
 					.stream()

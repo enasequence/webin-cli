@@ -139,6 +139,7 @@ public class WebinCli {
         parameters.setSubmit(cmd.submit);
         parameters.setTest(cmd.test);
         parameters.setAscp(cmd.ascp);
+        parameters.setReportFile(true);
         return parameters;
     }
 
@@ -607,8 +608,9 @@ public class WebinCli {
         }
     }
 
+
     public static File
-    createOutputDir(File outputDir, String... dirs) throws WebinCliException {
+    getOutputDir(File outputDir, String... dirs) throws WebinCliException {
         if (outputDir == null) {
             throw WebinCliException.systemError(WebinCliMessage.CLI_MISSING_OUTPUT_DIR_ERROR.text());
         }
@@ -624,14 +626,15 @@ public class WebinCli {
         }
 
         File dir = p.toFile();
-
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw WebinCliException.systemError(WebinCliMessage.CLI_CREATE_DIR_ERROR.format(dir.getPath()));
-        }
-
         return dir;
     }
 
+    public static void
+    createOutputDir(File dir) throws WebinCliException {
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw WebinCliException.systemError(WebinCliMessage.CLI_CREATE_DIR_ERROR.format(dir.getPath()));
+        }
+    }
 
     public static String
     getSafeOutputDir(String dir) {

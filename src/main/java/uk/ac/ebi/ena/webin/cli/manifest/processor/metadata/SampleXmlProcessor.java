@@ -17,7 +17,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.SampleXmlService;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class SampleXmlProcessor implements ManifestFieldProcessor {
@@ -39,7 +39,7 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationReport report, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
 
     try {
@@ -52,7 +52,7 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
       callback.notify(source);
 
     } catch (WebinCliException e) {
-      result.add(
+      report.add(
           ValidationMessage.error(
               WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
     }

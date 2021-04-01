@@ -16,8 +16,11 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.RunProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleXmlProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
+import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageListener;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WebinCliParameters implements MetadataProcessorParameters {
   private String submissionAccount;
@@ -33,6 +36,8 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private boolean submit;
   private boolean test;
   private boolean ascp;
+  private boolean reportFile;
+  private List<MessageListener> messageListeners = new ArrayList<>();
 
   private SampleProcessor sampleProcessor;
   private StudyProcessor studyProcessor;
@@ -148,6 +153,34 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public void setAscp(boolean ascp) {
     this.ascp = ascp;
+  }
+
+  public boolean isReportFile() {
+    return reportFile;
+  }
+
+  public void setReportFile(boolean reportFile) {
+    this.reportFile = reportFile;
+  }
+
+  public List<MessageListener> getMessageListeners() {
+    return messageListeners;
+  }
+
+  public void addMessageListener(MessageListener messageListener) {
+    this.messageListeners.add(messageListener);
+  }
+
+  public void addMessageListener(MessageListener ... messageListeners) {
+    for (MessageListener messageListener : messageListeners) {
+      this.messageListeners.add(messageListener);
+    }
+  }
+
+  public void addMessageListener(List<MessageListener> messageListeners) {
+    for (MessageListener messageListener : messageListeners) {
+      this.messageListeners.add(messageListener);
+    }
   }
 
   public SampleProcessor getSampleProcessor() {

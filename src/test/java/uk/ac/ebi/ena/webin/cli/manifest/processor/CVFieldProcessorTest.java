@@ -19,7 +19,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage.Severity;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class
 CVFieldProcessorTest 
@@ -31,50 +31,50 @@ CVFieldProcessorTest
         CVFieldProcessor processor = new CVFieldProcessor( new ManifestCVList( "TEST1", "test2" ) );
 
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST1" );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue( result.isValid() );
+        ValidationReport report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue( report.isValid() );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "test1" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue( result.isValid() );
-        Assert.assertEquals( 1, result.count( Severity.INFO ) );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue( report.isValid() );
+        Assert.assertEquals( 1, report.count( Severity.INFO ) );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "te_st1" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue( result.isValid() );
-        Assert.assertEquals( 1, result.count( Severity.INFO ) );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue( report.isValid() );
+        Assert.assertEquals( 1, report.count( Severity.INFO ) );
         Assert.assertEquals( "TEST1", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "test2" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue( result.isValid() );
-        Assert.assertEquals( 0, result.count( Severity.INFO ) );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue( report.isValid() );
+        Assert.assertEquals( 0, report.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST2" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue( result.isValid() );
-        Assert.assertEquals( 1, result.count( Severity.INFO ) );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue( report.isValid() );
+        Assert.assertEquals( 1, report.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TE_ST2" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue( result.isValid() );
-        Assert.assertEquals( 1, result.count( Severity.INFO ) );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue( report.isValid() );
+        Assert.assertEquals( 1, report.count( Severity.INFO ) );
         Assert.assertEquals( "test2", fieldValue.getValue() );
 
         fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "TEST3" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertFalse( result.isValid() );
+        report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertFalse( report.isValid() );
         Assert.assertEquals( "TEST3", fieldValue.getValue() );
     }
 }

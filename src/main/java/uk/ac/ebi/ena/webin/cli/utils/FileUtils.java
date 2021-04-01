@@ -72,8 +72,8 @@ FileUtils
 		}
     }
 
-	public static boolean 
-	emptyDirectory( File dir )
+	public static boolean
+	recursiveFileDelete(File dir )
 	{
 		if (dir == null)
 			return false;
@@ -82,7 +82,7 @@ FileUtils
 	        File[] files = dir.listFiles();
 			for (File file : files) {
 				if (file.isDirectory()) {
-					emptyDirectory(file);
+					recursiveFileDelete(file);
 				} else {
 					file.delete();
 				}
@@ -90,6 +90,4 @@ FileUtils
 	    }
 	    return dir.listFiles().length == 0;
 	}
-
-
 }

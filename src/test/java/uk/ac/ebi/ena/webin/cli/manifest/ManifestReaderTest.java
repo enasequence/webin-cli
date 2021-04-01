@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -259,11 +258,11 @@ public class ManifestReaderTest {
                 .build());
 
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getValue(), "val1");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_1").getValue(), "val1");
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getValue(), "val2");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_2").getValue(), "val2");
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getValue(), "val3");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_3").getValue(), "val3");
     }
 
     @Test public void testJsonManifestFileWithPunctuations() {
@@ -287,19 +286,19 @@ public class ManifestReaderTest {
                 .build());
 
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getValue(), "val1");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_1").getValue(), "val1");
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getAttributes().get(0).getValue(), "attval1");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_1").getAttributes().get(0).getValue(), "attval1");
 
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getValue(), "val2");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_2").getValue(), "val2");
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getAttributes().get(0).getValue(), "attval2");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_2").getAttributes().get(0).getValue(), "attval2");
 
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getValue(), "val3");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_3").getValue(), "val3");
         Assert.assertEquals(
-                manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getAttributes().get(0).getValue(), "attval3");
+                manifestReader.getManifestReaderFields().getField("FIELD_NAME_3").getAttributes().get(0).getValue(), "attval3");
     }
 
     private static File createManifest(String contents) {

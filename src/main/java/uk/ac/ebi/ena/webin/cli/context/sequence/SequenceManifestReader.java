@@ -121,7 +121,7 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
     @Override public void
     processManifest() 
     {
-        Map<String, String> authorAndAddress = getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+        Map<String, String> authorAndAddress = getManifestReaderFields().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
         if (!authorAndAddress.isEmpty()) {
             if (authorAndAddress.size() == 2) {
                 manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
@@ -130,16 +130,16 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
                 error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
             }
         }
-		manifest.setName(getManifestReaderResult().getValue( Field.NAME ));
-		manifest.setDescription(getManifestReaderResult().getValue( Field.DESCRIPTION ));
+		manifest.setName(getManifestReaderFields().getValue( Field.NAME ));
+		manifest.setDescription(getManifestReaderFields().getValue( Field.DESCRIPTION ));
 
-        manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
-        manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
+        manifest.setSubmissionTool(getManifestReaderFields().getValue(Fields.SUBMISSION_TOOL));
+        manifest.setSubmissionToolVersion(getManifestReaderFields().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
         SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getManifestReaderResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.TAB,fastaFile ) ) );
-		getFiles( getInputDir(), getManifestReaderResult(), Field.FLATFILE ).forEach(flatFile->submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.FLATFILE,flatFile ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.TAB,fastaFile ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.FLATFILE ).forEach(flatFile->submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.FLATFILE,flatFile ) ) );
     }
 
     @Override

@@ -116,15 +116,15 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
 
     @Override
     protected void processManifest() {
-        manifest.setName( getManifestReaderResult().getValue( Field.NAME ));
-        manifest.setDescription( getManifestReaderResult().getValue( Field.DESCRIPTION ) );
-        manifest.setTaxonomySystem( getManifestReaderResult().getValue( Field.TAXONOMY_SYSTEM ) );
-        manifest.setTaxonomySystemVersion( getManifestReaderResult().getValue( Field.TAXONOMY_SYSTEM_VERSION ) );
+        manifest.setName( getManifestReaderFields().getValue( Field.NAME ));
+        manifest.setDescription( getManifestReaderFields().getValue( Field.DESCRIPTION ) );
+        manifest.setTaxonomySystem( getManifestReaderFields().getValue( Field.TAXONOMY_SYSTEM ) );
+        manifest.setTaxonomySystemVersion( getManifestReaderFields().getValue( Field.TAXONOMY_SYSTEM_VERSION ) );
 
         SubmissionFiles<TaxRefSetManifest.FileType> submissionFiles = manifest.files();
 
-        getFiles( getInputDir(), getManifestReaderResult(), Field.FASTA ).forEach(fastaFile -> submissionFiles.add( new SubmissionFile( TaxRefSetManifest.FileType.FASTA, fastaFile ) ) );
-        getFiles( getInputDir(), getManifestReaderResult(), Field.TAB ).forEach(tsvFile -> submissionFiles.add( new SubmissionFile( TaxRefSetManifest.FileType.TAB, tsvFile ) ) );
+        getFiles( getInputDir(), getManifestReaderFields(), Field.FASTA ).forEach(fastaFile -> submissionFiles.add( new SubmissionFile( TaxRefSetManifest.FileType.FASTA, fastaFile ) ) );
+        getFiles( getInputDir(), getManifestReaderFields(), Field.TAB ).forEach(tsvFile -> submissionFiles.add( new SubmissionFile( TaxRefSetManifest.FileType.TAB, tsvFile ) ) );
 
     }
 }

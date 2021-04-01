@@ -23,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.AnalysisService;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class AnalysisProcessor implements ManifestFieldProcessor {
@@ -46,7 +46,7 @@ public class AnalysisProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationReport report, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
     String[] ids = value.split(", *");
     Set<String> idsSet = new HashSet<>();
@@ -65,13 +65,13 @@ public class AnalysisProcessor implements ManifestFieldProcessor {
         analysis_list.add(analysisService.getAnalysis(id));
 
       } catch (WebinCliException e) {
-        result.add(
+        report.add(
             ValidationMessage.error(
                 WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR, id, e.getMessage()));
       }
     }
 
-    if (result.isValid()) {
+    if (report.isValid()) {
       fieldValue.setValue(
           analysis_list.stream().map(e -> e.getAnalysisId()).collect(Collectors.joining(", ")));
       callback.notify(analysis_list);

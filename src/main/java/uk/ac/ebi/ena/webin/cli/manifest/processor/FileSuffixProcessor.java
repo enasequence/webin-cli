@@ -16,7 +16,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class
 FileSuffixProcessor implements ManifestFieldProcessor {
@@ -30,7 +30,7 @@ FileSuffixProcessor implements ManifestFieldProcessor {
 
     @Override
     public void
-    process(ValidationResult result, ManifestFieldValue fieldValue) {
+    process(ValidationReport report, ManifestFieldValue fieldValue) {
         if (null == suffixes || suffixes.isEmpty()) {
             return;
         }
@@ -41,7 +41,7 @@ FileSuffixProcessor implements ManifestFieldProcessor {
             }
         }
 
-        result.add(ValidationMessage.error(WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR,
+        report.add(ValidationMessage.error(WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR,
                 fieldValue.getName(),
                 fieldValue.getValue(),
                 String.join(", ", suffixes)));

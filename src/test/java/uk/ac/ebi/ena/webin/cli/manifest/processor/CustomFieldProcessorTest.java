@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class CustomFieldProcessorTest {
 
@@ -34,9 +34,9 @@ public class CustomFieldProcessorTest {
     @Test
     public void testValid() {
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "CUSTOM_FIELD", "TEST_KEY:TEST_VAL" );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertTrue( result.isValid() );
+        ValidationReport report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertTrue( report.isValid() );
         Assert.assertEquals( "TEST_KEY", parsedValue.left );
         Assert.assertEquals( "TEST_VAL", parsedValue.right );
     }
@@ -44,17 +44,17 @@ public class CustomFieldProcessorTest {
     @Test
     public void testInValidValueFormat() {
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "CUSTOM_FIELD", "TEST_KEYTEST_VAL" );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertFalse( result.isValid() );
+        ValidationReport report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertFalse( report.isValid() );
     }
 
     @Test
     public void testInValidEmptyValue() {
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "CUSTOM_FIELD", "  " );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertFalse( result.isValid() );
+        ValidationReport report = new ValidationReport();
+        processor.process( report, fieldValue );
+        Assert.assertFalse( report.isValid() );
     }
 
     @Test(expected = AssertionError.class)

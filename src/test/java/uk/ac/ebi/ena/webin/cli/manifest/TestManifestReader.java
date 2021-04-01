@@ -10,26 +10,29 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 import java.util.List;
 
 public class TestManifestReader extends ManifestReader {
 
-    public TestManifestReader(List<ManifestFieldDefinition> fields) {
-        super(null, fields);
-    }
+  public TestManifestReader(WebinCliParameters parameters, List<ManifestFieldDefinition> fields) {
+    super(parameters, fields);
+  }
 
-    public TestManifestReader(List<ManifestFieldDefinition> fields, List<ManifestFileGroup> fileGroups) {
-        super(null, fields, fileGroups);
-    }
+  public TestManifestReader(
+      WebinCliParameters parameters,
+      List<ManifestFieldDefinition> fields,
+      List<ManifestFileGroup> fileGroups) {
+    super(parameters, fields, fileGroups);
+  }
 
-    @Override
-    protected void processManifest() {
-    }
+  @Override
+  protected void processManifest() {}
 
-    @Override
-    public Manifest getManifest() {
-        return null;
-    }
+  @Override
+  public Manifest getManifest() {
+    return null;
+  }
 }

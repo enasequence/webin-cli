@@ -17,7 +17,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.StudyService;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class StudyProcessor implements ManifestFieldProcessor {
@@ -43,7 +43,7 @@ public class StudyProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationReport report, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
 
     try {
@@ -58,9 +58,9 @@ public class StudyProcessor implements ManifestFieldProcessor {
 
     } catch (WebinCliException e) {
       if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
-        result.add(ValidationMessage.error(e));
+        report.add(ValidationMessage.error(e));
       } else {
-        result.add(
+        report.add(
             ValidationMessage.error(
                 WebinCliMessage.STUDY_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
       }

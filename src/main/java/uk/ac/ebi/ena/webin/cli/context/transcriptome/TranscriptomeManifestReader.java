@@ -154,10 +154,10 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 	@Override public void
 	processManifest() 
 	{
-		manifest.setName(getManifestReaderResult().getValue( Field.NAME ));
-		manifest.setDescription(getManifestReaderResult().getValue( Field.DESCRIPTION ));
+		manifest.setName(getManifestReaderFields().getValue( Field.NAME ));
+		manifest.setDescription(getManifestReaderFields().getValue( Field.DESCRIPTION ));
 		
-		Map<String, String> authorAndAddress = getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+		Map<String, String> authorAndAddress = getManifestReaderFields().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
 		if (!authorAndAddress.isEmpty()) {
 			if (authorAndAddress.size() == 2) {
 				manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
@@ -167,22 +167,22 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 			}
 		}
 
-		manifest.setProgram( getManifestReaderResult().getValue( Field.PROGRAM ) );
-		manifest.setPlatform( getManifestReaderResult().getValue( Field.PLATFORM ) );
-		manifest.setAssemblyType( getManifestReaderResult().getValue( Field.ASSEMBLY_TYPE ) );
+		manifest.setProgram( getManifestReaderFields().getValue( Field.PROGRAM ) );
+		manifest.setPlatform( getManifestReaderFields().getValue( Field.PLATFORM ) );
+		manifest.setAssemblyType( getManifestReaderFields().getValue( Field.ASSEMBLY_TYPE ) );
 
-		if( getManifestReaderResult().getCount(Field.TPA) > 0 )
+		if( getManifestReaderFields().getCount(Field.TPA) > 0 )
 		{
-			manifest.setTpa( getAndValidateBoolean( getManifestReaderResult().getField(Field.TPA ) ) );
+			manifest.setTpa( getAndValidateBoolean( getManifestReaderFields().getField(Field.TPA ) ) );
 		}
 
-		manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
-		manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
+		manifest.setSubmissionTool(getManifestReaderFields().getValue(Fields.SUBMISSION_TOOL));
+		manifest.setSubmissionToolVersion(getManifestReaderFields().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
 		SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
 
-		getFiles( getInputDir(), getManifestReaderResult(), Field.FASTA ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, file ) ) );
-		getFiles( getInputDir(), getManifestReaderResult(), Field.FLATFILE ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, file) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.FASTA ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, file ) ) );
+		getFiles( getInputDir(), getManifestReaderFields(), Field.FLATFILE ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FLATFILE, file) ) );
 	}
 
 

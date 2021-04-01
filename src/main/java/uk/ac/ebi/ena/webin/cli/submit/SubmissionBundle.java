@@ -22,7 +22,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCli;
 import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class
 SubmissionBundle implements Serializable
@@ -194,26 +194,26 @@ SubmissionBundle implements Serializable
 
 
     public void
-    validate( ValidationResult result )
+    validate( ValidationReport report )
     {
         String current = getVersion();
         if( null != current && !current.equals( this.version ) )
-            result.add(ValidationMessage.info( "Program version has changed" ) );
+            report.add(ValidationMessage.info( "Program version has changed" ) );
 
         for( SubmissionXMLFile file : getXMLFileList() )
         {
             if( !file.getFile().exists() ) {
-                result.add( ValidationMessage.info( "Generated xml file not found: " + file.getFile() ) );
+                report.add( ValidationMessage.info( "Generated xml file not found: " + file.getFile() ) );
             }
 
             try
             {
                 if( !file.getMd5().equalsIgnoreCase( FileUtils.calculateDigest( "MD5", file.getFile() ) ) ) {
-                    result.add(ValidationMessage.info("Generated xml file has changed: " + file.getFile()));
+                    report.add(ValidationMessage.info("Generated xml file has changed: " + file.getFile()));
                 }
             } catch( Exception ex )
             {
-                result.add(ValidationMessage.info("Error reading generated xml file: " + file.getFile() + " " + ex.getMessage() ) );
+                report.add(ValidationMessage.info("Error reading generated xml file: " + file.getFile() + " " + ex.getMessage() ) );
             }
         }
 
@@ -225,25 +225,25 @@ SubmissionBundle implements Serializable
 
             if( !file.exists() || file.isDirectory() )
             {
-                result.add( ValidationMessage.info("Error reading file: " + file.getPath() ) );
+                report.add( ValidationMessage.info("Error reading file: " + file.getPath() ) );
                 continue;
             }
 
             if( file.length() != fileSize )
-                result.add( ValidationMessage.info("Error confirming length for: " + file.getPath() + ", expected: " + fileSize + " got: " + file.length() ) );
+                report.add( ValidationMessage.info("Error confirming length for: " + file.getPath() + ", expected: " + fileSize + " got: " + file.length() ) );
 
         }
     }
 
-    public static SubmissionBundle read(File submitDir, String manifestMd5) {
-        return new SubmissionBundleHelper( getSubmissionBundleFile( submitDir) ).read( manifestMd5 ) ;
+    public static SubmissionBundle read(File submitDir, String manifestMd5, ValidationReport report) {
+        return new SubmissionBundleHelper( getSubmissionBundleFile( submitDir) ).read( manifestMd5, report);
     }
 
     public void write() {
         new SubmissionBundleHelper( this.submissionBundleFile ).write( this );
     }
 
-    private static File getSubmissionBundleFile(File submitDir) {
+    public static File getSubmissionBundleFile(File submitDir) {
         return new File( submitDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
     }
 }

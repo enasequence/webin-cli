@@ -17,7 +17,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationReport;
 
 public class
 CVFieldProcessor implements ManifestFieldProcessor
@@ -43,12 +43,12 @@ CVFieldProcessor implements ManifestFieldProcessor
     }
 
     @Override public void
-    process( ValidationResult result, ManifestFieldValue fieldValue )
+    process( ValidationReport report, ManifestFieldValue fieldValue )
     {
         String value = fieldValue.getValue();
         
         if( !cvList.contains( value ) ) {
-            result.add(ValidationMessage.error( WebinCliMessage.CV_FIELD_PROCESSOR_ERROR, fieldValue.getName(), value, cvList.keyList() ) );
+            report.add(ValidationMessage.error( WebinCliMessage.CV_FIELD_PROCESSOR_ERROR, fieldValue.getName(), value, cvList.keyList() ) );
             return;
         }
 
@@ -57,7 +57,7 @@ CVFieldProcessor implements ManifestFieldProcessor
         if( !value.equals( corrected ) )
         {
             fieldValue.setValue( corrected );
-            result.add(ValidationMessage.info( WebinCliMessage.CV_FIELD_PROCESSOR_FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected ) );
+            report.add(ValidationMessage.info( WebinCliMessage.CV_FIELD_PROCESSOR_FIELD_VALUE_CORRECTED, fieldValue.getName(), value, corrected ) );
         }
     }
 
