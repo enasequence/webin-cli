@@ -60,7 +60,7 @@ SampleService extends WebinService
                 WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
 
         ResponseEntity<SampleResponse> response = restTemplate.exchange(
-                getWebinRestUri("reference/sample/{id}", test),
+                getWebinRestUri("cli/reference/sample/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity<>((new HttpHeaderBuilder()).basicAuth(userName, password).build()),
                 SampleResponse.class,

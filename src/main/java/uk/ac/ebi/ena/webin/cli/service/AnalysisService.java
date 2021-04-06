@@ -69,7 +69,7 @@ AnalysisService extends WebinService
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( userName, password ).build();
 
-        ResponseEntity<AnalysisResponse> response = restTemplate.exchange( getWebinRestUri( "reference/analysis/{id}", test ),
+        ResponseEntity<AnalysisResponse> response = restTemplate.exchange( getWebinRestUri( "cli/reference/analysis/{id}", test ),
                                                                            HttpMethod.GET,
                                                                            new HttpEntity<>( headers ),
                                                                            AnalysisResponse.class,

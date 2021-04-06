@@ -69,7 +69,7 @@ RunService extends WebinService
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( userName, password ).build();
 
-        ResponseEntity<RunResponse> response = restTemplate.exchange( getWebinRestUri( "reference/run/{id}", test ),
+        ResponseEntity<RunResponse> response = restTemplate.exchange( getWebinRestUri( "cli/reference/run/{id}", test ),
                                                                       HttpMethod.GET,
                                                                       new HttpEntity<>( headers ),
                                                                       RunResponse.class,

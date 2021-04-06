@@ -68,7 +68,7 @@ public class StudyService extends WebinService {
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
         ResponseEntity<StudyResponse> response = restTemplate.exchange(
-                getWebinRestUri("reference/project/{id}", test),
+                getWebinRestUri("cli/reference/project/{id}", test),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 StudyResponse.class,
