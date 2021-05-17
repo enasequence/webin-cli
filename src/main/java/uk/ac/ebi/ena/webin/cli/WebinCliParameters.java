@@ -28,6 +28,7 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private File outputDir;
   private File inputDir = new File(".");
   private String centerName;
+  private String enaSubmissionTool;
   private boolean validate;
   private boolean quick;
   private boolean submit;
@@ -108,6 +109,14 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public void setCenterName(String centerName) {
     this.centerName = centerName;
+  }
+
+  public String getEnaSubmissionTool() {
+    return enaSubmissionTool;
+  }
+
+  public void setEnaSubmissionTool(String enaSubmissionTool) {
+    this.enaSubmissionTool = enaSubmissionTool;
   }
 
   public boolean isValidate() {

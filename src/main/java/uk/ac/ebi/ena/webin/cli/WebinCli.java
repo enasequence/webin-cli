@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WebinCli {
     public final static int SUCCESS = 0;
@@ -173,6 +174,8 @@ public class WebinCli {
     public void
     execute() {
         try {
+            validateParameters();
+
             executor.readManifest();
 
             if (parameters.isValidate() || executor.readSubmissionBundle() == null) {
@@ -186,6 +189,16 @@ public class WebinCli {
             throw ex;
         } catch (Exception ex) {
             throw WebinCliException.systemError(ex);
+        }
+    }
+
+    private void validateParameters() {
+        if (parameters.getEnaSubmissionTool() != null && !parameters.getEnaSubmissionTool().isEmpty()) {
+            if (!Stream.of(EnaSubmissionTool.values())
+                    .map(EnaSubmissionTool::getToolName)
+                    .anyMatch(enaSubTool -> enaSubTool.equals(parameters.getEnaSubmissionTool()))) {
+                throw WebinCliException.userError("Invalid ENA submission tool.");
+            }
         }
     }
 
@@ -241,7 +254,11 @@ public class WebinCli {
                     .setPassword(parameters.getPassword())
                     .setTest(parameters.isTest())
                     .build();
-            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(), getVersionForSubmission(), bundle.getManifestMd5(), getManifestFileContent());
+
+            String enaSubmissionTool = parameters.getEnaSubmissionTool() != null && !parameters.getEnaSubmissionTool().isEmpty() ?
+                    parameters.getEnaSubmissionTool() : getVersionForSubmission();
+
+            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(), enaSubmissionTool, bundle.getManifestMd5(), getManifestFileContent());
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
@@ -647,5 +664,19 @@ public class WebinCli {
         return Arrays.stream(dirs)
                 .map(dir -> getSafeOutputDir(dir))
                 .toArray(String[]::new);
+    }
+
+    private enum EnaSubmissionTool {
+        WEBIN_CLI_REST("webin-cli-rest");
+
+        public String getToolName() {
+            return toolName;
+        }
+
+        private String toolName;
+
+        EnaSubmissionTool(String toolName) {
+            this.toolName = toolName;
+        }
     }
 }

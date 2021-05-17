@@ -17,9 +17,12 @@ import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class WebinCliTest {
@@ -542,5 +545,25 @@ public class WebinCliTest {
                 "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +
                 "│Sequence reads in a BAM file. │               │1              │               │\n" +
                 "└──────────────────────────────┴───────────────┴───────────────┴───────────────┘\n");
+    }
+
+    @Test
+    public void testInvalidEnaSubmissionToolParameter() throws IOException {
+        WebinCliParameters params = new WebinCliParameters();
+        params.setContext(WebinCliContext.reads);
+        params.setOutputDir(Files.createTempDirectory("").toFile());
+        params.setEnaSubmissionTool("XYZ");
+
+        WebinCli webinCli = new WebinCli(params);
+
+        WebinCliException ex = null;
+
+        try {
+            webinCli.execute();
+        } catch (WebinCliException e) {
+            ex = e;
+        }
+
+        Assert.assertEquals("Invalid ENA submission tool.", ex.getMessage());
     }
 }
