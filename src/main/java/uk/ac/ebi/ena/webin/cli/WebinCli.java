@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2021 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -9,37 +9,6 @@
  * specific language governing permissions and limitations under the License.
  */
 package uk.ac.ebi.ena.webin.cli;
-
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.OutputStreamAppender;
-import de.vandermeer.asciitable.AT_Renderer;
-import de.vandermeer.asciitable.AsciiTable;
-import de.vandermeer.asciitable.CWC_FixedWidth;
-import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
-import org.apache.commons.lang3.StringUtils;
-import org.fusesource.jansi.AnsiConsole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
-import uk.ac.ebi.ena.webin.cli.entity.Version;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileGroup;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.service.LoginService;
-import uk.ac.ebi.ena.webin.cli.service.SubmitService;
-import uk.ac.ebi.ena.webin.cli.service.VersionService;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
-import uk.ac.ebi.ena.webin.cli.upload.FtpService;
-import uk.ac.ebi.ena.webin.cli.upload.UploadService;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +25,39 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.fusesource.jansi.AnsiConsole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.OutputStreamAppender;
+import de.vandermeer.asciitable.AT_Renderer;
+import de.vandermeer.asciitable.AsciiTable;
+import de.vandermeer.asciitable.CWC_FixedWidth;
+import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
+import picocli.CommandLine;
+
+import uk.ac.ebi.ena.webin.cli.entity.Version;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileGroup;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.service.LoginService;
+import uk.ac.ebi.ena.webin.cli.service.SubmitService;
+import uk.ac.ebi.ena.webin.cli.service.VersionService;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
+import uk.ac.ebi.ena.webin.cli.upload.FtpService;
+import uk.ac.ebi.ena.webin.cli.upload.UploadService;
 
 public class WebinCli {
     public final static int SUCCESS = 0;
@@ -241,7 +243,10 @@ public class WebinCli {
                     .setPassword(parameters.getPassword())
                     .setTest(parameters.isTest())
                     .build();
-            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(), getVersionForSubmission(), bundle.getManifestMd5(), getManifestFileContent());
+
+            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(),
+                    getVersionForSubmission(parameters.getWebinSubmissionTool()),
+                    bundle.getManifestMd5(), getManifestFileContent());
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
@@ -546,9 +551,18 @@ public class WebinCli {
 
 
     public static String
-    getVersionForSubmission() {
+    getVersionForSubmission(WebinSubmissionTool webinSubmissionTool) {
         String version = getVersion();
-        return String.format("%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version);
+
+        switch (webinSubmissionTool) {
+            case WEBIN_CLI_REST: {
+                return webinSubmissionTool.getToolName();
+            }
+
+            default: {
+                return String.format("%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version);
+            }
+        }
     }
 
 

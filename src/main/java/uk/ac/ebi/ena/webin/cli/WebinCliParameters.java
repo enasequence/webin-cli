@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2021 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -10,14 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import java.io.File;
+
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.AnalysisProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.RunProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.SampleXmlProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
-
-import java.io.File;
 
 public class WebinCliParameters implements MetadataProcessorParameters {
   private String submissionAccount;
@@ -28,6 +28,7 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private File outputDir;
   private File inputDir = new File(".");
   private String centerName;
+  private WebinSubmissionTool webinSubmissionTool = WebinSubmissionTool.WEBIN_CLI;
   private boolean validate;
   private boolean quick;
   private boolean submit;
@@ -108,6 +109,14 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public void setCenterName(String centerName) {
     this.centerName = centerName;
+  }
+
+  public WebinSubmissionTool getWebinSubmissionTool() {
+    return webinSubmissionTool;
+  }
+
+  public void setWebinSubmissionTool(WebinSubmissionTool webinSubmissionTool) {
+    this.webinSubmissionTool = webinSubmissionTool;
   }
 
   public boolean isValidate() {

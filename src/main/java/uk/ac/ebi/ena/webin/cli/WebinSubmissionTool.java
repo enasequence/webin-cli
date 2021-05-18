@@ -8,18 +8,19 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.upload;
+package uk.ac.ebi.ena.webin.cli;
 
-import org.junit.Test;
+public enum WebinSubmissionTool {
+    WEBIN_CLI("webin-cli"),
+    WEBIN_CLI_REST("webin-cli-rest");
 
-import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+    public String getToolName() {
+        return toolName;
+    }
 
-public class FtpServiceTest {
-  @Test
-  public void testFtpService() {
-    FtpService ftpService = new FtpService();
-    ftpService.connect(
-        WebinCliTestUtils.getTestWebinUsername(), WebinCliTestUtils.getTestWebinPassword());
-    ftpService.disconnect();
-  }
+    private String toolName;
+
+    WebinSubmissionTool(String toolName) {
+        this.toolName = toolName;
+    }
 }
