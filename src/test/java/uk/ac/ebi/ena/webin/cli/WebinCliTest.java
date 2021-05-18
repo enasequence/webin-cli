@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 EMBL - European Bioinformatics Institute
+ * Copyright 2018-2021 EMBL - European Bioinformatics Institute
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -17,12 +17,9 @@ import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.util.UUID;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public class WebinCliTest {
@@ -545,27 +542,5 @@ public class WebinCliTest {
                 "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +
                 "│Sequence reads in a BAM file. │               │1              │               │\n" +
                 "└──────────────────────────────┴───────────────┴───────────────┴───────────────┘\n");
-    }
-
-    @Test
-    public void testInvalidEnaSubmissionToolParameter() throws Throwable {
-        WebinCliParameters params = new WebinCliParameters();
-        params.setContext(WebinCliContext.reads);
-        params.setOutputDir(Files.createTempDirectory("").toFile());
-        params.setEnaSubmissionTool("webin-cli-rest");
-        params.setSubmit(true);
-
-        WebinCli webinCli = new WebinCli(params);
-
-        WebinCliException ex = null;
-
-        try {
-            webinCli.execute();
-        } catch (WebinCliException e) {
-            e.printStackTrace();
-            ex = e;
-        }
-
-        Assert.assertEquals("Invalid ENA submission tool.", ex.getMessage());
     }
 }
