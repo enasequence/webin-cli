@@ -548,11 +548,12 @@ public class WebinCliTest {
     }
 
     @Test
-    public void testInvalidEnaSubmissionToolParameter() throws IOException {
+    public void testInvalidEnaSubmissionToolParameter() throws Throwable {
         WebinCliParameters params = new WebinCliParameters();
         params.setContext(WebinCliContext.reads);
         params.setOutputDir(Files.createTempDirectory("").toFile());
-        params.setEnaSubmissionTool("XYZ");
+        params.setEnaSubmissionTool("webin-cli-rest");
+        params.setSubmit(true);
 
         WebinCli webinCli = new WebinCli(params);
 
@@ -561,6 +562,7 @@ public class WebinCliTest {
         try {
             webinCli.execute();
         } catch (WebinCliException e) {
+            e.printStackTrace();
             ex = e;
         }
 

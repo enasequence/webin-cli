@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.1.1.RELEASE'
+//    id 'org.springframework.boot' version '2.1.1.RELEASE'
     id "io.github.ddimtirov.codacy" version "0.1.0"
     id "com.diffplug.spotless" version "5.1.1"
     id "com.palantir.docker" version "0.22.1"
@@ -8,10 +8,10 @@ plugins {
     id 'idea'
 }
 
-apply plugin: 'io.spring.dependency-management'
+//apply plugin: 'io.spring.dependency-management'
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '3.7.0'
+version = '3.8.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -33,15 +33,18 @@ spotless {
     }
 }
 
-bootJar {
-    mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
-    excludeDevtools = true
-   	manifest {
-        attributes 'Implementation-Title': project.name,
-                   'Implementation-Version': project.version,
-                   'Built-By': System.getProperty('user.name'),
-                   'Built-Date': new Date()
-    }
+//bootJar {
+//    mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
+//    excludeDevtools = true
+//   	manifest {
+//        attributes 'Implementation-Title': project.name,
+//                   'Implementation-Version': project.version,
+//                   'Built-By': System.getProperty('user.name'),
+//                   'Built-Date': new Date()
+//    }
+//}
+jar {
+    exclude('logback.xml')
 }
 
 test {
@@ -79,8 +82,8 @@ dependencies {
     implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.2.1' )
     implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
     implementation( 'uk.ac.ebi.ena:readtools:1.11.2' )
-    implementation( 'org.springframework.boot:spring-boot-starter' )
-    implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
+    implementation( 'org.springframework.boot:spring-boot-starter:2.1.1.RELEASE' )
+    implementation( 'org.springframework.boot:spring-boot-starter-web:2.1.1.RELEASE' ) {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
     implementation( "commons-net:commons-net:3.7.2" )
@@ -92,7 +95,7 @@ dependencies {
     implementation( 'org.apache.poi:poi:4.0.1' )
     implementation( 'org.apache.poi:poi-ooxml:4.0.1' )
 
-    testImplementation( 'org.springframework.boot:spring-boot-starter-test' )
+    testImplementation( 'org.springframework.boot:spring-boot-starter-test:2.1.1.RELEASE' )
     testImplementation( 'org.assertj:assertj-core:3.11.1' )
     testImplementation( 'org.mockito:mockito-core:2.23.4' )
 }
@@ -139,6 +142,6 @@ docker {
     name "${repository}:${version}"
     tag "-latest" , "${repository}:latest"
     tag "-${version}" , "${repository}:${version}"
-    files bootJar.archiveFile
+    //files bootJar.archiveFile
     buildArgs(['JAR_FILE': "webin-cli-${version}.jar"])
 }
