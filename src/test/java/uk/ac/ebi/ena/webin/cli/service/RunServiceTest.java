@@ -37,8 +37,8 @@ RunServiceTest
     @Test public void 
     testGetRunUsingPrivateRunId()
     {
-        Run run = getRunUsingValidId( "ERR2864621" );
-        assertThat( run.getRunId() ).isEqualTo( "ERR2864621" );
+        Run run = getRunUsingValidId( "ERR6111314" );
+        assertThat( run.getRunId() ).isEqualTo( "ERR6111314" );
     }
 
     

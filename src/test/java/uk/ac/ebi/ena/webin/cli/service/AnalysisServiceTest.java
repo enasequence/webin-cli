@@ -37,8 +37,8 @@ AnalysisServiceTest
     @Test public void 
     testGetAnalysisUsingPrivateAnalysisId()
     {
-        Analysis analysis = getAnalysisUsingValidId( "ERZ000883" );
-        assertThat( analysis.getAnalysisId() ).isEqualTo( "ERZ000883" );
+        Analysis analysis = getAnalysisUsingValidId( "ERZ2661588" );
+        assertThat( analysis.getAnalysisId() ).isEqualTo( "ERZ2661588" );
     }
 
     private Analysis 
