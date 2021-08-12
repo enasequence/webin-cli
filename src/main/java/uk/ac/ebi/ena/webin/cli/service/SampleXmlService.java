@@ -10,11 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
-import java.io.StringReader;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,7 +20,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
@@ -33,14 +27,14 @@ import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.StringReader;
+
 public class
 SampleXmlService extends WebinService
 {
-    protected SampleXmlService(AbstractBuilder<SampleXmlService> builder )
-    {
-        super( builder );
-    }
-
+    
     public static class 
     Builder extends AbstractBuilder<SampleXmlService>
     {
@@ -51,33 +45,38 @@ SampleXmlService extends WebinService
         }
     };
 
+    protected SampleXmlService(AbstractBuilder<SampleXmlService> builder )
+    {
+        super( builder );
+    }
+    
     public Sample
     getSample(String sampleId )
     {
-        return getSample( sampleId, getUserName(), getPassword(), getTest() );
+        if(getAuthToken()!=null){
+            return getSampleByToken(sampleId,getAuthToken(),getTest());
+        }else {
+            return getSample(sampleId, getUserName(), getPassword(), getTest());
+        }
     }
-
     
     private Sample
     getSample(String sampleId, String userName, String password, boolean test ) {
-
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
-                WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
-
+        RestTemplate restTemplate = getRestTemplate(sampleId);
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                getWebinRestUri("samples/{id}", test),
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                String.class,
-                sampleId.trim());
-
+        ResponseEntity<String> response = executeHttpGet( restTemplate ,  headers,  sampleId,  test);
         return getSample(sampleId, response.getBody());
     }
 
+    private Sample
+    getSampleByToken(String sampleId, String authToken, boolean test ) {
+        RestTemplate restTemplate = getRestTemplate(sampleId);
+        HttpHeaders headers = new HttpHeaderBuilder().build();
+        String bearerToken = "Bearer " + authToken;
+        headers.set("Authorization",bearerToken);
+        ResponseEntity<String> response = executeHttpGet( restTemplate ,  headers,  sampleId,  test);
+        return getSample(sampleId, response.getBody());
+    }
     
     private Sample
     getSample(String sampleId, String sampleXml) {
@@ -132,5 +131,22 @@ SampleXmlService extends WebinService
             throw WebinCliException.userError(
                     WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
         }
+    }
+    
+    private RestTemplate getRestTemplate(String sampleId){
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new NotFoundErrorHandler(
+                WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId),
+                WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId)));
+        return restTemplate;
+    }
+    
+    private ResponseEntity<String>  executeHttpGet(RestTemplate restTemplate , HttpHeaders headers, String sampleId, boolean test){
+        return restTemplate.exchange(
+                getWebinRestUri("samples/{id}", test),
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                String.class,
+                sampleId.trim());
     }
 }

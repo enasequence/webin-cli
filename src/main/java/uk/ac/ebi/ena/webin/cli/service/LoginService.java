@@ -64,21 +64,7 @@ LoginService
     public String login() {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text()));
-
-        LoginRequestBody requestBody = new LoginRequestBody(username, password);
-
-        RequestEntity< LoginRequestBody > request;
-        try {
-            request = RequestEntity
-                    .post(new URI(getUri("/login", test)))
-                    .header("Authorization", HttpHeaderBuilder.basicAuthHeaderValue(username, password))
-                    .accept(MediaType.APPLICATION_JSON)
-                    .body(requestBody);
-        }
-        catch (URISyntaxException ex) {
-            throw new RuntimeException(ex);
-        }
-
+        RequestEntity< LoginRequestBody > request =  getAuthRequest("/login");
         LoginResponseBody responseBody = restTemplate.exchange(request, LoginResponseBody.class).getBody();
 
         if (!responseBody.authenticated ||
@@ -88,5 +74,29 @@ LoginService
         }
 
         return responseBody.principle;
+    }
+
+    public String getAuthToken() {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text()));
+        RequestEntity< LoginRequestBody > request =  getAuthRequest("/token");
+        String authToken = restTemplate.exchange(request,String.class).getBody();
+        return authToken;
+    }
+    
+    private RequestEntity<LoginRequestBody> getAuthRequest(String url){
+        LoginRequestBody requestBody = new LoginRequestBody(username, password);
+        RequestEntity< LoginRequestBody > request=null;
+        try {
+            request = RequestEntity
+                    .post(new URI(getUri(url, test)))
+                    .header("Authorization", HttpHeaderBuilder.basicAuthHeaderValue(username, password))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(requestBody);
+        }
+        catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+        return request;
     }
 }

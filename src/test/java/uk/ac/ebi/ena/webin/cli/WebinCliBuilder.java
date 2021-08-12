@@ -19,6 +19,7 @@ public class WebinCliBuilder {
   private boolean validate = true;
   private boolean submit = true;
   private boolean ascp = false;
+  private static final String EMPTY_TOKEN="";
 
   public static final WebinCliBuilder READS = new WebinCliBuilder(WebinCliContext.reads);
   public static final WebinCliBuilder GENOME = new WebinCliBuilder(WebinCliContext.genome);
@@ -65,6 +66,6 @@ public class WebinCliBuilder {
 
   public WebinCli build(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
-    return new WebinCli(WebinCliTestUtils.getTestWebinUsername(), cmd);
+    return new WebinCli(WebinCliTestUtils.getTestWebinUsername(),EMPTY_TOKEN, cmd);
   }
 }

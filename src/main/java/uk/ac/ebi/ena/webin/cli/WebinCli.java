@@ -88,9 +88,10 @@ public class WebinCli {
                 return SUCCESS;
 
             String submissionAccount = checkLogin(params);
+            String authToken = getAuthToken(params);
             checkVersion(params.test);
 
-            WebinCli webinCli = new WebinCli(submissionAccount, params);
+            WebinCli webinCli = new WebinCli(submissionAccount,authToken, params);
             webinCli.execute();
 
             return SUCCESS;
@@ -110,8 +111,8 @@ public class WebinCli {
         }
     }
 
-    public WebinCli(String submissionAccount, WebinCliCommand cmd) {
-        this(initParameters(submissionAccount, cmd));
+    public WebinCli(String submissionAccount,String authToken, WebinCliCommand cmd) {
+        this(initParameters(submissionAccount,authToken, cmd));
     }
 
     public WebinCli(WebinCliParameters parameters) {
@@ -122,13 +123,14 @@ public class WebinCli {
         initTimedFileLogger(parameters);
     }
 
-    private static WebinCliParameters initParameters(String submissionAccount, WebinCliCommand cmd) {
+    private static WebinCliParameters initParameters(String submissionAccount, String authToken, WebinCliCommand cmd) {
         if (!cmd.inputDir.isDirectory())
             throw WebinCliException.userError(WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(cmd.inputDir.getPath()));
         if (!cmd.outputDir.isDirectory())
             throw WebinCliException.userError(WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(cmd.outputDir.getPath()));
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setSubmissionAccount(submissionAccount);
+        parameters.setAuthToken(authToken);
         parameters.setContext(cmd.context);
         parameters.setManifestFile(cmd.manifest);
         parameters.setInputDir(cmd.inputDir);
@@ -587,6 +589,15 @@ public class WebinCli {
                 parameters.userName,
                 parameters.password,
                 parameters.test).login();
+    }
+    private static String getAuthToken(WebinCliCommand parameters) {
+        // Return the Webin-N submission account returned by the login service.
+        // This may be different from the username used to login as email address
+        // or su-Webin- superuser can also be used as a username.
+        return new LoginService(
+                parameters.userName,
+                parameters.password,
+                parameters.test).getAuthToken();
     }
 
     private static void checkVersion(boolean test) {
