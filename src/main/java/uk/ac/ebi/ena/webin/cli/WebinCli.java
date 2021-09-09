@@ -88,8 +88,8 @@ public class WebinCli {
                 return SUCCESS;
 
             String submissionAccount = checkLogin(params);
-            String authToken = getAuthToken(params);
             checkVersion(params.test);
+            String authToken = getAuthToken(params);
 
             WebinCli webinCli = new WebinCli(submissionAccount,authToken, params);
             webinCli.execute();
@@ -591,9 +591,7 @@ public class WebinCli {
                 parameters.test).login();
     }
     private static String getAuthToken(WebinCliCommand parameters) {
-        // Return the Webin-N submission account returned by the login service.
-        // This may be different from the username used to login as email address
-        // or su-Webin- superuser can also be used as a username.
+        // Return the Webin authentication token for the given user.
         return new LoginService(
                 parameters.userName,
                 parameters.password,

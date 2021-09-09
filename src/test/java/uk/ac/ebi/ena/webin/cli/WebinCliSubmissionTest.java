@@ -191,6 +191,16 @@ public class WebinCliSubmissionTest {
     }
 
     @Test
+    public void testSequenceSubmissionTabWithSampleInOrganismField() {
+        File infoFile = sequenceManifest().build();
+        ManifestBuilder manifest = new ManifestBuilder()
+                .file("TAB", "valid/ERT000002_rRNA-with-sample-field.tsv.gz")
+                .field("INFO", infoFile.getAbsolutePath());
+                
+        WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest).execute();
+    }
+
+    @Test
     public void testSequenceSubmissionFlatFileWithFormatError() {
         ManifestBuilder manifest = sequenceManifest()
                 .file("FLATFILE", "invalid.flatfile.gz");

@@ -10,8 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
+
 import java.io.File;
 import java.nio.file.Path;
+
+import static org.junit.Assert.assertEquals;
 
 public class WebinCliBuilder {
   private final WebinCliContext context;
@@ -19,7 +25,9 @@ public class WebinCliBuilder {
   private boolean validate = true;
   private boolean submit = true;
   private boolean ascp = false;
-  private static final String EMPTY_TOKEN="";
+  private String AUTH_TOKEN="";
+  private final static String AUTH_JSON="{\"authRealms\":[\"ENA\"],\"password\":\""+WebinCliTestUtils.getTestWebinPassword()+"\",\"username\":\""+WebinCliTestUtils.getTestWebinUsername()+"\"}";
+  private final static String TEST_AUTH_URL="https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token";
 
   public static final WebinCliBuilder READS = new WebinCliBuilder(WebinCliContext.reads);
   public static final WebinCliBuilder GENOME = new WebinCliBuilder(WebinCliContext.genome);
@@ -66,6 +74,23 @@ public class WebinCliBuilder {
 
   public WebinCli build(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
-    return new WebinCli(WebinCliTestUtils.getTestWebinUsername(),EMPTY_TOKEN, cmd);
+    return new WebinCli(WebinCliTestUtils.getTestWebinUsername(),getAuthToken(), cmd);
+  }
+
+  private String getAuthToken(){
+
+    if(StringUtils.isNotEmpty(AUTH_TOKEN)){
+      return AUTH_TOKEN;
+    }
+    RestTemplate restTemplate=new RestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    HttpEntity<String> request =
+            new HttpEntity<String>(AUTH_JSON, headers);
+    ResponseEntity<String> response =
+            restTemplate.postForEntity(TEST_AUTH_URL,request, String.class);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    AUTH_TOKEN = response.getBody();
+    return AUTH_TOKEN;
   }
 }

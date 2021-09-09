@@ -76,6 +76,10 @@ LoginService
         return responseBody.principle;
     }
 
+    /**
+     * This method returns authentication token for the given webin-cli user/paassword 
+     * @return token
+     */
     public String getAuthToken() {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text()));

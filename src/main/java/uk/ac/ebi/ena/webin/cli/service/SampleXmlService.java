@@ -10,6 +10,11 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -20,16 +25,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.StringReader;
 
 public class
 SampleXmlService extends WebinService
