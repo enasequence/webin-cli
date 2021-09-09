@@ -365,6 +365,8 @@ private static final String EMPTY_TOKEN="";
                 "│                    │           │* Illumina HiSeq 2500                        │\n" +
                 "│                    │           │* Illumina HiSeq 3000                        │\n" +
                 "│                    │           │* Illumina HiSeq 4000                        │\n" +
+                "│                    │           │* Illumina HiSeq X                           │\n" +
+                "│                    │           │* Illumina iSeq 100                          │\n" +
                 "│                    │           │* Illumina MiSeq                             │\n" +
                 "│                    │           │* Illumina MiniSeq                           │\n" +
                 "│                    │           │* Illumina NovaSeq 6000                      │\n" +
@@ -372,7 +374,6 @@ private static final String EMPTY_TOKEN="";
                 "│                    │           │* NextSeq 550                                │\n" +
                 "│                    │           │* NextSeq 1000                               │\n" +
                 "│                    │           │* NextSeq 2000                               │\n" +
-                "│                    │           │* Illumina iSeq 100                          │\n" +
                 "│                    │           │* MinION                                     │\n" +
                 "│                    │           │* GridION                                    │\n" +
                 "│                    │           │* PromethION                                 │\n" +
@@ -380,17 +381,23 @@ private static final String EMPTY_TOKEN="";
                 "│                    │           │* PacBio RS II                               │\n" +
                 "│                    │           │* Sequel                                     │\n" +
                 "│                    │           │* Sequel II                                  │\n" +
+                "│                    │           │* BGISEQ-50                                  │\n" +
                 "│                    │           │* BGISEQ-500                                 │\n" +
+                "│                    │           │* MGISEQ-2000RS                              │\n" +
                 "│                    │           │* 454 GS                                     │\n" +
                 "│                    │           │* 454 GS 20                                  │\n" +
                 "│                    │           │* 454 GS FLX                                 │\n" +
                 "│                    │           │* 454 GS FLX+                                │\n" +
                 "│                    │           │* 454 GS FLX Titanium                        │\n" +
                 "│                    │           │* 454 GS Junior                              │\n" +
+                "│                    │           │* Ion Torrent Genexus                        │\n" +
                 "│                    │           │* Ion Torrent PGM                            │\n" +
                 "│                    │           │* Ion Torrent Proton                         │\n" +
                 "│                    │           │* Ion Torrent S5                             │\n" +
                 "│                    │           │* Ion Torrent S5 XL                          │\n" +
+                "│                    │           │* Ion GeneStudio S5                          │\n" +
+                "│                    │           │* Ion GeneStudio S5 Plus                     │\n" +
+                "│                    │           │* Ion GeneStudio S5 Prime                    │\n" +
                 "│                    │           │* AB 3730xL Genetic Analyzer                 │\n" +
                 "│                    │           │* AB 3730 Genetic Analyzer                   │\n" +
                 "│                    │           │* AB 3500xL Genetic Analyzer                 │\n" +

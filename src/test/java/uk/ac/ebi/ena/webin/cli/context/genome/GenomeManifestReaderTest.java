@@ -11,7 +11,8 @@
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
+import static uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader.ASSEMBLY_TYPE_PRIMARY_METAGENOME;
+import static uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader.Field;
 
 import java.nio.file.Paths;
 import java.util.Locale;
@@ -43,7 +44,7 @@ GenomeManifestReaderTest {
 
     @Test
     public void
-    testValidManifest() {
+    testValidManifestWithoutAssemblyType() {
         GenomeManifestReader manifestReader = createManifestReader();
         GenomeManifest manifest = manifestReader.getManifest();
 
@@ -72,5 +73,41 @@ GenomeManifestReaderTest {
         Assert.assertEquals("description", manifest.getDescription());
         Assert.assertEquals("ST-001", manifest.getSubmissionTool());
         Assert.assertEquals("STV-001", manifest.getSubmissionToolVersion());
+        Assert.assertNull(manifest.getAssemblyType());
+    }
+
+    @Test
+    public void
+    testValidManifestWithAssemblyType() {
+        GenomeManifestReader manifestReader = createManifestReader();
+        GenomeManifest manifest = manifestReader.getManifest();
+
+        Assert.assertNull(manifest.getStudy());
+        Assert.assertNull(manifest.getSample());
+        Assert.assertNull(manifest.getPlatform());
+        Assert.assertNull(manifest.getName());
+        assertThat(manifest.files().files()).size().isZero();
+        Assert.assertNull(manifest.getDescription());
+        Assert.assertNull(manifest.getSubmissionTool());
+        Assert.assertNull(manifest.getSubmissionToolVersion());
+
+        manifestReader.readManifest(Paths.get("."),
+                new ManifestBuilder()
+                        .field(Field.PLATFORM, " illumina")
+                        .field(Field.NAME, " SOME-FANCY-NAME")
+                        .field(Field.DESCRIPTION, " description")
+                        .field(Field.ASSEMBLY_TYPE, ASSEMBLY_TYPE_PRIMARY_METAGENOME)
+                        .file("FASTA", TempFileBuilder.empty("fasta"))
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
+                        .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
+                        .build());
+
+        Assert.assertEquals("illumina", manifest.getPlatform());
+        Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());
+        assertThat(manifest.files().files()).size().isOne();
+        Assert.assertEquals("description", manifest.getDescription());
+        Assert.assertEquals("ST-001", manifest.getSubmissionTool());
+        Assert.assertEquals("STV-001", manifest.getSubmissionToolVersion());
+        Assert.assertEquals(ASSEMBLY_TYPE_PRIMARY_METAGENOME, manifest.getAssemblyType());
     }
 }
