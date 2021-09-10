@@ -10,14 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 public class WebinCliBuilder {
   private final WebinCliContext context;

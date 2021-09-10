@@ -46,7 +46,7 @@ public class SequenceValidationTest {
 
   @Test
   public void testValidTab() {
-    File[] files = VALID_DIR.listFiles((dir, name) -> name.endsWith(".tsv.gz"));
+    File[] files = VALID_DIR.listFiles((dir, name) -> (name.endsWith("tsv.gz") && !name.endsWith("field.tsv.gz")));
     assertThat(files.length).isGreaterThan(0);
     for (File file : files) {
       String fileName = file.getName();
