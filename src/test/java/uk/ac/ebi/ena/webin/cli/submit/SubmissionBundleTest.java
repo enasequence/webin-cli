@@ -23,7 +23,8 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
-public class SubmissionBundleTest 
+public class 
+SubmissionBundleTest 
 {
 
     @Test public void
