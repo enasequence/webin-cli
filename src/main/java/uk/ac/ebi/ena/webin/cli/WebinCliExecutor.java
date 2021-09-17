@@ -99,8 +99,8 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         }
         manifest.setReportFile(getSubmissionReportFile());
         manifest.setProcessDir(getProcessDir());
-        manifest.setAuthToken(getAuthTokenFromParam());
-        manifest.setTestMode(getTestModeFromParam());
+        manifest.setWebinAuthToken(getAuthTokenFromParam());
+        manifest.setWebinCliTestMode(getTestModeFromParam());
 
         try {
             validationResponse = getValidator().validate(manifest);
@@ -277,7 +277,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     
     
     private String getAuthTokenFromParam(){
-        return this.parameters.getAuthToken();
+        return this.parameters.getWebinAuthToken();
     }
 
     private boolean getTestModeFromParam(){

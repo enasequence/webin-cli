@@ -21,11 +21,13 @@ import org.springframework.web.client.ResponseErrorHandler;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
-public class DefaultErrorHander implements ResponseErrorHandler {
+public class NotFoundErrorHandler implements ResponseErrorHandler {
 
+    private final String validationError;
     private final String systemError;
 
-    public DefaultErrorHander(String systemError) {
+    public NotFoundErrorHandler(String validationError, String systemError) {
+        this.validationError = validationError;
         this.systemError = systemError;
     }
 
@@ -41,6 +43,8 @@ public class DefaultErrorHander implements ResponseErrorHandler {
             case UNAUTHORIZED:
             case FORBIDDEN:
                 throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+            case NOT_FOUND:
+                throw WebinCliException.validationError(validationError);
             default:
                 throw WebinCliException.systemError(systemError);
         }

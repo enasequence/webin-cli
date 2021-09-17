@@ -42,6 +42,7 @@ import de.vandermeer.asciitable.CWC_FixedWidth;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import picocli.CommandLine;
 
+import uk.ac.ebi.embl.api.service.SequenceToolsServices;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
@@ -121,6 +122,7 @@ public class WebinCli {
 
         // initTimedConsoleLogger();
         initTimedFileLogger(parameters);
+        
     }
 
     private static WebinCliParameters initParameters(String submissionAccount, String authToken, WebinCliCommand cmd) {
@@ -130,7 +132,7 @@ public class WebinCli {
             throw WebinCliException.userError(WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(cmd.outputDir.getPath()));
         WebinCliParameters parameters = new WebinCliParameters();
         parameters.setSubmissionAccount(submissionAccount);
-        parameters.setAuthToken(authToken);
+        parameters.setWebinAuthToken(authToken);
         parameters.setContext(cmd.context);
         parameters.setManifestFile(cmd.manifest);
         parameters.setInputDir(cmd.inputDir);

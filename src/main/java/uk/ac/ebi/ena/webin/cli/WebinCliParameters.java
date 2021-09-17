@@ -21,7 +21,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.StudyProcessor;
 
 public class WebinCliParameters implements MetadataProcessorParameters {
   private String submissionAccount;
-  private String authToken;
+  private String webinAuthToken;
   private WebinCliContext context;
   private File manifestFile;
   private String username;
@@ -54,12 +54,12 @@ public class WebinCliParameters implements MetadataProcessorParameters {
     this.submissionAccount = submissionAccount;
   }
 
-  public String getAuthToken() {
-    return authToken;
+  public String getWebinAuthToken() {
+    return webinAuthToken;
   }
 
-  public void setAuthToken(String authToken) {
-    this.authToken = authToken;
+  public void setWebinAuthToken(String webinAuthToken) {
+    this.webinAuthToken = webinAuthToken;
   }
 
   public WebinCliContext getContext() {
