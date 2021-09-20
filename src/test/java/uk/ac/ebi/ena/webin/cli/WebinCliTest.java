@@ -23,7 +23,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 public class WebinCliTest {
-private static final String EMPTY_TOKEN="";
+private static final String EMPTY_AUTH_TOKEN ="";
     @Test
     public void testGetSafeOutputDir() {
         assertThat("A_aZ").isEqualTo(getSafeOutputDir("A aZ"));
@@ -54,7 +54,7 @@ private static final String EMPTY_TOKEN="";
         cmd.inputDir = TempFileBuilder.file("test").toFile();
         cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(),EMPTY_TOKEN, cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), EMPTY_AUTH_TOKEN, cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                         WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(
@@ -67,7 +67,7 @@ private static final String EMPTY_TOKEN="";
         cmd.inputDir = WebinCliTestUtils.createTempDir();
         cmd.outputDir = TempFileBuilder.file("test").toFile();
 
-        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(),EMPTY_TOKEN, cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), EMPTY_AUTH_TOKEN, cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                     WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(
@@ -80,7 +80,7 @@ private static final String EMPTY_TOKEN="";
         cmd.inputDir = new File(UUID.randomUUID().toString());
         cmd.outputDir = WebinCliTestUtils.createTempDir();
 
-        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(),EMPTY_TOKEN, cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), EMPTY_AUTH_TOKEN, cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                         WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(
@@ -93,7 +93,7 @@ private static final String EMPTY_TOKEN="";
         cmd.inputDir = WebinCliTestUtils.createTempDir();
         cmd.outputDir = new File(UUID.randomUUID().toString());
 
-        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(),EMPTY_TOKEN, cmd) )
+        assertThatThrownBy(() -> new WebinCli(WebinCliTestUtils.getTestWebinUsername(), EMPTY_AUTH_TOKEN, cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                         WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(

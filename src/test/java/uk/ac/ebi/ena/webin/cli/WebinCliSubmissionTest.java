@@ -16,7 +16,9 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 import java.io.File;
 import java.nio.file.Path;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class WebinCliSubmissionTest {
 
@@ -24,6 +26,9 @@ public class WebinCliSubmissionTest {
     private static final File GENOME_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/genome/");
     private static final File TRANSCRIPTOME_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/");
     private static final File SEQUENCE_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/");
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private ManifestBuilder readsManifest() {
         return new ManifestBuilder()
@@ -200,6 +205,18 @@ public class WebinCliSubmissionTest {
         WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest).execute();
     }
 
+    @Test
+    public void testSequenceSubmissionTabWithInvalidSampleInOrganismField() {
+        exceptionRule.expect(WebinCliException.class);
+        File infoFile = sequenceManifest().build();
+        ManifestBuilder manifest = new ManifestBuilder()
+                .file("TAB", "valid/ERT000002_rRNA-with-invalid-sample-field.tsv.gz")
+                .field("INFO", infoFile.getAbsolutePath());
+
+        WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest).execute();
+    }
+    
+    
     @Test
     public void testSequenceSubmissionFlatFileWithFormatError() {
         ManifestBuilder manifest = sequenceManifest()
