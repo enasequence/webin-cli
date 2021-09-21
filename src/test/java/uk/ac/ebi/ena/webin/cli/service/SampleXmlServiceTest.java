@@ -13,8 +13,11 @@ package uk.ac.ebi.ena.webin.cli.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.junit.rules.ExpectedException;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
@@ -32,6 +35,9 @@ SampleXmlServiceTest {
     private static final String STRAIN_NAME = "SK1";
     private static final int TAX_ID = 580239;
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Test
     public void testGetSourceFeatureUsingPublicBioSampleId() {
             testGetSourceFeatureUsingValidId(BIO_SAMPLE_ID);
@@ -45,15 +51,13 @@ SampleXmlServiceTest {
     @Test
     public void testGetSourceFeatureUsingInvalidId() {
         String id = "INVALID";
+        exceptionRule.expect(HttpClientErrorException.NotFound.class);
         SampleXmlService sampleService = new SampleXmlService.Builder()
-                                                                     .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                                                     .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                                                     .setTest( TEST )
-                                                                     .build();
-        assertThatThrownBy(() -> {
-            sampleService.getSample( id );
-        }).isInstanceOf(WebinCliException.class)
-                .hasMessageContaining(WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(id));
+                .setUserName( "webin-256" )
+                .setPassword( "sausages" )
+                .setTest( TEST )
+                .build();
+        sampleService.getSample(id);
     }
 
     private void testGetSourceFeatureUsingValidId(String id) {

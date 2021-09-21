@@ -13,8 +13,11 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.junit.rules.ExpectedException;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
@@ -26,6 +29,8 @@ public class
 SampleProcessorTest
 {
     private final WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test public void 
     testCorrect()
@@ -43,6 +48,7 @@ SampleProcessorTest
     @Test public void 
     testIncorrect()
     {
+        exceptionRule.expect(HttpClientErrorException.NotFound.class);
         SampleProcessor processor = new SampleProcessor( parameters, Assert::assertNull );
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "SRP000392" );
         ValidationResult result = new ValidationResult();

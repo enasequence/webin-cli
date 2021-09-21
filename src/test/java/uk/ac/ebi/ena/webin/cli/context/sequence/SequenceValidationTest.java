@@ -53,6 +53,7 @@ public class SequenceValidationTest {
       System.out.println("Testing valid tab file: " + fileName);
       File manifestFile = manifestBuilder().file(FileType.TAB, fileName).build();
       WebinCliExecutor<SequenceManifest, ValidationResponse> executor = executorBuilder.build(manifestFile, VALID_DIR);
+      
       executor.readManifest();
       executor.validateSubmission();
       assertThat(executor.getManifestReader().getManifest().files().get(FileType.TAB))

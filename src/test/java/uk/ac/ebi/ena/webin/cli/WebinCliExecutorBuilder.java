@@ -10,13 +10,17 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
 
+import org.apache.commons.lang3.StringUtils;
 import org.mockito.invocation.InvocationOnMock;
 
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
@@ -24,6 +28,10 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationResponse> {
+
+    private final static String AUTH_JSON="{\"authRealms\":[\"ENA\"],\"password\":\"sausages\",\"username\":\"Webin-256\"}";
+    private final static String TEST_AUTH_URL="https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token";
+    private static String token = "";
     private final Class<M> manifestClass;
     private final WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
 
@@ -32,6 +40,7 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
     private SampleXmlProcessor sampleXmlProcessor;
     private RunProcessor runProcessor;
     private AnalysisProcessor analysisProcessor;
+    private String webinAuthToken;
 
     public enum MetadataProcessorType {
         DEFAULT,
@@ -88,10 +97,27 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
         parameters.setSampleXmlProcessor(sampleXmlProcessor);
         parameters.setRunProcessor(runProcessor);
         parameters.setAnalysisProcessor(analysisProcessor);
+        parameters.setWebinAuthToken(getAuthToken());
         return WebinCliContext.createExecutor(manifestClass, parameters);
     }
 
     public WebinCliParameters getParameters() {
         return parameters;
+    }
+
+    private String getAuthToken(){
+        if(StringUtils.isNotEmpty(token)){
+            return token;
+        }
+        RestTemplate restTemplate=new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request =
+                new HttpEntity<String>(AUTH_JSON, headers);
+        ResponseEntity<String> response =
+                restTemplate.postForEntity(TEST_AUTH_URL,request, String.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        token = response.getBody();
+        return token;
     }
 }
