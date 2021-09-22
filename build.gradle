@@ -97,6 +97,13 @@ dependencies {
     testImplementation( 'org.mockito:mockito-core:2.23.4' )
 }
 
+configurations {
+    [apiElements, runtimeElements].each {
+        it.outgoing.artifacts.removeIf { it.buildDependencies.getDependencies(null).contains(jar) }
+        it.outgoing.artifact(bootJar)
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
@@ -119,7 +126,7 @@ publishing {
             url "https://gitlab.ebi.ac.uk/api/v4/projects/811/packages/maven"
             credentials(HttpHeaderCredentials) {
                 name = "Private-Token"
-                value = gitlab_private_token // .gradle/gradle.properties
+                value = project.ext.properties.gitlab_private_token
             }
             authentication {
                 header( HttpHeaderAuthentication )
