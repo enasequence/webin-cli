@@ -15,9 +15,9 @@ import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.crea
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-
 import org.junit.rules.ExpectedException;
 import org.springframework.web.client.HttpClientErrorException;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;

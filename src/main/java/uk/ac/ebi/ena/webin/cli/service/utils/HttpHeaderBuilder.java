@@ -10,10 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli.service.utils;
 
+import java.util.Base64;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
-import java.util.Base64;
 
 public class HttpHeaderBuilder {
 

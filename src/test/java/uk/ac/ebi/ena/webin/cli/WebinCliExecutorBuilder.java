@@ -18,9 +18,9 @@ import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.invocation.InvocationOnMock;
-
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
