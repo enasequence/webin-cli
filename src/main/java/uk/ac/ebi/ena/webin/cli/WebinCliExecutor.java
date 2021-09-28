@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.service.RatelimitService;
@@ -142,8 +141,8 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
                         .build();
 
                 String subAccId = getParameters().getWebinServiceUserName();
-                String studyId = manifestReader.getManifestReaderResult().getValue(GenomeManifestReader.Field.STUDY);
-                String sampleId = manifestReader.getManifestReaderResult().getValue(GenomeManifestReader.Field.SAMPLE);
+                String studyId = manifest.getSample().getSraSampleIdId();
+                String sampleId = manifest.getStudy().getStudyId();
 
                 boolean ratelimit = ratelimitService.ratelimit(getContext().name(), subAccId, studyId, sampleId);
                 if (ratelimit) {
