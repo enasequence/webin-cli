@@ -31,6 +31,7 @@ public enum WebinCliMessage implements MessageFormatSource {
     CLI_UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk because of a {0}. "),
     CLI_SUBMIT_ERROR("The submission has failed because of a {0}. "),
     CLI_AUTHENTICATION_ERROR("Invalid submission account user name or password. Please try enclosing your password in single quotes."),
+    CLI_RATELIMIT_ERROR("Cannot submit more than 1 genome within 24 hours for one submission account, sample and study."),
 
     EXECUTOR_INIT_ERROR("Failed to initialise validator. {0}"),
     EXECUTOR_EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}"),
@@ -54,6 +55,7 @@ public enum WebinCliMessage implements MessageFormatSource {
     SUBMIT_SERVICE_SUCCESS_TEST_NOACC("The TEST submission has been completed successfully. This was a TEST submission and no data was submitted. No accession was assigned to the {0} submission."),
     SUBMIT_SERVICE_SYSTEM_ERROR("A server error occurred when attempting to submit."),
     IGNORE_ERRORS_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving ignore error information."),
+    RATE_LIMIT_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving rate limit information."),
     VERSION_SERVICE_SYSTEM_ERROR("A server error occurred when checking application version."),
     SAMPLE_SERVICE_VALIDATION_ERROR("Unknown sample {0} or the sample cannot be referenced by your submission account. Samples must be submitted before they can be referenced in the submission."),
     SAMPLE_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving sample {0} information."),
