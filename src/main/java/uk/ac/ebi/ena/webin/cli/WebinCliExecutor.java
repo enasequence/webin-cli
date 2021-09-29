@@ -141,8 +141,8 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
                         .build();
 
                 String subAccId = getParameters().getWebinServiceUserName();
-                String studyId = manifest.getSample().getSraSampleIdId();
-                String sampleId = manifest.getStudy().getStudyId();
+                String studyId = manifest.getStudy().getStudyId();
+                String sampleId = manifest.getSample().getSraSampleIdId();
 
                 boolean ratelimit = ratelimitService.ratelimit(getContext().name(), subAccId, studyId, sampleId);
                 if (ratelimit) {
