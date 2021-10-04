@@ -148,7 +148,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
                 ratelimit = ratelimitService.ratelimit(getContext().name(), subAccId, studyId, sampleId);
             } catch (RuntimeException ex) {
-                log.warn(WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
+                throw WebinCliException.systemError(WebinCliMessage.CLI_RATELIMIT_ERROR.text());
             }
             if (ratelimit) {
                 throw WebinCliException.userError(WebinCliMessage.CLI_RATELIMIT_ERROR.text());
