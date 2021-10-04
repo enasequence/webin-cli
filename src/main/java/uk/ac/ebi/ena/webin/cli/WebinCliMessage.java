@@ -31,7 +31,7 @@ public enum WebinCliMessage implements MessageFormatSource {
     CLI_UPLOAD_ERROR("Failed to upload files to webin.ebi.ac.uk because of a {0}. "),
     CLI_SUBMIT_ERROR("The submission has failed because of a {0}. "),
     CLI_AUTHENTICATION_ERROR("Invalid submission account user name or password. Please try enclosing your password in single quotes."),
-    CLI_RATELIMIT_ERROR("Cannot submit more than 1 genome within 24 hours for one submission account, sample and study."),
+    CLI_GENOME_RATELIMIT_ERROR("Cannot submit more than 1 genome within 24 hours for one submission account, sample and study."),
 
     EXECUTOR_INIT_ERROR("Failed to initialise validator. {0}"),
     EXECUTOR_EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}"),
