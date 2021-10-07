@@ -53,7 +53,7 @@ public class RatelimitService extends WebinService {
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text()));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(getUserName(), getPassword()).build();
-        String url = getWebinRestUri("cli/submission/ratelimit/genome/", getTest());
+        String url = getWebinRestUri("cli/submission/ratelimit/", getTest());
         ResponseEntity<String> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
