@@ -80,6 +80,7 @@ public class StudyService extends WebinService {
                     WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
         }
         Study study = new Study();
+        study.setStudyId(studyId);
         study.setBioProjectId(studyResponse.bioProjectId);
         study.setLocusTags(studyResponse.locusTags);
         return study;

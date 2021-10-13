@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
+import uk.ac.ebi.ena.webin.cli.service.RatelimitService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -89,8 +90,9 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         this.processDir = createSubmissionDir(WebinCliConfig.PROCESS_DIR );
 
         M manifest = getManifestReader().getManifest();
-
         setIgnoreErrors(manifest);
+
+        checkGenomeSubmissionRatelimit();
 
         if(!manifest.getFiles().get().isEmpty()) {
             for (SubmissionFile subFile : (List<SubmissionFile>) manifest.getFiles().get()) {
@@ -125,6 +127,32 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         }
         catch (RuntimeException ex) {
             log.warn(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
+        }
+    }
+
+    private void checkGenomeSubmissionRatelimit() {
+        if (getContext().equals(WebinCliContext.genome)) {
+            M manifest = getManifestReader().getManifest();
+            boolean ratelimit = false;
+
+            try {
+                RatelimitService ratelimitService = new RatelimitService.Builder()
+                        .setCredentials(getParameters().getWebinServiceUserName(),
+                                getParameters().getPassword())
+                        .setTest(getParameters().isTest())
+                        .build();
+
+                String subAccId = getParameters().getWebinServiceUserName();
+                String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
+                String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleIdId();
+
+                ratelimit = ratelimitService.ratelimit(getContext().name(), subAccId, studyId, sampleId);
+            } catch (RuntimeException ex) {
+                throw WebinCliException.systemError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
+            }
+            if (ratelimit) {
+                throw WebinCliException.userError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
+            }
         }
     }
 
