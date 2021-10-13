@@ -68,6 +68,24 @@ public class WebinCliBuilder {
     return cmd;
   }
 
+  private WebinCliParameters params(Path inputDir, ManifestBuilder manifestBuilder) {
+    WebinCliParameters params = new WebinCliParameters();
+    params.setContext(context);
+    params.setInputDir(inputDir.toFile());
+    params.setOutputDir(outputDir.toFile());
+    params.setManifestFile(manifestBuilder.build(inputDir));
+    params.setUsername(WebinCliTestUtils.getTestWebinUsername());
+    params.setPassword(WebinCliTestUtils.getTestWebinPassword());
+    params.setSubmissionAccount(WebinCliTestUtils.getTestWebinUsername());
+    params.setWebinAuthToken(getAuthToken());
+    params.setTest(true);
+    params.setValidate(validate);
+    params.setSubmit(submit);
+    params.setAscp(ascp);
+
+    return params;
+  }
+
   public WebinCli build(File inputDir, ManifestBuilder manifestBuilder) {
     return build(inputDir.toPath(), manifestBuilder);
   }
@@ -75,6 +93,13 @@ public class WebinCliBuilder {
   public WebinCli build(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
     return new WebinCli(WebinCliTestUtils.getTestWebinUsername(),getAuthToken(), cmd);
+  }
+
+  public WebinCli build(File inputDir, ManifestBuilder manifestBuilder, boolean ignoreErrors) {
+    WebinCliParameters params = params(inputDir.toPath(), manifestBuilder);
+    params.setIgnoreErrors(ignoreErrors);
+
+    return new WebinCli(params);
   }
 
   private String getAuthToken(){

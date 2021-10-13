@@ -136,6 +136,8 @@ SequenceManifestReader extends ManifestReader<SequenceManifest>
         manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
         manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
+        manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+
         SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
 
 		getFiles( getInputDir(), getManifestReaderResult(), Field.TAB ).forEach(fastaFile-> submissionFiles.add( new SubmissionFile( SequenceManifest.FileType.TAB,fastaFile ) ) );

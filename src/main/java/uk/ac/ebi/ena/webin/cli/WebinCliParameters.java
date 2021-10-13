@@ -35,6 +35,7 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private boolean submit;
   private boolean test;
   private boolean ascp;
+  private boolean ignoreErrors;
 
   private SampleProcessor sampleProcessor;
   private StudyProcessor studyProcessor;
@@ -166,6 +167,14 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public void setAscp(boolean ascp) {
     this.ascp = ascp;
+  }
+
+  public boolean isIgnoreErrors() {
+    return ignoreErrors;
+  }
+
+  public void setIgnoreErrors(boolean ignoreErrors) {
+    this.ignoreErrors = ignoreErrors;
   }
 
   public SampleProcessor getSampleProcessor() {

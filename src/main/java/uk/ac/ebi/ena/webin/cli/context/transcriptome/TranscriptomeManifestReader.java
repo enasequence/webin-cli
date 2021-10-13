@@ -179,6 +179,8 @@ TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest>
 		manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
 		manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
+		manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+
 		SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
 
 		getFiles( getInputDir(), getManifestReaderResult(), Field.FASTA ).forEach(file-> submissionFiles.add( new SubmissionFile( TranscriptomeManifest.FileType.FASTA, file ) ) );

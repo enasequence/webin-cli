@@ -265,6 +265,8 @@ GenomeManifestReader extends ManifestReader<GenomeManifest> {
 		manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
 		manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
+		manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+
 		SubmissionFiles<GenomeManifest.FileType> submissionFiles = manifest.files();
 
 		getFiles( getInputDir(), getManifestReaderResult(), Field.FASTA ).forEach(fastaFile -> submissionFiles.add( new SubmissionFile( GenomeManifest.FileType.FASTA, fastaFile ) ) );

@@ -10,27 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.fusesource.jansi.AnsiConsole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -40,8 +19,11 @@ import de.vandermeer.asciitable.AT_Renderer;
 import de.vandermeer.asciitable.AsciiTable;
 import de.vandermeer.asciitable.CWC_FixedWidth;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
+import org.apache.commons.lang3.StringUtils;
+import org.fusesource.jansi.AnsiConsole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
-
 import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
@@ -58,6 +40,22 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class WebinCli {
     public final static int SUCCESS = 0;
@@ -160,7 +158,6 @@ public class WebinCli {
         appender.start();
     }
 
-
     private void
     initTimedFileLogger(WebinCliParameters parameters) {
         FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
@@ -206,19 +203,24 @@ public class WebinCli {
         } catch (WebinCliException ex) {
             switch (ex.getErrorType()) {
                 case USER_ERROR:
-                    throw WebinCliException.userError(ex, StringUtils.isBlank(ex.getMessage()) ? WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()) :
-                            WebinCliMessage.CLI_VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
+                    throw WebinCliException.userError(ex, StringUtils.isBlank(ex.getMessage())
+                            ? getUserErrorEx(executor.getValidationDir().toString())
+                            : getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+
                 case VALIDATION_ERROR:
-                    throw WebinCliException.validationError(ex, StringUtils.isBlank(ex.getMessage()) ? WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX.format(executor.getValidationDir()) :
-                            WebinCliMessage.CLI_VALIDATE_USER_ERROR.format(ex.getMessage(), executor.getValidationDir()));
+                    throw WebinCliException.validationError(ex, StringUtils.isBlank(ex.getMessage())
+                            ? getUserErrorEx(executor.getValidationDir().toString())
+                            : getUserError(ex.getMessage(), executor.getValidationDir().toString()));
 
                 case SYSTEM_ERROR:
-                    throw WebinCliException.systemError(ex, WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR.format(ex.getMessage(), executor.getValidationDir()));
+                    throw WebinCliException.systemError(
+                            ex, getSystemError(ex.getMessage(), executor.getValidationDir().toString()));
             }
         } catch (Exception ex) {
             StringWriter sw = new StringWriter();
             ex.printStackTrace(new PrintWriter(sw));
-            throw WebinCliException.systemError(ex, WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR.format(null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir()));
+            throw WebinCliException.systemError(ex, getSystemError(
+                    null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir().toString()));
         }
     }
 
@@ -552,7 +554,6 @@ public class WebinCli {
         log.info("Please use " + WebinCliCommand.Options.help + " option to see all command line options.");
     }
 
-
     public static String
     getVersionForSubmission(WebinSubmissionTool webinSubmissionTool) {
         String version = getVersion();
@@ -568,19 +569,16 @@ public class WebinCli {
         }
     }
 
-
     public static String
     getVersionForUsage() {
         String version = getVersion();
         return String.format("%s", null == version ? "?" : version);
     }
 
-
     private static String
     getVersion() {
         return WebinCli.class.getPackage().getImplementationVersion();
     }
-
 
     private static String checkLogin(WebinCliCommand parameters) {
         // Return the Webin-N submission account returned by the login service.
@@ -656,7 +654,6 @@ public class WebinCli {
         return dir;
     }
 
-
     public static String
     getSafeOutputDir(String dir) {
         return dir
@@ -671,5 +668,29 @@ public class WebinCli {
         return Arrays.stream(dirs)
                 .map(dir -> getSafeOutputDir(dir))
                 .toArray(String[]::new);
+    }
+
+    private String getUserError(String message, String validationDir) {
+        if (getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
+            return WebinCliMessage.CLI_VALIDATE_USER_ERROR.format(message, validationDir);
+        } else {
+            return WebinCliMessage.CLI_VALIDATE_USER_ERROR_NO_REPORT_FILES.format(message);
+        }
+    }
+
+    private String getUserErrorEx(String validationDir) {
+        if (getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
+            return WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX.format(validationDir);
+        } else {
+            return WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX_NO_REPORT_FILES.text();
+        }
+    }
+
+    private String getSystemError(String message, String validationDir) {
+        if (getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
+            return WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR.format(message, validationDir);
+        } else {
+            return WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR_NO_REPORT_FILES.format(message);
+        }
     }
 }
