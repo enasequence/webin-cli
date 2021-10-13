@@ -115,6 +115,11 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     }
 
     private void setIgnoreErrors(M manifest) {
+        //if ignore errors is already set to true then do nothing.
+        if (manifest.isIgnoreErrors()) {
+            return;
+        }
+
         manifest.setIgnoreErrors(false);
         try {
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
@@ -223,7 +228,6 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         return FileUtils.calculateDigest( "MD5", parameters.getManifestFile());
     }
 
-
     // TODO: remove
     public WebinCliContext getContext() {
         return context;
@@ -302,7 +306,6 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     public R getValidationResponse() {
         return validationResponse;
     }
-    
     
     private String getAuthTokenFromParam(){
         return this.parameters.getWebinAuthToken();

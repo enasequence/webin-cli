@@ -16,6 +16,7 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 import java.io.File;
 import java.nio.file.Path;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -63,6 +64,19 @@ public class WebinCliSubmissionTest {
             .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
             .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
             .field("DESCRIPTION", "Some genome assembly description");
+    }
+
+    private ManifestBuilder covid19GenomeManifest() {
+        return new ManifestBuilder()
+                .name()
+                .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
+                .field("STUDY", "ERP011959")
+                .field("SAMPLE", "ERS829308")
+                .field("COVERAGE", "1.0")
+                .field("PROGRAM", "prog-123")
+                .field("PLATFORM", "ILLUMINA")
+                .file("FASTA", "valid-covid19.fasta.gz")
+                .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz");
     }
 
     private ManifestBuilder transcriptomeManifest() {
@@ -137,6 +151,20 @@ public class WebinCliSubmissionTest {
                 .file("FLATFILE", "valid.flatfile.gz")
                 .file("AGP", "valid.agp.gz");
         WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, manifest).execute();
+    }
+
+    @Test
+    public void testCovid19GenomeSubmissionRateLimitErrorIgnore() {
+        WebinCliException ex = Assert.assertThrows(WebinCliException.class, () -> {
+            //Submitting more than once within 24 hours will throw a rate limit error.
+            for (int i = 0; i < 2; i++) {
+                WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, covid19GenomeManifest()).execute();
+            }
+        });
+
+        Assert.assertTrue(ex.getMessage().toLowerCase().contains("cannot submit more than 1 genome within 24 hours for one submission account"));
+
+        WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, covid19GenomeManifest(), true).execute();
     }
 
     @Test
@@ -215,7 +243,6 @@ public class WebinCliSubmissionTest {
 
         WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest).execute();
     }
-    
     
     @Test
     public void testSequenceSubmissionFlatFileWithFormatError() {

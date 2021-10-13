@@ -224,6 +224,8 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
         manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
         manifest.setSubmissionToolVersion(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
 
+        manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+
         processInstrumentAndPlatform();
 
         SubmissionFiles<ReadsManifest.FileType> submissionFiles = manifest.files();
