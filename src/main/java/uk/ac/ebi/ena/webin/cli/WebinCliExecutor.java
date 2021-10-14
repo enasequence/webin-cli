@@ -138,24 +138,21 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     private void checkGenomeSubmissionRatelimit() {
         if (getContext().equals(WebinCliContext.genome)) {
             M manifest = getManifestReader().getManifest();
-            boolean ratelimit = false;
-
-            try {
-                RatelimitService ratelimitService = new RatelimitService.Builder()
-                        .setCredentials(getParameters().getWebinServiceUserName(),
-                                getParameters().getPassword())
-                        .setTest(getParameters().isTest())
-                        .build();
-
-                String subAccId = getParameters().getWebinServiceUserName();
-                String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
-                String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleIdId();
-
-                ratelimit = ratelimitService.ratelimit(getContext().name(), subAccId, studyId, sampleId);
-            } catch (RuntimeException ex) {
-                throw WebinCliException.systemError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
+            if (manifest.isIgnoreErrors()) {
+                return;
             }
-            if (ratelimit) {
+
+            RatelimitService ratelimitService = new RatelimitService.Builder()
+                    .setCredentials(getParameters().getWebinServiceUserName(),
+                            getParameters().getPassword())
+                    .setTest(getParameters().isTest())
+                    .build();
+
+            String submissionAccountId = getParameters().getWebinServiceUserName();
+            String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
+            String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleIdId();
+
+            if(ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId)) {
                 throw WebinCliException.userError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
             }
         }

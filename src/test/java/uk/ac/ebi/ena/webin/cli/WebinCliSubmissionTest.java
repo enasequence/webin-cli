@@ -164,7 +164,7 @@ public class WebinCliSubmissionTest {
 
         Assert.assertTrue(ex.getMessage().toLowerCase().contains("cannot submit more than 1 genome within 24 hours for one submission account"));
 
-        WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, covid19GenomeManifest(), true).execute();
+        WebinCliBuilder.GENOME.ignoreErrors(true).build(GENOME_RESOURCE_DIR, covid19GenomeManifest()).execute();
     }
 
     @Test

@@ -45,12 +45,6 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public WebinCliParameters() {}
 
-  /*
-  public String getSubmissionAccount() {
-      return submissionAccount;
-  }
-  */
-
   public void setSubmissionAccount(String submissionAccount) {
     this.submissionAccount = submissionAccount;
   }
@@ -78,12 +72,6 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   public void setManifestFile(File manifestFile) {
     this.manifestFile = manifestFile;
   }
-
-  /*
-  public String getUsername() {
-      return username;
-  }
-  */
 
   public void setUsername(String username) {
     this.username = username;
