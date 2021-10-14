@@ -78,18 +78,18 @@ public class WebinCli {
     __main(String... args) {
         System.setProperty("picocli.trace", "OFF");
         try {
-            WebinCliCommand params = parseParameters(args);
-            if (null == params)
+            WebinCliCommand cmd = parseCmd(args);
+            if (null == cmd) {
                 return USER_ERROR;
+            }
 
-            if (params.help || params.fields || params.version)
+            if (cmd.help || cmd.fields || cmd.version) {
                 return SUCCESS;
+            }
 
-            String submissionAccount = checkLogin(params);
-            checkVersion(params.test);
-            String authToken = getAuthToken(params);
+            checkVersion(cmd.test);
 
-            WebinCli webinCli = new WebinCli(submissionAccount,authToken, params);
+            WebinCli webinCli = new WebinCli(cmd);
             webinCli.execute();
 
             return SUCCESS;
@@ -109,8 +109,8 @@ public class WebinCli {
         }
     }
 
-    public WebinCli(String submissionAccount,String authToken, WebinCliCommand cmd) {
-        this(initParameters(submissionAccount,authToken, cmd));
+    public WebinCli(WebinCliCommand cmd) {
+        this(initParameters(getSubmissionAccount(cmd), getAuthToken(cmd), cmd));
     }
 
     public WebinCli(WebinCliParameters parameters) {
@@ -119,10 +119,10 @@ public class WebinCli {
 
         // initTimedConsoleLogger();
         initTimedFileLogger(parameters);
-        
     }
 
-    private static WebinCliParameters initParameters(String submissionAccount, String authToken, WebinCliCommand cmd) {
+    public static WebinCliParameters initParameters(
+        String submissionAccount, String authToken, WebinCliCommand cmd) {
         if (!cmd.inputDir.isDirectory())
             throw WebinCliException.userError(WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(cmd.inputDir.getPath()));
         if (!cmd.outputDir.isDirectory())
@@ -204,21 +204,21 @@ public class WebinCli {
             switch (ex.getErrorType()) {
                 case USER_ERROR:
                     throw WebinCliException.userError(
-                            ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+                        ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
 
                 case VALIDATION_ERROR:
                     throw WebinCliException.validationError(
-                            ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+                        ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
 
                 case SYSTEM_ERROR:
                     throw WebinCliException.systemError(
-                            ex, getSystemError(ex.getMessage(), executor.getValidationDir().toString()));
+                        ex, getSystemError(ex.getMessage(), executor.getValidationDir().toString()));
             }
         } catch (Exception ex) {
             StringWriter sw = new StringWriter();
             ex.printStackTrace(new PrintWriter(sw));
             throw WebinCliException.systemError(ex, getSystemError(
-                    null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir().toString()));
+                null == ex.getMessage() ? sw.toString() : ex.getMessage(), executor.getValidationDir().toString()));
         }
     }
 
@@ -241,15 +241,15 @@ public class WebinCli {
 
         try {
             SubmitService submitService = new SubmitService.Builder()
-                    .setSubmitDir(bundle.getSubmitDir().getPath())
-                    .setUserName(parameters.getWebinServiceUserName())
-                    .setPassword(parameters.getPassword())
-                    .setTest(parameters.isTest())
-                    .build();
+                .setSubmitDir(bundle.getSubmitDir().getPath())
+                .setUserName(parameters.getWebinServiceUserName())
+                .setPassword(parameters.getPassword())
+                .setTest(parameters.isTest())
+                .build();
 
             submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(),
-                    getVersionForSubmission(parameters.getWebinSubmissionTool()),
-                    bundle.getManifestMd5(), getManifestFileContent());
+                getVersionForSubmission(parameters.getWebinSubmissionTool()),
+                bundle.getManifestMd5(), getManifestFileContent());
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
@@ -259,13 +259,12 @@ public class WebinCli {
     String getManifestFileContent() {
         try {
             return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             throw WebinCliException.userError( "Exception thrown while reading manifest file", ioe.getMessage());
         }
     }
 
-    private static WebinCliCommand
-    parseParameters(String... args) {
+    private static WebinCliCommand parseCmd(String... args) {
         AnsiConsole.systemInstall();
         WebinCliCommand params = new WebinCliCommand();
         CommandLine commandLine = new CommandLine(params);
@@ -319,12 +318,12 @@ public class WebinCli {
                     printHelp();
                     return null;
                 }
-                } else {
+            } else {
                 log.error("Password must be provided using one of the following options: " +
-                        String.join(", "
-                                , WebinCliCommand.Options.password
-                                , WebinCliCommand.Options.passwordEnv
-                                , WebinCliCommand.Options.passwordFile));
+                    String.join(", "
+                        , WebinCliCommand.Options.password
+                        , WebinCliCommand.Options.passwordEnv
+                        , WebinCliCommand.Options.passwordFile));
                 printHelp();
                 return null;
             }
@@ -375,7 +374,7 @@ public class WebinCli {
 
     public static void printManifestHelp(WebinCliContext context, PrintStream out) {
         ManifestReader<?> manifestReader =
-                new ManifestReaderBuilder(context.getManifestReaderClass()).build();
+            new ManifestReaderBuilder(context.getManifestReaderClass()).build();
         out.println();
         out.println("Manifest fields for '" + context.name() + "' context:");
         out.println();
@@ -419,11 +418,11 @@ public class WebinCli {
             return 1;
         };
         manifestReader.getFields().stream()
-                .filter(field -> field.getRecommendedMaxCount() > 0)
-                .sorted(comparator)
-                .forEach(field ->
-                        printManifestFieldHelp(table, field)
-                );
+            .filter(field -> field.getRecommendedMaxCount() > 0)
+            .sorted(comparator)
+            .forEach(field ->
+                printManifestFieldHelp(table, field)
+            );
         table.addRule();
         table.setPadding(0);
         table.setTextAlignment(TextAlignment.LEFT);
@@ -453,7 +452,7 @@ public class WebinCli {
             for (ManifestFieldProcessor processor : field.getFieldProcessors()) {
                 if (processor instanceof CVFieldProcessor) {
                     value = ": <br/>* " + ((CVFieldProcessor) processor).getValues().stream()
-                            .collect(Collectors.joining("<br/>* "));
+                        .collect(Collectors.joining("<br/>* "));
                 }
             }
         }
@@ -466,7 +465,7 @@ public class WebinCli {
                 for (ManifestFieldProcessor processor : att.getFieldProcessors()) {
                     if (processor instanceof CVFieldProcessor) {
                         attHelpText.append(":<br/>  * " + ((CVFieldProcessor) processor).getValues().stream()
-                                .collect(Collectors.joining("<br/>  * ")));
+                            .collect(Collectors.joining("<br/>  * ")));
                     }
                 }
             });
@@ -478,15 +477,15 @@ public class WebinCli {
 
     private static void printManifestFileGroupHelp(ManifestReader<?> manifestReader, PrintStream out) {
         List<ManifestFieldDefinition> fields = manifestReader.getFields()
-                .stream()
-                .filter(field -> field.getType() == ManifestFieldType.FILE)
-                .collect(Collectors.toList());
+            .stream()
+            .filter(field -> field.getType() == ManifestFieldType.FILE)
+            .collect(Collectors.toList());
 
         List<ManifestFileGroup> groups =
-                manifestReader.getFileGroups()
-                        .stream()
-                        .sorted(Comparator.comparingInt(ManifestFileGroup::getFileCountsSize))
-                        .collect(Collectors.toList());
+            manifestReader.getFileGroups()
+                .stream()
+                .sorted(Comparator.comparingInt(ManifestFileGroup::getFileCountsSize))
+                .collect(Collectors.toList());
 
         AsciiTable table = new AsciiTable();
         AT_Renderer renderer = AT_Renderer.create();
@@ -495,7 +494,7 @@ public class WebinCli {
         int descriptionWidth = 30;
         cwc.add(descriptionWidth);
         fields.forEach(field ->
-                cwc.add((tableWidth - descriptionWidth - 2 - fields.size()) / fields.size()));
+            cwc.add((tableWidth - descriptionWidth - 2 - fields.size()) / fields.size()));
         renderer.setCWC(cwc);
         table.setRenderer(renderer);
         table.addRule();
@@ -510,7 +509,7 @@ public class WebinCli {
             row.clear();
             row.add(group.getDescription());
             fields.stream().forEach(field ->
-                    row.add(printManifestFileCountHelp(field, group)));
+                row.add(printManifestFileCountHelp(field, group)));
             table.addRow(row);
             table.addRule();
         });
@@ -578,21 +577,16 @@ public class WebinCli {
         return WebinCli.class.getPackage().getImplementationVersion();
     }
 
-    private static String checkLogin(WebinCliCommand parameters) {
+    public static String getSubmissionAccount(WebinCliCommand cmd) {
         // Return the Webin-N submission account returned by the login service.
         // This may be different from the username used to login as email address
         // or su-Webin- superuser can also be used as a username.
-       return new LoginService(
-                parameters.userName,
-                parameters.password,
-                parameters.test).login();
+        return new LoginService(cmd.userName, cmd.password, cmd.test).login();
     }
-    private static String getAuthToken(WebinCliCommand parameters) {
+
+    public static String getAuthToken(WebinCliCommand cmd) {
         // Return the Webin authentication token for the given user.
-        return new LoginService(
-                parameters.userName,
-                parameters.password,
-                parameters.test).getAuthToken();
+        return new LoginService(cmd.userName, cmd.password, cmd.test).getAuthToken();
     }
 
     private static void checkVersion(boolean test) {
@@ -602,22 +596,22 @@ public class WebinCli {
             return;
 
         Version version = new VersionService.Builder()
-                .setTest(test)
-                .build().getVersion(currentVersion);
+            .setTest(test)
+            .build().getVersion(currentVersion);
 
         log.info(WebinCliMessage.CLI_CURRENT_VERSION.format(currentVersion));
 
         if (!version.valid) {
             throw WebinCliException.userError(WebinCliMessage.CLI_UNSUPPORTED_VERSION.format(
-                    version.minVersion,
-                    version.latestVersion));
+                version.minVersion,
+                version.latestVersion));
         }
 
         if (version.expire) {
             log.info(WebinCliMessage.CLI_EXPIRYING_VERSION.format(
-                    new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate),
-                    version.nextMinVersion,
-                    version.latestVersion));
+                new SimpleDateFormat("dd MMM yyyy").format(version.nextMinVersionDate),
+                version.nextMinVersion,
+                version.latestVersion));
         } else if (version.update) {
             log.info(WebinCliMessage.CLI_NEW_VERSION.format(version.latestVersion));
         }
@@ -655,17 +649,17 @@ public class WebinCli {
     public static String
     getSafeOutputDir(String dir) {
         return dir
-                .replaceAll("[^a-zA-Z0-9-_\\.]", "_")
-                .replaceAll("_+", "_")
-                .replaceAll("^_+(?=[^_])", "")
-                .replaceAll("(?<=[^_])_+$", "");
+            .replaceAll("[^a-zA-Z0-9-_\\.]", "_")
+            .replaceAll("_+", "_")
+            .replaceAll("^_+(?=[^_])", "")
+            .replaceAll("(?<=[^_])_+$", "");
     }
 
     public static String[]
     getSafeOutputDirs(String... dirs) {
         return Arrays.stream(dirs)
-                .map(dir -> getSafeOutputDir(dir))
-                .toArray(String[]::new);
+            .map(dir -> getSafeOutputDir(dir))
+            .toArray(String[]::new);
     }
 
     private String getUserOrSystemError(String message, String validationDir, String errorType) {

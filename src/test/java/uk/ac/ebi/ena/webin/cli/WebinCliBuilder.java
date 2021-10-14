@@ -10,14 +10,8 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.nio.file.Path;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
 
 public class WebinCliBuilder {
   private final WebinCliContext context;
@@ -25,14 +19,15 @@ public class WebinCliBuilder {
   private boolean validate = true;
   private boolean submit = true;
   private boolean ascp = false;
-  private String AUTH_TOKEN="";
-  private final static String AUTH_JSON="{\"authRealms\":[\"ENA\"],\"password\":\""+WebinCliTestUtils.getTestWebinPassword()+"\",\"username\":\""+WebinCliTestUtils.getTestWebinUsername()+"\"}";
-  private final static String TEST_AUTH_URL="https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token";
+  private boolean ignoreErrors = false;
 
   public static final WebinCliBuilder READS = new WebinCliBuilder(WebinCliContext.reads);
   public static final WebinCliBuilder GENOME = new WebinCliBuilder(WebinCliContext.genome);
   public static final WebinCliBuilder TRANSCRIPTOME = new WebinCliBuilder(WebinCliContext.transcriptome);
   public static final WebinCliBuilder SEQUENCE = new WebinCliBuilder(WebinCliContext.sequence);
+
+  private static String submissionAccount;
+  private static String authToken;
 
   public WebinCliBuilder(WebinCliContext context) {
     this.context = context;
@@ -53,6 +48,11 @@ public class WebinCliBuilder {
     return this;
   }
 
+  public WebinCliBuilder ignoreErrors(boolean ignoreErrors) {
+    this.ignoreErrors = ignoreErrors;
+    return this;
+  }
+
   private WebinCliCommand cmd(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = new WebinCliCommand();
     cmd.context = context;
@@ -68,54 +68,20 @@ public class WebinCliBuilder {
     return cmd;
   }
 
-  private WebinCliParameters params(Path inputDir, ManifestBuilder manifestBuilder) {
-    WebinCliParameters params = new WebinCliParameters();
-    params.setContext(context);
-    params.setInputDir(inputDir.toFile());
-    params.setOutputDir(outputDir.toFile());
-    params.setManifestFile(manifestBuilder.build(inputDir));
-    params.setUsername(WebinCliTestUtils.getTestWebinUsername());
-    params.setPassword(WebinCliTestUtils.getTestWebinPassword());
-    params.setSubmissionAccount(WebinCliTestUtils.getTestWebinUsername());
-    params.setWebinAuthToken(getAuthToken());
-    params.setTest(true);
-    params.setValidate(validate);
-    params.setSubmit(submit);
-    params.setAscp(ascp);
-
-    return params;
-  }
-
   public WebinCli build(File inputDir, ManifestBuilder manifestBuilder) {
     return build(inputDir.toPath(), manifestBuilder);
   }
 
   public WebinCli build(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
-    return new WebinCli(WebinCliTestUtils.getTestWebinUsername(),getAuthToken(), cmd);
-  }
-
-  public WebinCli build(File inputDir, ManifestBuilder manifestBuilder, boolean ignoreErrors) {
-    WebinCliParameters params = params(inputDir.toPath(), manifestBuilder);
-    params.setIgnoreErrors(ignoreErrors);
-
-    return new WebinCli(params);
-  }
-
-  private String getAuthToken(){
-
-    if(StringUtils.isNotEmpty(AUTH_TOKEN)){
-      return AUTH_TOKEN;
+    if (submissionAccount == null) {
+      submissionAccount = WebinCli.getSubmissionAccount(cmd);
     }
-    RestTemplate restTemplate=new RestTemplate();
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    HttpEntity<String> request =
-            new HttpEntity<String>(AUTH_JSON, headers);
-    ResponseEntity<String> response =
-            restTemplate.postForEntity(TEST_AUTH_URL,request, String.class);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    AUTH_TOKEN = response.getBody();
-    return AUTH_TOKEN;
+    if (authToken == null) {
+      authToken = WebinCli.getAuthToken(cmd);
+    }
+    WebinCliParameters parameters = WebinCli.initParameters(submissionAccount, authToken, cmd);
+    parameters.setIgnoreErrors(ignoreErrors);
+    return new WebinCli(parameters);
   }
 }
