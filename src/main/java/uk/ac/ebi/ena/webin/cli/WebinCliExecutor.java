@@ -141,18 +141,23 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             if (manifest.isIgnoreErrors()) {
                 return;
             }
+            boolean ratelimit;
+            try {
+                RatelimitService ratelimitService = new RatelimitService.Builder()
+                        .setCredentials(getParameters().getWebinServiceUserName(),
+                                getParameters().getPassword())
+                        .setTest(getParameters().isTest())
+                        .build();
 
-            RatelimitService ratelimitService = new RatelimitService.Builder()
-                    .setCredentials(getParameters().getWebinServiceUserName(),
-                            getParameters().getPassword())
-                    .setTest(getParameters().isTest())
-                    .build();
+                String submissionAccountId = getParameters().getWebinServiceUserName();
+                String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
+                String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleIdId();
 
-            String submissionAccountId = getParameters().getWebinServiceUserName();
-            String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
-            String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleIdId();
-
-            if(ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId)) {
+                ratelimit = ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId);
+            } catch (RuntimeException ex) {
+                throw WebinCliException.systemError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
+            }
+            if (ratelimit) {
                 throw WebinCliException.userError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
             }
         }
