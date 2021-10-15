@@ -138,8 +138,10 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     private void checkGenomeSubmissionRatelimit() {
         if (getContext().equals(WebinCliContext.genome)) {
             M manifest = getManifestReader().getManifest();
-            boolean ratelimit = false;
-
+            if (manifest.isIgnoreErrors()) {
+                return;
+            }
+            boolean ratelimit;
             try {
                 RatelimitService ratelimitService = new RatelimitService.Builder()
                         .setCredentials(getParameters().getWebinServiceUserName(),
@@ -147,11 +149,11 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
                         .setTest(getParameters().isTest())
                         .build();
 
-                String subAccId = getParameters().getWebinServiceUserName();
+                String submissionAccountId = getParameters().getWebinServiceUserName();
                 String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
                 String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleIdId();
 
-                ratelimit = ratelimitService.ratelimit(getContext().name(), subAccId, studyId, sampleId);
+                ratelimit = ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId);
             } catch (RuntimeException ex) {
                 throw WebinCliException.systemError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
             }
