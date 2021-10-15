@@ -203,14 +203,12 @@ public class WebinCli {
         } catch (WebinCliException ex) {
             switch (ex.getErrorType()) {
                 case USER_ERROR:
-                    throw WebinCliException.userError(ex, StringUtils.isBlank(ex.getMessage())
-                            ? getUserErrorEx(executor.getValidationDir().toString())
-                            : getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+                    throw WebinCliException.userError(
+                            ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
 
                 case VALIDATION_ERROR:
-                    throw WebinCliException.validationError(ex, StringUtils.isBlank(ex.getMessage())
-                            ? getUserErrorEx(executor.getValidationDir().toString())
-                            : getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+                    throw WebinCliException.validationError(
+                            ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
 
                 case SYSTEM_ERROR:
                     throw WebinCliException.systemError(
@@ -670,27 +668,27 @@ public class WebinCli {
                 .toArray(String[]::new);
     }
 
-    private String getUserError(String message, String validationDir) {
-        if (getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
-            return WebinCliMessage.CLI_VALIDATE_USER_ERROR.format(message, validationDir);
-        } else {
-            return WebinCliMessage.CLI_VALIDATE_USER_ERROR_NO_REPORT_FILES.format(message);
+    private String getUserOrSystemError(String message, String validationDir, String errorType) {
+        String str = WebinCliMessage.CLI_VALIDATE_USER_OR_SYSTEM_ERROR.format(errorType);
+
+        if (!StringUtils.isBlank(message)) {
+            str += " : " + message;
         }
+
+        str += ".";
+
+        if ( getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
+            str += " Please check validation reports for further information: " + validationDir;
+        }
+
+        return str;
     }
 
-    private String getUserErrorEx(String validationDir) {
-        if (getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
-            return WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX.format(validationDir);
-        } else {
-            return WebinCliMessage.CLI_VALIDATE_USER_ERROR_EX_NO_REPORT_FILES.text();
-        }
+    private String getUserError(String message, String validationDir) {
+        return getUserOrSystemError(message, validationDir, "user");
     }
 
     private String getSystemError(String message, String validationDir) {
-        if (getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
-            return WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR.format(message, validationDir);
-        } else {
-            return WebinCliMessage.CLI_VALIDATE_SYSTEM_ERROR_NO_REPORT_FILES.format(message);
-        }
+        return getUserOrSystemError(message, validationDir, "system");
     }
 }
