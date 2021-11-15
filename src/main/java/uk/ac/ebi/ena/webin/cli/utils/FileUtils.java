@@ -83,6 +83,7 @@ FileUtils
 			for (File file : files) {
 				if (file.isDirectory()) {
 					emptyDirectory(file);
+					file.delete();
 				} else {
 					file.delete();
 				}
