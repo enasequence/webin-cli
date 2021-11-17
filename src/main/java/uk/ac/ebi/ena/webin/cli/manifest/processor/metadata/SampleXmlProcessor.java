@@ -10,6 +10,8 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
+import org.springframework.web.client.HttpStatusCodeException;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
@@ -48,13 +50,40 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
               .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
               .setTest(parameters.isTest())
               .build();
-      Sample source = sampleXmlService.getSample(value);
+
+      Sample source = null;
+      try {
+        source = sampleXmlService.getSample(value);
+      } catch (HttpStatusCodeException e) {
+        handleHttpError(e, value);
+      }
+
       callback.notify(source);
 
+    } catch (WebinCliException e) {
+      if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
+        result.add(ValidationMessage.error(e));
+      } else {
+        result.add(
+            ValidationMessage.error(
+                WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
+      }
     } catch (ServiceException e) {
       result.add(
           ValidationMessage.error(
               WebinCliMessage.SAMPLE_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
+    }
+  }
+
+  private void handleHttpError(HttpStatusCodeException ex, String sampleId) {
+    switch (ex.getStatusCode()) {
+      case UNAUTHORIZED:
+      case FORBIDDEN:
+        throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+      case NOT_FOUND:
+        throw WebinCliException.validationError(WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
+      default:
+        throw WebinCliException.systemError(WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleId));
     }
   }
 }

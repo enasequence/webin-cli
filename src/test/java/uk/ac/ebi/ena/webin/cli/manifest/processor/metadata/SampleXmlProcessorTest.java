@@ -17,33 +17,40 @@ import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.createFieldValue;
 
-public class
-SampleProcessorTest
-{
+public class SampleXmlProcessorTest {
+
     private final WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
 
-    @Test public void 
-    testCorrect()
-    {
-        SampleProcessor processor = new SampleProcessor( parameters,
-            (Sample sample) -> Assert.assertEquals( "SAMEA749881", sample.getBioSampleId() ) );
+    private static final String STRAIN_NAME = "SK1";
+
+    @Test
+    public void testCorrect() {
+        SampleXmlProcessor processor = new SampleXmlProcessor( parameters, sample -> {
+            Assert.assertNotNull(sample);
+
+            boolean assertStrain = false;
+            for (Attribute attribute : sample.getAttributes()) {
+                if (attribute.getName().equals("strain") && attribute.getValue().equals(STRAIN_NAME)) {
+                    assertStrain = true;
+                }
+            }
+            assertThat(assertStrain);
+        });
         
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "ERS000002" );
         ValidationResult result = new ValidationResult();
         processor.process( result, fieldValue );
         Assert.assertTrue(result.isValid() );
-        Assert.assertEquals( "SAMEA749881", fieldValue.getValue() );
     }
-
     
-    @Test public void 
-    testIncorrect()
-    {
-        SampleProcessor processor = new SampleProcessor( parameters, Assert::assertNull );
+    @Test
+    public void testIncorrect() {
+        SampleXmlProcessor processor = new SampleXmlProcessor( parameters, Assert::assertNull );
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "SAMPLE", "SRP000392" );
         ValidationResult result = new ValidationResult();
         processor.process( result, fieldValue );
