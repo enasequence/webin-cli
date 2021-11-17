@@ -10,16 +10,16 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
-
-import java.io.File;
-import java.nio.file.Path;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import java.io.File;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 public class WebinCliSubmissionTest {
 
@@ -276,5 +276,95 @@ public class WebinCliSubmissionTest {
         WebinCli cli = assertWebinCliException(WebinCliBuilder.TRANSCRIPTOME, GENOME_RESOURCE_DIR, manifest);
         new ReportTester(cli).textInFileReport("invalid.flatfile.gz",
                 "ERROR: Invalid ID line format [ line: 1]");
+    }
+
+    @Test
+    public void testSampleLookupErrorFormat() {
+        String sample = "INVALID";
+
+        ManifestBuilder manifest = new ManifestBuilder()
+            .name()
+            .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
+            .field("STUDY", "ERP011959")
+            .field("SAMPLE", sample)
+            .field("COVERAGE", "1.0")
+            .field("PROGRAM", "prog-123")
+            .field("PLATFORM", "ILLUMINA")
+            .file("FASTA", "valid-covid19.fasta.gz")
+            .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz");
+
+        WebinCli cli = WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, manifest);
+
+        assertThatThrownBy(cli::execute).isInstanceOf(WebinCliException.class)
+            .hasFieldOrPropertyWithValue("errorType", WebinCliException.ErrorType.USER_ERROR);
+
+        new ReportTester(cli).textInSubmissionReport("Unknown sample " + sample +
+            " or the sample cannot be referenced by your submission account.");
+    }
+
+    @Test
+    public void testStudyLookupErrorFormat() {
+        String study = "INVALID";
+
+        ManifestBuilder manifest = new ManifestBuilder()
+            .name()
+            .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
+            .field("STUDY", study)
+            .field("SAMPLE", "ERS829308")
+            .field("COVERAGE", "1.0")
+            .field("PROGRAM", "prog-123")
+            .field("PLATFORM", "ILLUMINA")
+            .file("FASTA", "valid-covid19.fasta.gz")
+            .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz");
+
+        WebinCli cli = WebinCliBuilder.GENOME.build(GENOME_RESOURCE_DIR, manifest);
+
+        assertThatThrownBy(cli::execute).isInstanceOf(WebinCliException.class)
+            .hasFieldOrPropertyWithValue("errorType", WebinCliException.ErrorType.USER_ERROR);
+
+        new ReportTester(cli).textInSubmissionReport("Unknown study " + study +
+            " or the study cannot be referenced by your submission account.");
+    }
+
+    @Test
+    public void testRunLookupErrorFormat() {
+        String run = "INVALID";
+
+        ManifestBuilder manifest = new ManifestBuilder()
+            .name()
+            .field("STUDY", "PRJEB20083")
+            .field("RUN_REF", run)
+            .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+            .field("DESCRIPTION", "Some sequence assembly description")
+            .file("TAB", "valid/ERT000003-EST.tsv.gz");
+
+        WebinCli cli = WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest);
+
+        assertThatThrownBy(cli::execute).isInstanceOf(WebinCliException.class)
+            .hasFieldOrPropertyWithValue("errorType", WebinCliException.ErrorType.USER_ERROR);
+
+        new ReportTester(cli).textInSubmissionReport("Failed to lookup run \"" + run +
+            "\". Unknown run INVALID or the run cannot be referenced by your submission account.");
+    }
+
+    @Test
+    public void testAnalysisLookupErrorFormat() {
+        String analysis = "INVALID";
+
+        ManifestBuilder manifest = new ManifestBuilder()
+            .name()
+            .field("STUDY", "PRJEB20083")
+            .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+            .field("ANALYSIS_REF", analysis)
+            .field("DESCRIPTION", "Some sequence assembly description")
+            .file("TAB", "valid/ERT000003-EST.tsv.gz");
+
+        WebinCli cli = WebinCliBuilder.SEQUENCE.build(SEQUENCE_RESOURCE_DIR, manifest);
+
+        assertThatThrownBy(cli::execute).isInstanceOf(WebinCliException.class)
+            .hasFieldOrPropertyWithValue("errorType", WebinCliException.ErrorType.USER_ERROR);
+
+        new ReportTester(cli).textInSubmissionReport("Failed to lookup analysis \"" + analysis +
+            "\". Unknown analysis INVALID or the analysis cannot be referenced by your submission account.");
     }
 }
