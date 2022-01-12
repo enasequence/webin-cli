@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ch.qos.logback.core.Appender;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
@@ -166,12 +167,23 @@ public class WebinCli {
         String logFile = new File(createOutputDir(parameters.getOutputDir(), "."), LOG_FILE_NAME).getAbsolutePath();
         fileAppender.setFile(logFile);
         fileAppender.setAppend(false);
-        initTimedAppender("FILE", fileAppender);
+        initTimedAppender("WEBIN_CLI_FILE", fileAppender);
 
         log.info("Creating report file: " + logFile);
 
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+            Logger.ROOT_LOGGER_NAME);
         logger.addAppender(fileAppender);
+    }
+
+    private void cleanupTimedFileLogger() {
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+            Logger.ROOT_LOGGER_NAME);
+
+        Appender appender = logger.getAppender("WEBIN_CLI_FILE");
+        if (appender != null) {
+            appender.stop();
+        }
     }
 
     public void
@@ -186,6 +198,8 @@ public class WebinCli {
             if (parameters.isSubmit()) {
                 submit(executor);
             }
+
+            cleanupTimedFileLogger();
         } catch (WebinCliException ex) {
             throw ex;
         } catch (Exception ex) {
