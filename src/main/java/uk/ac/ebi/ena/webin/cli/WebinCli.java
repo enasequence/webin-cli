@@ -23,7 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import ch.qos.logback.core.Appender;
@@ -71,6 +73,9 @@ public class WebinCli {
 
     private final static String LOG_FILE_NAME = "webin-cli.report";
     private final static Logger log = LoggerFactory.getLogger(WebinCli.class);
+
+    /** Unique name for the appender so that it's cleanup in a multi-instance setup can be done properly. */
+    private final String TIMED_APPENDER_NAME = "WEBIN_CLI_FILE_" + UUID.randomUUID().toString();
 
     public static void
     main(String... args) {
@@ -149,25 +154,42 @@ public class WebinCli {
     }
 
     private void
-    initTimedAppender(String name, OutputStreamAppender<ILoggingEvent> appender) {
+    initTimedAppender(OutputStreamAppender<ILoggingEvent> appender) {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setContext(loggerContext);
         encoder.setPattern("%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n");
         encoder.start();
-        appender.setName(name);
+        appender.setName(TIMED_APPENDER_NAME);
         appender.setContext(loggerContext);
         appender.setEncoder(encoder);
-        appender.start();
+
+        int retryCount = 3;
+        while (retryCount-- != 0) {
+            try {
+                //In multi-threaded usage, this call fails with a ConcurrentModificationException sometimes.
+                //This is caused by parallel modifications to logback's internal data structures.
+                //Even though we have synchronized execution of this method, this exception continues to get thrown
+                //randomly as seen during unit testing. Retrying in such case seems to be an effective workaround.
+                appender.start();
+
+                retryCount = 0;
+            } catch (ConcurrentModificationException ex) {
+                log.warn("Appender start failed. Appender : {}, RetryLeft : {}",
+                    TIMED_APPENDER_NAME, retryCount);
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) { }
+            }
+        }
     }
 
-    private void
-    initTimedFileLogger(WebinCliParameters parameters) {
+    private synchronized void initTimedFileLogger(WebinCliParameters parameters) {
         FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
         String logFile = new File(createOutputDir(parameters.getOutputDir(), "."), LOG_FILE_NAME).getAbsolutePath();
         fileAppender.setFile(logFile);
         fileAppender.setAppend(false);
-        initTimedAppender("WEBIN_CLI_FILE", fileAppender);
+        initTimedAppender(fileAppender);
 
         log.info("Creating report file: " + logFile);
 
@@ -176,13 +198,27 @@ public class WebinCli {
         logger.addAppender(fileAppender);
     }
 
-    private void cleanupTimedFileLogger() {
+    private synchronized void cleanupTimedFileLogger() {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
             Logger.ROOT_LOGGER_NAME);
 
-        Appender appender = logger.getAppender("WEBIN_CLI_FILE");
+        Appender appender = logger.getAppender(TIMED_APPENDER_NAME);
         if (appender != null) {
-            appender.stop();
+            int retryCount = 3;
+            while (retryCount-- != 0) {
+                try {
+                    //See comments at the line the appender is being started.
+                    appender.stop();
+
+                    retryCount = 0;
+                } catch (ConcurrentModificationException ex) {
+                    log.warn("Appender stop failed. Appender : {}, RetryLeft : {}",
+                        TIMED_APPENDER_NAME, retryCount);
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) { }
+                }
+            }
         }
     }
 
@@ -198,12 +234,12 @@ public class WebinCli {
             if (parameters.isSubmit()) {
                 submit(executor);
             }
-
-            cleanupTimedFileLogger();
         } catch (WebinCliException ex) {
             throw ex;
         } catch (Exception ex) {
             throw WebinCliException.systemError(ex);
+        } finally {
+            cleanupTimedFileLogger();
         }
     }
 

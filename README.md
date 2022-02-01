@@ -68,3 +68,13 @@ docker run --rm -v <local data directory>:/data -e JAVA_TOOL_OPTIONS="-Xms2G" en
 Testing requires the following environmental variables to be set:
 - webin-cli-username or webinCliUsername
 - webin-cli-password or webinCliPassword
+
+## Library Jar Publishing
+
+To publish webin-cli as a library (slim/regular jar) :
+
+```
+gradlew jar publish -x bootJar
+```
+
+**Note** : '-x bootJar' is important as it excludes execution of Spring's Boot jar task which creates a fat jar instead.
