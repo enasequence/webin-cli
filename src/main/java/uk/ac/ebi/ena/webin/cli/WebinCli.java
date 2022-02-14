@@ -10,41 +10,24 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import ch.qos.logback.core.Appender;
-import org.apache.commons.lang3.StringUtils;
-import org.fusesource.jansi.AnsiConsole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.sift.MDCBasedDiscriminator;
+import ch.qos.logback.classic.sift.SiftingAppender;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.Context;
 import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.OutputStreamAppender;
+import ch.qos.logback.core.util.Duration;
 import de.vandermeer.asciitable.AT_Renderer;
 import de.vandermeer.asciitable.AsciiTable;
 import de.vandermeer.asciitable.CWC_FixedWidth;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
+import org.apache.commons.lang3.StringUtils;
+import org.fusesource.jansi.AnsiConsole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import picocli.CommandLine;
-
 import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
@@ -62,20 +45,43 @@ import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
 public class WebinCli {
     public final static int SUCCESS = 0;
     public final static int SYSTEM_ERROR = 1;
     public final static int USER_ERROR = 2;
     public final static int VALIDATION_ERROR = 3;
 
-    private final WebinCliParameters parameters;
-    private final WebinCliExecutor<?, ?> executor;
-
     private final static String LOG_FILE_NAME = "webin-cli.report";
     private final static Logger log = LoggerFactory.getLogger(WebinCli.class);
 
-    /** Unique name for the appender so that it's cleanup in a multi-instance setup can be done properly. */
-    private final String TIMED_APPENDER_NAME = "WEBIN_CLI_FILE_" + UUID.randomUUID().toString();
+    private final static String SIFTING_APPENDER_NAME = "DEFAULT_SIFTING_APPENDER";
+    private final static String SIFTING_APPENDER_DISCRIMINATOR_KEY = "uniqueKey";
+    private final static String SIFTING_APPENDER_DISCRIMINATOR_DEFAULT_VALUE = "unknown";
+    private final static AtomicBoolean SIFTING_APPENDER_CREATED = new AtomicBoolean(false);
+    private final static String MDC_LOG_FILE_KEY = "logFile";
+
+    private final WebinCliParameters parameters;
+    private final WebinCliExecutor<?, ?> executor;
+
+    private final String fileAppenderName = UUID.randomUUID().toString();
 
     public static void
     main(String... args) {
@@ -126,7 +132,7 @@ public class WebinCli {
         this.executor = parameters.getContext().createExecutor(parameters);
 
         // initTimedConsoleLogger();
-        initTimedFileLogger(parameters);
+        initFileLogging();
     }
 
     public static WebinCliParameters initParameters(
@@ -153,72 +159,81 @@ public class WebinCli {
         return parameters;
     }
 
-    private void
-    initTimedAppender(OutputStreamAppender<ILoggingEvent> appender) {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-        encoder.setContext(loggerContext);
-        encoder.setPattern("%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n");
-        encoder.start();
-        appender.setName(TIMED_APPENDER_NAME);
-        appender.setContext(loggerContext);
-        appender.setEncoder(encoder);
+    private void initFileLogging() {
+        if (!SIFTING_APPENDER_CREATED.get()) {
+            synchronized (WebinCli.class) {
+                if (!SIFTING_APPENDER_CREATED.get()) {
+                    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-        int retryCount = 3;
-        while (retryCount-- != 0) {
-            try {
-                //In multi-threaded usage, this call fails with a ConcurrentModificationException sometimes.
-                //This is caused by parallel modifications to logback's internal data structures.
-                //Even though we have synchronized execution of this method, this exception continues to get thrown
-                //randomly as seen during unit testing. Retrying in such case seems to be an effective workaround.
-                appender.start();
+                    MDCBasedDiscriminator discriminator = new MDCBasedDiscriminator();
+                    discriminator.setContext(loggerContext);
+                    discriminator.setKey(SIFTING_APPENDER_DISCRIMINATOR_KEY);
+                    discriminator.setDefaultValue(SIFTING_APPENDER_DISCRIMINATOR_DEFAULT_VALUE);
+                    discriminator.start();
 
-                retryCount = 0;
-            } catch (ConcurrentModificationException ex) {
-                log.warn("Appender start failed. Appender : {}, RetryLeft : {}",
-                    TIMED_APPENDER_NAME, retryCount);
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) { }
-            }
-        }
-    }
+                    SiftingAppender siftingAppender = new SiftingAppender();
+                    siftingAppender.setAppenderFactory(
+                        (context,discriminatorValue) -> createFileAppender(context, discriminatorValue));
+                    siftingAppender.setDiscriminator(discriminator);
+                    siftingAppender.setTimeout(Duration.buildBySeconds(300));
+                    siftingAppender.setContext(loggerContext);
+                    siftingAppender.setName(SIFTING_APPENDER_NAME);
+                    siftingAppender.start();
 
-    private synchronized void initTimedFileLogger(WebinCliParameters parameters) {
-        FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
-        String logFile = new File(createOutputDir(parameters.getOutputDir(), "."), LOG_FILE_NAME).getAbsolutePath();
-        fileAppender.setFile(logFile);
-        fileAppender.setAppend(false);
-        initTimedAppender(fileAppender);
+                    ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                        Logger.ROOT_LOGGER_NAME);
+                    logger.addAppender(siftingAppender);
 
-        log.info("Creating report file: " + logFile);
-
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
-            Logger.ROOT_LOGGER_NAME);
-        logger.addAppender(fileAppender);
-    }
-
-    private synchronized void cleanupTimedFileLogger() {
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
-            Logger.ROOT_LOGGER_NAME);
-
-        Appender appender = logger.getAppender(TIMED_APPENDER_NAME);
-        if (appender != null) {
-            int retryCount = 3;
-            while (retryCount-- != 0) {
-                try {
-                    //See comments at the line the appender is being started.
-                    appender.stop();
-
-                    retryCount = 0;
-                } catch (ConcurrentModificationException ex) {
-                    log.warn("Appender stop failed. Appender : {}, RetryLeft : {}",
-                        TIMED_APPENDER_NAME, retryCount);
-                    try {
-                        Thread.sleep(250);
-                    } catch (InterruptedException e) { }
+                    SIFTING_APPENDER_CREATED.set(true);
                 }
             }
+        }
+
+        String logFile = new File(createOutputDir(parameters.getOutputDir(), "."), LOG_FILE_NAME).getAbsolutePath();
+
+        MDC.put(SIFTING_APPENDER_DISCRIMINATOR_KEY, fileAppenderName);
+        MDC.put(MDC_LOG_FILE_KEY, logFile);
+    }
+
+    private static Appender createFileAppender(Context context, String discriminator) {
+        if (discriminator.equals(SIFTING_APPENDER_DISCRIMINATOR_DEFAULT_VALUE)) {
+            return null;
+        }
+
+        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+        encoder.setContext(context);
+        encoder.setPattern("%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n");
+        encoder.start();
+
+        String filePath = MDC.get(MDC_LOG_FILE_KEY);
+
+        FileAppender fileAppender = new FileAppender<>();
+        fileAppender.setContext(context);
+        fileAppender.setEncoder(encoder);
+        fileAppender.setFile(filePath);
+        fileAppender.setAppend(false);
+        fileAppender.setName(discriminator);
+        fileAppender.start();
+
+        log.info("Creating report file: " + filePath);
+
+        return fileAppender;
+    }
+
+    private void cleanupFileAppender() {
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+            Logger.ROOT_LOGGER_NAME);
+
+        /**
+         * Although, sifting appender automatically removes the appender eventually after the timeout,
+         * this needs to be done now so that the files created by this instance can be deleted immediately
+         * after the executing finishes.
+         */
+        SiftingAppender siftingAppender = (SiftingAppender) logger.getAppender(SIFTING_APPENDER_NAME);
+        FileAppender fileAppender = (FileAppender) siftingAppender.getAppenderTracker()
+            .getOrCreate(fileAppenderName, System.currentTimeMillis());
+        if(fileAppender != null) {
+            fileAppender.stop();
         }
     }
 
@@ -239,7 +254,7 @@ public class WebinCli {
         } catch (Exception ex) {
             throw WebinCliException.systemError(ex);
         } finally {
-            cleanupTimedFileLogger();
+            cleanupFileAppender();
         }
     }
 
