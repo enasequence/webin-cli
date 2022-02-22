@@ -222,6 +222,8 @@ public class WebinCli {
     }
 
     private void cleanupFileAppender() {
+        //MDC should be cleared before the appender is looked up below to avoid getting the file appender created
+        //in case it was not created earlier.
         MDC.remove(SIFTING_APPENDER_DISCRIMINATOR_KEY);
         MDC.remove(MDC_LOG_FILE_KEY);
 
@@ -234,10 +236,12 @@ public class WebinCli {
          * after the executing finishes.
          */
         SiftingAppender siftingAppender = (SiftingAppender) logger.getAppender(SIFTING_APPENDER_NAME);
-        FileAppender fileAppender = (FileAppender) siftingAppender.getAppenderTracker()
+
+        Appender appender = siftingAppender.getAppenderTracker()
             .getOrCreate(fileAppenderName, System.currentTimeMillis());
-        if(fileAppender != null) {
-            fileAppender.stop();
+
+        if (appender != null && appender instanceof FileAppender) {
+            appender.stop();
         }
     }
 
