@@ -81,7 +81,7 @@ public class WebinCli {
     private final WebinCliParameters parameters;
     private final WebinCliExecutor<?, ?> executor;
 
-    private final String fileAppenderName = UUID.randomUUID().toString();
+    private final String fileAppenderName = "FILE_APPENDER_" + UUID.randomUUID().toString();
 
     public static void
     main(String... args) {
@@ -221,12 +221,15 @@ public class WebinCli {
     }
 
     private void cleanupFileAppender() {
+        MDC.remove(SIFTING_APPENDER_DISCRIMINATOR_KEY);
+        MDC.remove(MDC_LOG_FILE_KEY);
+
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
             Logger.ROOT_LOGGER_NAME);
 
         /**
          * Although, sifting appender automatically removes the appender eventually after the timeout,
-         * this needs to be done now so that the files created by this instance can be deleted immediately
+         * this needs to be done now so that the files created by this instance can be deleted right
          * after the executing finishes.
          */
         SiftingAppender siftingAppender = (SiftingAppender) logger.getAppender(SIFTING_APPENDER_NAME);
