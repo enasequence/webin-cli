@@ -196,7 +196,10 @@ public class WebinCli {
     }
 
     private static Appender createFileAppender(Context context, String discriminator) {
-        if (discriminator.equals(SIFTING_APPENDER_DISCRIMINATOR_DEFAULT_VALUE)) {
+        String filePath;
+
+        if (discriminator.equals(SIFTING_APPENDER_DISCRIMINATOR_DEFAULT_VALUE)
+            || (filePath = MDC.get(MDC_LOG_FILE_KEY)) == null) {
             return null;
         }
 
@@ -204,8 +207,6 @@ public class WebinCli {
         encoder.setContext(context);
         encoder.setPattern("%d{\"yyyy-MM-dd'T'HH:mm:ss\"} %-5level: %msg%n");
         encoder.start();
-
-        String filePath = MDC.get(MDC_LOG_FILE_KEY);
 
         FileAppender fileAppender = new FileAppender<>();
         fileAppender.setContext(context);
