@@ -11,7 +11,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '4.3.0.3'
+version = '4.4.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
