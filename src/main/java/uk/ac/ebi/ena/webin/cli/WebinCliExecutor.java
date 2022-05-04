@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.service.RatelimitService;
+import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -141,7 +142,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             if (manifest.isIgnoreErrors()) {
                 return;
             }
-            boolean ratelimit;
+            RateLimitResult ratelimit;
             try {
                 RatelimitService ratelimitService = new RatelimitService.Builder()
                         .setCredentials(getParameters().getWebinServiceUserName(),
@@ -155,10 +156,10 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
                 ratelimit = ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId);
             } catch (RuntimeException ex) {
-                throw WebinCliException.systemError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
+                throw WebinCliException.systemError(ex, WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
             }
-            if (ratelimit) {
-                throw WebinCliException.userError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR.text());
+            if (ratelimit.isRateLimit()) {
+                throw WebinCliException.userError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR_WITH_ANALYSIS_ID.format(ratelimit.getLastSubmittedAnalysisId()));
             }
         }
     }
