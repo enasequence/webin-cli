@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
+import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 
 public class RatelimitService extends WebinService {
@@ -48,17 +49,18 @@ public class RatelimitService extends WebinService {
         }
     }
 
-    public boolean ratelimit(String context, String submissionAccountId, String studyId, String sampleId) {
+    public RateLimitResult ratelimit(String context, String submissionAccountId, String studyId, String sampleId) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text()));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(getUserName(), getPassword()).build();
-        String url = getWebinRestUri("cli/submission/ratelimit/", getTest());
-        ResponseEntity<String> response = restTemplate.exchange(
+        String url = getWebinRestUri("cli/submission/v2/ratelimit/", getTest());
+        ResponseEntity<RateLimitResult> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 new HttpEntity<>(new RatelimitService.RatelimitServiceRequest(context, submissionAccountId, studyId, sampleId), headers),
-                String.class);
-        return "true".equals(response.getBody());
+            RateLimitResult.class);
+
+        return response.getBody();
     }
 }

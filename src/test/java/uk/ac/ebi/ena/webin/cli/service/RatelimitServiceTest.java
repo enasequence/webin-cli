@@ -27,6 +27,7 @@ RatelimitServiceTest {
                 .setTest(true)
                 .build()
                 .ratelimit("GENOME", "Webin-1234", "PRJEB1234", "SAMP1234")
+                .isRateLimited()
         ).isFalse();
     }
 }

@@ -219,7 +219,7 @@ public class GenomeValidationTest {
     assertThatThrownBy(executor::validateSubmission)
         .isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).textInSubmissionReport("agp file validation failed");
+    new ReportTester(executor).textInSubmissionReport("Invalid number of columns");
   }
 
   @Test
