@@ -470,6 +470,7 @@ public class WebinCliTest {
                 "│                    │           │* WXS                                        │\n" +
                 "│                    │           │* RNA-Seq                                    │\n" +
                 "│                    │           │* ssRNA-seq                                  │\n" +
+                "│                    │           │* snRNA-seq                                  │\n" +
                 "│                    │           │* miRNA-Seq                                  │\n" +
                 "│                    │           │* ncRNA-Seq                                  │\n" +
                 "│                    │           │* FL-cDNA                                    │\n" +
