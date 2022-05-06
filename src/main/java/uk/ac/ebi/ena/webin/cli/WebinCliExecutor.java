@@ -55,7 +55,6 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
     private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
 
-
     public WebinCliExecutor(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M, R> xmlWriter, Validator<M,R> validator) {
         this.context = context;
         this.parameters = parameters;
@@ -158,7 +157,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             } catch (RuntimeException ex) {
                 throw WebinCliException.systemError(ex, WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
             }
-            if (ratelimit.isRateLimit()) {
+            if (ratelimit.isRateLimited()) {
                 throw WebinCliException.userError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR_WITH_ANALYSIS_ID.format(ratelimit.getLastSubmittedAnalysisId()));
             }
         }

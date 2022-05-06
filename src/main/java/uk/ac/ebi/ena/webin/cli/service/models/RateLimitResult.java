@@ -11,22 +11,40 @@
 
 package uk.ac.ebi.ena.webin.cli.service.models;
 
+import java.time.Duration;
+
 public class RateLimitResult {
 
-    private final boolean rateLimit;
+    private boolean rateLimited;
 
-    private final String lastSubmittedAnalysisId;
+    private Duration rateLimiDuration;
 
-    public RateLimitResult(boolean rateLimit, String lastSubmittedAnalysisId) {
-        this.rateLimit = rateLimit;
-        this.lastSubmittedAnalysisId = lastSubmittedAnalysisId;
+    private String lastSubmittedAnalysisId;
+
+    public RateLimitResult() {
     }
 
-    public boolean isRateLimit() {
-        return rateLimit;
+    public boolean isRateLimited() {
+        return rateLimited;
+    }
+
+    public void setRateLimited(boolean rateLimited) {
+        this.rateLimited = rateLimited;
+    }
+
+    public Duration getRateLimiDuration() {
+        return rateLimiDuration;
+    }
+
+    public void setRateLimiDuration(Duration rateLimiDuration) {
+        this.rateLimiDuration = rateLimiDuration;
     }
 
     public String getLastSubmittedAnalysisId() {
         return lastSubmittedAnalysisId;
+    }
+
+    public void setLastSubmittedAnalysisId(String lastSubmittedAnalysisId) {
+        this.lastSubmittedAnalysisId = lastSubmittedAnalysisId;
     }
 }
