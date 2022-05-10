@@ -257,10 +257,19 @@ public class WebinCli {
             if (parameters.isSubmit()) {
                 submit(executor);
             }
+
+        //It is important that following catch blocks log errors so they get written to the report file.
+        //It is becuase the underlying appender that writes to the report file will be removed when the cleanup happens
+        //in the finally block. Any logging done after the cleanup will not be sent to the report file.
         } catch (WebinCliException ex) {
+            log.error(ex.getMessage(), ex);
             throw ex;
         } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
             throw WebinCliException.systemError(ex);
+        } catch (Throwable ex) {
+            log.error(ex.getMessage(), ex);
+            throw ex;
         } finally {
             cleanupFileAppender();
         }
