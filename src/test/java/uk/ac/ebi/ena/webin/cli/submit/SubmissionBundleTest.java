@@ -36,11 +36,10 @@ SubmissionBundleTest
         File manifestFile = File.createTempFile( "TEST-SB", "MANIFEST" );
         List<File> uploadFileList = Arrays.asList( manifestFile );
         List<SubmissionXMLFile> xmlFileList = Collections.emptyList();
-        
-        String center_name = "Some center name";
+
         String md5 = FileUtils.calculateDigest( "MD5", manifestFile );
         
-        SubmissionBundle sb = new SubmissionBundle( submitDirectory, uploadDirectory, uploadFileList, xmlFileList, center_name, FileUtils.calculateDigest( "MD5", manifestFile ) );
+        SubmissionBundle sb = new SubmissionBundle( submitDirectory, uploadDirectory, uploadFileList, xmlFileList, FileUtils.calculateDigest( "MD5", manifestFile ) );
         SubmissionBundleHelper serialiser = new SubmissionBundleHelper( Files.createTempFile( ".data", "MANIFEST" ).toString() );
         serialiser.write( sb );
         

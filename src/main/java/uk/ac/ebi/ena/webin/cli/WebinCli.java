@@ -331,20 +331,10 @@ public class WebinCli {
                 .setTest(parameters.isTest())
                 .build();
 
-            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(),
-                getVersionForSubmission(parameters.getWebinSubmissionTool()),
-                bundle.getManifestMd5(), getManifestFileContent());
+            submitService.doSubmission(bundle.getXMLFileList());
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
-        }
-    }
-
-    String getManifestFileContent() {
-        try {
-            return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
-        } catch (IOException ioe) {
-            throw WebinCliException.userError( "Exception thrown while reading manifest file", ioe.getMessage());
         }
     }
 

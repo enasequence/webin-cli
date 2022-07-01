@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -77,7 +76,6 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       Element experimentE = new Element("EXPERIMENT");
       experimentSetE.addContent(experimentE);
 
-      Document doc = new Document(experimentSetE);
       experimentE.setAttribute("alias", submissionAlias);
 
       if (null != centerName && !centerName.isEmpty()) {
@@ -184,7 +182,7 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       XMLOutputter xmlOutput = new XMLOutputter();
       xmlOutput.setFormat(Format.getPrettyFormat());
       StringWriter stringWriter = new StringWriter();
-      xmlOutput.output(doc, stringWriter);
+      xmlOutput.output(experimentSetE, stringWriter);
       return stringWriter.toString();
 
     } catch (IOException ex) {
@@ -205,7 +203,6 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       Element runE = new Element("RUN");
       runSetE.addContent(runE);
 
-      Document doc = new Document(runSetE);
       runE.setAttribute("alias", submissionAlias);
 
       if (null != centerName && !centerName.isEmpty()) {
@@ -266,7 +263,7 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       XMLOutputter xmlOutput = new XMLOutputter();
       xmlOutput.setFormat(Format.getPrettyFormat());
       StringWriter stringWriter = new StringWriter();
-      xmlOutput.output(doc, stringWriter);
+      xmlOutput.output(runSetE, stringWriter);
       return stringWriter.toString();
 
     } catch (IOException ex) {

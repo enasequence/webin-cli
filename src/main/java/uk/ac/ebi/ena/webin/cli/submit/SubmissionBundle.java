@@ -10,19 +10,20 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
-
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class
 SubmissionBundle implements Serializable
@@ -36,7 +37,6 @@ SubmissionBundle implements Serializable
     private final List<File> uploadFileList;
     private final List<Long> uploadFileSize;
     private final String manifestMd5;
-    private final String centerName;
     private final File submissionBundleFile;
 
 
@@ -52,8 +52,7 @@ SubmissionBundle implements Serializable
                 && this.uploadDir.equals( sb.uploadDir )
                 && this.uploadFileList.equals( sb.uploadFileList )
                 && this.uploadFileSize.equals( sb.uploadFileSize )
-                && this.manifestMd5.equals( sb.manifestMd5)
-                && this.centerName.equals( sb.centerName );
+                && this.manifestMd5.equals( sb.manifestMd5);
         }
         return false;
     }
@@ -63,6 +62,8 @@ SubmissionBundle implements Serializable
     public enum
     SubmissionXMLFileType
     {
+        AIO_SUBMISSION,
+        SUBMISSION,
         ANALYSIS,
         RUN,
         EXPERIMENT
@@ -126,7 +127,6 @@ SubmissionBundle implements Serializable
                       String uploadDir,
                       List<File> uploadFileList,
                       List<SubmissionXMLFile> xmlFileList,
-                      String centerName,
                       String manifestMd5 ) {
         this.version = getVersion();
         this.submitDir = submitDir;
@@ -134,7 +134,6 @@ SubmissionBundle implements Serializable
         this.uploadFileList = uploadFileList;
         this.uploadFileSize = uploadFileList.stream().sequential().map( f -> f.length() ).collect( Collectors.toList() );
         this.xmlFileList = xmlFileList;
-        this.centerName = centerName;
         this.manifestMd5 = manifestMd5;
         this.submissionBundleFile = getSubmissionBundleFile(submitDir);
     }
@@ -186,12 +185,6 @@ SubmissionBundle implements Serializable
         return xmlFileList.stream().filter(file -> file.getType().equals(fileType)).findFirst().get();
     }
 
-    public String
-    getCenterName()
-    {
-        return centerName;
-    }
-
 
     public void
     validate( ValidationResult result )
@@ -200,23 +193,22 @@ SubmissionBundle implements Serializable
         if( null != current && !current.equals( this.version ) )
             result.add(ValidationMessage.info( "Program version has changed" ) );
 
-        for( SubmissionXMLFile file : getXMLFileList() )
-        {
-            if( !file.getFile().exists() ) {
-                result.add( ValidationMessage.info( "Generated xml file not found: " + file.getFile() ) );
+        SubmissionXMLFile submissionFile = null;
+
+        try {
+            submissionFile = getXMLFile(SubmissionXMLFileType.AIO_SUBMISSION);
+            if( !submissionFile.getFile().exists() ) {
+                result.add( ValidationMessage.info( "Generated xml file not found: " + submissionFile.getFile() ) );
             }
 
-            try
-            {
-                if( !file.getMd5().equalsIgnoreCase( FileUtils.calculateDigest( "MD5", file.getFile() ) ) ) {
-                    result.add(ValidationMessage.info("Generated xml file has changed: " + file.getFile()));
-                }
-            } catch( Exception ex )
-            {
-                result.add(ValidationMessage.info("Error reading generated xml file: " + file.getFile() + " " + ex.getMessage() ) );
+            if( !submissionFile.getMd5().equalsIgnoreCase( FileUtils.calculateDigest( "MD5", submissionFile.getFile() ) ) ) {
+                result.add(ValidationMessage.info("Generated xml file has changed: " + submissionFile.getFile()));
             }
+        } catch( NoSuchElementException ex ) {
+            // no need to do anything.
+        } catch( Exception ex ) {
+            result.add(ValidationMessage.info("Error reading generated xml file: " + submissionFile.getFile() + " " + ex.getMessage() ) );
         }
-
 
         for( int index = 0; index < uploadFileList.size(); index ++ )
         {

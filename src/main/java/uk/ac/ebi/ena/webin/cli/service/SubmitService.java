@@ -10,15 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -35,12 +26,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class SubmitService extends WebinService {
 
@@ -77,7 +77,12 @@ public class SubmitService extends WebinService {
     
 
     public void
-    doSubmission(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool, String manifestMd5, String manifestFileContent) {
+    doSubmission(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
+        submitUsingV2Api(xmlFileList);
+    }
+
+    // TODO remove
+    private void submitUsingV1Api(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool, String manifestMd5, String manifestFileContent) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text()));
         // restTemplate.setInterceptors(Collections.singletonList(new HttpLoggingInterceptor()));
@@ -111,21 +116,49 @@ public class SubmitService extends WebinService {
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
 
         ResponseEntity<String> response = restTemplate.exchange(
-                getWebinRestUri( "submit/", getTest() ),
-                HttpMethod.POST,
-                new HttpEntity<>( body, headers),
-                String.class);
+            getWebinRestUri( "submit/", getTest() ),
+            HttpMethod.POST,
+            new HttpEntity<>( body, headers),
+            String.class);
+
+        // TODO processReceipt(response.getBody(), xmlFileList);
+    }
+
+    private void submitUsingV2Api(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", new FileSystemResource(xmlFileList.stream()
+            .filter(xmlFile -> xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION)
+            .findFirst()
+            .get().getFile()));
+
+        HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text()));
+        ResponseEntity<String> response = restTemplate.exchange(
+            getWebinRestV2Uri( "submit/", getTest() ),
+            HttpMethod.POST,
+            new HttpEntity<>( body, headers),
+            String.class);
 
         processReceipt(response.getBody(), xmlFileList);
     }
 
-    private void processReceipt(String receiptXml, List<SubmissionXMLFile> xmlFileList) {
+    private String getWebinRestV2Uri(String uri, boolean test) {
+        return (test) ?
+            "https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/" + uri :
+            "https://www.ebi.ac.uk/ena/submit/webin-v2/" + uri;
+    }
+
+    private void processReceipt(String receiptXml, List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
         StringBuilder errorsSb = new StringBuilder();
         try {
             Path receiptFile = Paths.get(submitDir + File.separator + RECEIPT_XML);
             if (Files.exists(receiptFile)) {
                 Files.delete(receiptFile);
             }
+
             Files.createFile(receiptFile);
             SAXBuilder builder = new SAXBuilder();
             Document doc = builder.build(new StringReader(receiptXml));
@@ -135,24 +168,28 @@ public class SubmitService extends WebinService {
             xmlOutput.output(doc, stringWriter);
             Files.write(receiptFile, stringWriter.toString().getBytes());
             Element rootNode = doc.getRootElement();
-            if( Boolean.valueOf( rootNode.getAttributeValue( "success" ) ) ) 
-            {
-                for (SubmissionXMLFile xmlFile : xmlFileList ) 
-                {
+
+            if( Boolean.valueOf( rootNode.getAttributeValue( "success" ) ) ) {
+                for (SubmissionBundle.SubmissionXMLFile xmlFile : xmlFileList ) {
+                    if (xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION ||
+                        xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.SUBMISSION) {
+                        continue;
+                    }
+
                     String xmlFileType = String.valueOf( xmlFile.getType() );
                     String accession = rootNode.getChild( xmlFileType ).getAttributeValue( "accession" );
 
                     String msg = ( getTest() ? WebinCliMessage.SUBMIT_SERVICE_SUCCESS_TEST
                                              : WebinCliMessage.SUBMIT_SERVICE_SUCCESS).format( xmlFileType.toLowerCase(), accession );
                    
-                    if( null == accession || accession.isEmpty() ) 
-                        msg = ( getTest() ? WebinCliMessage.SUBMIT_SERVICE_SUCCESS_TEST_NOACC
-                                          : WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC).format( xmlFileType.toLowerCase() );
+                    if( null == accession || accession.isEmpty() ) {
+                        msg = (getTest() ? WebinCliMessage.SUBMIT_SERVICE_SUCCESS_TEST_NOACC
+                            : WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC).format(xmlFileType.toLowerCase());
+                    }
                     
                     log.info( msg );
                 }
-            } else 
-            {
+            } else {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
                 for (Element child : childrenList) {
                     List<Element> errorList = child.getChildren("ERROR");
