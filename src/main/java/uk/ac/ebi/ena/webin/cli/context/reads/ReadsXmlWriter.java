@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +43,7 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       Path inputDir,
       Path uploadDir) {
 
-    Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
+    Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new LinkedHashMap<>();
     xmls.put(
         SubmissionBundle.SubmissionXMLFileType.EXPERIMENT,
         createExperimentXml(manifest, response, submissionTitle, submissionAlias, centerName));

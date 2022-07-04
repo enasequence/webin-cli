@@ -22,6 +22,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -178,15 +179,15 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
         String manifestMd5 = calculateManifestMd5();
 
-        //create the submission xml first.
-        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls =  new SubmissionXmlWriter().createXml(
+        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new LinkedHashMap<>();
+
+        xmls.putAll(new SubmissionXmlWriter().createXml(
             getValidationResponse(),
             getParameters().getCenterName(),
             WebinCli.getVersionForSubmission(parameters.getWebinSubmissionTool()),
             getManifestFileContent(),
-            manifestMd5);
+            manifestMd5));
 
-        //create the rest of the xmls e.g. experiment, run etc
         xmls.putAll(xmlWriter.createXml(
             getManifestReader().getManifest(),
             getValidationResponse(),

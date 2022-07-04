@@ -31,7 +31,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,54 +77,6 @@ public class SubmitService extends WebinService {
 
     public void
     doSubmission(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
-        submitUsingV2Api(xmlFileList);
-    }
-
-    // TODO remove
-    private void submitUsingV1Api(List<SubmissionXMLFile> xmlFileList, String centerName, String submissionTool, String manifestMd5, String manifestFileContent) {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text()));
-        // restTemplate.setInterceptors(Collections.singletonList(new HttpLoggingInterceptor()));
-        // restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
-
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-
-        for (SubmissionXMLFile xmlFile : xmlFileList) {
-            String xmlFileType = String.valueOf(xmlFile.getType());
-            body.add(xmlFileType, new FileSystemResource(xmlFile.getFile()));
-        }
-
-        body.add("ACTION", "ADD");
-
-        if (null != centerName && !centerName.isEmpty()) {
-            body.add("CENTER_NAME", centerName);
-        }
-
-        if (null != submissionTool && !submissionTool.isEmpty()) {
-            body.add("ENA_SUBMISSION_TOOL", submissionTool);
-        }
-
-        if (null != manifestFileContent && !manifestFileContent.isEmpty()) {
-            body.add("ENA_MANIFEST_FILE", manifestFileContent);
-        }
-
-        if (null != manifestMd5 && !manifestMd5.isEmpty()) {
-            body.add("ENA_MANIFEST_FILE_MD5", manifestMd5);
-        }
-
-        HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
-
-        ResponseEntity<String> response = restTemplate.exchange(
-            getWebinRestUri( "submit/", getTest() ),
-            HttpMethod.POST,
-            new HttpEntity<>( body, headers),
-            String.class);
-
-        // TODO processReceipt(response.getBody(), xmlFileList);
-    }
-
-    private void submitUsingV2Api(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
-
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource(xmlFileList.stream()
             .filter(xmlFile -> xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION)
@@ -137,18 +88,12 @@ public class SubmitService extends WebinService {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text()));
         ResponseEntity<String> response = restTemplate.exchange(
-            getWebinRestV2Uri( "submit/", getTest() ),
+            getWebinRestSubmissionUri( "submit/", getTest() ),
             HttpMethod.POST,
             new HttpEntity<>( body, headers),
             String.class);
 
         processReceipt(response.getBody(), xmlFileList);
-    }
-
-    private String getWebinRestV2Uri(String uri, boolean test) {
-        return (test) ?
-            "https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/" + uri :
-            "https://www.ebi.ac.uk/ena/submit/webin-v2/" + uri;
     }
 
     private void processReceipt(String receiptXml, List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {

@@ -23,6 +23,7 @@ import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
@@ -100,6 +101,50 @@ public class SequenceXmlTest {
             + "    </ANALYSIS_ATTRIBUTES>\n"
             + "</ANALYSIS>\n"
             + "</ANALYSIS_SET>");
+  }
+
+  @Test
+  public void testAioSubmission() {
+    SequenceManifest manifest = getDefaultManifest();
+    manifest.addAnalysis(
+        new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
+        new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
+    manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
+
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+
+    String actualXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION).getXml();
+
+    XmlTester.assertXml(
+        actualXml, WebinCliTestUtils.encloseWithFixedAioSubmissionXml(
+        "<ANALYSIS_SET>\n"
+            + "<ANALYSIS>\n"
+            + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
+            + "<DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "<STUDY_REF accession=\"test_study\"/>\n"
+            + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
+            + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
+            + "<ANALYSIS_TYPE>\n"
+            + "<SEQUENCE_FLATFILE/>\n"
+            + "</ANALYSIS_TYPE>\n"
+            + "    <FILES />\n"
+            + "    <ANALYSIS_ATTRIBUTES>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL</TAG>\n"
+            + "            <VALUE>ST-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
+            + "            <VALUE>STV-001</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "    </ANALYSIS_ATTRIBUTES>\n"
+            + "</ANALYSIS>\n"
+            + "</ANALYSIS_SET>"));
   }
 
   @Test
