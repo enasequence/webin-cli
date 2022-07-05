@@ -21,6 +21,8 @@ public class WebinCliBuilder {
   private boolean ascp = false;
   private boolean ignoreErrors = false;
 
+  private boolean minimalFileGeneration = false;
+
   public static final WebinCliBuilder READS = new WebinCliBuilder(WebinCliContext.reads);
   public static final WebinCliBuilder GENOME = new WebinCliBuilder(WebinCliContext.genome);
   public static final WebinCliBuilder TRANSCRIPTOME = new WebinCliBuilder(WebinCliContext.transcriptome);
@@ -53,6 +55,11 @@ public class WebinCliBuilder {
     return this;
   }
 
+  public WebinCliBuilder minimalFileGenration(boolean minimalFileGenration) {
+    this.minimalFileGeneration = minimalFileGenration;
+    return this;
+  }
+
   private WebinCliCommand cmd(Path inputDir, ManifestBuilder manifestBuilder) {
     WebinCliCommand cmd = new WebinCliCommand();
     cmd.context = context;
@@ -82,6 +89,7 @@ public class WebinCliBuilder {
     }
     WebinCliParameters parameters = WebinCli.initParameters(submissionAccount, authToken, cmd);
     parameters.setIgnoreErrors(ignoreErrors);
+    parameters.setMinimalFileGeneration(minimalFileGeneration);
     return new WebinCli(parameters);
   }
 }

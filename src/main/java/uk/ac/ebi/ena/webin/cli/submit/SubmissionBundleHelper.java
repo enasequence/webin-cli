@@ -21,41 +21,36 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
-public class 
-SubmissionBundleHelper 
-{
-    final private File submissionBundleFile;
-
+public class SubmissionBundleHelper {
     private static final Logger log = LoggerFactory.getLogger(SubmissionBundleHelper.class);
 
-    public
-    SubmissionBundleHelper( String submissionBundleFile)
-    {
+    final private File submissionBundleFile;
+
+    public SubmissionBundleHelper( String submissionBundleFile) {
         this.submissionBundleFile = new File(submissionBundleFile);
     }
 
-    public
-    SubmissionBundleHelper( File submissionBundleFile)
-    {
+    public SubmissionBundleHelper( File submissionBundleFile) {
         this.submissionBundleFile = submissionBundleFile;
     }
 
-    public SubmissionBundle
-    read()
-    { 
+    public SubmissionBundle read() {
         return read( null );
     }
+
+    public SubmissionBundle read( String manifestMd5 ) {
+        return read(manifestMd5, this.submissionBundleFile);
+    }
+
+    public void write( SubmissionBundle sb ) {
+        write(sb, this.submissionBundleFile);
+    }
     
-    
-    public SubmissionBundle
-    read( String manifestMd5 )
-    {
-        try( ObjectInputStream os = new ObjectInputStream( new FileInputStream(submissionBundleFile) ) )
-        {
-            SubmissionBundle sb = (SubmissionBundle) os.readObject();
+    public static SubmissionBundle read( String manifestMd5, File submissionBundleFile ) {
+        try( ObjectInputStream os = new ObjectInputStream( new FileInputStream(submissionBundleFile) ) ) {
+            SubmissionXmlFileBundle sb = (SubmissionXmlFileBundle) os.readObject();
             
-            if( null != manifestMd5 && !manifestMd5.equals( sb.getManifestMd5() ) )
-            {
+            if( null != manifestMd5 && !manifestMd5.equals( sb.getManifestMd5() ) ) {
                 log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
                 return null;
             }
@@ -64,35 +59,27 @@ SubmissionBundleHelper
                     new ValidationOrigin("submission bundle", submissionBundleFile.getAbsolutePath()));
             sb.validate(result);
 
-            if(result.count(ValidationMessage.Severity.INFO) > 0) // TODO: potentially dangerous comparison
-            {
+            // TODO: potentially dangerous comparison
+            if(result.count(ValidationMessage.Severity.INFO) > 0) {
                 log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
                 return null;
             }
             
             return sb;
             
-        } catch( ClassNotFoundException | IOException e )
-        {
+        } catch( ClassNotFoundException | IOException e ) {
             // Submission bundle could not be read.
             log.info(WebinCliMessage.SUBMISSION_BUNDLE_VALIDATE_SUBMISSION.text());
             return null;
         }
-
     }
-    
-    
-    public void
-    write( SubmissionBundle sb )
-    {
-        try( ObjectOutputStream os = new ObjectOutputStream( new FileOutputStream(submissionBundleFile) ) )
-        {
+
+    public static void write( SubmissionBundle sb, File submissionBundleFile ) {
+        try( ObjectOutputStream os = new ObjectOutputStream( new FileOutputStream(submissionBundleFile) ) ) {
             os.writeObject( sb );
             os.flush();
-        } catch( IOException ex )
-        {
+        } catch( IOException ex ) {
             throw WebinCliException.systemError(ex, WebinCliMessage.SUBMISSION_BUNDLE_FILE_ERROR.format(submissionBundleFile));
         }
     }
-    
 }

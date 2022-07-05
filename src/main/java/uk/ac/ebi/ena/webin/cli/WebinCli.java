@@ -250,7 +250,7 @@ public class WebinCli {
         try {
             executor.readManifest();
 
-            if (parameters.isValidate() || executor.readSubmissionBundle() == null) {
+            if (parameters.isValidate() || executor.getSubmissionBundle() == null) {
                 validate(executor);
             }
 
@@ -308,7 +308,7 @@ public class WebinCli {
 
     private void
     submit(WebinCliExecutor<?, ?> executor) {
-        SubmissionBundle bundle = executor.readSubmissionBundle();
+        SubmissionBundle bundle = executor.getSubmissionBundle();
 
         UploadService fileUploadService = parameters.isAscp() && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
 
@@ -326,6 +326,7 @@ public class WebinCli {
         try {
             SubmitService submitService = new SubmitService.Builder()
                 .setSubmitDir(bundle.getSubmitDir().getPath())
+                .setGenerateFiles(!getParameters().isMinimalFileGeneration())
                 .setUserName(parameters.getWebinServiceUserName())
                 .setPassword(parameters.getPassword())
                 .setTest(parameters.isTest())

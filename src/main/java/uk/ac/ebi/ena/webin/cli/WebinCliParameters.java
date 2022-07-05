@@ -37,6 +37,8 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private boolean ascp;
   private boolean ignoreErrors;
 
+  private boolean minimalFileGeneration;
+
   private SampleProcessor sampleProcessor;
   private StudyProcessor studyProcessor;
   private SampleXmlProcessor sampleXmlProcessor;
@@ -163,6 +165,14 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public void setIgnoreErrors(boolean ignoreErrors) {
     this.ignoreErrors = ignoreErrors;
+  }
+
+  public boolean isMinimalFileGeneration() {
+    return minimalFileGeneration;
+  }
+
+  public void setMinimalFileGeneration(boolean minimalFileGeneration) {
+    this.minimalFileGeneration = minimalFileGeneration;
   }
 
   public SampleProcessor getSampleProcessor() {

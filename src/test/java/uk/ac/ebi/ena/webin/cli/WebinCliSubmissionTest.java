@@ -367,4 +367,11 @@ public class WebinCliSubmissionTest {
         new ReportTester(cli).textInSubmissionReport("Failed to lookup analysis \"" + analysis +
             "\". Unknown analysis INVALID or the analysis cannot be referenced by your submission account.");
     }
+
+    @Test
+    public void testSubmissionWithMinimalFileGeneration() {
+        ManifestBuilder manifest = readsManifest()
+            .file("CRAM", "valid.cram");
+        WebinCliBuilder.READS.minimalFileGenration(true).build(READS_RESOURCE_DIR, manifest).execute();
+    }
 }

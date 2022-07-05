@@ -18,7 +18,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,10 +32,13 @@ import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,45 +46,60 @@ import java.util.List;
 
 public class SubmitService extends WebinService {
 
+    private final static String SUBMISSION_XML = "submission.xml";
     private final static String RECEIPT_XML = "receipt.xml";
-    private final String submitDir;
-    private static final Logger log = LoggerFactory.getLogger(SubmitService.class);
 
-    public static class 
-    Builder extends AbstractBuilder<SubmitService>
-    {
+    private static final Logger log = LoggerFactory.getLogger(SubmitService.class);
+    private final String submitDir;
+
+    private final boolean generateFiles;
+
+    public static class Builder extends AbstractBuilder<SubmitService> {
         private String submitDir;
+
+        private boolean generateFiles = true;
         
-        public Builder 
-        setSubmitDir( String submitDir )
-        {
+        public Builder setSubmitDir( String submitDir ) {
             this.submitDir = submitDir;
             return this;
         }
+
+        public Builder setGenerateFiles( boolean generateFiles ) {
+            this.generateFiles = generateFiles;
+            return this;
+        }
         
-        @Override public SubmitService
-        build()
-        {
+        @Override
+        public SubmitService build() {
             return new SubmitService( this );
         }
     }
     
     
-    protected
-    SubmitService( Builder builder )
-    {
+    protected SubmitService( Builder builder ) {
         super( builder );
         this.submitDir = builder.submitDir;
+        this.generateFiles = builder.generateFiles;
     }
     
 
     public void
     doSubmission(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
+        String submissionXml = createV2SubmissionXml(xmlFileList);
+        if (generateFiles) {
+            generateV2SubmissionXmlFile(submissionXml);
+        }
+
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", new FileSystemResource(xmlFileList.stream()
-            .filter(xmlFile -> xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION)
-            .findFirst()
-            .get().getFile()));
+        body.add("file", new ByteArrayResource(submissionXml.getBytes(StandardCharsets.UTF_8)) {
+            //The remote endpoint responds back with 400 status code if file name is not present in
+            //content-disposition header. overriding the following method this way adds the file name in
+            //the header resulting in successful submission.
+            @Override
+            public String getFilename() {
+                return SUBMISSION_XML;
+            }
+        });
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
 
@@ -96,28 +114,55 @@ public class SubmitService extends WebinService {
         processReceipt(response.getBody(), xmlFileList);
     }
 
+    private String createV2SubmissionXml(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
+        StringBuilder sb = new StringBuilder(xmlFileList.stream()
+            .map(xmlFile -> xmlFile.getXmlContent().length())
+            .reduce(0, (v1, v2) -> v1 + v2) + 100);
+
+        sb.append("<WEBIN>" + System.lineSeparator());
+        xmlFileList.forEach(xmlFile -> {
+            sb.append(xmlFile.getXmlContent());
+            sb.append(System.lineSeparator());
+        });
+        sb.append("</WEBIN>");
+
+        return sb.toString();
+    }
+
+    private void generateV2SubmissionXmlFile(String xml) {
+        Path xmlPath = Paths.get(submitDir, "aio-submission.xml");
+
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(xmlPath.toFile(), false))) {
+            bw.write(xml);
+        } catch(IOException ex) {
+            throw WebinCliException.systemError( ex );
+        }
+    }
+
     private void processReceipt(String receiptXml, List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
         StringBuilder errorsSb = new StringBuilder();
         try {
-            Path receiptFile = Paths.get(submitDir + File.separator + RECEIPT_XML);
-            if (Files.exists(receiptFile)) {
-                Files.delete(receiptFile);
-            }
-
-            Files.createFile(receiptFile);
             SAXBuilder builder = new SAXBuilder();
             Document doc = builder.build(new StringReader(receiptXml));
             XMLOutputter xmlOutput = new XMLOutputter();
             xmlOutput.setFormat(Format.getPrettyFormat());
             StringWriter stringWriter = new StringWriter();
             xmlOutput.output(doc, stringWriter);
-            Files.write(receiptFile, stringWriter.toString().getBytes());
+
+            if (generateFiles) {
+                Path receiptFile = Paths.get(submitDir + File.separator + RECEIPT_XML);
+                if (Files.exists(receiptFile)) {
+                    Files.delete(receiptFile);
+                }
+                Files.createFile(receiptFile);
+                Files.write(receiptFile, stringWriter.toString().getBytes());
+            }
+
             Element rootNode = doc.getRootElement();
 
             if( Boolean.valueOf( rootNode.getAttributeValue( "success" ) ) ) {
                 for (SubmissionBundle.SubmissionXMLFile xmlFile : xmlFileList ) {
-                    if (xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION ||
-                        xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.SUBMISSION) {
+                    if (xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.SUBMISSION) {
                         continue;
                     }
 
@@ -146,6 +191,7 @@ public class SubmitService extends WebinService {
                     }
                 }
             }
+
             if (errorsSb.length() != 0) {
                 throw WebinCliException.systemError(errorsSb.toString());
             }

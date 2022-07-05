@@ -25,7 +25,6 @@ import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
@@ -64,7 +63,7 @@ public class TaxRefSetXmlTest {
         (WebinCliExecutor<TaxRefSetManifest, ValidationResponse>)
             WebinCliContext.taxrefset.createExecutor(parameters, manifestReader);
     executor.prepareSubmissionBundle();
-    return executor.readSubmissionBundle();
+    return executor.getSubmissionBundle();
   }
 
   @Test
@@ -78,7 +77,7 @@ public class TaxRefSetXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
 
     XmlTester.assertXml(
@@ -115,7 +114,7 @@ public class TaxRefSetXmlTest {
   }
 
   @Test
-  public void testAioSubmission() {
+  public void testV2SubmissionXml() {
     TaxRefSetManifest manifest = getDefaultManifest();
 
     Path fastaFile = TempFileBuilder.gzip("fastafile.dat.gz", "ID   ;");
@@ -125,39 +124,7 @@ public class TaxRefSetXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String actualXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION).getXml();
-
-    XmlTester.assertXml(
-        actualXml, WebinCliTestUtils.encloseWithFixedAioSubmissionXml(
-        "<ANALYSIS_SET>\n" +
-            "<ANALYSIS>\n"+
-            "<TITLE>Taxonomy reference set: test_taxon_xref_set</TITLE>\n" +
-            "<DESCRIPTION>test_description</DESCRIPTION>\n" +
-            "<STUDY_REF accession=\"test_study\"/>\n" +
-            "<ANALYSIS_TYPE>\n" +
-            "<TAXONOMIC_REFERENCE_SET>\n" +
-            "<NAME>test_taxon_xref_set</NAME>\n" +
-            "<TAXONOMY_SYSTEM>12345</TAXONOMY_SYSTEM>\n" +
-            "<CUSTOM_FIELDS>\n" +
-            "<FIELD>\n" +
-            "<NAME>test_key_1</NAME>\n" +
-            "<DESCRIPTION>test_val_1</DESCRIPTION>\n" +
-            "</FIELD>\n" +
-            "<FIELD>\n" +
-            "<NAME>test_key_2</NAME>\n" +
-            "<DESCRIPTION>test_val_2</DESCRIPTION>\n" +
-            "</FIELD>\n" +
-            "</CUSTOM_FIELDS>\n"+
-            "</TAXONOMIC_REFERENCE_SET>\n" +
-            "</ANALYSIS_TYPE>\n"+
-            "<FILES>\n"+
-            "      <FILE filename=\"webin-cli/taxrefset/"+ NAME+ "/"+ fastaFile.getFileName()+
-            "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"+
-            "      <FILE filename=\"webin-cli/taxrefset/"+ NAME+ "/"+ tsvFile.getFileName()+
-            "\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"+
-            "</FILES>\n"+
-            "</ANALYSIS>\n"+
-            "</ANALYSIS_SET>"));
+    WebinCliTestUtils.assertSubmissionXml(
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
   }
 }

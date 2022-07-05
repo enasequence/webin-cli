@@ -23,13 +23,10 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
-public class 
-SubmissionBundleTest 
-{
+public class SubmissionXmlFileBundleTest {
 
     @Test public void
-    test() throws IOException
-    {
+    test() throws IOException {
         File submitDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toFile();
         String uploadDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toString();
         
@@ -38,8 +35,8 @@ SubmissionBundleTest
         List<SubmissionXMLFile> xmlFileList = Collections.emptyList();
 
         String md5 = FileUtils.calculateDigest( "MD5", manifestFile );
-        
-        SubmissionBundle sb = new SubmissionBundle( submitDirectory, uploadDirectory, uploadFileList, xmlFileList, FileUtils.calculateDigest( "MD5", manifestFile ) );
+
+        SubmissionXmlFileBundle sb = new SubmissionXmlFileBundle( submitDirectory, uploadDirectory, uploadFileList, xmlFileList, FileUtils.calculateDigest( "MD5", manifestFile ) );
         SubmissionBundleHelper serialiser = new SubmissionBundleHelper( Files.createTempFile( ".data", "MANIFEST" ).toString() );
         serialiser.write( sb );
         

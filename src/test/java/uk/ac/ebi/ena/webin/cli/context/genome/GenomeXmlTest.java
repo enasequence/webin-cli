@@ -24,7 +24,6 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
@@ -61,7 +60,7 @@ public class GenomeXmlTest {
         (WebinCliExecutor<GenomeManifest, ValidationResponse>)
             WebinCliContext.genome.createExecutor(parameters, manifestReader);
     executor.prepareSubmissionBundle();
-    return executor.readSubmissionBundle();
+    return executor.getSubmissionBundle();
   }
 
   @Test
@@ -77,7 +76,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -115,7 +114,7 @@ public class GenomeXmlTest {
   }
 
   @Test
-  public void testAioSubmission() {
+  public void testV2SubmissionXml() {
     GenomeManifest manifest = getDefaultManifest();
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
@@ -127,42 +126,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String actualXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.AIO_SUBMISSION).getXml();
-
-    XmlTester.assertXml(
-        actualXml, WebinCliTestUtils.encloseWithFixedAioSubmissionXml(
-        "<ANALYSIS_SET>\n"
-            + "  <ANALYSIS>\n"
-            + "    <TITLE>Genome assembly: test_genome</TITLE>\n"
-            + "    <STUDY_REF accession=\"test_study\" />\n"
-            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-            + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
-            + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
-            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
-            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
-            + "    <ANALYSIS_TYPE>\n"
-            + "      <SEQUENCE_ASSEMBLY>\n"
-            + "        <NAME>test_genome</NAME>\n"
-            + "        <PARTIAL>false</PARTIAL>\n"
-            + "        <COVERAGE>1</COVERAGE>\n"
-            + "        <PROGRAM>test_program</PROGRAM>\n"
-            + "        <PLATFORM>test_platform</PLATFORM>\n"
-            + "      </SEQUENCE_ASSEMBLY>\n"
-            + "    </ANALYSIS_TYPE>\n"
-            + "    <FILES />\n"
-            + "    <ANALYSIS_ATTRIBUTES>\n"
-            + "        <ANALYSIS_ATTRIBUTE>\n"
-            + "            <TAG>SUBMISSION_TOOL</TAG>\n"
-            + "            <VALUE>ST-001</VALUE>\n"
-            + "        </ANALYSIS_ATTRIBUTE>\n"
-            + "        <ANALYSIS_ATTRIBUTE>\n"
-            + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
-            + "            <VALUE>STV-001</VALUE>\n"
-            + "        </ANALYSIS_ATTRIBUTE>\n"
-            + "    </ANALYSIS_ATTRIBUTES>\n"
-            + "  </ANALYSIS>\n"
-            + "</ANALYSIS_SET>"));
+    WebinCliTestUtils.assertSubmissionXml(
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
   }
 
   @Test
@@ -172,7 +137,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -203,7 +168,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -234,7 +199,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -265,7 +230,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -297,7 +262,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -336,7 +301,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -378,7 +343,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,

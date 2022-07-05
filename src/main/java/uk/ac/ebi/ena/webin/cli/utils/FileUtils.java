@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -49,28 +50,32 @@ FileUtils
 		}
 	}
 
-    static public String
-    calculateDigest( String digestName, File file )
-    {
-    	try
-		{
+    public static String calculateDigest( String digestName, File file ) {
+    	try {
+			return calculateDigest(digestName, new FileInputStream( file ));
+		} catch( IOException ex ) {
+			throw WebinCliException.systemError( ex );
+		}
+    }
+
+	public static String calculateDigest(String digestName, InputStream is) {
+		try {
 			MessageDigest digest = MessageDigest.getInstance( digestName );
 			byte[] buf = new byte[ 4096 ];
 			int  read = 0;
-			try( BufferedInputStream is = new BufferedInputStream( new FileInputStream( file ) ) )
-			{
-				while( ( read = is.read( buf ) ) > 0 )
-					digest.update( buf, 0, read );
+			try( BufferedInputStream bis = new BufferedInputStream( is ) ) {
+				while( ( read = bis.read( buf ) ) > 0 ) {
+					digest.update(buf, 0, read);
+				}
 
 				byte[] message_digest = digest.digest();
 				BigInteger value = new BigInteger( 1, message_digest );
 				return String.format( String.format( "%%0%dx", message_digest.length << 1 ), value );
 			}
-		} catch( NoSuchAlgorithmException | IOException ex )
-		{
+		} catch( NoSuchAlgorithmException | IOException ex ) {
 			throw WebinCliException.systemError( ex );
 		}
-    }
+	}
 
 	public static boolean 
 	emptyDirectory( File dir )

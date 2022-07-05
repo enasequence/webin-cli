@@ -77,9 +77,8 @@ public class WebinCliTestUtils {
         }
     }
 
-    public static String encloseWithFixedAioSubmissionXml(String xmlToEnclose) {
-        return "<WEBIN>\n"
-            + "<SUBMISSION_SET>\n"
+    public static void assertSubmissionXml(String actualSubmissionXml) {
+        String expected = "<SUBMISSION_SET>\n"
             + "  <SUBMISSION>\n"
             + "    <ACTIONS>\n"
             + "        <ACTION>\n"
@@ -101,8 +100,8 @@ public class WebinCliTestUtils {
             + "        </SUBMISSION_ATTRIBUTE>\n"
             + "    </SUBMISSION_ATTRIBUTES>\n"
             + "  </SUBMISSION>\n"
-            + "</SUBMISSION_SET>\n"
-            + xmlToEnclose + "\n"
-            + "</WEBIN>";
+            + "</SUBMISSION_SET>";
+
+        XmlTester.assertXml(actualSubmissionXml, expected);
     }
 }
