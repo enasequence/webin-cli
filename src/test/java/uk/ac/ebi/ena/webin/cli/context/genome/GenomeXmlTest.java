@@ -60,7 +60,7 @@ public class GenomeXmlTest {
         (WebinCliExecutor<GenomeManifest, ValidationResponse>)
             WebinCliContext.genome.createExecutor(parameters, manifestReader);
     executor.prepareSubmissionBundle();
-    return executor.readSubmissionBundle();
+    return executor.getSubmissionBundle();
   }
 
   @Test
@@ -76,7 +76,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -114,13 +114,30 @@ public class GenomeXmlTest {
   }
 
   @Test
+  public void testSubmissionXml() {
+    GenomeManifest manifest = getDefaultManifest();
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
+
+    manifest.addAnalysis(
+        new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
+        new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
+    manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
+
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
+  }
+
+  @Test
   public void testDescription() {
     GenomeManifest manifest = getDefaultManifest();
     manifest.setDescription("test_description");
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -151,7 +168,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -182,7 +199,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -213,7 +230,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -245,7 +262,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -284,7 +301,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -326,7 +343,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,

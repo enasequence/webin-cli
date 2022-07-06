@@ -37,7 +37,6 @@ public class TaxRefSetXmlTest {
     Locale.setDefault(Locale.UK);
   }
 
-
   private static TaxRefSetManifest getDefaultManifest() {
     TaxRefSetManifest manifest = new TaxRefSetManifest();
     manifest.setName(NAME);
@@ -64,9 +63,8 @@ public class TaxRefSetXmlTest {
         (WebinCliExecutor<TaxRefSetManifest, ValidationResponse>)
             WebinCliContext.taxrefset.createExecutor(parameters, manifestReader);
     executor.prepareSubmissionBundle();
-    return executor.readSubmissionBundle();
+    return executor.getSubmissionBundle();
   }
-
 
   @Test
   public void testFastaAndTsvFile() {
@@ -79,7 +77,7 @@ public class TaxRefSetXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
 
     XmlTester.assertXml(
@@ -115,4 +113,18 @@ public class TaxRefSetXmlTest {
                      "</ANALYSIS_SET>");
   }
 
+  @Test
+  public void testSubmissionXml() {
+    TaxRefSetManifest manifest = getDefaultManifest();
+
+    Path fastaFile = TempFileBuilder.gzip("fastafile.dat.gz", "ID   ;");
+    Path tsvFile = TempFileBuilder.gzip("tabFile.dat.gz", "ID   ;");
+    manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.FASTA, fastaFile.toFile()));
+    manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.TAB, tsvFile.toFile()));
+
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
+  }
 }

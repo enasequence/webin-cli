@@ -10,32 +10,33 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import uk.ac.ebi.ena.webin.cli.context.SubmissionXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.service.RatelimitService;
 import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class
 WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
@@ -49,6 +50,9 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     private File validationDir;
     private File processDir;
     private File submitDir;
+
+    private SubmissionBundle submissionBundle;
+
     protected R validationResponse;
 
     private static final String REPORT_FILE = "webin-cli.report";
@@ -166,68 +170,53 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
     public final void prepareSubmissionBundle() {
         this.submitDir = createSubmissionDir(WebinCliConfig.SUBMIT_DIR );
 
+        Path uploadDir = Paths.get( this.parameters.isTest() ? "webin-cli-test" : "webin-cli" )
+            .resolve( String.valueOf( this.context ) )
+            .resolve( WebinCli.getSafeOutputDir( getSubmissionName() ) );
+
+        String manifestMd5 = calculateManifestMd5();
+
+        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
+
+        xmls.putAll(new SubmissionXmlWriter().createXml(
+            getValidationResponse(),
+            getParameters().getCenterName(),
+            WebinCli.getVersionForSubmission(parameters.getWebinSubmissionTool()),
+            getManifestFileContent(),
+            manifestMd5));
+
+        xmls.putAll(xmlWriter.createXml(
+            getManifestReader().getManifest(),
+            getValidationResponse(),
+            getParameters().getCenterName(),
+            getSubmissionTitle(),
+            getSubmissionAlias(),
+            getParameters().getInputDir().toPath(), uploadDir));
+
+        List<SubmissionBundle.SubmissionXMLFile> xmlFileList = xmls.entrySet().stream()
+            .map(entry -> {
+                String xmlFileName = entry.getKey().name().toLowerCase() + ".xml";
+                Path xmlFilePath = getSubmitDir().toPath().resolve( xmlFileName );
+
+                return new SubmissionBundle.SubmissionXMLFile(entry.getKey(), xmlFilePath.toFile(), entry.getValue());
+            }).collect(Collectors.toList());
+
         List<File> uploadFileList = new ArrayList<>();
-        List< SubmissionBundle.SubmissionXMLFile > xmlFileList = new ArrayList<>();
-
-        Path uploadDir = Paths
-                .get( this.parameters.isTest() ? "webin-cli-test" : "webin-cli" )
-                .resolve( String.valueOf( this.context ) )
-                .resolve( WebinCli.getSafeOutputDir( getSubmissionName() ) );
-
         uploadFileList.addAll(getManifestReader().getManifest().files().files());
 
-        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls =
-                xmlWriter.createXml(
-                        getManifestReader().getManifest(),
-                        getValidationResponse(),
-                        getParameters().getCenterName(),
-                        getSubmissionTitle(),
-                        getSubmissionAlias(),
-                        getParameters().getInputDir().toPath(), uploadDir);
-
-        xmls.forEach((fileType, xml) -> {
-            String xmlFileName = fileType.name().toLowerCase() + ".xml";
-            Path xmlFile = getSubmitDir().toPath().resolve( xmlFileName );
-
-            try
-            {
-                Files.write( xmlFile, xml.getBytes( StandardCharsets.UTF_8 ), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC );
-            }
-            catch(IOException ex) {
-                throw WebinCliException.systemError( ex );
-            }
-
-            xmlFileList.add( new SubmissionBundle.SubmissionXMLFile( fileType, xmlFile.toFile(), FileUtils.calculateDigest( "MD5", xmlFile.toFile() ) ) );
-        });
-
-        SubmissionBundle submissionBundle = new SubmissionBundle(
-                getSubmitDir(),
-                uploadDir.toString(),
-                uploadFileList,
-                xmlFileList,
-                getParameters().getCenterName(),
-                calculateManifestMd5() );
-
-        submissionBundle.write();
-    }
-
-    public SubmissionBundle readSubmissionBundle() {
-        return SubmissionBundle.read(getSubmitDir(), calculateManifestMd5());
-    }
-
-    private File createSubmissionDir(String dir) {
-        if (StringUtils.isBlank(getSubmissionName())) {
-            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
+        this.submissionBundle = new SubmissionBundle(
+            getSubmitDir(), uploadDir.toString(), uploadFileList, xmlFileList, manifestMd5);
+        if (getParameters().isSaveSubmissionBundleFile()) {
+            SubmissionBundleHelper.write(this.submissionBundle, getSubmitDir());
         }
-        File newDir = WebinCli.createOutputDir( parameters.getOutputDir(), String.valueOf( context ), getSubmissionName(), dir);
-        if (!FileUtils.emptyDirectory(newDir)) {
-            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_EMPTY_DIRECTORY_ERROR.format(newDir));
-        }
-        return newDir;
     }
 
-    private String calculateManifestMd5() {
-        return FileUtils.calculateDigest( "MD5", parameters.getManifestFile());
+    public SubmissionBundle getSubmissionBundle() {
+        if (submissionBundle == null && getParameters().isSaveSubmissionBundleFile()) {
+            return SubmissionBundleHelper.read(calculateManifestMd5(), getSubmitDir());
+        }
+
+        return submissionBundle;
     }
 
     // TODO: remove
@@ -315,5 +304,28 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
     private boolean getTestModeFromParam(){
         return this.parameters.isTest();
+    }
+
+    private File createSubmissionDir(String dir) {
+        if (StringUtils.isBlank(getSubmissionName())) {
+            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
+        }
+        File newDir = WebinCli.createOutputDir( parameters.getOutputDir(), String.valueOf( context ), getSubmissionName(), dir);
+        if (!FileUtils.emptyDirectory(newDir)) {
+            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_EMPTY_DIRECTORY_ERROR.format(newDir));
+        }
+        return newDir;
+    }
+
+    private String getManifestFileContent() {
+        try {
+            return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
+        } catch (IOException ioe) {
+            throw WebinCliException.userError( "Exception thrown while reading manifest file", ioe.getMessage());
+        }
+    }
+
+    private String calculateManifestMd5() {
+        return FileUtils.calculateDigest( "MD5", parameters.getManifestFile());
     }
 }

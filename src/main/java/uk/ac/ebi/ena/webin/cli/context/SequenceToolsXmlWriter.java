@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -50,7 +49,6 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     Element analysisE = new Element("ANALYSIS");
     analysisSetE.addContent(analysisE);
 
-    Document doc = new Document(analysisSetE);
     analysisE.setAttribute("alias", submissionAlias);
 
     if (null != centerName && !centerName.isEmpty())
@@ -133,7 +131,7 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     StringWriter stringWriter = new StringWriter();
 
     try {
-      xmlOutput.output(doc, stringWriter);
+      xmlOutput.output(analysisSetE, stringWriter);
     } catch (IOException ex) {
       throw WebinCliException.systemError(ex);
     }

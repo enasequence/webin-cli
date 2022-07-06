@@ -61,7 +61,7 @@ public class TranscriptomeXmlTest {
         (WebinCliExecutor<TranscriptomeManifest, ValidationResponse>)
             WebinCliContext.transcriptome.createExecutor(parameters, manifestReader);
     executor.prepareSubmissionBundle();
-    return executor.readSubmissionBundle();
+    return executor.getSubmissionBundle();
   }
 
   @Test
@@ -76,7 +76,7 @@ public class TranscriptomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -113,12 +113,28 @@ public class TranscriptomeXmlTest {
   }
 
   @Test
+  public void testSubmissionXml() {
+    TranscriptomeManifest manifest = getDefaultManifest();
+    manifest.addAnalysis(
+        new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
+        new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
+    manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
+
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
+  }
+
+  @Test
   public void testTpa() {
     TranscriptomeManifest manifest = getDefaultManifest();
     manifest.setTpa(true);
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -151,7 +167,7 @@ public class TranscriptomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -190,7 +206,7 @@ public class TranscriptomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXml();
+    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,

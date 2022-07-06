@@ -11,7 +11,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '4.4.0'
+version = '4.5.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -93,7 +93,7 @@ task printWebinTestCredentials {
 }
 
 dependencies {
-    implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.3.3' )
+    implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.4.0' )
     implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.10.1')
     implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
     implementation( 'uk.ac.ebi.ena:readtools:1.16.0' )

@@ -65,7 +65,7 @@ public class ReadsXmlTest {
     ReadsValidationResponse rvr = new ReadsValidationResponse();
     Mockito.when(mockedExecutor.getValidationResponse()).thenReturn(rvr);
     mockedExecutor.prepareSubmissionBundle();
-    return mockedExecutor.readSubmissionBundle();
+    return mockedExecutor.getSubmissionBundle();
   }
 
   @Test
@@ -83,7 +83,7 @@ public class ReadsXmlTest {
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
     String experimentXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.EXPERIMENT).getXml();
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.EXPERIMENT).getXmlContent();
 
     XmlTester.assertXml(
         experimentXml,
@@ -133,7 +133,7 @@ public class ReadsXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
             runXml,
@@ -159,6 +159,24 @@ public class ReadsXmlTest {
   }
 
   @Test
+  public void testSubmissionXml() {
+    ReadsManifest manifest = getDefaultManifest();
+
+    manifest.setPlatform("ILLUMINA");
+    manifest.setInstrument("unspecified");
+    manifest.setLibraryStrategy("CLONEEND");
+    manifest.setLibrarySource("OTHER");
+    manifest.setLibrarySelection("Inverse rRNA selection");
+    manifest.setSubmissionTool("ST-001");
+    manifest.setSubmissionToolVersion("STV-001");
+
+    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
+  }
+
+  @Test
   public void testRunWithCramFile() {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
@@ -168,7 +186,7 @@ public class ReadsXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
         runXml,
@@ -199,7 +217,7 @@ public class ReadsXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
             runXml,
@@ -230,7 +248,7 @@ public class ReadsXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
             runXml,
@@ -263,7 +281,7 @@ public class ReadsXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
             runXml,
@@ -307,7 +325,7 @@ public class ReadsXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXml();
+    String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
             runXml,

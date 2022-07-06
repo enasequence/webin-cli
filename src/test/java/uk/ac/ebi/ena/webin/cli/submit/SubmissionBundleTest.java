@@ -10,41 +10,46 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
-public class 
-SubmissionBundleTest 
-{
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 
-    @Test public void
-    test() throws IOException
-    {
+public class SubmissionBundleTest {
+
+    @Test
+    public void test() throws IOException {
         File submitDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toFile();
         String uploadDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toString();
-        
+
+        SubmissionBundle.SubmissionXMLFile xmlFile = new SubmissionXMLFile(
+            SubmissionBundle.SubmissionXMLFileType.SUBMISSION,
+            new File(submitDirectory, "submission.xml"),
+            "<SUBMISSION_SET><SUBMISSION><ACTIONS><ACTION><ADD/></ACTION></ACTIONS></SUBMISSION></SUBMISSION_SET>");
+        xmlFile.setMd5(FileUtils.calculateDigest( "MD5", xmlFile.getXmlContent().getBytes(StandardCharsets.UTF_8) ));
+
+        List<SubmissionXMLFile> xmlFileList = Arrays.asList(xmlFile);
+
         File manifestFile = File.createTempFile( "TEST-SB", "MANIFEST" );
+        String manifestMd5 = FileUtils.calculateDigest( "MD5", manifestFile );
+
         List<File> uploadFileList = Arrays.asList( manifestFile );
-        List<SubmissionXMLFile> xmlFileList = Collections.emptyList();
+
+        SubmissionBundle expectedSb = new SubmissionBundle( submitDirectory, uploadDirectory, uploadFileList, xmlFileList, manifestMd5 );
+
+        SubmissionBundleHelper.write( expectedSb, submitDirectory );
         
-        String center_name = "Some center name";
-        String md5 = FileUtils.calculateDigest( "MD5", manifestFile );
-        
-        SubmissionBundle sb = new SubmissionBundle( submitDirectory, uploadDirectory, uploadFileList, xmlFileList, center_name, FileUtils.calculateDigest( "MD5", manifestFile ) );
-        SubmissionBundleHelper serialiser = new SubmissionBundleHelper( Files.createTempFile( ".data", "MANIFEST" ).toString() );
-        serialiser.write( sb );
-        
-        SubmissionBundle sb1 = serialiser.read( md5 );
-        Assert.assertEquals( sb, sb1 );
+        SubmissionBundle actualSb = SubmissionBundleHelper.read( manifestMd5, submitDirectory );
+
+        Assert.assertEquals( expectedSb, actualSb );
+        Assert.assertEquals( expectedSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent(),
+            actualSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent() );
     }
 }

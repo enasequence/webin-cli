@@ -123,6 +123,14 @@ public class WebinCliSubmissionTest {
     }
 
     @Test
+    public void testReadsSubmissionCramWithNoSubmissionBundleAndSubmissionXmlFilesSaving() {
+        ManifestBuilder manifest = readsManifest()
+            .file("CRAM", "valid.cram");
+        WebinCliBuilder.READS.saveSubmissionBundleFile(false).saveSubmissionXmlFiles(false)
+            .build(READS_RESOURCE_DIR, manifest).execute();
+    }
+
+    @Test
     public void testReadsSubmissionCramNormalizePath() {
         ManifestBuilder manifest = readsManifest()
                 .file("CRAM", "../" + READS_RESOURCE_DIR.getName() + "/valid.cram");

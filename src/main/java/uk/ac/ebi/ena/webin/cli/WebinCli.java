@@ -250,7 +250,7 @@ public class WebinCli {
         try {
             executor.readManifest();
 
-            if (parameters.isValidate() || executor.readSubmissionBundle() == null) {
+            if (parameters.isValidate() || executor.getSubmissionBundle() == null) {
                 validate(executor);
             }
 
@@ -308,7 +308,7 @@ public class WebinCli {
 
     private void
     submit(WebinCliExecutor<?, ?> executor) {
-        SubmissionBundle bundle = executor.readSubmissionBundle();
+        SubmissionBundle bundle = executor.getSubmissionBundle();
 
         UploadService fileUploadService = parameters.isAscp() && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
 
@@ -326,25 +326,16 @@ public class WebinCli {
         try {
             SubmitService submitService = new SubmitService.Builder()
                 .setSubmitDir(bundle.getSubmitDir().getPath())
+                .setSaveSubmissionXmlFiles(getParameters().isSaveSubmissionXmlFiles())
                 .setUserName(parameters.getWebinServiceUserName())
                 .setPassword(parameters.getPassword())
                 .setTest(parameters.isTest())
                 .build();
 
-            submitService.doSubmission(bundle.getXMLFileList(), bundle.getCenterName(),
-                getVersionForSubmission(parameters.getWebinSubmissionTool()),
-                bundle.getManifestMd5(), getManifestFileContent());
+            submitService.doSubmission(bundle.getXMLFileList());
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
-        }
-    }
-
-    String getManifestFileContent() {
-        try {
-            return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
-        } catch (IOException ioe) {
-            throw WebinCliException.userError( "Exception thrown while reading manifest file", ioe.getMessage());
         }
     }
 
@@ -644,7 +635,7 @@ public class WebinCli {
             }
 
             default: {
-                return String.format("%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version);
+                return String.format("%s%s", WebinCli.class.getSimpleName(), null == version ? "" : ":" + version);
             }
         }
     }
@@ -655,7 +646,7 @@ public class WebinCli {
         return String.format("%s", null == version ? "?" : version);
     }
 
-    private static String
+    public static String
     getVersion() {
         return WebinCli.class.getPackage().getImplementationVersion();
     }
