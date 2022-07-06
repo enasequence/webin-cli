@@ -326,7 +326,7 @@ public class WebinCli {
         try {
             SubmitService submitService = new SubmitService.Builder()
                 .setSubmitDir(bundle.getSubmitDir().getPath())
-                .setGenerateFiles(!getParameters().isMinimalFileGeneration())
+                .setSaveSubmissionXmlFiles(getParameters().isSaveSubmissionXmlFiles())
                 .setUserName(parameters.getWebinServiceUserName())
                 .setPassword(parameters.getPassword())
                 .setTest(parameters.isTest())
@@ -635,7 +635,7 @@ public class WebinCli {
             }
 
             default: {
-                return String.format("%s:%s", WebinCli.class.getSimpleName(), null == version ? "" : version);
+                return String.format("%s%s", WebinCli.class.getSimpleName(), null == version ? "" : ":" + version);
             }
         }
     }
@@ -646,7 +646,7 @@ public class WebinCli {
         return String.format("%s", null == version ? "?" : version);
     }
 
-    private static String
+    public static String
     getVersion() {
         return WebinCli.class.getPackage().getImplementationVersion();
     }

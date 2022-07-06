@@ -159,7 +159,7 @@ public class ReadsXmlTest {
   }
 
   @Test
-  public void testV2SubmissionXml() {
+  public void testSubmissionXml() {
     ReadsManifest manifest = getDefaultManifest();
 
     manifest.setPlatform("ILLUMINA");
@@ -172,7 +172,7 @@ public class ReadsXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    WebinCliTestUtils.assertSubmissionXml(
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
   }
 

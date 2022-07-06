@@ -76,32 +76,4 @@ public class WebinCliTestUtils {
             throw new RuntimeException(e);
         }
     }
-
-    public static void assertSubmissionXml(String actualSubmissionXml) {
-        String expected = "<SUBMISSION_SET>\n"
-            + "  <SUBMISSION>\n"
-            + "    <ACTIONS>\n"
-            + "        <ACTION>\n"
-            + "               <ADD />\n"
-            + "        </ACTION>\n"
-            + "    </ACTIONS>\n"
-            + "    <SUBMISSION_ATTRIBUTES>\n"
-            + "        <SUBMISSION_ATTRIBUTE>\n"
-            + "            <TAG>ENA-SUBMISSION-TOOL</TAG>\n"
-            + "            <VALUE>WebinCli:</VALUE>\n"
-            + "        </SUBMISSION_ATTRIBUTE>\n"
-            + "        <SUBMISSION_ATTRIBUTE>\n"
-            + "            <TAG>ENA-MANIFEST-FILE</TAG>\n"
-            + "            <VALUE />\n"
-            + "        </SUBMISSION_ATTRIBUTE>\n"
-            + "        <SUBMISSION_ATTRIBUTE>\n"
-            + "            <TAG>ENA-MANIFEST-FILE-MD5</TAG>\n"
-            + "            <VALUE>d41d8cd98f00b204e9800998ecf8427e</VALUE>\n"
-            + "        </SUBMISSION_ATTRIBUTE>\n"
-            + "    </SUBMISSION_ATTRIBUTES>\n"
-            + "  </SUBMISSION>\n"
-            + "</SUBMISSION_SET>";
-
-        XmlTester.assertXml(actualSubmissionXml, expected);
-    }
 }

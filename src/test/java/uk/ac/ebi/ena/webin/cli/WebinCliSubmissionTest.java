@@ -123,6 +123,14 @@ public class WebinCliSubmissionTest {
     }
 
     @Test
+    public void testReadsSubmissionCramWithNoSubmissionBundleAndSubmissionXmlFilesSaving() {
+        ManifestBuilder manifest = readsManifest()
+            .file("CRAM", "valid.cram");
+        WebinCliBuilder.READS.saveSubmissionBundleFile(false).saveSubmissionXmlFiles(false)
+            .build(READS_RESOURCE_DIR, manifest).execute();
+    }
+
+    @Test
     public void testReadsSubmissionCramNormalizePath() {
         ManifestBuilder manifest = readsManifest()
                 .file("CRAM", "../" + READS_RESOURCE_DIR.getName() + "/valid.cram");
@@ -366,12 +374,5 @@ public class WebinCliSubmissionTest {
 
         new ReportTester(cli).textInSubmissionReport("Failed to lookup analysis \"" + analysis +
             "\". Unknown analysis INVALID or the analysis cannot be referenced by your submission account.");
-    }
-
-    @Test
-    public void testSubmissionWithMinimalFileGeneration() {
-        ManifestBuilder manifest = readsManifest()
-            .file("CRAM", "valid.cram");
-        WebinCliBuilder.READS.minimalFileGenration(true).build(READS_RESOURCE_DIR, manifest).execute();
     }
 }

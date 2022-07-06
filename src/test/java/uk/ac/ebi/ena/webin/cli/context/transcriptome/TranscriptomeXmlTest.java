@@ -113,7 +113,7 @@ public class TranscriptomeXmlTest {
   }
 
   @Test
-  public void testV2SubmissionXml() {
+  public void testSubmissionXml() {
     TranscriptomeManifest manifest = getDefaultManifest();
     manifest.addAnalysis(
         new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
@@ -124,7 +124,7 @@ public class TranscriptomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    WebinCliTestUtils.assertSubmissionXml(
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
   }
 

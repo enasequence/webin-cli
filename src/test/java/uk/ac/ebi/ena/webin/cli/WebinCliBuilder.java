@@ -21,7 +21,9 @@ public class WebinCliBuilder {
   private boolean ascp = false;
   private boolean ignoreErrors = false;
 
-  private boolean minimalFileGeneration = false;
+  private boolean saveSubmissionBundleFile = true;
+
+  private boolean saveSubmissionXmlFiles = true;
 
   public static final WebinCliBuilder READS = new WebinCliBuilder(WebinCliContext.reads);
   public static final WebinCliBuilder GENOME = new WebinCliBuilder(WebinCliContext.genome);
@@ -55,8 +57,13 @@ public class WebinCliBuilder {
     return this;
   }
 
-  public WebinCliBuilder minimalFileGenration(boolean minimalFileGenration) {
-    this.minimalFileGeneration = minimalFileGenration;
+  public WebinCliBuilder saveSubmissionBundleFile(boolean saveSubmissionBundleFile) {
+    this.saveSubmissionBundleFile = saveSubmissionBundleFile;
+    return this;
+  }
+
+  public WebinCliBuilder saveSubmissionXmlFiles(boolean saveSubmissionXmlFiles) {
+    this.saveSubmissionXmlFiles = saveSubmissionXmlFiles;
     return this;
   }
 
@@ -89,7 +96,8 @@ public class WebinCliBuilder {
     }
     WebinCliParameters parameters = WebinCli.initParameters(submissionAccount, authToken, cmd);
     parameters.setIgnoreErrors(ignoreErrors);
-    parameters.setMinimalFileGeneration(minimalFileGeneration);
+    parameters.setSaveSubmissionBundleFile(saveSubmissionBundleFile);
+    parameters.setSaveSubmissionXmlFiles(saveSubmissionXmlFiles);
     return new WebinCli(parameters);
   }
 }

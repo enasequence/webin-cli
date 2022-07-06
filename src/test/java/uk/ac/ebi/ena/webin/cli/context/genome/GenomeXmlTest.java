@@ -114,7 +114,7 @@ public class GenomeXmlTest {
   }
 
   @Test
-  public void testV2SubmissionXml() {
+  public void testSubmissionXml() {
     GenomeManifest manifest = getDefaultManifest();
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
@@ -126,7 +126,7 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    WebinCliTestUtils.assertSubmissionXml(
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
   }
 

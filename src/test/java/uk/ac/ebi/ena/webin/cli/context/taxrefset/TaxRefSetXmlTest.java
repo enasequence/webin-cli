@@ -114,7 +114,7 @@ public class TaxRefSetXmlTest {
   }
 
   @Test
-  public void testV2SubmissionXml() {
+  public void testSubmissionXml() {
     TaxRefSetManifest manifest = getDefaultManifest();
 
     Path fastaFile = TempFileBuilder.gzip("fastafile.dat.gz", "ID   ;");
@@ -124,7 +124,7 @@ public class TaxRefSetXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    WebinCliTestUtils.assertSubmissionXml(
+    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
   }
 }

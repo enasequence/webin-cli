@@ -10,21 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import uk.ac.ebi.ena.webin.cli.context.SubmissionXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
@@ -32,14 +20,23 @@ import uk.ac.ebi.ena.webin.cli.service.RatelimitService;
 import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionXmlFileBundle;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionXmlMemoryBundle;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class
 WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
@@ -179,7 +176,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
         String manifestMd5 = calculateManifestMd5();
 
-        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new LinkedHashMap<>();
+        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
 
         xmls.putAll(new SubmissionXmlWriter().createXml(
             getValidationResponse(),
@@ -207,13 +204,16 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         List<File> uploadFileList = new ArrayList<>();
         uploadFileList.addAll(getManifestReader().getManifest().files().files());
 
-        submissionBundle = createSubmissionBundle(uploadDir.toString(), uploadFileList, xmlFileList, manifestMd5);
+        this.submissionBundle = new SubmissionBundle(
+            getSubmitDir(), uploadDir.toString(), uploadFileList, xmlFileList, manifestMd5);
+        if (getParameters().isSaveSubmissionBundleFile()) {
+            SubmissionBundleHelper.write(this.submissionBundle, getSubmitDir());
+        }
     }
 
     public SubmissionBundle getSubmissionBundle() {
-        if (submissionBundle == null && !getParameters().isMinimalFileGeneration()) {
-            submissionBundle = SubmissionBundleHelper.read(calculateManifestMd5(), getSubmitDir());
-            return submissionBundle;
+        if (submissionBundle == null && getParameters().isSaveSubmissionBundleFile()) {
+            return SubmissionBundleHelper.read(calculateManifestMd5(), getSubmitDir());
         }
 
         return submissionBundle;
@@ -327,19 +327,5 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
     private String calculateManifestMd5() {
         return FileUtils.calculateDigest( "MD5", parameters.getManifestFile());
-    }
-
-    private SubmissionBundle createSubmissionBundle(
-        String uploadDir, List<File> uploadFileList,List<SubmissionBundle.SubmissionXMLFile> xmlFileList, String manifestMd5) {
-
-        if (getParameters().isMinimalFileGeneration()) {
-            return new SubmissionXmlMemoryBundle(getSubmitDir(), uploadDir, uploadFileList, xmlFileList, manifestMd5);
-        } else {
-            SubmissionXmlFileBundle sb = new SubmissionXmlFileBundle(
-                getSubmitDir(), uploadDir, uploadFileList, xmlFileList, manifestMd5);
-            SubmissionBundleHelper.write(sb, sb.getSubmissionBundleFile());
-
-            return sb;
-        }
     }
 }

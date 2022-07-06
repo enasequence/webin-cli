@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -57,6 +58,10 @@ FileUtils
 			throw WebinCliException.systemError( ex );
 		}
     }
+
+	public static String calculateDigest(String digestName, byte[] bytes) {
+		return calculateDigest(digestName, new ByteArrayInputStream(bytes));
+	}
 
 	public static String calculateDigest(String digestName, InputStream is) {
 		try {

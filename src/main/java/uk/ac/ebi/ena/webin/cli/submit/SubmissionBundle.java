@@ -10,30 +10,30 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-public abstract class SubmissionBundle implements Serializable {
+public class SubmissionBundle implements Serializable {
     protected static final long serialVersionUID = 1L;
 
-    protected final List<SubmissionXMLFile> xmlFileList;
+    private final String version;
 
-    protected final File submitDir;
+    private final List<SubmissionXMLFile> xmlFileList;
 
-    protected final String uploadDir;
+    private final File submitDir;
 
-    protected final List<File> uploadFileList;
+    private final String uploadDir;
 
-    protected final List<Long> uploadFileSize;
+    private final List<File> uploadFileList;
 
-    protected final String manifestMd5;
+    private final List<Long> uploadFileSize;
+
+    private final String manifestMd5;
 
     public enum SubmissionXMLFileType {
         SUBMISSION,
@@ -44,9 +44,15 @@ public abstract class SubmissionBundle implements Serializable {
 
     public static class SubmissionXMLFile implements Serializable {
         private static final long serialVersionUID = 1L;
-        private File file;
-        private SubmissionXMLFileType type;
+
+        /** XML written in file. */
+        private final File file;
+        private final SubmissionXMLFileType type;
+
+        /** MD5 checksum for the XML file. Only meant to be used during validation of the submission bundle. */
         private String md5;
+
+        /** XML cached in memory. No need to serialize as it gets written in an xml file separately. */
         private transient String xmlContent;
 
         public SubmissionXMLFile( SubmissionXMLFileType type, File file, String xmlContent) {
@@ -59,20 +65,20 @@ public abstract class SubmissionBundle implements Serializable {
             return String.format( "%s|%s|%s", type, file, md5 );
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SubmissionXMLFile xmlFile = (SubmissionXMLFile) o;
+            return file.equals(xmlFile.file) && type == xmlFile.type && Objects.equals(md5, xmlFile.md5);
+        }
+
         public File getFile() {
             return file;
         }
 
-        public void setFile(File file) {
-            this.file = file;
-        }
-
         public SubmissionXMLFileType getType() {
             return type;
-        }
-
-        public void setType(SubmissionXMLFileType type) {
-            this.type = type;
         }
 
         public String getMd5() {
@@ -84,15 +90,7 @@ public abstract class SubmissionBundle implements Serializable {
         }
 
         public String getXmlContent() {
-            try {
-                if (xmlContent == null) {
-                    xmlContent = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
-                }
-
-                return xmlContent;
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+            return xmlContent;
         }
 
         public void setXmlContent(String xmlContent) {
@@ -102,6 +100,7 @@ public abstract class SubmissionBundle implements Serializable {
 
     public SubmissionBundle(File submitDir, String uploadDir, List<File> uploadFileList,
                             List<SubmissionXMLFile> xmlFileList, String manifestMd5 ) {
+        this.version = WebinCli.getVersion();
         this.submitDir = submitDir;
         this.uploadDir = uploadDir;
         this.uploadFileList = uploadFileList;
@@ -109,8 +108,6 @@ public abstract class SubmissionBundle implements Serializable {
         this.xmlFileList = xmlFileList;
         this.manifestMd5 = manifestMd5;
     }
-
-    public abstract void validate( ValidationResult result );
 
     public boolean equals( Object other ) {
         if( other instanceof SubmissionBundle ) {
@@ -123,6 +120,10 @@ public abstract class SubmissionBundle implements Serializable {
                 && this.manifestMd5.equals( sb.manifestMd5);
         }
         return false;
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     public String getManifestMd5() {
@@ -139,6 +140,10 @@ public abstract class SubmissionBundle implements Serializable {
 
     public List<File> getUploadFileList() {
         return uploadFileList;
+    }
+
+    public List<Long> getUploadFileSize() {
+        return uploadFileSize;
     }
 
     public List<SubmissionXMLFile> getXMLFileList() {

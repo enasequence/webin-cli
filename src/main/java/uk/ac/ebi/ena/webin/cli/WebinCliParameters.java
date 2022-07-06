@@ -37,7 +37,11 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private boolean ascp;
   private boolean ignoreErrors;
 
-  private boolean minimalFileGeneration;
+  /** Save submission bundle file to avoid unnecessary revalidation. */
+  private boolean saveSubmissionBundleFile = true;
+
+  /** Save xml files to make them available for diagnostics. */
+  private boolean saveSubmissionXmlFiles = true;
 
   private SampleProcessor sampleProcessor;
   private StudyProcessor studyProcessor;
@@ -167,12 +171,20 @@ public class WebinCliParameters implements MetadataProcessorParameters {
     this.ignoreErrors = ignoreErrors;
   }
 
-  public boolean isMinimalFileGeneration() {
-    return minimalFileGeneration;
+  public boolean isSaveSubmissionBundleFile() {
+    return saveSubmissionBundleFile;
   }
 
-  public void setMinimalFileGeneration(boolean minimalFileGeneration) {
-    this.minimalFileGeneration = minimalFileGeneration;
+  public void setSaveSubmissionBundleFile(boolean saveSubmissionBundleFile) {
+    this.saveSubmissionBundleFile = saveSubmissionBundleFile;
+  }
+
+  public boolean isSaveSubmissionXmlFiles() {
+    return saveSubmissionXmlFiles;
+  }
+
+  public void setSaveSubmissionXmlFiles(boolean saveSubmissionXmlFiles) {
+    this.saveSubmissionXmlFiles = saveSubmissionXmlFiles;
   }
 
   public SampleProcessor getSampleProcessor() {
