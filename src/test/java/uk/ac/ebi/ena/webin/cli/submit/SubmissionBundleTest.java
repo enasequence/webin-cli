@@ -49,5 +49,7 @@ public class SubmissionBundleTest {
         SubmissionBundle actualSb = SubmissionBundleHelper.read( manifestMd5, submitDirectory );
 
         Assert.assertEquals( expectedSb, actualSb );
+        Assert.assertEquals( expectedSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent(),
+            actualSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent() );
     }
 }
