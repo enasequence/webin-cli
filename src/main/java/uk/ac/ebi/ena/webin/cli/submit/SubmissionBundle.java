@@ -10,13 +10,13 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
-import uk.ac.ebi.ena.webin.cli.WebinCli;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import uk.ac.ebi.ena.webin.cli.WebinCli;
 
 public class SubmissionBundle implements Serializable {
     protected static final long serialVersionUID = 1L;

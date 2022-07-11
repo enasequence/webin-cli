@@ -10,17 +10,18 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
-import org.junit.Assert;
-import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 public class SubmissionBundleTest {
 

@@ -1,29 +1,31 @@
+/*
+ * Copyright 2018-2021 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.ena.webin.cli.context;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jdom2.CDATA;
-import org.jdom2.Comment;
 import org.jdom2.Content;
-import org.jdom2.DocType;
-import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.EntityRef;
-import org.jdom2.ProcessingInstruction;
 import org.jdom2.Text;
-import org.jdom2.output.EscapeStrategy;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.jdom2.output.support.XMLOutputProcessor;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class SubmissionXmlWriter<M extends Manifest, R extends ValidationResponse> {
 

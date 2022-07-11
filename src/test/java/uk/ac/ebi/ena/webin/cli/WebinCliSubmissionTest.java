@@ -10,16 +10,16 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
 import java.nio.file.Path;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class WebinCliSubmissionTest {
 

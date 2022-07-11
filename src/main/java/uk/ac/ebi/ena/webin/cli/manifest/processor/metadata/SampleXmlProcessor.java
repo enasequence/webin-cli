@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 import org.springframework.web.client.HttpStatusCodeException;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;

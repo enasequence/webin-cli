@@ -16,7 +16,6 @@ import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
