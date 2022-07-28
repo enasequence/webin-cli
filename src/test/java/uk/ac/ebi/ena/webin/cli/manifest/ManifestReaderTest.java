@@ -10,6 +10,16 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
+import org.junit.Assert;
+import org.junit.Test;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage.Severity;
+import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,16 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage.Severity;
-import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageCounter;
+import java.util.List;
 
 public class ManifestReaderTest {
 
@@ -280,9 +281,9 @@ public class ManifestReaderTest {
                 .build());
 
         manifestReader.readManifest(Paths.get("."), new ManifestBuilder().jsonFormat()
-                .field("fieldName1", "val1").attribute("fieldName1", "attName1", "attval1")
-                .field("field_name_2", "val2").attribute("field_name_2", "att_name_2", "attval2")
-                .field("field-name-3", "val3").attribute("field-name-3", "att-name-3", "attval3")
+                .field("fieldName1", "val1").attribute("attName1", "attval1")
+                .field("field_name_2", "val2").attribute("att_name_2", "attval2")
+                .field("field-name-3", "val3").attribute("att-name-3", "attval3")
                 .build());
 
         Assert.assertEquals(
@@ -299,6 +300,139 @@ public class ManifestReaderTest {
                 manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getValue(), "val3");
         Assert.assertEquals(
                 manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getAttributes().get(0).getValue(), "attval3");
+    }
+
+    @Test public void testJsonManifestSimpleMultiValuedField() {
+        TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
+            .meta().required().name("field").desc("some desc").build());
+
+        File manifestFile = new File(WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/manifests/json/valid/"),
+            "simple-multi-value.json");
+
+        manifestReader.readManifest(Paths.get("."), manifestFile);
+
+        ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field") && field.getValue().equals("val1"))
+            .findFirst().isPresent());
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field") && field.getValue().equals("val2"))
+            .findFirst().isPresent());
+    }
+
+    @Test public void testJsonManifestHavingMultiValueFieldWithOnlyFirstValueHavingAttributes() {
+        TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
+            .meta().required().name("field").desc("some desc")
+            .attributes(new ManifestFieldDefinition.Builder()
+                .attribute().optional().name("attField").desc("some desc").build())
+            .build());
+
+        File manifestFile = new File(WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/manifests/json/valid/"),
+            "multi-value-first-attributes.json");
+
+        manifestReader.readManifest(Paths.get("."), manifestFile);
+
+        ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field") && field.getValue().equals("val1"))
+            .findFirst().isPresent());
+
+        List<ManifestFieldValue> atts = readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field") && field.getValue().equals("val1"))
+            .findFirst().get().getAttributes();
+
+        Assert.assertTrue(atts.stream()
+            .filter(att -> att.getName().equals("attField") && att.getValue().equals("attVal"))
+            .findFirst().isPresent());
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field") && field.getValue().equals("val2"))
+            .findFirst().isPresent());
+    }
+
+    @Test public void testJsonManifestHavingOneValueFieldAndOneObjectField() {
+        TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
+            .meta().required().name("field1").desc("some desc").and()
+            .meta().required().name("field2").desc("some desc")
+            .build());
+
+        File manifestFile = new File(WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/manifests/json/valid/"),
+            "value-and-object.json");
+
+        manifestReader.readManifest(Paths.get("."), manifestFile);
+
+        ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field1") && field.getValue().equals("val1"))
+            .findFirst().isPresent());
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field2") && field.getValue().equals("val2"))
+            .findFirst().isPresent());
+    }
+
+    /** A good example of all possible ways to format the fields. */
+    @Test public void testJsonManifestHavingOneValueFieldAndOneMultiValueFieldWithAttributesAndOneObjectFieldWithoutAttributes() {
+        TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
+            .meta().required().name("field1").desc("some desc").and()
+            .meta().required().name("field2").desc("some desc")
+            .attributes(new ManifestFieldDefinition.Builder()
+                .attribute().optional().name("attField1").desc("some desc").build())
+            .attributes(new ManifestFieldDefinition.Builder()
+                .attribute().optional().name("attField2").desc("some desc").build()).and()
+            .meta().required().name("field3").desc("some desc")
+            .build());
+
+        File manifestFile = new File(WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/manifests/json/valid/"),
+            "all-possible-field-formats.json");
+
+        manifestReader.readManifest(Paths.get("."), manifestFile);
+
+        ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+
+        //field1
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field1") && field.getValue().equals("val1"))
+            .findFirst().isPresent());
+
+        //field2
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field2") && field.getValue().equals("val21"))
+            .findFirst().isPresent());
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field2") && field.getValue().equals("val22"))
+            .findFirst().isPresent());
+
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field2") && field.getValue().equals("val23"))
+            .findFirst().isPresent());
+
+        //attributes
+        List<ManifestFieldValue> atts = readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field2") && field.getValue().equals("val23"))
+            .findFirst().get().getAttributes();
+
+        Assert.assertTrue(atts.stream()
+            .filter(att -> att.getName().equals("attField1") && att.getValue().equals("attVal11"))
+            .findFirst().isPresent());
+
+        Assert.assertTrue(atts.stream()
+            .filter(att -> att.getName().equals("attField1") && att.getValue().equals("attVal12"))
+            .findFirst().isPresent());
+
+        Assert.assertTrue(atts.stream()
+            .filter(att -> att.getName().equals("attField2") && att.getValue().equals("attVal21"))
+            .findFirst().isPresent());
+
+        //field3
+        Assert.assertTrue(readerResult.getFields().stream()
+            .filter(field -> field.getName().equals("field3") && field.getValue().equals("val3"))
+            .findFirst().isPresent());
     }
 
     private static File createManifest(String contents) {

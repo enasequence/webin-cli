@@ -10,9 +10,17 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.Fields.INFO;
-import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.PARSE;
-import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.VALIDATE;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.lang.StringUtils;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
+import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
+import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,19 +42,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.lang.StringUtils;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
-import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
-import uk.ac.ebi.ena.webin.cli.validator.message.listener.MessageListener;
+import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.Fields.INFO;
+import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.PARSE;
+import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReader.ManifestReaderState.State.VALIDATE;
 
 public abstract class
 ManifestReader<M extends Manifest> {
@@ -331,8 +329,8 @@ ManifestReader<M extends Manifest> {
 
             JsonNode jsonNode = objectMapper.readTree(lines.stream().collect(Collectors.joining("\n")));
 
-            jsonNode.fields().forEachRemaining(field -> {
-                String fieldName = field.getKey();
+            jsonNode.fields().forEachRemaining(fieldEntry -> {
+                String fieldName = fieldEntry.getKey();
 
                 //find field definition
                 ManifestFieldDefinition fieldDefinition = Stream.concat( infoFields.stream(), fields.stream() )
@@ -344,54 +342,19 @@ ManifestReader<M extends Manifest> {
                     return;
                 }
 
-                String fieldValue;
-                List<ManifestFieldValue> fieldAttributes = new ArrayList<>();
-
-                JsonNode fieldData = field.getValue();
-                if (fieldData.isValueNode()) {
-                    fieldValue = fieldData.asText();
+                JsonNode field = fieldEntry.getValue();
+                if (field.isValueNode()) {
+                    addManifestField(inputDir, fieldDefinition, field.asText(), new ArrayList<>());
+                } else if (field.isArray()) {
+                    field.elements().forEachRemaining(subField -> {
+                        if (subField.isValueNode()) {
+                            addManifestField(inputDir, fieldDefinition, subField.asText(), new ArrayList<>());
+                        } else {
+                            handleFieldWithAttributes(inputDir, fieldDefinition, subField);
+                        }
+                    });
                 } else {
-                    fieldValue = fieldData.get("value").asText();
-                    //not only should the attributes object be present in the JSON, the field definition must also
-                    //have attribute definitions in it.
-                    if (fieldData.has("attributes") && !fieldDefinition.getFieldAttributes().isEmpty()) {
-                        fieldData.get("attributes").fields().forEachRemaining(att -> {
-                            String attName = att.getKey();
-
-                            //find attribute definition in field's attributes definitions.
-                            ManifestFieldDefinition attDef = fieldDefinition.getFieldAttributes().stream()
-                                    .filter(attFieldDef -> matchNameCaseAndPunctuationInsensitively(attFieldDef.getName(), attName) ||
-                                            attFieldDef.matchSynonym( attName ))
-                                    .findFirst().orElse(null);
-                            if (attDef == null) {
-                                error( WebinCliMessage.MANIFEST_READER_UNKNOWN_ATTRIBUTE_FIELD_ERROR, attName );
-                                return;
-                            }
-
-                            if (att.getValue().isArray()) {
-                                att.getValue().elements().forEachRemaining(elements -> {
-                                    fieldAttributes.add(new ManifestFieldValue(attDef, elements.asText(), new ArrayList<>(),
-                                            new ValidationOrigin("file name", state.fileName)));
-                                });
-                            } else {
-                                fieldAttributes.add(new ManifestFieldValue(attDef, att.getValue().asText(), new ArrayList<>(),
-                                        new ValidationOrigin("file name", state.fileName)));
-                            }
-                        });
-                    }
-                }
-
-                if( fieldValue != null ) {
-                    ManifestFieldValue manifestField = new ManifestFieldValue(fieldDefinition, fieldValue, fieldAttributes,
-                            new ValidationOrigin("file name", state.fileName));
-
-                    getValidationResult().create(manifestField.getOrigin());
-
-                    if( manifestField.getDefinition().getType() == ManifestFieldType.FILE ) {
-                        validateFileExists( inputDir, manifestField );
-                    }
-
-                    manifestReaderResult.getFields().add( manifestField );
+                    handleFieldWithAttributes(inputDir, fieldDefinition, field);
                 }
             });
         } catch (IOException e) {
@@ -399,6 +362,58 @@ ManifestReader<M extends Manifest> {
         }
     }
 
+    private void addManifestField(Path inputDir, ManifestFieldDefinition fieldDefinition,
+                                  String fieldValue, List<ManifestFieldValue> fieldAttributes) {
+
+        if( fieldValue != null ) {
+            ManifestFieldValue manifestField = new ManifestFieldValue(fieldDefinition, fieldValue, fieldAttributes,
+                new ValidationOrigin("file name", state.fileName));
+
+            getValidationResult().create(manifestField.getOrigin());
+
+            if( manifestField.getDefinition().getType() == ManifestFieldType.FILE ) {
+                validateFileExists( inputDir, manifestField );
+            }
+
+            manifestReaderResult.getFields().add( manifestField );
+        }
+    }
+
+    private void handleFieldWithAttributes(Path inputDir, ManifestFieldDefinition fieldDefinition, JsonNode field) {
+        List<ManifestFieldValue> fieldAttributes = new ArrayList<>();
+
+        //Presence of attributes for a field in the JSON is not enough to load them.
+        //The field must have provided the expected attributes in the definition first.
+        if (field.has("attributes") && !fieldDefinition.getFieldAttributes().isEmpty()) {
+            field.get("attributes").fields().forEachRemaining(attEntry -> {
+                String attName = attEntry.getKey();
+
+                //find attribute definition in field's attributes definitions.
+                ManifestFieldDefinition attDef = fieldDefinition.getFieldAttributes().stream()
+                    .filter(attFieldDef -> matchNameCaseAndPunctuationInsensitively(attFieldDef.getName(), attName) ||
+                        attFieldDef.matchSynonym( attName ))
+                    .findFirst().orElse(null);
+                if (attDef == null) {
+                    error( WebinCliMessage.MANIFEST_READER_UNKNOWN_ATTRIBUTE_FIELD_ERROR, attName );
+                    return;
+                }
+
+                JsonNode att = attEntry.getValue();
+
+                if (att.isArray()) {
+                    att.elements().forEachRemaining(textElement -> {
+                        fieldAttributes.add(new ManifestFieldValue(attDef, textElement.asText(), new ArrayList<>(),
+                            new ValidationOrigin("file name", state.fileName)));
+                    });
+                } else {
+                    fieldAttributes.add(new ManifestFieldValue(attDef, att.asText(), new ArrayList<>(),
+                        new ValidationOrigin("file name", state.fileName)));
+                }
+            });
+        }
+
+        addManifestField(inputDir, fieldDefinition, field.get("value").asText(), fieldAttributes);
+    }
 
     private void
     validateManifest()
@@ -742,18 +757,14 @@ ManifestReader<M extends Manifest> {
             return new File(fileName);
     }
 
-    protected static List<Map.Entry<String, String>> getAttributes(ManifestReaderResult result, String fieldName) {
-        if (result.getField(fieldName) == null) {
-            return null;
-        }
+    protected static List<Map.Entry<String, String>> getAttributes(ManifestFieldValue field) {
+        return field.getAttributes().stream()
+            .map(attField -> {
+                Map<String, String> map = new HashMap<>();
+                map.put(attField.getName(), attField.getValue());
 
-        return result.getField(fieldName).getAttributes().stream()
-                .map(attField -> {
-                    Map<String, String> map = new HashMap<>();
-                    map.put(attField.getName(), attField.getValue());
-
-                    return map.entrySet().stream().findFirst().get();
-                }).collect(Collectors.toList());
+                return map.entrySet().stream().findFirst().get();
+            }).collect(Collectors.toList());
     }
 
     /** Adds an error to the validation result.

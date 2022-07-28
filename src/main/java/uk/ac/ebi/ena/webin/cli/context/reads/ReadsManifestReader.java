@@ -10,18 +10,13 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
 import org.apache.commons.lang.StringUtils;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestCVList;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
@@ -33,6 +28,9 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.QualityScore;
+
+import java.io.File;
+import java.util.stream.Stream;
 
 public class
 ReadsManifestReader extends ManifestReader<ReadsManifest> {
@@ -95,7 +93,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
             QUALITY_SCORE_LOGODDS
     );
     public final static ManifestCVList CV_READ_TYPE = new ManifestCVList(
-            "single", "paired", "cell_barcode", "umi_barcode", "feature_barcode", "sample_barcode"
+            "single", "paired", "cell_barcode", "umi_barcode", "feature_barcode", "sample_barcode", "spatial_barcode"
     );
 
     private final ReadsManifest manifest = new ReadsManifest();
@@ -121,7 +119,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                        .meta().optional().name(Field.LIBRARY_NAME).desc(Description.LIBRARY_NAME).and()
                        .meta().optional().name(Field.INSERT_SIZE).desc(Description.INSERT_SIZE).and()
 
-                       .file().optional(2).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors())
+                       .file().optional(999).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors())
                          .attributes(new ManifestFieldDefinition.Builder().attribute().optional().name(Field.READ_TYPE)
                            .desc(Description.READ_TYPE).processor(new CVFieldProcessor(CV_READ_TYPE)).build())
                        .and()
@@ -136,8 +134,8 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
-                        .group("Single or paired sequence reads in one or two fastq files.")
-                        .required(Field.FASTQ, 2)
+                        .group("Single or paired sequence reads in multiple files.")
+                        .required(Field.FASTQ, 999)
                         .and()
                         .group("Sequence reads in a CRAM file.")
                         .required(Field.CRAM)
@@ -233,8 +231,13 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
         getFiles( getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.BAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.BAM, file ) ) );
         getFiles( getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.CRAM ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.CRAM, file ) ) );
 
-        List<Map.Entry<String, String>> fastqAtts = getAttributes(getManifestReaderResult(), ReadsManifestReader.Field.FASTQ);
-        getFiles( getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.FASTQ ).forEach(file -> submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.FASTQ, file, fastqAtts ) ) );
+        getManifestReaderResult().getFields().stream()
+            .filter(field -> field.getDefinition().getType() == ManifestFieldType.FILE && field.getName().equals(ReadsManifestReader.Field.FASTQ))
+            .forEach(field -> {
+                File file = getFile(getInputDir(), field).toPath().normalize().toFile();
+
+                submissionFiles.add( new SubmissionFile( ReadsManifest.FileType.FASTQ, file, getAttributes(field) ) );
+            });
     }
 
     private void

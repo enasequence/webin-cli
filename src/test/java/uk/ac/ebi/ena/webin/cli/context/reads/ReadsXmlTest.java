@@ -10,8 +10,20 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.XmlTester;
+import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,16 +33,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import uk.ac.ebi.ena.webin.cli.*;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
-import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ReadsXmlTest {
   @Before
@@ -309,19 +313,13 @@ public class ReadsXmlTest {
 
   @Test
   public void testRunWithReadTypeFastqFile() {
-    List<Map.Entry<String, String>> readTypeAttributes = new ArrayList<>();
-    Stream.of("single", "sample_barcode").forEach(readType -> {
-      Map<String, String> map = new HashMap<>();
-      map.put("READ_TYPE", readType);
-
-      readTypeAttributes.add(map.entrySet().stream().findFirst().get());
-    });
-
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
     Path file =  TempFileBuilder.empty("fastq");
-    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), readTypeAttributes));
+    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), createReadTypeAttributes("sample_barcode")));
+    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), createReadTypeAttributes("paired", "umi_barcode")));
+    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), createReadTypeAttributes("paired", "cell_barcode")));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
@@ -336,12 +334,32 @@ public class ReadsXmlTest {
                     + "    <DATA_BLOCK>\n"
                     + "      <FILES>\n"
                     + "        <FILE filename=\"webin-cli/reads/" + NAME + "/" + file.getFileName() + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
-                    + "          <READ_TYPE>single</READ_TYPE>\n"
                     + "          <READ_TYPE>sample_barcode</READ_TYPE>\n"
+                    + "        </FILE>\n"
+                    + "        <FILE filename=\"webin-cli/reads/" + NAME + "/" + file.getFileName() + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
+                    + "          <READ_TYPE>paired</READ_TYPE>\n"
+                    + "          <READ_TYPE>umi_barcode</READ_TYPE>\n"
+                    + "        </FILE>\n"
+                    + "        <FILE filename=\"webin-cli/reads/" + NAME + "/" + file.getFileName() + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
+                    + "          <READ_TYPE>paired</READ_TYPE>\n"
+                    + "          <READ_TYPE>cell_barcode</READ_TYPE>\n"
                     + "        </FILE>\n"
                     + "      </FILES>\n"
                     + "    </DATA_BLOCK>\n"
                     + "  </RUN>\n"
                     + "</RUN_SET>");
+  }
+
+  private List<Map.Entry<String, String>> createReadTypeAttributes(String... atts) {
+    List<Map.Entry<String, String>> readTypeAttributes = new ArrayList<>();
+
+    Stream.of(atts).forEach(readType -> {
+      Map<String, String> map = new HashMap<>();
+      map.put("READ_TYPE", readType);
+
+      readTypeAttributes.add(map.entrySet().stream().findFirst().get());
+    });
+
+    return readTypeAttributes;
   }
 }

@@ -10,6 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.utils;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -23,10 +26,6 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class 
 FileUtils 
@@ -53,7 +52,7 @@ FileUtils
 
     public static String calculateDigest( String digestName, File file ) {
     	try {
-			return calculateDigest(digestName, new FileInputStream( file ));
+			return calculateDigest(digestName, new BufferedInputStream(new FileInputStream( file ), 1024 * 1024));
 		} catch( IOException ex ) {
 			throw WebinCliException.systemError( ex );
 		}
