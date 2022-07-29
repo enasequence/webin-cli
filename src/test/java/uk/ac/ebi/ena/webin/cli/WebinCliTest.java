@@ -10,17 +10,17 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDir;
-import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.UUID;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDir;
+import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
 
 public class WebinCliTest {
 
@@ -531,7 +531,7 @@ public class WebinCliTest {
                 "│SUBMISSION_TOOL_VERS│Optional   │Version number of the third-party or         │\n" +
                 "│ION                 │           │developed tool used to submit to ENA         │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
-                "│FASTQ               │0-2 files  │Fastq file                                   │\n" +
+                "│FASTQ               │0-10 files │Fastq file                                   │\n" +
                 "│                    │           │READ_TYPE attribute:                         │\n" +
                 "│                    │           │* single                                     │\n" +
                 "│                    │           │* paired                                     │\n" +
@@ -539,6 +539,7 @@ public class WebinCliTest {
                 "│                    │           │* umi_barcode                                │\n" +
                 "│                    │           │* feature_barcode                            │\n" +
                 "│                    │           │* sample_barcode                             │\n" +
+                "│                    │           │* spatial_barcode                            │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│BAM                 │0-1 files  │BAM file                                     │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
@@ -550,9 +551,8 @@ public class WebinCliTest {
                 "┌──────────────────────────────┬───────────────┬───────────────┬───────────────┐\n" +
                 "│Data files                    │FASTQ          │BAM            │CRAM           │\n" +
                 "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +
-                "│Single or paired sequence     │1-2            │               │               │\n" +
-                "│reads in one or two fastq     │               │               │               │\n" +
-                "│files.                        │               │               │               │\n" +
+                "│Single or paired sequence     │1-10           │               │               │\n" +
+                "│reads in multiple fastq files.│               │               │               │\n" +
                 "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +
                 "│Sequence reads in a CRAM file.│               │               │1              │\n" +
                 "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n" +

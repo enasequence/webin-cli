@@ -10,19 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
-import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
-
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.Locale;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.ReportTester;
 import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
@@ -36,6 +26,15 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
+
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Locale;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
+import static uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader.Field;
 
 public class
 ReadsManifestReaderTest {
@@ -301,10 +300,8 @@ ReadsManifestReaderTest {
     }
 
     @Test
-    public void testValidManifestNew() {
+    public void testValidReadsManifestWithMultipleFastqs() {
         ReadsManifestReader manifestReader = createManifestReader();
-        ReadsManifest manifest = manifestReader.getManifest();
-
         manifestReader.readManifest(Paths.get("."),
                 new ManifestBuilder().jsonFormat()
                         .field(Field.PLATFORM, "illumina")
@@ -320,9 +317,15 @@ ReadsManifestReaderTest {
                         .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
                         .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
                         .file("FASTQ", TempFileBuilder.empty("fastq"))
-                        .attribute("FASTQ", "READ_TYPE", "single")
-                        .attribute("FASTQ", "READ_TYPE", "sample_barcode")
+                            .attribute("READ_TYPE", "paired")
+                            .attribute("READ_TYPE", "sample_barcode")
+                        .file("FASTQ", TempFileBuilder.empty("fastq"))
+                            .attribute("READ_TYPE", "paired")
+                        .file("FASTQ", TempFileBuilder.empty("fastq"))
+                            .attribute("READ_TYPE", "cell_barcode")
                         .build());
+
+        ReadsManifest manifest = manifestReader.getManifest();
 
         Assert.assertEquals("ILLUMINA", manifest.getPlatform());
         Assert.assertEquals("Illumina HiScanSQ", manifest.getInstrument());
@@ -336,8 +339,10 @@ ReadsManifestReaderTest {
         Assert.assertEquals("description", manifest.getDescription());
         Assert.assertEquals("ST-001", manifest.getSubmissionTool());
         Assert.assertEquals("STV-001", manifest.getSubmissionToolVersion());
-        assertThat(manifest.files().files()).size().isOne();
-        Assert.assertTrue(manifest.files().get().get(0).getAttributes().stream().anyMatch(att -> att.getValue().equals("single")));
+        assertThat(manifest.files().files()).size().isEqualTo(3);
+        Assert.assertTrue(manifest.files().get().get(0).getAttributes().stream().anyMatch(att -> att.getValue().equals("paired")));
         Assert.assertTrue(manifest.files().get().get(0).getAttributes().stream().anyMatch(att -> att.getValue().equals("sample_barcode")));
+        Assert.assertTrue(manifest.files().get().get(1).getAttributes().stream().anyMatch(att -> att.getValue().equals("paired")));
+        Assert.assertTrue(manifest.files().get().get(2).getAttributes().stream().anyMatch(att -> att.getValue().equals("cell_barcode")));
     }
 }

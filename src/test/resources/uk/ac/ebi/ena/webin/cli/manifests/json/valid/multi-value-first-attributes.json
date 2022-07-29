@@ -1,0 +1,11 @@
+{
+  "field": [
+    {
+      "value": "val1",
+      "attributes": {
+        "attField": "attVal"
+      }
+    },
+    "val2"
+  ]
+}

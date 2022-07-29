@@ -10,19 +10,22 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
-
-import java.io.File;
-
 import org.junit.Test;
-
-import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.ReportTester;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
+import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
+
+import java.io.File;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 public class ReadsValidationTest {
 
@@ -176,30 +179,6 @@ public class ReadsValidationTest {
                 .hasMessage("");
 
         new ReportTester(executor).textInSubmissionReport("Detected paired fastq submission with less than 20% of paired reads");
-    }
-
-    @Test
-    public void
-    sameFilePairedFastq() {
-        File manifestFile =
-                manifestBuilder()
-                        .file(FileType.FASTQ, "valid.fastq.gz")
-                        .file(FileType.FASTQ, "valid.fastq.gz")
-                        .build();
-
-        WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-                executorBuilder.build(manifestFile, RESOURCE_DIR);
-        executor.readManifest();
-        SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
-        assertThat(submissionFiles.get().size()).isEqualTo(2);
-        assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
-
-        assertThatThrownBy(() -> executor.validateSubmission())
-                .isInstanceOf(WebinCliException.class)
-                .hasMessage("");
-
-        System.out.println(executor.getValidationDir().getAbsolutePath());
-        new ReportTester(executor).textInSubmissionReport("Multiple (1) occurrences of read name");
     }
 
     @Test

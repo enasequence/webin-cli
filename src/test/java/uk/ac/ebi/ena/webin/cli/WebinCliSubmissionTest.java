@@ -10,16 +10,16 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
-
-import java.io.File;
-import java.nio.file.Path;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import java.io.File;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 public class WebinCliSubmissionTest {
 
@@ -150,6 +150,16 @@ public class WebinCliSubmissionTest {
     public void testReadsSubmissionCramWithAscp() {
         ManifestBuilder manifest = readsManifest()
                 .file("CRAM", "valid.cram");
+        WebinCliBuilder.READS.ascp(true).build(READS_RESOURCE_DIR, manifest).execute();
+    }
+
+    @Test
+    public void testReadsSubmissionWithMultipleFastq() {
+        ManifestBuilder manifest = readsManifest()
+            .file("FASTQ", "10x/4fastq/I1.fastq.gz")
+            .file("FASTQ", "10x/4fastq/R1.fastq.gz")
+            .file("FASTQ", "10x/4fastq/R2.fastq.gz")
+            .file("FASTQ", "10x/4fastq/R3.fastq.gz");
         WebinCliBuilder.READS.ascp(true).build(READS_RESOURCE_DIR, manifest).execute();
     }
 

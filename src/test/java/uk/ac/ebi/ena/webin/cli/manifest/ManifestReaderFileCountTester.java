@@ -10,30 +10,29 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
-
-import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T extends ManifestReader> {
 
-  private final List<FileType> fileTypes;
+  private final List<FileType> allFileTypes;
   private final List<Multiset<FileType>> validFileGroups = new ArrayList<>();
   private final ManifestReaderTester manifestReaderTester;
-  private HashMap<FileType, Integer> maxFiles;
+  private HashMap<FileType, Integer> fileMaxOccurrenceCount;
   private ManifestBuilder manifestBuilder = new ManifestBuilder();
 
-  public ManifestReaderFileCountTester(Class<T> manifestReaderClass, FileType... fileTypes) {
-    this.fileTypes = Arrays.asList(fileTypes);
+  public ManifestReaderFileCountTester(Class<T> manifestReaderClass, FileType... allFileTypes) {
+    this.allFileTypes = Arrays.asList(allFileTypes);
     this.manifestReaderTester = new ManifestReaderTester(manifestReaderClass);
   }
 
@@ -49,8 +48,10 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
 
   private boolean isValidFileGroup(Multiset<FileType> files) {
     for (Multiset<FileType> validFileGroup : validFileGroups) {
-      if (Multisets.difference(validFileGroup, files).isEmpty()
-          && Multisets.difference(files, validFileGroup).isEmpty()) {
+      Multiset<FileType> diff1 = Multisets.difference(validFileGroup, files);
+      Multiset<FileType> diff2 = Multisets.difference(files, validFileGroup);
+
+      if (diff1.isEmpty() && diff2.isEmpty()) {
         return true;
       }
     }
@@ -58,23 +59,30 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
   }
 
   public void test() {
-    this.maxFiles = new HashMap<>();
+    this.fileMaxOccurrenceCount = new HashMap<>();
+
     for (Multiset<FileType> validFileGroup : validFileGroups) {
-      HashMap<FileType, Integer> maxFilesFileGroup = new HashMap<>();
+
+      HashMap<FileType, Integer> fileOccurenceCountMap = new HashMap<>();
+
+      //find count for each file type in the current group.
       for (FileType fileType : validFileGroup) {
-        if (maxFilesFileGroup.containsKey(fileType)) {
-          maxFilesFileGroup.put(fileType, maxFilesFileGroup.get(fileType) + 1);
+        if (fileOccurenceCountMap.containsKey(fileType)) {
+          fileOccurenceCountMap.put(fileType, fileOccurenceCountMap.get(fileType) + 1);
         } else {
-          maxFilesFileGroup.put(fileType, 1);
+          fileOccurenceCountMap.put(fileType, 1);
         }
       }
-      for (FileType fileType : maxFilesFileGroup.keySet()) {
-        if (maxFiles.containsKey(fileType)) {
-          if (maxFiles.get(fileType) < maxFilesFileGroup.get(fileType)) {
-            maxFiles.put(fileType, maxFilesFileGroup.get(fileType));
+
+      //Take information from above and update the global file count map with it.
+      for (FileType fileType : fileOccurenceCountMap.keySet()) {
+        if (fileMaxOccurrenceCount.containsKey(fileType)) {
+          //If global file count is lower than what was calculated above then replace it.
+          if (fileMaxOccurrenceCount.get(fileType) < fileOccurenceCountMap.get(fileType)) {
+            fileMaxOccurrenceCount.put(fileType, fileOccurenceCountMap.get(fileType));
           }
         } else {
-          maxFiles.put(fileType, maxFilesFileGroup.get(fileType));
+          fileMaxOccurrenceCount.put(fileType, fileOccurenceCountMap.get(fileType));
         }
       }
     }
@@ -83,11 +91,14 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
     test(0, files);
   }
 
+  /** This method is recursively called for all possible combination of file types. */
   private void test(int level, Multiset<FileType> files) {
-    if (level < fileTypes.size()) {
-      FileType fileType = fileTypes.get(level);
-      int fileTypeMaxFiles = maxFiles.get(fileType) != null ? maxFiles.get(fileType) : 1;
-      for (int fileCnt = 0; fileCnt <= fileTypeMaxFiles; ++fileCnt) {
+    if (level < allFileTypes.size()) {
+      FileType fileType = allFileTypes.get(level);
+
+      int fileOccurrenceCount = fileMaxOccurrenceCount.get(fileType) != null ? fileMaxOccurrenceCount.get(fileType) : 1;
+
+      for (int fileCnt = 0; fileCnt <= fileOccurrenceCount; ++fileCnt) {
         Multiset<FileType> s = HashMultiset.create(files);
         s.add(fileType, fileCnt);
         test(level + 1, s);
@@ -114,7 +125,7 @@ public class ManifestReaderFileCountTester<FileType extends Enum<FileType>, T ex
                     manifest, WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR);
       }
 
-      for (FileType fileType : fileTypes) {
+      for (FileType fileType : allFileTypes) {
           System.out.println("Manifest " + fileType + " file count: " + files.count(fileType));
           System.out.println("ManifestReader "+ fileType + " file count: " + manifestReader.getManifest().files().get(fileType).size());
           assertThat(manifestReader.getManifest().files().get(fileType).size())

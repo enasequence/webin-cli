@@ -10,14 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.nio.file.Path;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import java.io.File;
+import java.nio.file.Path;
 
 public class ManifestBuilder {
 
@@ -30,7 +30,12 @@ public class ManifestBuilder {
 
     private String manifest = "";
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     private ObjectNode jsonManifest;
+
+    private String lastModifiedFieldName;
+    private JsonNode lastModifiedField;
 
     public ManifestBuilder jsonFormat() {
         manifestFormat = ManifestFormat.JSON;
@@ -55,43 +60,75 @@ public class ManifestBuilder {
         return field("NAME", String.format("TEST %X", System.currentTimeMillis()));
     }
 
-    public ManifestBuilder field(String field, String value) {
+    public ManifestBuilder field(String fieldName, String value) {
         if (manifestFormat == ManifestFormat.KEY_VALUE) {
-            if (field != null && value != null) {
-                manifest += field + "\t" + value + "\n";
+            if (fieldName != null && value != null) {
+                manifest += fieldName + "\t" + value + "\n";
             }
         } else {
             if (jsonManifest == null) {
-                jsonManifest = new ObjectMapper().createObjectNode();
+                jsonManifest = objectMapper.createObjectNode();
             }
 
-            jsonManifest.put(field, value);
+            JsonNode existingField = jsonManifest.get(fieldName);
+            if (existingField != null) {
+                if (existingField.isArray()) {
+                    ObjectNode newField = objectMapper.createObjectNode();
+                    newField.put("value", value);
+                    ((ArrayNode)existingField).add(newField);
+
+                    lastModifiedFieldName = fieldName;
+                    lastModifiedField = newField;
+                } else {
+                    //convert this field into array
+                    ArrayNode convertedArrayNode = jsonManifest.putArray(fieldName);
+
+                    //add existing object into the array
+                    if (existingField.isValueNode()) {
+                        //convert it into object
+                        ObjectNode newField = objectMapper.createObjectNode();
+                        newField.put("value", existingField.asText());
+
+                        convertedArrayNode.add(existingField);
+                    } else {
+                        convertedArrayNode.add(existingField);
+                    }
+
+                    //new object into the array
+                    ObjectNode newField = objectMapper.createObjectNode();
+                    newField.put("value", value);
+                    convertedArrayNode.add(newField);
+
+                    lastModifiedFieldName = fieldName;
+                    lastModifiedField = newField;
+                }
+            } else {
+                jsonManifest.put(fieldName, value);
+                lastModifiedFieldName = fieldName;
+                lastModifiedField = jsonManifest.get(fieldName);
+            }
         }
 
         return this;
     }
 
-    public ManifestBuilder attribute(String field, String attributeKey, String attributeValue) {
-        if (manifestFormat != ManifestFormat.JSON) {
+    public ManifestBuilder attribute(String attributeKey, String attributeValue) {
+        if (manifestFormat != ManifestFormat.JSON || lastModifiedField == null) {
             return this;
         }
 
-        JsonNode fieldNode = jsonManifest.get(field);
-        if (fieldNode == null) {
-             throw new RuntimeException("Field not found : " + field);
-        }
-
-        if (fieldNode.isValueNode()) {
+        if (lastModifiedField.isValueNode()) {
             //replace {field: value} with {field: {value: value, attributes: {...}}}
 
-            String currentValue = fieldNode.asText();
+            String currentValue = lastModifiedField.asText();
 
-            ObjectNode newField = jsonManifest.putObject(field);
+            ObjectNode newField = jsonManifest.putObject(lastModifiedFieldName);
             newField.put("value", currentValue);
-
             newField.putObject("attributes").put(attributeKey, attributeValue);
+
+            lastModifiedField = newField;
         } else {
-            ObjectNode fieldObjectNode = (ObjectNode) fieldNode;
+            ObjectNode fieldObjectNode = (ObjectNode) lastModifiedField;
 
             if (fieldObjectNode.has("attributes")) {
                 ObjectNode atts = (ObjectNode) fieldObjectNode.get("attributes");
@@ -99,7 +136,7 @@ public class ManifestBuilder {
                     atts.put(attributeKey, attributeValue);
                 } else {
                     if (atts.get(attributeKey).isArray()) {
-                        //if attribute is already an array then append the value in it.
+                        //if attribute is already an array then append the value to it.
                         ((ArrayNode)atts.get(attributeKey)).add(attributeValue);
                     } else {
                         //convert attribute to array and put back old and new values in it.
