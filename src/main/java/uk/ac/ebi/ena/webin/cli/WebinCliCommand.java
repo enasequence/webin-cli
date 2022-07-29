@@ -65,7 +65,10 @@ WebinCliCommand
     @Option(names = Options.validate, description = Descriptions.validate, defaultValue = "false", order = 7)
     public boolean validate;
 
-    @Option(names = Options.noQuick, description = Descriptions.quick, order = 8, negatable = true)
+    /** This used to be visible but later marked hidden to prevent users from getting confused when they tried to
+     * understand its purpose. It was also set to be true by default around the same time as the shorter validation
+     * was deemed reasonably good enough for most use cases. */
+    @Option(names = Options.noQuick, description = Descriptions.quick, order = 8, negatable = true, hidden = true)
     public boolean quick = true;
 
     @Option(names = Options.submit, description = Descriptions.submit, order = 9)

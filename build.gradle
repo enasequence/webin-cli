@@ -94,7 +94,7 @@ task printWebinTestCredentials {
 
 dependencies {
     implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.4.0' )
-    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.10.11')
+    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.10.12')
     implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
     implementation( 'uk.ac.ebi.ena:readtools:1.16.2' )
 

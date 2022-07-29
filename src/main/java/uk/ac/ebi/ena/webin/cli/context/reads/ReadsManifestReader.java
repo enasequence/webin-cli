@@ -119,7 +119,7 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                        .meta().optional().name(Field.LIBRARY_NAME).desc(Description.LIBRARY_NAME).and()
                        .meta().optional().name(Field.INSERT_SIZE).desc(Description.INSERT_SIZE).and()
 
-                       .file().optional(999).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors())
+                       .file().optional(10).name(Field.FASTQ).desc(Description.FASTQ).processor(getFastqProcessors())
                          .attributes(new ManifestFieldDefinition.Builder().attribute().optional().name(Field.READ_TYPE)
                            .desc(Description.READ_TYPE).processor(new CVFieldProcessor(CV_READ_TYPE)).build())
                        .and()
@@ -134,8 +134,8 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
                 ,
                 // File groups.
                 new ManifestFileCount.Builder()
-                        .group("Single or paired sequence reads in multiple files.")
-                        .required(Field.FASTQ, 999)
+                        .group("Single or paired sequence reads in multiple fastq files.")
+                        .required(Field.FASTQ, 10)
                         .and()
                         .group("Sequence reads in a CRAM file.")
                         .required(Field.CRAM)
