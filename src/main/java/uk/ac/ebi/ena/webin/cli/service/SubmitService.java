@@ -136,9 +136,7 @@ public class SubmitService extends WebinService {
             StringWriter stringWriter = new StringWriter();
             xmlOutput.output(doc, stringWriter);
 
-            if (saveSubmissionXmlFiles) {
-                saveToFile(Paths.get(submitDir + File.separator + RECEIPT_XML_NAME), stringWriter.toString());
-            }
+            saveToFile(Paths.get(submitDir + File.separator + RECEIPT_XML_NAME), stringWriter.toString());
 
             Element rootNode = doc.getRootElement();
 
