@@ -418,6 +418,8 @@ public class WebinCliTest {
                 "│                    │           │* DNBSEQ-G400                                │\n" +
                 "│                    │           │* DNBSEQ-G50                                 │\n" +
                 "│                    │           │* DNBSEQ-G400 FAST                           │\n" +
+                "│                    │           │* Element AVITI                              │\n" +
+                "│                    │           │* UG 100                                     │\n" +
                 "│                    │           │* unspecified                                │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│LIBRARY_SOURCE      │Mandatory  │Source material:                             │\n" +
@@ -518,6 +520,8 @@ public class WebinCliTest {
                 "│                    │           │* ION_TORRENT                                │\n" +
                 "│                    │           │* CAPILLARY                                  │\n" +
                 "│                    │           │* DNBSEQ                                     │\n" +
+                "│                    │           │* ELEMENT                                    │\n" +
+                "│                    │           │* ULTIMA                                     │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│LIBRARY_CONSTRUCTION│Optional   │Protocol used to construct the sequencing    │\n" +
                 "│_PROTOCOL           │           │library                                      │\n" +
