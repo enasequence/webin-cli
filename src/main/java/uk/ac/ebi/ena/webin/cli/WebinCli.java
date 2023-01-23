@@ -312,7 +312,8 @@ public class WebinCli {
     submit(WebinCliExecutor<?, ?> executor) {
         SubmissionBundle bundle = executor.getSubmissionBundle();
 
-        UploadService fileUploadService = parameters.isAscp() && new ASCPService().isAvailable() ? new ASCPService() : new FtpService();
+        UploadService fileUploadService = parameters.isAscp() && new ASCPService().isAvailable()
+            ? new ASCPService() : new FtpService();
 
         try {
             fileUploadService.connect(parameters.getFileUploadServiceUserName(), parameters.getPassword());

@@ -18,13 +18,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.retry.RetryCallback;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.utils.ShellExec;
 
 
-public class 
-ASCPService implements UploadService
+public class ASCPService extends AbstractRetryCapableUploadService
 {
     private static final String EXECUTABLE = "ascp";
     private String userName;
@@ -105,12 +105,20 @@ ASCPService implements UploadService
             Map<String, String> vars = new HashMap<>();
             vars.put( "ASPERA_SCP_PASS", this.password );
             vars.put( "PATH", System.getenv( "PATH" ) );
-            int exitVal = new ShellExec( cmd, vars ).exec( true );
-            if( 0 != exitVal )
-                throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
-            
-        } catch( Exception ex )
-        {
+
+            createRetryTemplate(Exception.class).execute((RetryCallback<Void, Exception>) context -> {
+                int exitVal = new ShellExec( cmd, vars ).exec( true );
+
+                // Even when the process completes normally, throw error as long as exit code is not 0 so a
+                // retry can be attempted.
+                if( 0 != exitVal )
+                    throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
+
+                return null;
+            });
+        } catch (WebinCliException ex) {
+            throw ex;
+        } catch( Exception ex ) {
             throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text(), ex.getMessage());
         }
     }

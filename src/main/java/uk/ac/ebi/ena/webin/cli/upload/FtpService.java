@@ -14,6 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,10 +27,11 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.retry.RetryCallback;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
-public class FtpService implements UploadService {
+public class FtpService extends AbstractRetryCapableUploadService {
     private final static String SERVER = "webin2.ebi.ac.uk";
     private final static int FTP_PORT = 21;
     private final FTPSClient ftpClient = new FTPSClient() ;
@@ -40,15 +42,26 @@ public class FtpService implements UploadService {
         try {
             ftpClient.setRemoteVerificationEnabled(false);
             ftpClient.setActivePortRange(40000, 50000);
-            ftpClient.connect(SERVER, FTP_PORT);
-        } catch (IOException e) {
-            throw WebinCliException.systemError(WebinCliMessage.FTP_CONNECT_ERROR.text());
+
+            createRetryTemplate(SocketException.class, IOException.class)
+                .execute((RetryCallback<Void, Exception>) context -> {
+                    ftpClient.connect(SERVER, FTP_PORT);
+                    return null;
+                });
+        } catch (Exception e) {
+            throw WebinCliException.systemError(WebinCliMessage.FTP_CONNECT_ERROR.text(), e.getMessage());
         }
         try {
-            if (!ftpClient.login(userName, password))
-                throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
-        } catch (IOException e) {
-            throw WebinCliException.systemError(WebinCliMessage.FTP_CONNECT_ERROR.text());
+            createRetryTemplate(IOException.class)
+                .execute((RetryCallback<Void, Exception>) context -> {
+                    if (!ftpClient.login(userName, password))
+                        throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+                    return null;
+                });
+        } catch (WebinCliException e) {
+            throw e;
+        } catch (Exception e) {
+            throw WebinCliException.systemError(WebinCliMessage.FTP_SERVER_ERROR.text(), e.getMessage());
         }
     }
 
@@ -57,19 +70,35 @@ public class FtpService implements UploadService {
     storeFile(Path local, Path remote) throws IOException
     {
         Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
-        try( InputStream fileInputStream = new BufferedInputStream( Files.newInputStream( local ) ) )    
-        {
-            log.info( String.format( "Uploading file: %s\n", local ) );
 
-            int level = changeToSubdir( subdir );       
-            if( !ftpClient.storeFile( remote.getFileName().toString(), fileInputStream ) )
-                throw WebinCliException.systemError( WebinCliMessage.FTP_UPLOAD_ERROR.format(remote.getFileName().toString()) );
-            
+        log.info( String.format( "Uploading file: %s\n", local ) );
+
+        int level = changeToSubdir( subdir );
+
+        try {
+            createRetryTemplate(IOException.class).execute((RetryCallback<Void, Exception>) context -> {
+                // In case of a retry, the whole file will be attempted for re-uploading. Hence, the input stream
+                // will need to be created again so the whole can be re-read from beginning.
+                try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(local))) {
+                    if (!ftpClient.storeFile(remote.getFileName().toString(), fileInputStream))
+                        throw WebinCliException.systemError(WebinCliMessage.FTP_UPLOAD_ERROR.format(remote.getFileName().toString()));
+                }
+
+                return null;
+            });
+
             for( int l = 0; l < level; ++l )
             {
-                if( !ftpClient.changeToParentDirectory() )
-                    throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format("parent") );
+                createRetryTemplate(IOException.class).execute((RetryCallback<Void, Exception>) context -> {
+                    if( !ftpClient.changeToParentDirectory() )
+                        throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format("parent") );
+                    return null;
+                });
             }
+        } catch (WebinCliException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw WebinCliException.systemError( WebinCliMessage.FTP_SERVER_ERROR.text(), ex.getMessage());
         }
     }
 
@@ -89,17 +118,34 @@ public class FtpService implements UploadService {
             {
                 throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(dir) );
             }
-            
-            if(Stream.of( ftpClient.listDirectories() ).noneMatch(f -> dir.equals( f.getName() ) ))
-            {
-                if( !ftpClient.makeDirectory( dir ) )
-                    throw WebinCliException.systemError( WebinCliMessage.FTP_CREATE_DIR_ERROR.format(dir) );
-            }
-            
-            if( !ftpClient.changeWorkingDirectory( dir ) )
-                throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(dir) );
 
-            level ++;
+            try {
+                FTPFile[] ftpDirs = createRetryTemplate(IOException.class)
+                    .execute((RetryCallback<FTPFile[], Exception>) context -> ftpClient.listDirectories());
+
+                if(Stream.of( ftpDirs ).noneMatch(f -> dir.equals( f.getName() ) ))
+                {
+                    createRetryTemplate(IOException.class)
+                        .execute((RetryCallback<Void, Exception>) context -> {
+                            if( !ftpClient.makeDirectory( dir ) )
+                                throw WebinCliException.systemError( WebinCliMessage.FTP_CREATE_DIR_ERROR.format(dir) );
+                            return null;
+                        });
+                }
+
+                createRetryTemplate(IOException.class)
+                    .execute((RetryCallback<Void, Exception>) context -> {
+                        if( !ftpClient.changeWorkingDirectory( dir ) )
+                            throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(dir) );
+                        return null;
+                    });
+
+                level ++;
+            } catch (WebinCliException e) {
+                throw e;
+            } catch (Exception ex) {
+                throw WebinCliException.systemError(WebinCliMessage.FTP_SERVER_ERROR.text(), ex.getMessage());
+            }
         }
         return level;
     }
@@ -114,16 +160,24 @@ public class FtpService implements UploadService {
         try 
         {
             ftpClient.enterLocalPassiveMode();
-            if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) )
-                throw WebinCliException.systemError( WebinCliMessage.FTP_SERVER_ERROR.text() );
+
+            createRetryTemplate(IOException.class)
+                .execute((RetryCallback<Void, Exception>) context -> {
+                    if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) )
+                        throw WebinCliException.systemError( WebinCliMessage.FTP_SERVER_ERROR.text() );
+                    return null;
+                });
            
             changeToSubdir( Paths.get( uploadDir ) );
-            
-            FTPFile[] deleteFilesList = ftpClient.listFiles();
+
+            FTPFile[] deleteFilesList = createRetryTemplate(IOException.class)
+                .execute((RetryCallback<FTPFile[], Exception>) context -> ftpClient.listFiles());
+
             if( deleteFilesList != null && deleteFilesList.length > 0 )
             {
                 for( FTPFile ftpFile: deleteFilesList )
-                    ftpClient.deleteFile( ftpFile.getName() );
+                    createRetryTemplate(IOException.class)
+                        .execute((RetryCallback<Boolean, Exception>) context -> ftpClient.deleteFile( ftpFile.getName()));
             }
             
             for( File file: uploadFilesList ) 
@@ -133,9 +187,10 @@ public class FtpService implements UploadService {
                                            : file.toPath();
                 storeFile( file.toPath(), f );
             }
-        } catch( IOException e ) 
-        {
-            throw WebinCliException.systemError( WebinCliMessage.FTP_SERVER_ERROR.text(), e.getMessage() );
+        } catch (WebinCliException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw WebinCliException.systemError(WebinCliMessage.FTP_SERVER_ERROR.text(), ex.getMessage());
         }
     }
 
