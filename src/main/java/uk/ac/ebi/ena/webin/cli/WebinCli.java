@@ -378,7 +378,7 @@ public class WebinCli {
                 // Password from command line
             } else if (params.passwordEnv != null) {
                 params.password = System.getenv(params.passwordEnv);
-                if (params.password == null) {
+                if (params.password == null || params.password.isEmpty()) {
                     log.error("Could not read password from the environment variable: " + params.passwordEnv);
                     printHelp();
                     return null;

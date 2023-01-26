@@ -119,7 +119,7 @@ public class ASCPService implements UploadService
                     throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
 
                 return null;
-            }, context -> log.info("Retrying file upload."), Exception.class);
+            }, context -> log.warn("Retrying file upload."), Exception.class);
         } catch (WebinCliException ex) {
             throw ex;
         } catch( Exception ex ) {
