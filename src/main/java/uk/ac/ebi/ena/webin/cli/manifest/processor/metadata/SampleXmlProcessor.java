@@ -24,6 +24,7 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class SampleXmlProcessor implements ManifestFieldProcessor {
+
   private final MetadataProcessorParameters parameters;
   private ManifestFieldProcessor.Callback<Sample> callback;
 
@@ -62,7 +63,7 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
       callback.notify(source);
 
     } catch (WebinCliException e) {
-      if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
+      if (WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(SampleXmlService.SERVICE_NAME).equals(e.getMessage())) {
         result.add(ValidationMessage.error(e));
       } else {
         result.add(
@@ -80,7 +81,7 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
     switch (ex.getStatusCode()) {
       case UNAUTHORIZED:
       case FORBIDDEN:
-        throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+        throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(SampleXmlService.SERVICE_NAME));
       case NOT_FOUND:
         throw WebinCliException.validationError(WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(sampleId));
       default:

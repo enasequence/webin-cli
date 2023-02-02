@@ -10,18 +10,26 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 public class 
 IgnoreErrorsService extends WebinService {
+
+    private static final Logger log = LoggerFactory.getLogger(IgnoreErrorsService.class);
 
     protected
     IgnoreErrorsService( AbstractBuilder<IgnoreErrorsService> builder )
@@ -58,15 +66,24 @@ IgnoreErrorsService extends WebinService {
     private boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text()));
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                getWebinRestUri("cli/ignore_errors/", test),
-                HttpMethod.POST,
-                new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
-                String.class);
-        return "true".equals(response.getBody());
+        try {
+            ResponseEntity<String> response = RetryUtils.executeWithRetry(
+                retryContext -> restTemplate.exchange(
+                    getWebinRestUri("cli/ignore_errors/", test),
+                    HttpMethod.POST,
+                    new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
+                    String.class),
+                retryContext -> log.warn("Retrying getting ignore error status from server."),
+                HttpServerErrorException.class, ResourceAccessException.class);
+
+            return "true".equals(response.getBody());
+        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
+            throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("IgnoreError"));
+        } catch (RestClientException ex) {
+            throw WebinCliException.systemError(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
+        }
     }
 }

@@ -10,6 +10,13 @@
  */
 package uk.ac.ebi.ena.webin.cli.upload;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
+import uk.ac.ebi.ena.webin.cli.utils.ShellExec;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,13 +24,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.retry.RetryCallback;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.utils.ShellExec;
 
 
 public class ASCPService implements UploadService
@@ -110,7 +110,7 @@ public class ASCPService implements UploadService
             vars.put( "ASPERA_SCP_PASS", this.password );
             vars.put( "PATH", System.getenv( "PATH" ) );
 
-            UploadService.executeWithRetry(context -> {
+            RetryUtils.executeWithRetry(context -> {
                 int exitVal = new ShellExec( cmd, vars ).exec( true );
 
                 // Even when the process completes without exception, throw error as long as exit code is not 0 so a

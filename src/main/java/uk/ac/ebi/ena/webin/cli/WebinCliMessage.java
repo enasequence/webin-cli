@@ -93,7 +93,9 @@ public enum WebinCliMessage implements MessageFormatSource {
     READS_MANIFEST_READER_INVALID_PLATFORM_FOR_INSTRUMENT_ERROR("Platform {0} for instrument {1}. Valid platforms are: {2}."),
     READS_MANIFEST_READER_MISSING_PLATFORM_FOR_INSTRUMENT_ERROR("Missing platform for instrument: {0}."),
     READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR("Invalid quality score: {0}"),
-    CUSTOM_FIELD_PROCESSOR_INCORRECT_FIELD_VALUE("Field \"{0}\" value \"{1}\" format is incorrect \"{2}\". Expected format: \"CUSTOM_FIELD name:value\" ");
+    CUSTOM_FIELD_PROCESSOR_INCORRECT_FIELD_VALUE("Field \"{0}\" value \"{1}\" format is incorrect \"{2}\". Expected format: \"CUSTOM_FIELD name:value\" "),
+    SERVICE_AUTHENTICATION_ERROR("{0} service authentication error. Invalid submission account user name or password. Please try enclosing your password in single quotes."),
+    SERVICE_SYSTEM_ERROR("A server error was returned by {0} service.");
 
     private final String text;
 
