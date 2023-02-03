@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
@@ -21,6 +20,7 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class StudyProcessor implements ManifestFieldProcessor {
+
   private final MetadataProcessorParameters parameters;
   private ManifestFieldProcessor.Callback<Study> callback;
 
@@ -57,13 +57,7 @@ public class StudyProcessor implements ManifestFieldProcessor {
       callback.notify(study);
 
     } catch (WebinCliException e) {
-      if (WebinCliMessage.CLI_AUTHENTICATION_ERROR.text().equals(e.getMessage())) {
-        result.add(ValidationMessage.error(e));
-      } else {
-        result.add(
-            ValidationMessage.error(
-                WebinCliMessage.STUDY_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
-      }
+      result.add(ValidationMessage.error(e));
     }
   }
 }

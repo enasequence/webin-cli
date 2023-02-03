@@ -10,16 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -35,13 +25,25 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class SubmitService extends WebinService {
 
@@ -103,12 +105,20 @@ public class SubmitService extends WebinService {
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text()));
-        ResponseEntity<String> response = restTemplate.exchange(
-            getWebinRestSubmissionUri( "submit/", getTest() ),
-            HttpMethod.POST,
-            new HttpEntity<>( body, headers),
-            String.class);
+
+        ResponseEntity<String> response = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
+                context -> restTemplate.exchange(
+                    getWebinRestSubmissionUri("submit/", getTest()),
+                    HttpMethod.POST,
+                    new HttpEntity<>(body, headers), String.class),
+                context -> log.warn("Retrying sending submission to server."),
+                HttpServerErrorException.class, ResourceAccessException.class),
+
+            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Submit"),
+            null,
+            WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text());
 
         processReceipt(response.getBody(), xmlFileList);
     }

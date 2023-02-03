@@ -10,21 +10,29 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
-import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
+import java.util.List;
+
 public class StudyService extends WebinService {
+
+    private static final Logger log = LoggerFactory.getLogger(StudyService.class);
+
+    public static final String SERVICE_NAME = "Study";
 
     protected 
     StudyService( AbstractBuilder<StudyService> builder )
@@ -61,23 +69,28 @@ public class StudyService extends WebinService {
     getStudy(String studyId, String userName, String password, boolean test) {
         RestTemplate restTemplate = new RestTemplate();
 
-        restTemplate.setErrorHandler(new NotFoundErrorHandler(
-                WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId),
-                WebinCliMessage.STUDY_SERVICE_SYSTEM_ERROR.format(studyId)));
-
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
-        ResponseEntity<StudyResponse> response = restTemplate.exchange(
-                getWebinRestUri("cli/reference/project/{id}", test),
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                StudyResponse.class,
-                studyId.trim());
+        ResponseEntity<StudyResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
+                retryContext -> restTemplate.exchange(
+                    getWebinRestUri("cli/reference/project/{id}", test),
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    StudyResponse.class,
+                    studyId.trim()),
+                retryContext -> log.warn("Retrying study retrieval from server."),
+                HttpServerErrorException.class, ResourceAccessException.class),
+
+            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(SERVICE_NAME),
+            WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId),
+            WebinCliMessage.STUDY_SERVICE_SYSTEM_ERROR.format(studyId));
 
         StudyResponse studyResponse = response.getBody();
         if (studyResponse == null || !studyResponse.canBeReferenced) {
             throw WebinCliException.userError(
-                    WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
+                WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
         }
         Study study = new Study();
         study.setStudyId(studyId);

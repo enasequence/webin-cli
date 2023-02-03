@@ -10,21 +10,26 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class
 RunService extends WebinService
 {
+    private static final Logger log = LoggerFactory.getLogger(RunService.class);
 
     protected 
     RunService( AbstractBuilder<RunService> builder )
@@ -64,20 +69,27 @@ RunService extends WebinService
     getRun( String runId, String userName, String password, boolean test )
     {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler( new NotFoundErrorHandler( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ),
-                                                                WebinCliMessage.RUN_SERVICE_SYSTEM_ERROR.format( runId ) ) );
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( userName, password ).build();
 
-        ResponseEntity<RunResponse> response = restTemplate.exchange( getWebinRestUri( "cli/reference/run/{id}", test ),
-                                                                      HttpMethod.GET,
-                                                                      new HttpEntity<>( headers ),
-                                                                      RunResponse.class,
-                                                                      runId.trim() );
+        ResponseEntity<RunResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
+                retryContext -> restTemplate.exchange(getWebinRestUri("cli/reference/run/{id}", test),
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    RunResponse.class,
+                    runId.trim()),
+                retryContext -> log.warn("Retrying run retrieval from server."),
+                HttpServerErrorException.class, ResourceAccessException.class),
+
+            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Run"),
+            WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ),
+            WebinCliMessage.RUN_SERVICE_SYSTEM_ERROR.format( runId ));
 
         RunResponse runResponse = response.getBody();
-        if( runResponse == null || !runResponse.canBeReferenced )
-            throw WebinCliException.userError( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
+        if (runResponse == null || !runResponse.canBeReferenced)
+            throw WebinCliException.userError(WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format(runId));
 
         Run run = new Run();
         run.setRunId(runResponse.id);

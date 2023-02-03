@@ -72,7 +72,7 @@ RunProcessorTest
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "INVALID" );
         ValidationResult result = new ValidationResult();
         MessageCounter counter = MessageCounter.regex(Severity.ERROR,
-                WebinCliMessage.RUN_PROCESSOR_LOOKUP_ERROR.regex());
+                WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.regex());
         result.add(counter);
         processor.process( result, fieldValue );
         Assert.assertFalse( result.isValid() );
@@ -88,7 +88,7 @@ RunProcessorTest
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "RUN_REF", "INVALID1, ERR2836765, INVALID2" );
         ValidationResult result = new ValidationResult();
         MessageCounter counter = MessageCounter.regex(Severity.ERROR,
-                WebinCliMessage.RUN_PROCESSOR_LOOKUP_ERROR.regex());
+                WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.regex());
         result.add(counter);
         processor.process( result, fieldValue );
         Assert.assertFalse( result.isValid() );

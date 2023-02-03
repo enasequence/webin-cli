@@ -10,21 +10,26 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.handler.NotFoundErrorHandler;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class
 AnalysisService extends WebinService
 {
+    private static final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     protected 
     AnalysisService( AbstractBuilder<AnalysisService> builder )
@@ -64,20 +69,27 @@ AnalysisService extends WebinService
     getAnalysis( String analysisId, String userName, String password, boolean test )
     {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler( new NotFoundErrorHandler( WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ),
-                                                                WebinCliMessage.ANALYSIS_SERVICE_SYSTEM_ERROR.format( analysisId ) ) );
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth( userName, password ).build();
 
-        ResponseEntity<AnalysisResponse> response = restTemplate.exchange( getWebinRestUri( "cli/reference/analysis/{id}", test ),
-                                                                           HttpMethod.GET,
-                                                                           new HttpEntity<>( headers ),
-                                                                           AnalysisResponse.class,
-                                                                           analysisId.trim() );
+        ResponseEntity<AnalysisResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
+                context -> restTemplate.exchange(getWebinRestUri("cli/reference/analysis/{id}", test),
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    AnalysisResponse.class,
+                    analysisId.trim()),
+                context -> log.warn("Retrying analysis retrieval from server."),
+                HttpServerErrorException.class, ResourceAccessException.class),
+
+            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Analysis"),
+            WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ),
+            WebinCliMessage.ANALYSIS_SERVICE_SYSTEM_ERROR.format( analysisId ));
 
         AnalysisResponse analysisResponse = response.getBody();
-        if( analysisResponse == null || !analysisResponse.canBeReferenced )
-            throw WebinCliException.userError( WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ) );
+        if (analysisResponse == null || !analysisResponse.canBeReferenced)
+            throw WebinCliException.userError(WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format(analysisId));
 
         Analysis analysis = new Analysis();
         analysis.setAnalysisId(analysisResponse.id);

@@ -10,6 +10,16 @@
  */
 package uk.ac.ebi.ena.webin.cli.upload;
 
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPSClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.retry.RetryCallback;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -18,24 +28,13 @@ import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPSClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.retry.RetryCallback;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 
 public class FtpService implements UploadService {
     private final static String SERVER = "webin2.ebi.ac.uk";
     private final static int FTP_PORT = 21;
-    private final FTPSClient ftpClient = new FTPSClient() ;
+    private final FTPSClient ftpClient = new FTPSClient();
 
     private static final Logger log = LoggerFactory.getLogger(FtpService.class);
 
@@ -44,7 +43,7 @@ public class FtpService implements UploadService {
             ftpClient.setRemoteVerificationEnabled(false);
             ftpClient.setActivePortRange(40000, 50000);
 
-            UploadService.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+            RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                 ftpClient.connect(SERVER, FTP_PORT);
                 return null;
             }, context -> log.warn("Retrying connecting to FTP server."), SocketException.class, IOException.class);
@@ -53,9 +52,9 @@ public class FtpService implements UploadService {
         }
 
         try {
-            UploadService.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+            RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                 if (!ftpClient.login(userName, password))
-                    throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+                    throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("FTP"));
                 return null;
             }, context -> log.warn("Retrying FTP server login."), IOException.class);
         } catch (WebinCliException e) {
@@ -76,7 +75,7 @@ public class FtpService implements UploadService {
         int level = changeToSubdir( subdir );
 
         try {
-            UploadService.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+            RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                 // In case of a retry, the entire file will be re-uploaded from beginning. Hence, the input stream
                 // will need to be re-created as well.
                 try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(local))) {
@@ -89,7 +88,7 @@ public class FtpService implements UploadService {
 
             for( int l = 0; l < level; ++l )
             {
-                UploadService.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+                RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                     if( !ftpClient.changeToParentDirectory() )
                         throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format("parent") );
                     return null;
@@ -120,20 +119,20 @@ public class FtpService implements UploadService {
             }
 
             try {
-                FTPFile[] ftpDirs = UploadService.executeWithRetry(
+                FTPFile[] ftpDirs = RetryUtils.executeWithRetry(
                     (RetryCallback<FTPFile[], Exception>) context -> ftpClient.listDirectories(),
                     context -> log.warn("Retrying retrieving directory list from FTP server."), IOException.class);
 
                 if(Stream.of( ftpDirs ).noneMatch(f -> dir.equals( f.getName() ) ))
                 {
-                    UploadService.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+                    RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                         if( !ftpClient.makeDirectory( dir ) )
                             throw WebinCliException.systemError( WebinCliMessage.FTP_CREATE_DIR_ERROR.format(dir) );
                         return null;
                     }, context -> log.warn("Retrying directory creation on FTP server."), IOException.class);
                 }
 
-                UploadService.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+                RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                     if( !ftpClient.changeWorkingDirectory( dir ) )
                         throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(dir) );
                     return null;
@@ -160,7 +159,7 @@ public class FtpService implements UploadService {
         {
             ftpClient.enterLocalPassiveMode();
 
-            UploadService.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+            RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                 if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) )
                     throw WebinCliException.systemError( WebinCliMessage.FTP_SERVER_ERROR.text() );
                 return null;
@@ -168,14 +167,14 @@ public class FtpService implements UploadService {
            
             changeToSubdir( Paths.get( uploadDir ) );
 
-            FTPFile[] deleteFilesList = UploadService.executeWithRetry(
+            FTPFile[] deleteFilesList = RetryUtils.executeWithRetry(
                 (RetryCallback<FTPFile[], Exception>) context -> ftpClient.listFiles(),
                 context -> log.warn("Retrying retrieving file list from FTP server."), IOException.class);
 
             if( deleteFilesList != null && deleteFilesList.length > 0 )
             {
                 for( FTPFile ftpFile: deleteFilesList )
-                    UploadService.executeWithRetry(
+                    RetryUtils.executeWithRetry(
                         (RetryCallback<Boolean, Exception>) context -> ftpClient.deleteFile( ftpFile.getName()),
                         context -> log.warn("Retrying file deletion on FTP server."), IOException.class);
             }

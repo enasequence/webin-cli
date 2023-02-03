@@ -10,14 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
@@ -25,6 +18,12 @@ import uk.ac.ebi.ena.webin.cli.service.AnalysisService;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AnalysisProcessor implements ManifestFieldProcessor {
   private final MetadataProcessorParameters parameters;
@@ -65,9 +64,7 @@ public class AnalysisProcessor implements ManifestFieldProcessor {
         analysis_list.add(analysisService.getAnalysis(id));
 
       } catch (WebinCliException e) {
-        result.add(
-            ValidationMessage.error(
-                WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR, id, e.getMessage()));
+        result.add(ValidationMessage.error(e));
       }
     }
 

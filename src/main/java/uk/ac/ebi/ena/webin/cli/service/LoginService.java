@@ -10,27 +10,35 @@
  */
 package uk.ac.ebi.ena.webin.cli.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
-
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.service.handler.DefaultErrorHander;
-import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
-
 public class
 LoginService
 {
+    private static final Logger log = LoggerFactory.getLogger(LoginService.class);
     private final static String TEST_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth";
     private final static String PRODUCTION_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth";
     private final String username;
     private final String password;
     private final boolean test;
+
+    public final static String SERVICE_NAME = "Login";
 
     public static class LoginRequestBody {
         public final List<String> authRealms = new ArrayList<>();
@@ -62,14 +70,24 @@ LoginService
     }
 
     public String login() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text()));
         RequestEntity< LoginRequestBody > request =  getAuthRequest("/login");
-        LoginResponseBody responseBody = restTemplate.exchange(request, LoginResponseBody.class).getBody();
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        LoginResponseBody responseBody = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
+                context -> restTemplate.exchange(request, LoginResponseBody.class).getBody(),
+                context -> log.warn("Retrying authentication."),
+                HttpServerErrorException.class, ResourceAccessException.class),
+
+            WebinCliMessage.CLI_AUTHENTICATION_ERROR.text(),
+            null,
+            WebinCliMessage.SERVICE_SYSTEM_ERROR.format(SERVICE_NAME));
 
         if (!responseBody.authenticated ||
-                responseBody.principle == null ||
-                !responseBody.principle.matches("^Webin-\\d+")) {
+            responseBody.principle == null ||
+            !responseBody.principle.matches("^Webin-\\d+")) {
             throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
         }
 
@@ -81,11 +99,20 @@ LoginService
      * @return token
      */
     public String getAuthToken() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new DefaultErrorHander(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text()));
         RequestEntity< LoginRequestBody > request =  getAuthRequest("/token");
-        String authToken = restTemplate.exchange(request,String.class).getBody();
-        return authToken;
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        return ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
+                context -> restTemplate.exchange(request, String.class).getBody(),
+                context -> log.warn("Retrying authentication."),
+                HttpServerErrorException.class, ResourceAccessException.class),
+
+            WebinCliMessage.CLI_AUTHENTICATION_ERROR.text(),
+            null,
+            WebinCliMessage.SERVICE_SYSTEM_ERROR.format(SERVICE_NAME));
     }
     
     private RequestEntity<LoginRequestBody> getAuthRequest(String url){
