@@ -361,8 +361,8 @@ public class WebinCliSubmissionTest {
         assertThatThrownBy(cli::execute).isInstanceOf(WebinCliException.class)
             .hasFieldOrPropertyWithValue("errorType", WebinCliException.ErrorType.USER_ERROR);
 
-        new ReportTester(cli).textInSubmissionReport("Failed to lookup run \"" + run +
-            "\". Unknown run INVALID or the run cannot be referenced by your submission account.");
+        new ReportTester(cli).textInSubmissionReport("Unknown run " + run +
+            " or the run cannot be referenced by your submission account. Runs must be submitted before they can be referenced in the submission.");
     }
 
     @Test
@@ -382,7 +382,7 @@ public class WebinCliSubmissionTest {
         assertThatThrownBy(cli::execute).isInstanceOf(WebinCliException.class)
             .hasFieldOrPropertyWithValue("errorType", WebinCliException.ErrorType.USER_ERROR);
 
-        new ReportTester(cli).textInSubmissionReport("Failed to lookup analysis \"" + analysis +
-            "\". Unknown analysis INVALID or the analysis cannot be referenced by your submission account.");
+        new ReportTester(cli).textInSubmissionReport("Unknown analysis " + analysis +
+            " or the analysis cannot be referenced by your submission account.");
     }
 }

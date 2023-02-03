@@ -16,15 +16,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 public class RatelimitService extends WebinService {
@@ -64,21 +62,21 @@ public class RatelimitService extends WebinService {
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(getUserName(), getPassword()).build();
         String url = getWebinRestUri("cli/submission/v2/ratelimit/", getTest());
 
-        try {
-            ResponseEntity<RateLimitResult> response = RetryUtils.executeWithRetry(
+        ResponseEntity<RateLimitResult> response = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     new HttpEntity<>(new RatelimitService.RatelimitServiceRequest(context, submissionAccountId, studyId, sampleId), headers),
                     RateLimitResult.class),
                 retryContext -> log.warn("Retrying submission rate limiting check on server."),
-                HttpServerErrorException.class, ResourceAccessException.class);
+                HttpServerErrorException.class, ResourceAccessException.class),
 
-            return response.getBody();
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
-            throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("RateLimit"));
-        } catch (RestClientException ex) {
-            throw WebinCliException.systemError(WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
-        }
+            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("RateLimit"),
+            null,
+            WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
+
+        return response.getBody();
     }
 }

@@ -16,14 +16,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
@@ -72,8 +71,9 @@ public class StudyService extends WebinService {
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
-        try {
-            ResponseEntity<StudyResponse> response = RetryUtils.executeWithRetry(
+        ResponseEntity<StudyResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.exchange(
                     getWebinRestUri("cli/reference/project/{id}", test),
                     HttpMethod.GET,
@@ -81,24 +81,21 @@ public class StudyService extends WebinService {
                     StudyResponse.class,
                     studyId.trim()),
                 retryContext -> log.warn("Retrying study retrieval from server."),
-                HttpServerErrorException.class, ResourceAccessException.class);
+                HttpServerErrorException.class, ResourceAccessException.class),
 
-            StudyResponse studyResponse = response.getBody();
-            if (studyResponse == null || !studyResponse.canBeReferenced) {
-                throw WebinCliException.userError(
-                    WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
-            }
-            Study study = new Study();
-            study.setStudyId(studyId);
-            study.setBioProjectId(studyResponse.bioProjectId);
-            study.setLocusTags(studyResponse.locusTags);
-            return study;
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
-            throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(SERVICE_NAME));
-        } catch (HttpClientErrorException.NotFound ex) {
-            throw WebinCliException.validationError(WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
-        } catch (RestClientException ex) {
-            throw WebinCliException.systemError(WebinCliMessage.STUDY_SERVICE_SYSTEM_ERROR.format(studyId));
+            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(SERVICE_NAME),
+            WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId),
+            WebinCliMessage.STUDY_SERVICE_SYSTEM_ERROR.format(studyId));
+
+        StudyResponse studyResponse = response.getBody();
+        if (studyResponse == null || !studyResponse.canBeReferenced) {
+            throw WebinCliException.userError(
+                WebinCliMessage.STUDY_SERVICE_VALIDATION_ERROR.format(studyId));
         }
+        Study study = new Study();
+        study.setStudyId(studyId);
+        study.setBioProjectId(studyResponse.bioProjectId);
+        study.setLocusTags(studyResponse.locusTags);
+        return study;
     }
 }

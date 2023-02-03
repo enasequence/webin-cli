@@ -16,14 +16,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 public class 
@@ -69,21 +67,21 @@ IgnoreErrorsService extends WebinService {
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
-        try {
-            ResponseEntity<String> response = RetryUtils.executeWithRetry(
+        ResponseEntity<String> response = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.exchange(
                     getWebinRestUri("cli/ignore_errors/", test),
                     HttpMethod.POST,
                     new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
                     String.class),
                 retryContext -> log.warn("Retrying getting ignore error status from server."),
-                HttpServerErrorException.class, ResourceAccessException.class);
+                HttpServerErrorException.class, ResourceAccessException.class),
 
-            return "true".equals(response.getBody());
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
-            throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("IgnoreError"));
-        } catch (RestClientException ex) {
-            throw WebinCliException.systemError(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
-        }
+            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("IgnoreError"),
+            null,
+            WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
+
+        return "true".equals(response.getBody());
     }
 }

@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
@@ -58,13 +57,7 @@ public class StudyProcessor implements ManifestFieldProcessor {
       callback.notify(study);
 
     } catch (WebinCliException e) {
-      if (WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(StudyService.SERVICE_NAME).equals(e.getMessage())) {
-        result.add(ValidationMessage.error(e));
-      } else {
-        result.add(
-            ValidationMessage.error(
-                WebinCliMessage.STUDY_PROCESSOR_LOOKUP_ERROR, value, e.getMessage()));
-      }
+      result.add(ValidationMessage.error(e));
     }
   }
 }

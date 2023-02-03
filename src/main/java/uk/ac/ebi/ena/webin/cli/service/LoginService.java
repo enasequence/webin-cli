@@ -14,14 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
+import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 import java.net.URI;
@@ -75,24 +74,24 @@ LoginService
 
         RestTemplate restTemplate = new RestTemplate();
 
-        try {
-            LoginResponseBody responseBody = RetryUtils.executeWithRetry(
+        LoginResponseBody responseBody = ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
                 context -> restTemplate.exchange(request, LoginResponseBody.class).getBody(),
                 context -> log.warn("Retrying authentication."),
-                HttpServerErrorException.class, ResourceAccessException.class);
+                HttpServerErrorException.class, ResourceAccessException.class),
 
-            if (!responseBody.authenticated ||
-                responseBody.principle == null ||
-                !responseBody.principle.matches("^Webin-\\d+")) {
-                throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
-            }
+            WebinCliMessage.CLI_AUTHENTICATION_ERROR.text(),
+            null,
+            WebinCliMessage.SERVICE_SYSTEM_ERROR.format(SERVICE_NAME));
 
-            return responseBody.principle;
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
+        if (!responseBody.authenticated ||
+            responseBody.principle == null ||
+            !responseBody.principle.matches("^Webin-\\d+")) {
             throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
-        } catch (RestClientException ex) {
-            throw WebinCliException.systemError(WebinCliMessage.SERVICE_SYSTEM_ERROR.format(SERVICE_NAME));
         }
+
+        return responseBody.principle;
     }
 
     /**
@@ -104,16 +103,16 @@ LoginService
 
         RestTemplate restTemplate = new RestTemplate();
 
-        try {
-            return RetryUtils.executeWithRetry(
+        return ExceptionUtils.executeWithRestExceptionHandling(
+
+            () -> RetryUtils.executeWithRetry(
                 context -> restTemplate.exchange(request, String.class).getBody(),
                 context -> log.warn("Retrying authentication."),
-                HttpServerErrorException.class, ResourceAccessException.class);
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
-            throw WebinCliException.userError(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
-        } catch (RestClientException ex) {
-            throw WebinCliException.systemError(WebinCliMessage.SERVICE_SYSTEM_ERROR.format(SERVICE_NAME));
-        }
+                HttpServerErrorException.class, ResourceAccessException.class),
+
+            WebinCliMessage.CLI_AUTHENTICATION_ERROR.text(),
+            null,
+            WebinCliMessage.SERVICE_SYSTEM_ERROR.format(SERVICE_NAME));
     }
     
     private RequestEntity<LoginRequestBody> getAuthRequest(String url){

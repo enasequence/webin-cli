@@ -74,7 +74,7 @@ AnalysisProcessorTest
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "INVALID" );
         ValidationResult result = new ValidationResult();
         MessageCounter counter = MessageCounter.regex(Severity.ERROR,
-                WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR.regex());
+                WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.regex());
         result.add(counter);
         processor.process( result, fieldValue );
         Assert.assertFalse( result.isValid() );
@@ -90,7 +90,7 @@ AnalysisProcessorTest
         ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "ANALYSIS_REF", "INVALID1, ERZ690500, INVALID2" );
         ValidationResult result = new ValidationResult();
         MessageCounter counter = MessageCounter.regex(Severity.ERROR,
-                WebinCliMessage.ANALYSIS_PROCESSOR_LOOKUP_ERROR.regex());
+                WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.regex());
         result.add(counter);
         processor.process( result, fieldValue );
         Assert.assertFalse( result.isValid() );
