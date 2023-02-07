@@ -81,7 +81,17 @@ test {
 
 repositories {
     mavenLocal()
-    maven { url "https://gitlab.ebi.ac.uk/api/v4/groups/enasequence/-/packages/maven" }
+    maven {
+        url "https://gitlab.ebi.ac.uk/api/v4/groups/enasequence/-/packages/maven"
+
+        credentials(HttpHeaderCredentials) {
+            name = "Private-Token"
+            value = gitlab_private_token
+        }
+        authentication {
+            header( HttpHeaderAuthentication )
+        }
+    }
     mavenCentral()
 }
 //
@@ -94,9 +104,9 @@ task printWebinTestCredentials {
 
 dependencies {
     implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.5.0' )
-    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.10.12')
+    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.14.1')
     implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
-    implementation( 'uk.ac.ebi.ena:readtools:1.16.7' )
+    implementation( 'uk.ac.ebi.ena:readtools:1.17.3' )
 
     implementation( 'org.springframework.boot:spring-boot-starter' )
     implementation( 'org.springframework.boot:spring-boot-starter-web' ) {
