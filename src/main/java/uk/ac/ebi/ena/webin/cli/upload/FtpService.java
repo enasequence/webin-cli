@@ -42,6 +42,11 @@ public class FtpService implements UploadService {
         try {
             ftpClient.setRemoteVerificationEnabled(false);
             ftpClient.setActivePortRange(40000, 50000);
+            ftpClient.setConnectTimeout(10_000);
+            ftpClient.setDefaultTimeout(10_000);
+            ftpClient.setDataTimeout(10_000);
+
+            log.info("Connecting to FTP server : {}", SERVER);
 
             RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                 ftpClient.connect(SERVER, FTP_PORT);
@@ -70,7 +75,7 @@ public class FtpService implements UploadService {
     {
         Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
 
-        log.info( String.format( "Uploading file: %s\n", local ) );
+        log.info( "Uploading file: {}", local );
 
         int level = changeToSubdir( subdir );
 

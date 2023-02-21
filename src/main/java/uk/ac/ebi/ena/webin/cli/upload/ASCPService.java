@@ -28,6 +28,8 @@ import java.util.Map;
 
 public class ASCPService implements UploadService
 {
+    private final static String SERVER = "webin.ebi.ac.uk";
+
     private static final Logger log = LoggerFactory.getLogger(ASCPService.class);
 
     private static final String EXECUTABLE = "ascp";
@@ -83,7 +85,7 @@ public class ASCPService implements UploadService
                               "-QT",
                               "-l300M",
                               //"-L-",
-                              "--host=webin.ebi.ac.uk",
+                              String.format("--host=%s", SERVER),
                               String.format( "--user=\"%s\"", this.userName ),
                               String.format( "--src-base=\"%s\"", inputDir.normalize().toString().replaceAll( " ", "\\\\ " ) ),
                               String.format( "--file-list=\"%s\"", file_list ),
@@ -96,6 +98,8 @@ public class ASCPService implements UploadService
            String uploadDir,
            Path inputDir )
     {
+        log.info("Uploading files to : {}", SERVER);
+
         try
         {      
             String file_list = createUploadList( uploadFilesList, inputDir );
