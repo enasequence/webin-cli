@@ -112,8 +112,6 @@ public class WebinCli {
             switch (ex.getErrorType()) {
                 case USER_ERROR:
                     return USER_ERROR;
-                case VALIDATION_ERROR:
-                    return VALIDATION_ERROR;
                 default:
                     return SYSTEM_ERROR;
             }
@@ -152,6 +150,7 @@ public class WebinCli {
         parameters.setPassword(cmd.password);
         parameters.setCenterName(cmd.centerName);
         parameters.setValidate(cmd.validate);
+        parameters.setValidateFiles(cmd.validateFiles);
         parameters.setQuick(cmd.quick);
         parameters.setSubmit(cmd.submit);
         parameters.setTest(cmd.test);
@@ -250,6 +249,16 @@ public class WebinCli {
         try {
             executor.readManifest();
 
+            if (parameters.isValidateFiles()) {
+                if (parameters.getContext() != WebinCliContext.reads) {
+                    throw WebinCliException.userError(
+                            "The -validateFiles option is only supported for the reads context");
+                }
+                log.info("The -validateFiles option has been given and all manifest fields optional.");
+                parameters.setValidate(true);
+                parameters.setSubmit(false);
+            }
+
             if (parameters.isValidate() || executor.getSubmissionBundle() == null) {
                 validate(executor);
             }
@@ -289,11 +298,6 @@ public class WebinCli {
                 case USER_ERROR:
                     throw WebinCliException.userError(
                         ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
-
-                case VALIDATION_ERROR:
-                    throw WebinCliException.validationError(
-                        ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
-
                 case SYSTEM_ERROR:
                     throw WebinCliException.systemError(
                         ex, getSystemError(ex.getMessage(), executor.getValidationDir().toString()));

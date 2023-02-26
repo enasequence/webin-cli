@@ -17,6 +17,7 @@ public class WebinCliBuilder {
   private final WebinCliContext context;
   private final Path outputDir = WebinCliTestUtils.createTempDir().toPath();
   private boolean validate = true;
+  private boolean validateFiles = false;
   private boolean submit = true;
   private boolean ascp = false;
   private boolean ignoreErrors = false;
@@ -39,6 +40,11 @@ public class WebinCliBuilder {
 
   public WebinCliBuilder validate(boolean validate) {
     this.validate = validate;
+    return this;
+  }
+
+  public WebinCliBuilder validateFiles(boolean validateFiles) {
+    this.validateFiles = validateFiles;
     return this;
   }
 
@@ -77,6 +83,7 @@ public class WebinCliBuilder {
     cmd.password = WebinCliTestUtils.getTestWebinPassword();
     cmd.test = true;
     cmd.validate = validate;
+    cmd.validateFiles = validateFiles;
     cmd.submit = submit;
     cmd.ascp = ascp;
     return cmd;

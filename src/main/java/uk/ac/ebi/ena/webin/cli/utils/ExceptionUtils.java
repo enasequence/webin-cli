@@ -46,7 +46,7 @@ public class ExceptionUtils {
             throw WebinCliException.userError(authenticationUserErrorMessage);
         } catch (HttpClientErrorException.NotFound ex) {
             if (validationErrorMessage != null) {
-                throw WebinCliException.validationError(validationErrorMessage);
+                throw WebinCliException.userError(validationErrorMessage);
             } else {
                 throw WebinCliException.systemError(systemErrorMessage);
             }

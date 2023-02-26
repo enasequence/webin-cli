@@ -98,6 +98,12 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
 
     private final ReadsManifest manifest = new ReadsManifest();
 
+    /**
+     * Meta fields are optional and ignored during validation if -validateFiles option is given.
+     */
+    private static boolean isValidateFiles(WebinCliParameters parameters) {
+        return parameters != null && parameters.isValidateFiles();
+    }
 
     public ReadsManifestReader(
             WebinCliParameters parameters,
@@ -106,15 +112,15 @@ ReadsManifestReader extends ManifestReader<ReadsManifest> {
         super(parameters,
                 // Fields.
                 new ManifestFieldDefinition.Builder()
-                       .meta().required().name(Field.NAME).desc(Description.NAME).and()
-                       .meta().required().name(Field.STUDY).desc(Description.STUDY).processor(factory.getStudyProcessor()).and()
-                       .meta().required().name(Field.SAMPLE).desc(Description.SAMPLE).processor(factory.getSampleProcessor()).and()
+                       .meta().optionalIf(isValidateFiles(parameters)).name(Field.NAME).desc(Description.NAME).and()
+                       .meta().optionalIf(isValidateFiles(parameters)).name(Field.STUDY).desc(Description.STUDY).processor(factory.getStudyProcessor()).and()
+                       .meta().optionalIf(isValidateFiles(parameters)).name(Field.SAMPLE).desc(Description.SAMPLE).processor(factory.getSampleProcessor()).and()
                        .meta().optional().name(Field.DESCRIPTION).desc(Description.DESCRIPTION).and()
                        .meta().optional().recommended().name(Field.INSTRUMENT).desc(Description.INSTRUMENT).processor(new CVFieldProcessor(CV_INSTRUMENT)).and()
                        .meta().optional().name(Field.PLATFORM).desc(Description.PLATFORM).processor(new CVFieldProcessor(CV_PLATFORM)).and()
-                       .meta().required().name(Field.LIBRARY_SOURCE).desc(Description.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).and()
-                       .meta().required().name(Field.LIBRARY_SELECTION).desc(Description.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).and()
-                       .meta().required().name(Field.LIBRARY_STRATEGY).desc(Description.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).and()
+                       .meta().optionalIf(isValidateFiles(parameters)).name(Field.LIBRARY_SOURCE).desc(Description.LIBRARY_SOURCE).processor(new CVFieldProcessor(CV_SOURCE)).and()
+                       .meta().optionalIf(isValidateFiles(parameters)).name(Field.LIBRARY_SELECTION).desc(Description.LIBRARY_SELECTION).processor(new CVFieldProcessor(CV_SELECTION)).and()
+                       .meta().optionalIf(isValidateFiles(parameters)).name(Field.LIBRARY_STRATEGY).desc(Description.LIBRARY_STRATEGY).processor(new CVFieldProcessor(CV_STRATEGY)).and()
                        .meta().optional().name(Field.LIBRARY_CONSTRUCTION_PROTOCOL).desc(Description.LIBRARY_CONSTRUCTION_PROTOCOL).and()
                        .meta().optional().name(Field.LIBRARY_NAME).desc(Description.LIBRARY_NAME).and()
                        .meta().optional().name(Field.INSERT_SIZE).desc(Description.INSERT_SIZE).and()

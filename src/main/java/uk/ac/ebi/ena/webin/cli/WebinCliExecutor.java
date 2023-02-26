@@ -115,7 +115,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             throw WebinCliException.systemError(ex);
         }
         if(validationResponse != null && validationResponse.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
-            throw WebinCliException.validationError("");
+            throw WebinCliException.userError("");
         }
     }
 
