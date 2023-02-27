@@ -46,6 +46,7 @@ public class WebinCliSubmissionTest {
             Consumer<ManifestBuilder> filesManifestConfig,
             Consumer<WebinCliBuilder> webinCliConfig) {
         ManifestBuilder manifestBuilder = new ManifestBuilder();
+        manifestBuilder.name();
         metaManifestConfig.accept(manifestBuilder);
         filesManifestConfig.accept(manifestBuilder);
         webinCliConfig.accept(webinCliBuilder);
@@ -60,6 +61,7 @@ public class WebinCliSubmissionTest {
             Consumer<ManifestBuilder> filesManifestConfig,
             Consumer<WebinCliBuilder> webinCliConfig) {
         ManifestBuilder manifestBuilder = new ManifestBuilder();
+        manifestBuilder.name();
         metaManifestConfig.accept(manifestBuilder);
         filesManifestConfig.accept(manifestBuilder);
         webinCliConfig.accept(webinCliBuilder);
@@ -74,6 +76,7 @@ public class WebinCliSubmissionTest {
             Consumer<ManifestBuilder> filesManifestConfig,
             Consumer<WebinCliBuilder> webinCliConfig) {
         ManifestBuilder manifestBuilder = new ManifestBuilder();
+        manifestBuilder.name();
         metaManifestConfig.accept(manifestBuilder);
         filesManifestConfig.accept(manifestBuilder);
         webinCliConfig.accept(webinCliBuilder);
@@ -241,7 +244,6 @@ public class WebinCliSubmissionTest {
 
     private void readsMetaManifest(ManifestBuilder manifestBuilder) {
         manifestBuilder
-                .name()
                 .field("STUDY", "SRP052303")
                 .field("SAMPLE", "ERS2554688")
                 .field("PLATFORM", "ILLUMINA")
@@ -256,7 +258,6 @@ public class WebinCliSubmissionTest {
 
     private void genomeMetaManifest(ManifestBuilder manifestBuilder) {
         manifestBuilder
-                .name()
                 .field("ASSEMBLY_TYPE", "clone or isolate")
                 .field("COVERAGE", "45")
                 .field("PROGRAM", "assembly")
@@ -272,7 +273,6 @@ public class WebinCliSubmissionTest {
 
     private void covid19GenomeMetaManifest(ManifestBuilder manifestBuilder) {
         manifestBuilder
-                .name()
                 .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
                 .field("STUDY", "ERP011959")
                 .field("SAMPLE", "ERS829308")
@@ -283,7 +283,6 @@ public class WebinCliSubmissionTest {
 
     private void transcriptomeMetaManifest(ManifestBuilder manifestBuilder) {
         manifestBuilder
-                .name()
                 .field("PROGRAM", "assembly")
                 .field("PLATFORM", "fghgf")
                 .field("SAMPLE", "SAMN04526268")
@@ -296,7 +295,6 @@ public class WebinCliSubmissionTest {
 
     private void sequenceMetaManifest(ManifestBuilder manifestBuilder) {
         manifestBuilder
-                .name()
                 .field("STUDY", "PRJEB20083")
                 .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
                 .field("ANALYSIS_REF", "ERZ690501, ERZ690500")

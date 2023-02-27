@@ -251,16 +251,6 @@ public class WebinCli {
         try {
             executor.readManifest();
 
-            if (parameters.isValidateFiles()) {
-                if (parameters.getContext() != WebinCliContext.reads) {
-                    throw WebinCliException.userError(
-                            "The -validateFiles option is only supported for the reads context");
-                }
-                log.info("The -validateFiles option has been given and all manifest fields optional.");
-                parameters.setValidate(true);
-                parameters.setSubmit(false);
-            }
-
             if (parameters.isValidate() || executor.getSubmissionBundle() == null) {
                 validate(executor);
             }
@@ -444,6 +434,17 @@ public class WebinCli {
                 return null;
             }
 
+            if (params.validateFiles) {
+                if (params.context != WebinCliContext.reads) {
+                    log.error("The -validateFiles option is only supported for the reads context");
+                    printHelp();
+                    return null;
+                }
+                params.validate = true;
+                params.submit = false;
+            }
+
+            // Require either -validate or -submit option.
             if (!params.validate && !params.submit) {
                 log.error("Either -validate or -submit option must be provided.");
                 printHelp();

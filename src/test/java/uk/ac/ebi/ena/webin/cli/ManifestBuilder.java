@@ -57,7 +57,7 @@ public class ManifestBuilder {
     }
 
     public ManifestBuilder name() {
-        return field("NAME", String.format("TEST %X", System.currentTimeMillis()));
+        return field("NAME", String.format("TEST %X", System.nanoTime()));
     }
 
     public ManifestBuilder field(String fieldName, String value) {
