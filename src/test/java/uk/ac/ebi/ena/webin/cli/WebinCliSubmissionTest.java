@@ -33,10 +33,10 @@ public class WebinCliSubmissionTest {
     private static final File TRANSCRIPTOME_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/");
     private static final File SEQUENCE_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/");
 
-    private static void expectUserError(ThrowableAssert.ThrowingCallable shouldThrow) {
+    private static void expectError(ThrowableAssert.ThrowingCallable shouldThrow, WebinCliException.ErrorType errorType) {
         assertThatThrownBy(shouldThrow)
                 .isInstanceOf(WebinCliException.class)
-                .hasFieldOrPropertyWithValue("errorType", WebinCliException.ErrorType.USER_ERROR);
+                .hasFieldOrPropertyWithValue("errorType", errorType);
     }
 
     private static WebinCli webinCliForValidate(
@@ -102,27 +102,28 @@ public class WebinCliSubmissionTest {
         }
     }
 
-    public static void testReadsUserError(
+    public static void testReadError(
             Consumer<ManifestBuilder> metaManifestConfig,
             Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig) {
+            Consumer<ReportTester> reportTesterConfig,
+            WebinCliException.ErrorType errorType) {
         // Test -validateFiles option
         {
             WebinCli webinCli = webinCLiForValidateFiles(READS_RESOURCE_DIR, WebinCliBuilder.READS, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         }
 
         if (TEST_TYPE == WebinCliTestType.VALIDATE) {
             WebinCli webinCli = webinCliForValidate(READS_RESOURCE_DIR, WebinCliBuilder.READS, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         } else {
             WebinCli webinCli = webinCliForSubmit(READS_RESOURCE_DIR, WebinCliBuilder.READS, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         }
     }
@@ -145,19 +146,20 @@ public class WebinCliSubmissionTest {
         }
     }
 
-    public static void testGenomeUserError(
+    public static void testGenomeError(
             Consumer<ManifestBuilder> metaManifestConfig,
             Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig) {
+            Consumer<ReportTester> reportTesterConfig,
+            WebinCliException.ErrorType errorType) {
         if (TEST_TYPE == WebinCliTestType.VALIDATE) {
             WebinCli webinCli = webinCliForValidate(GENOME_RESOURCE_DIR, WebinCliBuilder.GENOME, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         } else {
             WebinCli webinCli = webinCliForSubmit(GENOME_RESOURCE_DIR, WebinCliBuilder.GENOME, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         }
     }
@@ -180,19 +182,20 @@ public class WebinCliSubmissionTest {
         }
     }
 
-    public static void testSequenceUserError(
+    public static void testSequenceError(
             Consumer<ManifestBuilder> metaManifestConfig,
             Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig) {
+            Consumer<ReportTester> reportTesterConfig,
+            WebinCliException.ErrorType errorType) {
         if (TEST_TYPE == WebinCliTestType.VALIDATE) {
             WebinCli webinCli = webinCliForValidate(SEQUENCE_RESOURCE_DIR, WebinCliBuilder.SEQUENCE, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         } else {
             WebinCli webinCli = webinCliForSubmit(SEQUENCE_RESOURCE_DIR, WebinCliBuilder.SEQUENCE, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         }
     }
@@ -215,19 +218,20 @@ public class WebinCliSubmissionTest {
         }
     }
 
-    public static void testTranscriptomeUserError(
+    public static void testTranscriptomeError(
             Consumer<ManifestBuilder> metaManifestConfig,
             Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig) {
+            Consumer<ReportTester> reportTesterConfig,
+            WebinCliException.ErrorType errorType) {
         if (TEST_TYPE == WebinCliTestType.VALIDATE) {
             WebinCli webinCli = webinCliForValidate(TRANSCRIPTOME_RESOURCE_DIR, WebinCliBuilder.TRANSCRIPTOME, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         } else {
             WebinCli webinCli = webinCliForSubmit(TRANSCRIPTOME_RESOURCE_DIR, WebinCliBuilder.TRANSCRIPTOME, metaManifestConfig, filesManifestConfig, c -> {
             });
-            expectUserError(() -> webinCli.execute());
+            expectError(() -> webinCli.execute(), errorType);
             reportTesterConfig.accept(new ReportTester(webinCli));
         }
     }
@@ -375,11 +379,11 @@ public class WebinCliSubmissionTest {
 
     @Test
     public void testGenomeFlatFileWithFormatError() {
-        testGenomeUserError(m -> genomeMetaManifest(m),
+        testGenomeError(m -> genomeMetaManifest(m),
                 m -> m.file("FLATFILE", "invalid.flatfile.gz"),
                 r -> r.textInFileReport("invalid.flatfile.gz",
-                        "ERROR: Invalid ID line format [ line: 1]")
-        );
+                        "ERROR: Invalid ID line format [ line: 1]"),
+                WebinCliException.ErrorType.VALIDATION_ERROR);
     }
 
     @Test
@@ -396,18 +400,20 @@ public class WebinCliSubmissionTest {
 
     @Test
     public void testSequenceTabWithInvalidSample() {
-        testSequenceUserError(m -> sequenceMetaManifest(m),
+        testSequenceError(m -> sequenceMetaManifest(m),
                 m -> m.file("TAB", "invalid-sample.tsv.gz"),
                 r -> r.textInFileReport("invalid-sample.tsv.gz",
-                        "Organism name \"ERS000000\" is not submittable"));
+                        "Organism name \"ERS000000\" is not submittable"),
+                WebinCliException.ErrorType.VALIDATION_ERROR);
     }
 
     @Test
     public void testSequenceFlatFileWithFormatError() {
-        testSequenceUserError(m -> sequenceMetaManifest(m),
+        testSequenceError(m -> sequenceMetaManifest(m),
                 m -> m.file("FLATFILE", "invalid.flatfile.gz"),
                 r -> r.textInFileReport("invalid.flatfile.gz",
-                        "ERROR: Invalid ID line format [ line: 1]"));
+                        "ERROR: Invalid ID line format [ line: 1]"),
+                WebinCliException.ErrorType.VALIDATION_ERROR);
     }
 
     @Test
@@ -429,9 +435,10 @@ public class WebinCliSubmissionTest {
 
     @Test
     public void testTranscriptomeFlatFileWithFormatError() {
-        testTranscriptomeUserError(m -> transcriptomeMetaManifest(m),
+        testTranscriptomeError(m -> transcriptomeMetaManifest(m),
                 m -> m.file("FLATFILE", "invalid.flatfile.gz"),
                 r -> r.textInFileReport("invalid.flatfile.gz",
-                        "ERROR: Invalid ID line format [ line: 1]"));
+                        "ERROR: Invalid ID line format [ line: 1]"),
+                WebinCliException.ErrorType.VALIDATION_ERROR);
     }
 }

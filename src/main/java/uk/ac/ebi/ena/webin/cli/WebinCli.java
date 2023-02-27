@@ -67,6 +67,7 @@ public class WebinCli {
     public final static int SUCCESS = 0;
     public final static int SYSTEM_ERROR = 1;
     public final static int USER_ERROR = 2;
+    public final static int VALIDATION_ERROR = 3;
 
     private final static String LOG_FILE_NAME = "webin-cli.report";
     private final static Logger log = LoggerFactory.getLogger(WebinCli.class);
@@ -111,6 +112,8 @@ public class WebinCli {
             switch (ex.getErrorType()) {
                 case USER_ERROR:
                     return USER_ERROR;
+                case VALIDATION_ERROR:
+                    return VALIDATION_ERROR;
                 default:
                     return SYSTEM_ERROR;
             }
@@ -297,6 +300,11 @@ public class WebinCli {
                 case USER_ERROR:
                     throw WebinCliException.userError(
                         ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+
+                case VALIDATION_ERROR:
+                    throw WebinCliException.validationError(
+                        ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+
                 case SYSTEM_ERROR:
                     throw WebinCliException.systemError(
                         ex, getSystemError(ex.getMessage(), executor.getValidationDir().toString()));

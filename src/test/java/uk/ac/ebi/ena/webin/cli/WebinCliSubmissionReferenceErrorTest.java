@@ -12,15 +12,15 @@ package uk.ac.ebi.ena.webin.cli;
 
 import org.junit.Test;
 
-import static uk.ac.ebi.ena.webin.cli.WebinCliSubmissionTest.testGenomeUserError;
-import static uk.ac.ebi.ena.webin.cli.WebinCliSubmissionTest.testSequenceUserError;
+import static uk.ac.ebi.ena.webin.cli.WebinCliSubmissionTest.testGenomeError;
+import static uk.ac.ebi.ena.webin.cli.WebinCliSubmissionTest.testSequenceError;
 
 public class WebinCliSubmissionReferenceErrorTest {
 
     @Test
     public void testGenomeUnknownSampleError() {
         String sample = "INVALID";
-        testGenomeUserError(
+        testGenomeError(
                 m -> m
                         .name()
                         .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
@@ -34,13 +34,14 @@ public class WebinCliSubmissionReferenceErrorTest {
                         .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz"),
                 r -> r
                         .textInSubmissionReport("Unknown sample " + sample +
-                                " or the sample cannot be referenced by your submission account."));
+                                " or the sample cannot be referenced by your submission account."),
+                WebinCliException.ErrorType.USER_ERROR);
     }
 
     @Test
     public void testGenomeUnknownStudyError() {
         String study = "INVALID";
-        testGenomeUserError(
+        testGenomeError(
                 m -> m
                         .name()
                         .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
@@ -54,13 +55,14 @@ public class WebinCliSubmissionReferenceErrorTest {
                         .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz"),
                 r -> r
                         .textInSubmissionReport("Unknown study " + study +
-                                " or the study cannot be referenced by your submission account."));
+                                " or the study cannot be referenced by your submission account."),
+                WebinCliException.ErrorType.USER_ERROR);
     }
 
     @Test
     public void testSequenceUnknownRunError() {
         String run = "INVALID";
-        testSequenceUserError(
+        testSequenceError(
                 m -> m
                         .name()
                         .field("STUDY", "PRJEB20083")
@@ -71,13 +73,14 @@ public class WebinCliSubmissionReferenceErrorTest {
                         .file("TAB", "valid/ERT000003-EST.tsv.gz"),
                 r -> r
                         .textInSubmissionReport("Unknown run " + run +
-                                " or the run cannot be referenced by your submission account. Runs must be submitted before they can be referenced in the submission."));
+                                " or the run cannot be referenced by your submission account. Runs must be submitted before they can be referenced in the submission."),
+                WebinCliException.ErrorType.USER_ERROR);
     }
 
     @Test
     public void testSequenceUnknownAnalysisError() {
         String analysis = "INVALID";
-        testSequenceUserError(
+        testSequenceError(
                 m -> m
                         .name()
                         .field("STUDY", "PRJEB20083")
@@ -88,6 +91,7 @@ public class WebinCliSubmissionReferenceErrorTest {
                         .file("TAB", "valid/ERT000003-EST.tsv.gz"),
                 r -> r
                         .textInSubmissionReport("Unknown analysis " + analysis +
-                                " or the analysis cannot be referenced by your submission account."));
+                                " or the analysis cannot be referenced by your submission account."),
+                WebinCliException.ErrorType.USER_ERROR);
     }
 }

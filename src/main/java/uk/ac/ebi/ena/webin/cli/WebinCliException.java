@@ -16,8 +16,12 @@ WebinCliException extends RuntimeException
     private static final long serialVersionUID = 1L;
 
     public enum ErrorType {
+        /** User error from Webin-CLI. */
         USER_ERROR("user error"),
-        SYSTEM_ERROR("system error");
+        /** System error from Webin-CLI or Wwbin-CLI-validator. */
+        SYSTEM_ERROR("system error"),
+        /** User error from Webin-CLI-validator. */
+        VALIDATION_ERROR("validation error");
 
         public final String text;
 
@@ -55,6 +59,10 @@ WebinCliException extends RuntimeException
         return systemError(ex, ex.getMessage());
     }
 
+    public static WebinCliException validationError(Exception ex) {
+        return validationError(ex, ex.getMessage());
+    }
+
     public static WebinCliException userError(Exception ex, String ... messages) {
         return new WebinCliException(ErrorType.USER_ERROR, ex, messages);
     }
@@ -63,12 +71,20 @@ WebinCliException extends RuntimeException
         return new WebinCliException(ErrorType.SYSTEM_ERROR, ex, messages);
     }
 
+    public static WebinCliException validationError(Exception ex, String ... messages) {
+        return new WebinCliException(ErrorType.VALIDATION_ERROR, ex, messages);
+    }
+
     public static WebinCliException userError(String ... messages) {
         return new WebinCliException(ErrorType.USER_ERROR, messages);
     }
 
     public static WebinCliException systemError(String ... messages) {
         return new WebinCliException(ErrorType.SYSTEM_ERROR, messages);
+    }
+
+    public static WebinCliException validationError(String ... messages) {
+        return new WebinCliException(ErrorType.VALIDATION_ERROR,messages);
     }
 
     public static WebinCliException error(WebinCliException ex, String ... messages) {
