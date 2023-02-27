@@ -142,6 +142,10 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
 
       libraryDescriptorE.addContent(libraryLayoutE);
 
+      Element libraryConstructionProtocolE = new Element("LIBRARY_CONSTRUCTION_PROTOCOL");
+      libraryConstructionProtocolE.setText(libraryConstructionProtocol);
+      libraryDescriptorE.addContent(libraryConstructionProtocolE);
+      
       Element platformE = new Element("PLATFORM");
       experimentE.addContent(platformE);
 
