@@ -67,7 +67,6 @@ public class WebinCli {
     public final static int SUCCESS = 0;
     public final static int SYSTEM_ERROR = 1;
     public final static int USER_ERROR = 2;
-    public final static int VALIDATION_ERROR = 3;
 
     private final static String LOG_FILE_NAME = "webin-cli.report";
     private final static Logger log = LoggerFactory.getLogger(WebinCli.class);
