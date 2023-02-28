@@ -43,6 +43,7 @@ public class WebinCliSubmissionTest {
                 .field("LIBRARY_STRATEGY", "CLONEEND")
                 .field("LIBRARY_SOURCE", "OTHER")
                 .field("LIBRARY_SELECTION", "Inverse rRNA selection")
+                .field("LIBRARY_CONSTRUCTION_PROTOCOL", "Protocol")
                 .field("DESCRIPTION", "Some reads description");
     }
 

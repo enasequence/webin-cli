@@ -81,6 +81,7 @@ public class ReadsXmlTest {
     manifest.setLibraryStrategy("CLONEEND");
     manifest.setLibrarySource("OTHER");
     manifest.setLibrarySelection("Inverse rRNA selection");
+    manifest.setLibraryConstructionProtocol("Protocol");
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
@@ -106,6 +107,7 @@ public class ReadsXmlTest {
             + "       <LIBRARY_LAYOUT>\n"
             + "        <SINGLE />\n"
             + "       </LIBRARY_LAYOUT>\n"
+            + "       <LIBRARY_CONSTRUCTION_PROTOCOL>Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>\n"
             + "     </LIBRARY_DESCRIPTOR>\n"
             + "    </DESIGN>\n"
             + "    <PLATFORM>\n"

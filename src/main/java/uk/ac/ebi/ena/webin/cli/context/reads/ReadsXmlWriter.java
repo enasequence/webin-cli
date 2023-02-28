@@ -66,6 +66,7 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
     String libraryStrategy = manifest.getLibraryStrategy();
     String librarySource = manifest.getLibrarySource();
     String librarySelection = manifest.getLibrarySelection();
+    String libraryConstructorProtocol = manifest.getLibraryConstructionProtocol();
     String libraryName = manifest.getLibraryName();
     String platform = manifest.getPlatform();
     Integer insertSize = manifest.getInsertSize();
@@ -141,6 +142,12 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       }
 
       libraryDescriptorE.addContent(libraryLayoutE);
+
+      if (null != libraryConstructorProtocol) {
+        Element libraryConstructorProtocolE = new Element("LIBRARY_CONSTRUCTION_PROTOCOL");
+        libraryConstructorProtocolE.setText(libraryConstructorProtocol);
+        libraryDescriptorE.addContent(libraryConstructorProtocolE);
+      }
 
       Element platformE = new Element("PLATFORM");
       experimentE.addContent(platformE);
