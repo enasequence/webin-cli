@@ -10,7 +10,14 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
+
+import java.io.File;
+
 import org.junit.Test;
+
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.ReportTester;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
@@ -20,12 +27,6 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
-
-import java.io.File;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 public class ReadsValidationTest {
 

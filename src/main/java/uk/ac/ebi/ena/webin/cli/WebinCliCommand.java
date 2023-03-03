@@ -10,10 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import java.io.File;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
-
-import java.io.File;
 
 @CommandLine.Command(
         headerHeading = "%n",

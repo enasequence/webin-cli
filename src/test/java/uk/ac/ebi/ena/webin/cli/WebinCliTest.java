@@ -10,17 +10,17 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDir;
+import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDir;
-import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
+import org.junit.Test;
 
 public class WebinCliTest {
 

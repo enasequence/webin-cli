@@ -10,11 +10,12 @@
  */
 package uk.ac.ebi.ena.webin.cli.utils;
 
+import java.util.function.Supplier;
+
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-import java.util.function.Supplier;
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class ExceptionUtils {
 
