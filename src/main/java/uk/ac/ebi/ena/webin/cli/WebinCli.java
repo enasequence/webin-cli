@@ -383,8 +383,8 @@ public class WebinCli {
                 }
             } else if (params.passwordFile != null) {
                 try {
-                    params.password = new String(Files.readAllBytes(params.passwordFile.toPath()));
-                    if (params.password.trim().isEmpty()) {
+                    params.password = new String(Files.readAllBytes(params.passwordFile.toPath())).trim();
+                    if (params.password.isEmpty()) {
                         log.error("Could not read password from the file: " + params.passwordFile.getPath());
                         printHelp();
                         return null;
