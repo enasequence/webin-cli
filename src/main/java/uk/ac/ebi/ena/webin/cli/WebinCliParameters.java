@@ -31,6 +31,7 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private String centerName;
   private WebinSubmissionTool webinSubmissionTool = WebinSubmissionTool.WEBIN_CLI;
   private boolean validate;
+  private boolean validateFiles;
   private boolean quick;
   private boolean submit;
   private boolean test;
@@ -129,6 +130,14 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public void setValidate(boolean validate) {
     this.validate = validate;
+  }
+
+  public boolean isValidateFiles() {
+    return validateFiles;
+  }
+
+  public void setValidateFiles(boolean validateFiles) {
+    this.validateFiles = validateFiles;
   }
 
   public boolean isQuick() {

@@ -27,8 +27,8 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class TranscriptomeValidationTest {
 
-  private static final File VALID_DIR =
-      WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/valid");
+  private static final File RESOURCE_DIR =
+      WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome");
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
@@ -50,20 +50,15 @@ public class TranscriptomeValidationTest {
 
   @Test
   public void testValidFasta() {
-    File[] files = VALID_DIR.listFiles((dir, name) -> name.endsWith(".fasta.gz"));
-    assertThat(files.length).isGreaterThan(0);
-    for (File file : files) {
-      String fileName = file.getName();
-      // System.out.println(fileName);
-      File manifestFile =
-          manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, fileName).
+    File manifestFile =
+          manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, "valid.fasta.gz").
                   field(TranscriptomeManifestReader.Field.ASSEMBLY_TYPE, "isolate").build();
-      WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
-          executorBuilder.build(manifestFile, VALID_DIR);
-       executor.readManifest();
-      executor.validateSubmission();
-      assertThat(
-              executor
+    WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
+          executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    executor.validateSubmission();
+    assertThat(
+            executor
                   .getManifestReader()
                   .getManifest()
                   .files()
@@ -71,5 +66,4 @@ public class TranscriptomeValidationTest {
           .size()
           .isOne();
     }
-  }
 }

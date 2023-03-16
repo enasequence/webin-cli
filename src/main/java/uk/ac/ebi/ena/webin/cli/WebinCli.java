@@ -154,6 +154,7 @@ public class WebinCli {
         parameters.setPassword(cmd.password);
         parameters.setCenterName(cmd.centerName);
         parameters.setValidate(cmd.validate);
+        parameters.setValidateFiles(cmd.validateFiles);
         parameters.setQuick(cmd.quick);
         parameters.setSubmit(cmd.submit);
         parameters.setTest(cmd.test);
@@ -435,6 +436,17 @@ public class WebinCli {
                 return null;
             }
 
+            if (params.validateFiles) {
+                if (params.context != WebinCliContext.reads) {
+                    log.error("The -validateFiles option is only supported for the reads context");
+                    printHelp();
+                    return null;
+                }
+                params.validate = true;
+                params.submit = false;
+            }
+
+            // Require either -validate or -submit option.
             if (!params.validate && !params.submit) {
                 log.error("Either -validate or -submit option must be provided.");
                 printHelp();

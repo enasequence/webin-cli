@@ -16,8 +16,11 @@ WebinCliException extends RuntimeException
     private static final long serialVersionUID = 1L;
 
     public enum ErrorType {
+        /** User error from Webin-CLI. */
         USER_ERROR("user error"),
+        /** System error from Webin-CLI or Wwbin-CLI-validator. */
         SYSTEM_ERROR("system error"),
+        /** User error from Webin-CLI-validator. */
         VALIDATION_ERROR("validation error");
 
         public final String text;

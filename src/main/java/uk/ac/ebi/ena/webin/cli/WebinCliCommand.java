@@ -65,19 +65,22 @@ WebinCliCommand
     @Option(names = Options.validate, description = Descriptions.validate, defaultValue = "false", order = 7)
     public boolean validate;
 
+    @Option(names = Options.validateFiles, description = Descriptions.validateFiles, defaultValue = "false", order = 8)
+    public boolean validateFiles;
+
     /** This used to be visible but later marked hidden to prevent users from getting confused when they tried to
      * understand its purpose. It was also set to be true by default around the same time as the shorter validation
      * was deemed reasonably good enough for most use cases. */
-    @Option(names = Options.noQuick, description = Descriptions.quick, order = 8, negatable = true, hidden = true)
+    @Option(names = Options.noQuick, description = Descriptions.quick, order = 9, negatable = true, hidden = true)
     public boolean quick = true;
 
-    @Option(names = Options.submit, description = Descriptions.submit, order = 9)
+    @Option(names = Options.submit, description = Descriptions.submit, order = 10)
     public boolean submit;
 
-    @Option(names = Options.test, description = Descriptions.test, order = 10)
+    @Option(names = Options.test, description = Descriptions.test, order = 11)
     public boolean test;
 
-    @Option(names = Options.ascp, description = Descriptions.ascp, order = 11)
+    @Option(names = Options.ascp, description = Descriptions.ascp, order = 12)
     public boolean ascp;
 
     @Option(names = Options.help, description = Descriptions.help, usageHelp = true, order = 100)
@@ -101,6 +104,7 @@ WebinCliCommand
         String centerName = "-centerName";
         String submit     = "-submit";
         String validate   = "-validate";
+        String validateFiles   = "-validateFiles";
         String noQuick    = "--no-quick";
         String test       = "-test";
         String ascp       = "-ascp";
@@ -133,6 +137,7 @@ WebinCliCommand
         String centerName = "Mandatory center name for broker accounts.";
         String submit = "Validate, upload and submit files.";
         String validate = "Validate files without uploading or submitting them.";
+        String validateFiles = "All manifest fields become optional to allow read file validation without having to provide metadata.";
         String quick = "By default, validate submitted BAM & CRAM read files within a fixed time period (5 minutes) " +
             "and the first 100k reads from Fastq files. All CRAM reference sequence md5 checksums are always validated. " +
             "Files may only be partially validated and may fail post-submission processing.";

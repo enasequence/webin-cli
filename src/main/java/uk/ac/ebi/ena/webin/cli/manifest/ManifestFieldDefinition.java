@@ -166,6 +166,10 @@ public class ManifestFieldDefinition {
         return this;
       }
 
+      public Field optionalIf(boolean condition) {
+        return condition ? optional() : required();
+      }
+
       public Field required() {
         this.minCount = 1;
         this.maxCount = 1;
