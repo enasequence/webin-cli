@@ -88,6 +88,8 @@ public class ASCPService implements UploadService
                               //"-L-",
                               String.format("--host=%s", SERVER),
                               String.format( "--user=\"%s\"", this.userName ),
+                              // Input directory must be where the files are located. If this is not the case then
+                              // --src-base will prevent the files from getting uploaded.
                               String.format( "--src-base=\"%s\"", inputDir.normalize().toString().replaceAll( " ", "\\\\ " ) ),
                               String.format( "--file-list=\"%s\"", file_list ),
                               String.format( "\"%s\"", uploadDir ) };
