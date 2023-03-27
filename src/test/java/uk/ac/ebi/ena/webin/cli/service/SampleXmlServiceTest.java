@@ -50,8 +50,8 @@ SampleXmlServiceTest {
         String id = "INVALID";
         exceptionRule.expect(HttpClientErrorException.NotFound.class);
         SampleXmlService sampleService = new SampleXmlService.Builder()
-                .setUserName( "webin-256" )
-                .setPassword( "sausages" )
+                .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+                .setPassword( WebinCliTestUtils.getTestWebinPassword() )
                 .setTest( TEST )
                 .build();
         sampleService.getSample(id);
