@@ -44,15 +44,15 @@ public class ExceptionUtils {
         try {
             return supplier.get();
         } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
-            throw WebinCliException.userError(authenticationUserErrorMessage);
+            throw WebinCliException.userError(ex, authenticationUserErrorMessage);
         } catch (HttpClientErrorException.NotFound ex) {
             if (validationErrorMessage != null) {
-                throw WebinCliException.validationError(validationErrorMessage);
+                throw WebinCliException.validationError(ex, validationErrorMessage);
             } else {
-                throw WebinCliException.systemError(systemErrorMessage);
+                throw WebinCliException.systemError(ex, systemErrorMessage);
             }
         } catch (RestClientException ex) {
-            throw WebinCliException.systemError(systemErrorMessage);
+            throw WebinCliException.systemError(ex, systemErrorMessage);
         }
     }
 }

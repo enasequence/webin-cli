@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.upload;
 
 import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.slf4j.Logger;
@@ -25,32 +24,29 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
-
 
 public class FtpService implements UploadService {
     private final static String SERVER = "webin2.ebi.ac.uk";
     private final static int FTP_PORT = 21;
 
-    /**
-     * Originally, retries were only added for connectivity/network related issues that can occur during usage of this client.
-     * But due to random unexplained FTP server errors that sometimes did not re-occur during subsequent submissions, it was
-     * decided that all FTP operations will be changed to attempt retry in all error cases.
-     */
-    private final FTPSClient ftpClient = new FTPSClient();
-
     private static final Logger log = LoggerFactory.getLogger(FtpService.class);
+
+    private final FTPSClient ftpClient = new FTPSClient();
 
     private String username;
     private String password;
 
-    @Override public void connect(String userName, String password) {
+    private String lastWorkingDirectory;
+
+    @Override
+    public void connect(String userName, String password) {
 
         this.username = userName;
         this.password = password;
@@ -61,15 +57,75 @@ public class FtpService implements UploadService {
         ftpClient.setDefaultTimeout(10_000);
         ftpClient.setDataTimeout(10_000);
 
-        connectAndLogin();
-    }
-
-
-    private void connectAndLogin() {
         connect();
         login();
+        setFileTypeAsBinary();
     }
 
+    //TODO verbose possible issues with file/folder permissions
+    @Override
+    public void upload(List<File> uploadFilesList, String uploadDir, Path inputDir ) {
+        if( null == uploadDir || uploadDir.isEmpty() ) {
+            throw WebinCliException.userError(WebinCliMessage.FTP_UPLOAD_DIR_ERROR.text());
+        }
+
+        try {
+            // Set given upload directory as last working directory so that if a reconnect happens then the upload
+            // directory can automatically become current working directory.
+            //lastWorkingDirectory = uploadDir;
+
+            changeToSubdir( Paths.get( uploadDir ) );
+
+            FTPFile[] deleteFilesList = executeWithReconnect(
+                () -> ftpClient.listFiles(),
+                () -> log.warn("Retrying retrieving file list from FTP server."));
+
+            if( deleteFilesList != null && deleteFilesList.length > 0 ) {
+                for( FTPFile ftpFile: deleteFilesList ) {
+                    executeWithReconnect(
+                        () -> ftpClient.deleteFile(ftpFile.getName()),
+                        () -> log.warn("Retrying file deletion on FTP server."));
+                }
+            }
+
+            for( File file: uploadFilesList ) {
+                Path f = file.isAbsolute() ? file.toPath().startsWith( inputDir ) ? inputDir.relativize( file.toPath() )
+                    : file.toPath().getFileName()
+                    : file.toPath();
+
+                storeFile( file.toPath(), f );
+            }
+        } catch (WebinCliException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw WebinCliException.systemError(ex, WebinCliMessage.FTP_SERVER_ERROR.text());
+        }
+    }
+
+    @Override
+    public void disconnect() {
+        if(ftpClient.isConnected()) {
+            try {
+                ftpClient.logout();
+            } catch (IOException e) {
+            } finally {
+                try {
+                    ftpClient.disconnect();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
+    protected void finalize() {
+        disconnect();
+    }
 
     private void connect() {
         try {
@@ -77,28 +133,52 @@ public class FtpService implements UploadService {
 
             RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                 ftpClient.connect(SERVER, FTP_PORT);
+                ftpClient.enterLocalPassiveMode();
                 return null;
-            }, context -> log.warn("Retrying connecting to FTP server."), Exception.class);
+            }, context -> log.warn("Retrying connecting to FTP server."), IOException.class);
         } catch (Exception e) {
             throw WebinCliException.systemError(e, WebinCliMessage.FTP_CONNECT_ERROR.text());
         }
     }
 
-
     private void login() {
         try {
             RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
-                if ((context.getLastThrowable() != null && context.getLastThrowable() instanceof FTPConnectionClosedException)
-                    ||
-                    (context.getLastThrowable() != null && context.getLastThrowable() instanceof SocketException
-                        && ((SocketException)context.getLastThrowable()).getMessage().contains("Connection or outbound has closed"))) {
+                if (context.getLastThrowable() != null && context.getLastThrowable() instanceof IOException) {
+                    // Testing has showed that even in the event of a broken connection, ftpsClient.isConnected()
+                    // continues to return true. So need to check the status here before attempting to connect again.
                     connect();
                 }
 
-                if (!ftpClient.login(username, password))
-                    throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("FTP"));
+                if (!ftpClient.login(username, password)) {
+                    logErrorFtpReply();
+                    throw new FTPAuthenticationFailureException();
+                }
+
                 return null;
-            }, context -> log.warn("Retrying FTP server login."), Exception.class);
+            }, context -> log.warn("Retrying FTP server login."), IOException.class, FTPAuthenticationFailureException.class);
+        } catch (FTPAuthenticationFailureException e) {
+            throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("FTP"));
+        } catch (Exception e) {
+            throw WebinCliException.systemError(e, WebinCliMessage.FTP_SERVER_ERROR.text());
+        }
+    }
+
+    private void setFileTypeAsBinary() {
+        try {
+            RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+                if (context.getLastThrowable() != null && context.getLastThrowable() instanceof IOException) {
+                    connect();
+                    login();
+                }
+
+                if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) ) {
+                    logErrorFtpReply();
+                    throw WebinCliException.systemError(WebinCliMessage.FTP_SERVER_ERROR.text());
+                }
+
+                return null;
+            }, context -> log.warn("Retrying setting file type on FTP server."), IOException.class);
         } catch (WebinCliException e) {
             throw e;
         } catch (Exception e) {
@@ -106,10 +186,42 @@ public class FtpService implements UploadService {
         }
     }
 
+    private void changeToLastWorkingDirectory() {
+        if (lastWorkingDirectory == null) {
+            return;
+        }
+
+        try {
+            RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
+                if (context.getLastThrowable() != null && context.getLastThrowable() instanceof IOException) {
+                    connect();
+                    login();
+                    setFileTypeAsBinary();
+                }
+
+                if( !ftpClient.changeWorkingDirectory(lastWorkingDirectory)) {
+                    logErrorFtpReply();
+                    throw WebinCliException.systemError(WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(lastWorkingDirectory));
+                }
+
+                return null;
+            }, context -> log.warn("Retrying working directory change on FTP server."), IOException.class);
+        } catch (WebinCliException e) {
+            throw e;
+        } catch (Exception e) {
+            throw WebinCliException.systemError(e, WebinCliMessage.FTP_SERVER_ERROR.text());
+        }
+    }
+
+    private void reconnect() {
+        connect();
+        login();
+        setFileTypeAsBinary();
+        changeToLastWorkingDirectory();
+    }
 
     /**
-     * In addition to retry, automatically connects and logs in to FTP server if it is found that existing connection
-     * is terminated.
+     * In addition to retry, automatically connects and logs in to FTP server if there were connection problems.
      *
      * @param retryCallable
      * @param retryLoggingRunnable
@@ -117,61 +229,22 @@ public class FtpService implements UploadService {
      * @param <V>
      * @throws Exception
      */
-    private <V> V executeWithRetryReconnectRelogin(Callable<V> retryCallable, Runnable retryLoggingRunnable) throws Exception {
+    private <V> V executeWithReconnect(Callable<V> retryCallable, Runnable retryLoggingRunnable) throws Exception {
         return RetryUtils.executeWithRetry((RetryCallback<V, Exception>) context -> {
-            if (
-                (context.getLastThrowable() != null && context.getLastThrowable() instanceof FTPConnectionClosedException)
-                ||
-                (context.getLastThrowable() != null && context.getLastThrowable() instanceof SocketException
-                    && ((SocketException)context.getLastThrowable()).getMessage().contains("Connection or outbound has closed"))) {
-                connectAndLogin();
+            if (context.getLastThrowable() != null && context.getLastThrowable() instanceof IOException) {
+                reconnect();
             }
 
             return retryCallable.call();
-        }, context -> retryLoggingRunnable.run(), Exception.class);
+        }, context -> retryLoggingRunnable.run(), IOException.class);
     }
 
-    
-    private void
-    storeFile(Path local, Path remote) throws IOException
-    {
-        Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
-
-        log.info( "Uploading file: {}", local );
-
-        int level = changeToSubdir( subdir );
-
-        try {
-            executeWithRetryReconnectRelogin(() -> {
-                // In case of a retry, the entire file will be re-uploaded from beginning. Hence, the input stream
-                // will need to be re-created as well.
-                try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(local))) {
-                    if (!ftpClient.storeFile(remote.getFileName().toString(), fileInputStream))
-                        throw WebinCliException.systemError(WebinCliMessage.FTP_UPLOAD_ERROR.format(remote.getFileName().toString()));
-                }
-
-                return null;
-            }, () -> log.warn("Retrying file upload to FTP server."));
-
-            for( int l = 0; l < level; ++l )
-            {
-                executeWithRetryReconnectRelogin(() -> {
-                    if( !ftpClient.changeToParentDirectory() )
-                        throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format("parent") );
-                    return null;
-                }, () -> log.warn("Retrying directory change on FTP server."));
-            }
-        } catch (WebinCliException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw WebinCliException.systemError(ex, WebinCliMessage.FTP_SERVER_ERROR.text());
-        }
+    private void logErrorFtpReply() {
+        log.error("FTP error. ReplyCode : {}, ReplyStrings : {}",
+            ftpClient.getReplyCode(), Arrays.toString(ftpClient.getReplyStrings()));
     }
 
-
-    private int
-    changeToSubdir( Path subdir ) throws IOException
-    {
+    private int changeToSubdir( Path subdir ) throws IOException {
         int level = 0;
         for( int l = 0; l < subdir.getNameCount(); ++l )
         {
@@ -186,24 +259,37 @@ public class FtpService implements UploadService {
             }
 
             try {
-                FTPFile[] ftpDirs = executeWithRetryReconnectRelogin(
+                FTPFile[] ftpDirs = executeWithReconnect(
                     () -> ftpClient.listDirectories(),
                     () -> log.warn("Retrying retrieving directory list from FTP server."));
 
                 if(Stream.of( ftpDirs ).noneMatch(f -> dir.equals( f.getName() ) ))
                 {
-                    executeWithRetryReconnectRelogin(() -> {
-                        if( !ftpClient.makeDirectory( dir ) )
-                            throw WebinCliException.systemError( WebinCliMessage.FTP_CREATE_DIR_ERROR.format(dir) );
+                    executeWithReconnect(() -> {
+                        if( !ftpClient.makeDirectory( dir ) ) {
+                            logErrorFtpReply();
+                            throw WebinCliException.systemError(WebinCliMessage.FTP_CREATE_DIR_ERROR.format(dir));
+                        }
                         return null;
                     }, () -> log.warn("Retrying directory creation on FTP server."));
                 }
 
-                executeWithRetryReconnectRelogin(() -> {
-                    if( !ftpClient.changeWorkingDirectory( dir ) )
-                        throw WebinCliException.systemError( WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(dir) );
+                executeWithReconnect(() -> {
+                    if( !ftpClient.changeWorkingDirectory( dir ) ) {
+                        logErrorFtpReply();
+                        throw WebinCliException.systemError(WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(dir));
+                    }
+
+                    // No need to call ftpClient.printWorkingDirectory() and worry about it failing.
+                    // Just append the directory name at the end of the path.
+                    if (lastWorkingDirectory == null) {
+                        lastWorkingDirectory = dir;
+                    } else {
+                        lastWorkingDirectory = lastWorkingDirectory + "/" + dir;
+                    }
+
                     return null;
-                }, () -> log.warn("Retrying changing working directory on FTP server."));
+                }, () -> log.warn("Retrying working directory change on FTP server."));
 
                 level ++;
             } catch (WebinCliException e) {
@@ -214,78 +300,79 @@ public class FtpService implements UploadService {
         }
         return level;
     }
-    
-    
-    //TODO verbose possible issues with file/folder permissions
-    @Override public void
-    upload(List<File> uploadFilesList, String uploadDir, Path inputDir )
-    {
-        if( null == uploadDir || uploadDir.isEmpty() )
-            throw WebinCliException.userError( WebinCliMessage.FTP_UPLOAD_DIR_ERROR.text());
-        try 
-        {
-            ftpClient.enterLocalPassiveMode();
 
-            executeWithRetryReconnectRelogin(() -> {
-                if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) )
-                    throw WebinCliException.systemError( WebinCliMessage.FTP_SERVER_ERROR.text() );
+    private void storeFile(Path local, Path remote) throws IOException {
+        Path subdir = 1 == remote.getNameCount() ? Paths.get( "." ): remote.subpath( 0, remote.getNameCount() - 1 );
+
+        log.info( "Uploading file: {}", local );
+
+        int level = changeToSubdir( subdir );
+
+        try {
+            executeWithReconnect(() -> {
+                // In case of a retry, the entire file will be re-uploaded from beginning. Hence, the input stream
+                // will need to be re-created as well.
+                try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(local))) {
+                    if (!ftpClient.storeFile(remote.getFileName().toString(), fileInputStream)) {
+                        logErrorFtpReply();
+                        throw WebinCliException.systemError(WebinCliMessage.FTP_UPLOAD_ERROR.format(remote.getFileName().toString()));
+                    }
+                }
+
                 return null;
-            }, () -> log.warn("Retrying setting file type on FTP server."));
-           
-            changeToSubdir( Paths.get( uploadDir ) );
+            }, () -> log.warn("Retrying file upload to FTP server."));
 
-            FTPFile[] deleteFilesList = executeWithRetryReconnectRelogin(
-                () -> ftpClient.listFiles(),
-                () -> log.warn("Retrying retrieving file list from FTP server."));
+            // go back up same number of levels to where we were before we moved to the directory where
+            // the file was stored at.
 
-            if( deleteFilesList != null && deleteFilesList.length > 0 )
-            {
-                for( FTPFile ftpFile: deleteFilesList )
-                    executeWithRetryReconnectRelogin(
-                        () -> ftpClient.deleteFile( ftpFile.getName()),
-                        () -> log.warn("Retrying file deletion on FTP server."));
+            StringBuilder navigateUpPath = new StringBuilder("");
+
+            Path beforeStorePath = Paths.get(lastWorkingDirectory);
+            for( int l = 0; l < level; ++l ) {
+                navigateUpPath.append("../");
+                beforeStorePath = beforeStorePath.getParent();
             }
-            
-            for( File file: uploadFilesList ) 
-            {
-                Path f = file.isAbsolute() ? file.toPath().startsWith( inputDir ) ? inputDir.relativize( file.toPath() ) 
-                                                                                  : file.toPath().getFileName()
-                                           : file.toPath();
-                storeFile( file.toPath(), f );
+
+            String beforeStorePathStr = beforeStorePath.toString();
+
+            if (navigateUpPath.length() > 0) {
+                executeWithReconnect(() -> {
+                    if(!ftpClient.changeWorkingDirectory(navigateUpPath.toString())) {
+                        logErrorFtpReply();
+                        throw WebinCliException.systemError(
+                            WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(navigateUpPath.toString()));
+                    }
+
+                    lastWorkingDirectory = beforeStorePathStr;
+
+                    return null;
+                }, () -> log.warn("Retrying working directory change on FTP server."));
             }
-        } catch (WebinCliException e) {
-            throw e;
+        } catch (WebinCliException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw WebinCliException.systemError(ex, WebinCliMessage.FTP_SERVER_ERROR.text());
         }
     }
 
-    @Override public void 
-    disconnect() 
-    {
-        if(ftpClient.isConnected()) {
-            try {
-                ftpClient.logout();
-            } catch (IOException e) {
-            } finally {
-                try {
-                    ftpClient.disconnect();
-                } catch (IOException e) {
-                }
-            }
+    private static class FTPAuthenticationFailureException extends RuntimeException {
+        public FTPAuthenticationFailureException() {
         }
-    }
 
-    
-    @Override
-    protected void finalize() {
-        disconnect();
-    }
+        public FTPAuthenticationFailureException(String message) {
+            super(message);
+        }
 
+        public FTPAuthenticationFailureException(String message, Throwable cause) {
+            super(message, cause);
+        }
 
-    @Override public boolean
-    isAvailable()
-    {
-        return true;
+        public FTPAuthenticationFailureException(Throwable cause) {
+            super(cause);
+        }
+
+        public FTPAuthenticationFailureException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+            super(message, cause, enableSuppression, writableStackTrace);
+        }
     }
 }
