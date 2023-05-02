@@ -17,7 +17,9 @@ import static uk.ac.ebi.ena.webin.cli.WebinCli.getSafeOutputDirs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -94,18 +96,18 @@ public class WebinCliTest {
     }
 
     @Test
-    public void testOutputDirMissingError() {
+    public void testOutputDirMissingError() throws IOException {
         WebinCliCommand cmd = new WebinCliCommand();
         cmd.userName = WebinCliTestUtils.getTestWebinUsername();
         cmd.password = WebinCliTestUtils.getTestWebinPassword();
         cmd.inputDir = WebinCliTestUtils.createTempDir();
-        cmd.outputDir = new File(UUID.randomUUID().toString());
+        cmd.outputDir = Files.createTempFile("file", ".temp").toFile();
 
         assertThatThrownBy(() -> new WebinCli(cmd) )
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage(
                         WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(
-                                cmd.outputDir.getName()));
+                                cmd.outputDir.toString()));
     }
 
     @Test
