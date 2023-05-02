@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.retry.RetryCallback;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 import java.io.BufferedInputStream;
@@ -142,7 +143,8 @@ public class FtpService implements UploadService {
 
                 // Upon reconnect change FTP server's working back to what it was before.
                 if (ftpServerWorkingDir != null) {
-                    if( !ftpClient.changeWorkingDirectory(ftpServerWorkingDir.toString().replaceAll("\\\\+", "/"))) {
+                    if( !ftpClient.changeWorkingDirectory(
+                        FileUtils.replaceIncompatibleFileSeparators(ftpServerWorkingDir.toString()))) {
                         logErrorFtpReply();
                         throw WebinCliException.systemError(WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(ftpServerWorkingDir));
                     }

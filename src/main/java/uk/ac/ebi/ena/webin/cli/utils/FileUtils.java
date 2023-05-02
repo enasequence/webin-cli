@@ -102,5 +102,12 @@ FileUtils
 	    return dir.listFiles().length == 0;
 	}
 
+	/**
+	 * Returns a new string in which Windows file separators are replaced with Linux's. If the input contains only Linux
+	 * file separators then the same string is returned unchanged.
+	 */
+	public static String replaceIncompatibleFileSeparators(String inputStr) {
+		return inputStr.replaceAll("\\\\+", "/");
+	}
 
 }

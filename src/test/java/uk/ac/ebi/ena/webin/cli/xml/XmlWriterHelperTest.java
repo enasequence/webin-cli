@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.xml;
 import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Test;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,7 +31,7 @@ public class XmlWriterHelperTest {
 
         Element fileElement = XmlWriterHelper.createFileElement(inputDir, uploadDir, file, "FASTQ");
 
-        String expectedFileName = uploadDir.resolve(file.getFileName()).toString().replaceAll("\\\\+", "/");
+        String expectedFileName = FileUtils.replaceIncompatibleFileSeparators(uploadDir.resolve(file.getFileName()).toString());
 
         String actualFileName = fileElement.getAttribute("filename").getValue();
 

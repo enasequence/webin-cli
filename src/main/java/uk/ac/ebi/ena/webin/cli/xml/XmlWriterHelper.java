@@ -55,11 +55,10 @@ public class XmlWriterHelper {
     String fileName = file.toFile().getName();
 
     return createFileElement(
-        String.valueOf(uploadDir.resolve(fileName)).replaceAll("\\\\+", "/"),
+        FileUtils.replaceIncompatibleFileSeparators(String.valueOf(uploadDir.resolve(fileName))),
         String.valueOf(fileType),
         "MD5",
-        FileUtils.calculateDigest("MD5", file.toFile()),
-            attributes);
+        FileUtils.calculateDigest("MD5", file.toFile()), attributes);
   }
 
   private static Element createAttributeElement(String attName, String attValue) {
