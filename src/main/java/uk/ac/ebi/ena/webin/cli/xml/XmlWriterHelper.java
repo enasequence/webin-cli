@@ -44,6 +44,7 @@ public class XmlWriterHelper {
 
     return e;
   }
+
   public static Element createFileElement(
           Path inputDir, Path uploadDir, Path file, String fileType) {
     return createFileElement(inputDir, uploadDir, file, fileType, null);
@@ -51,15 +52,13 @@ public class XmlWriterHelper {
 
   public static Element createFileElement(
           Path inputDir, Path uploadDir, Path file, String fileType, List<Map.Entry<String, String>> attributes) {
-    String path =
-        file.startsWith(inputDir) ? inputDir.relativize(file).toString() : file.toFile().getName();
+    String fileName = file.toFile().getName();
 
     return createFileElement(
-        String.valueOf(uploadDir.resolve(path)).replaceAll("\\\\+", "/"),
+        FileUtils.replaceIncompatibleFileSeparators(String.valueOf(uploadDir.resolve(fileName))),
         String.valueOf(fileType),
         "MD5",
-        FileUtils.calculateDigest("MD5", file.toFile()),
-            attributes);
+        FileUtils.calculateDigest("MD5", file.toFile()), attributes);
   }
 
   private static Element createAttributeElement(String attName, String attValue) {

@@ -126,15 +126,17 @@ public class WebinCli {
     }
 
     public WebinCli(WebinCliCommand cmd) {
-        this(initParameters(getSubmissionAccount(cmd), getAuthToken(cmd), cmd));
+        initFileLogging(createOutputDir(cmd.outputDir, "."));
+
+        this.parameters = initParameters(getSubmissionAccount(cmd), getAuthToken(cmd), cmd);
+        this.executor = this.parameters.getContext().createExecutor(parameters);
     }
 
     public WebinCli(WebinCliParameters parameters) {
+        initFileLogging(createOutputDir(parameters.getOutputDir(), "."));
+
         this.parameters = parameters;
         this.executor = parameters.getContext().createExecutor(parameters);
-
-        // initTimedConsoleLogger();
-        initFileLogging();
     }
 
     public static WebinCliParameters initParameters(
@@ -162,7 +164,7 @@ public class WebinCli {
         return parameters;
     }
 
-    private void initFileLogging() {
+    private void initFileLogging(File outputDir) {
         if (!SIFTING_APPENDER_CREATED.get()) {
             synchronized (WebinCli.class) {
                 if (!SIFTING_APPENDER_CREATED.get()) {
@@ -192,7 +194,7 @@ public class WebinCli {
             }
         }
 
-        String logFile = new File(createOutputDir(parameters.getOutputDir(), "."), LOG_FILE_NAME).getAbsolutePath();
+        String logFile = new File(outputDir, LOG_FILE_NAME).getAbsolutePath();
 
         MDC.put(SIFTING_APPENDER_DISCRIMINATOR_KEY, fileAppenderName);
         MDC.put(MDC_LOG_FILE_KEY, logFile);

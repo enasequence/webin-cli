@@ -41,8 +41,11 @@ public class ASCPService implements UploadService
     isAvailable()
     {
         try
-        {            
-            int exitVal = new ShellExec( EXECUTABLE + " -h", new HashMap<String, String>()  { private static final long serialVersionUID = 1L; { put( "PATH", System.getenv( "PATH" ) ); } } ).exec();
+        {
+            HashMap<String, String> vars = new HashMap<>();
+            vars.put( "PATH", System.getenv( "PATH" ) );
+
+            int exitVal = new ShellExec( EXECUTABLE + " -h", vars ).exec();
             if( 0 != exitVal )
                 return false;
             
@@ -76,7 +79,7 @@ public class ASCPService implements UploadService
     
        
     private String[] 
-    getCommand( Path file_list, Path inputDir, String uploadDir )
+    getCommand( Path file_list, String uploadDir )
     {
         return new String[] { EXECUTABLE, 
                               "--file-checksum=md5",
@@ -88,9 +91,6 @@ public class ASCPService implements UploadService
                               //"-L-",
                               String.format("--host=%s", SERVER),
                               String.format( "--user=\"%s\"", this.userName ),
-                              // Input directory must be where the files are located. If this is not the case then
-                              // --src-base will prevent the files from getting uploaded.
-                              String.format( "--src-base=\"%s\"", inputDir.normalize().toString().replaceAll( " ", "\\\\ " ) ),
                               String.format( "--file-list=\"%s\"", file_list ),
                               String.format( "\"%s\"", uploadDir ) };
     }
@@ -109,7 +109,6 @@ public class ASCPService implements UploadService
             String[] command = getCommand( Files.write( Files.createTempFile( "FILE", "LIST"),
                                                       file_list.getBytes(), 
                                                       StandardOpenOption.CREATE, StandardOpenOption.SYNC ),
-                                         inputDir.toAbsolutePath(),
                                          uploadDir );
             
             String cmd = String.join(" ", command);

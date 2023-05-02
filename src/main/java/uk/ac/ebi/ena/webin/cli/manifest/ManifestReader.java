@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -482,8 +483,10 @@ ManifestReader<M extends Manifest> {
         }
 
         // Validate file count.
-
         validateFileCount();
+
+        // Ensure that all file names are unique.
+        validateUniqueFileNames();
     }
 
 
@@ -569,6 +572,26 @@ ManifestReader<M extends Manifest> {
         }
 
         error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "" );
+    }
+
+    private void validateUniqueFileNames() {
+        if ( fileGroups == null || fileGroups.isEmpty() ) {
+            return;
+        }
+
+        List<ManifestFieldValue> fileFields = manifestReaderResult.getFields()
+            .stream()
+            .filter( field -> field.getDefinition().getType().equals( ManifestFieldType.FILE ) )
+            .collect(Collectors.toList());
+
+        HashSet<String> fileNameSet = new HashSet<>(fileFields.size());
+
+        for (ManifestFieldValue fileField : fileFields) {
+            if (!fileNameSet.add(Paths.get(fileField.getValue()).getFileName().toString())) {
+                error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_NON_UNIQUE_NAMES);
+                break;
+            }
+        }
     }
 
     private void validateFileCompression(ValidationResult result, String filePath) {

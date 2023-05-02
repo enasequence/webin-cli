@@ -247,6 +247,24 @@ public class ManifestReaderTest {
         Assert.assertEquals(counter.getCount(), 1);
     }
 
+    @Test public void InvalidNonUniqueFileNames() {
+        MessageCounter counter = MessageCounter.regex(
+            Severity.ERROR,
+            WebinCliMessage.MANIFEST_READER_INVALID_FILE_NON_UNIQUE_NAMES.text());
+
+        ManifestReader reader = new ManifestReaderFiles();
+        reader.addListener(counter);
+
+        File manifest = createManifest(
+                "FILE_FIELD_2 file-name-1\n" +
+                "FILE_FIELD_2 dir1/file-name-1\n" +
+                "FILE_FIELD_4 file-name-2\n" +
+                "FILE_FIELD_4 dir1/dir2/file-name-2");
+        reader.readManifest(inputDir, manifest);
+
+        Assert.assertEquals(counter.getCount(), 1);
+    }
+
     @Test public void testKeyValueManifestFileWithPunctuations() {
         TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
                 .meta().required().name("FIELD_NAME_1").desc("some desc").and()
