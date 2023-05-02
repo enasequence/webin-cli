@@ -509,6 +509,7 @@ public class WebinCliTest {
                 "│                    │           │* NOMe-seq                                   │\n" +
                 "│                    │           │* ChM-Seq                                    │\n" +
                 "│                    │           │* GBS                                        │\n" +
+                "│                    │           │* Ribo-seq                                   │\n" +
                 "│                    │           │* OTHER                                      │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│DESCRIPTION         │Optional   │Experiment description                       │\n" +
