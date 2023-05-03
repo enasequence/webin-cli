@@ -69,18 +69,6 @@ docker run --rm -v <local data directory>:/data -e JAVA_TOOL_OPTIONS="-Xms2G" en
 
 - Create docker image with default tags by running `gradle dockerTag`
 
-#### RedHat Quay
-
-- Make sure the image is already created in the previous step.
-- Following steps are to be performed in a shell.
-- Create two tags
-  - `docker tag <image-id> quay.io/enasequence/webin-cli` - creates the default `latest` tag
-  - `docker tag <image-id> quay.io/enasequence/webin-cli:<version>` - use the same version used to create git tag as version here.
-- Publish each tag separately
-  - `docker push quay.io/enasequence/webin-cli`
-  - `docker push quay.io/enasequence/webin-cli:<version>`
-  - The image is only uploaded once. Only the tag gets pushed the second time.
-
 ## Testing
 
 Testing requires the following environmental variables to be set:
