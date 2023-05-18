@@ -10,15 +10,16 @@
  */
 package uk.ac.ebi.ena.webin.cli.xml;
 
-import org.jdom2.Element;
-import org.junit.Assert;
-import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.jdom2.Element;
+import org.junit.Assert;
+import org.junit.Test;
+
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 public class XmlWriterHelperTest {
 

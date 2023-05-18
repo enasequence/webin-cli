@@ -10,17 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.upload;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPSClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.retry.RetryCallback;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +21,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
+
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPSClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.retry.RetryCallback;
+
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 public class FtpService implements UploadService {
     private final static String SERVER = "webin2.ebi.ac.uk";

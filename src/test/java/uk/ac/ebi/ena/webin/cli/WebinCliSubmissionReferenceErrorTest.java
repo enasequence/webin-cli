@@ -10,10 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import org.junit.Test;
-
 import static uk.ac.ebi.ena.webin.cli.WebinCliSubmissionTest.testGenomeError;
 import static uk.ac.ebi.ena.webin.cli.WebinCliSubmissionTest.testSequenceError;
+
+import org.junit.Test;
 
 public class WebinCliSubmissionReferenceErrorTest {
 
