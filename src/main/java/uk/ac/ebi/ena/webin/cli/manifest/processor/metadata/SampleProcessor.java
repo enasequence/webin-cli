@@ -52,6 +52,8 @@ public class SampleProcessor implements ManifestFieldProcessor {
       SampleService sampleService =
           new SampleService.Builder()
               .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
+              .setBiosamplesWebinUserName(parameters.getWebinServiceUserName())
+              .setBiosamplesWebinPassword(parameters.getPassword())
               .setTest(parameters.isTest())
               .build();
 

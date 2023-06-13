@@ -388,10 +388,13 @@ public class WebinCliTest {
                 "│                    │           │* MinION                                     │\n" +
                 "│                    │           │* GridION                                    │\n" +
                 "│                    │           │* PromethION                                 │\n" +
+                "│                    │           │* Onso                                       │\n" +
                 "│                    │           │* PacBio RS                                  │\n" +
                 "│                    │           │* PacBio RS II                               │\n" +
+                "│                    │           │* Revio                                      │\n" +
                 "│                    │           │* Sequel                                     │\n" +
                 "│                    │           │* Sequel II                                  │\n" +
+                "│                    │           │* Sequel IIe                                 │\n" +
                 "│                    │           │* BGISEQ-50                                  │\n" +
                 "│                    │           │* BGISEQ-500                                 │\n" +
                 "│                    │           │* MGISEQ-2000RS                              │\n" +

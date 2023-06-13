@@ -59,6 +59,8 @@ SampleServiceTest {
         SampleService sampleService = new SampleService.Builder()
                                                        .setUserName( WebinCliTestUtils.getTestWebinUsername() )
                                                        .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+                                                       .setBiosamplesWebinUserName( WebinCliTestUtils.getTestWebinUsername() )
+                                                       .setBiosamplesWebinPassword( WebinCliTestUtils.getTestWebinPassword() )
                                                        .setTest( TEST )
                                                        .build();
         Sample sample = sampleService.getSample( id );

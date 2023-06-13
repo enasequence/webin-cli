@@ -156,7 +156,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
                 String submissionAccountId = getParameters().getWebinServiceUserName();
                 String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
-                String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleIdId();
+                String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleId();
 
                 ratelimit = ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId);
             } catch (RuntimeException ex) {
