@@ -61,7 +61,7 @@ public class RatelimitService extends WebinService {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(getUserName(), getPassword()).build();
-        String url = resolveAgainstWebinRestUri("cli/submission/v2/ratelimit/");
+        String url = resolveAgainstWebinRestV1Uri("cli/submission/v2/ratelimit/");
 
         ResponseEntity<RateLimitResult> response = ExceptionUtils.executeWithRestExceptionHandling(
 

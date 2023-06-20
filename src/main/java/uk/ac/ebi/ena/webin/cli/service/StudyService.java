@@ -76,7 +76,7 @@ public class StudyService extends WebinService {
 
             () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.exchange(
-                    resolveAgainstWebinRestUri("cli/reference/project/{id}"),
+                    resolveAgainstWebinRestV1Uri("cli/reference/project/{id}"),
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     StudyResponse.class,

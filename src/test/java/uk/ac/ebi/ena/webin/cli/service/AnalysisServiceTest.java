@@ -18,7 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class 
@@ -47,7 +47,7 @@ AnalysisServiceTest
     {
 
         AnalysisService analysisService = new AnalysisService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -63,7 +63,7 @@ AnalysisServiceTest
     {
         String analysisId = "INVALID";
         AnalysisService analysisService = new AnalysisService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -78,7 +78,7 @@ AnalysisServiceTest
     {
         String analysisId = "INVALID";
         AnalysisService analysisService = new AnalysisService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( "INVALID" )
             .setPassword( "INVALID" )
             .build();

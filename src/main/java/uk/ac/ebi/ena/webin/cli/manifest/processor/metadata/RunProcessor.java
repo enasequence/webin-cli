@@ -21,7 +21,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.RunService;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
@@ -59,7 +59,7 @@ public class RunProcessor implements ManifestFieldProcessor {
       try {
         RunService runService =
             new RunService.Builder()
-                .setWebinRestUri(UrlUtils.getWebinRestUrl(parameters.isTest()))
+                .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
                 .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
                 .build();
         run_list.add(runService.getRun(id));

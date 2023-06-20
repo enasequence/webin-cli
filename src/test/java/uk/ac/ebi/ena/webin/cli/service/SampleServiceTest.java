@@ -18,7 +18,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.web.client.HttpClientErrorException;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
 public class
@@ -49,20 +49,20 @@ SampleServiceTest {
         String id = "INVALID";
         exceptionRule.expect(HttpClientErrorException.NotFound.class);
         SampleService sampleService = new SampleService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-            .setBiosamplesUri(UrlUtils.getBiosamplesUrl(TEST))
+            .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(TEST))
             .build();
         sampleService.getSample( id );
     }
 
     private void testGetSampleUsingValidId(String id) {
         SampleService sampleService = new SampleService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-            .setBiosamplesUri(UrlUtils.getBiosamplesUrl(TEST))
+            .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(TEST))
             .setBiosamplesWebinUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setBiosamplesWebinPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();

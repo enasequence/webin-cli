@@ -64,7 +64,7 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
 public class WebinCli {
     public final static int SUCCESS = 0;
@@ -334,7 +334,7 @@ public class WebinCli {
             SubmitService submitService = new SubmitService.Builder()
                 .setSubmitDir(bundle.getSubmitDir().getPath())
                 .setSaveSubmissionXmlFiles(getParameters().isSaveSubmissionXmlFiles())
-                .setWebinRestSubmissionUri(UrlUtils.getWebinRestSubmissionUrl(parameters.isTest()))
+                .setWebinRestSubmissionUri(RemoteServiceUrlHelper.getWebinRestV2Url(parameters.isTest()))
                 .setUserName(parameters.getWebinServiceUserName())
                 .setPassword(parameters.getPassword())
                 .build();
@@ -692,7 +692,7 @@ public class WebinCli {
             return;
 
         Version version = new VersionService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(test))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(test))
             .build().getVersion(currentVersion);
 
         log.info(WebinCliMessage.CLI_CURRENT_VERSION.format(currentVersion));

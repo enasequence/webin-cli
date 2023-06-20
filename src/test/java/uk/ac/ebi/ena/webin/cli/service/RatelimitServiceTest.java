@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
 public class
 RatelimitServiceTest {
@@ -23,7 +23,7 @@ RatelimitServiceTest {
     public void
     testRatelimitFalse() {
         assertThat(new RatelimitService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(true))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(true))
             .setUserName(WebinCliTestUtils.getTestWebinUsername())
             .setPassword(WebinCliTestUtils.getTestWebinPassword())
             .build()

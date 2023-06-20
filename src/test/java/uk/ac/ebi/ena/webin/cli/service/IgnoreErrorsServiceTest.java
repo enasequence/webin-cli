@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
 public class
 IgnoreErrorsServiceTest 
@@ -26,7 +26,7 @@ IgnoreErrorsServiceTest
     testGetIgnoreErrorsFalse() 
     {
         assertThat( new IgnoreErrorsService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
            .build()

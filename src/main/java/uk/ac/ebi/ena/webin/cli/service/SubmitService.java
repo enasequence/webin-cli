@@ -111,7 +111,7 @@ public class SubmitService extends WebinService {
 
             () -> RetryUtils.executeWithRetry(
                 context -> restTemplate.exchange(
-                    resolveAgainstWebinRestSubmissionUri("submit/"),
+                    resolveAgainstWebinRestV2Uri("submit/"),
                     HttpMethod.POST,
                     new HttpEntity<>(body, headers), String.class),
                 context -> log.warn("Retrying sending submission to server."),

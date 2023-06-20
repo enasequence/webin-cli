@@ -76,7 +76,7 @@ RunService extends WebinService
         ResponseEntity<RunResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
 
             () -> RetryUtils.executeWithRetry(
-                retryContext -> restTemplate.exchange(resolveAgainstWebinRestUri("cli/reference/run/{id}"),
+                retryContext -> restTemplate.exchange(resolveAgainstWebinRestV1Uri("cli/reference/run/{id}"),
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     RunResponse.class,

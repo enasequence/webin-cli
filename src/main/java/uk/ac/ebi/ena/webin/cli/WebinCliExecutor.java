@@ -33,7 +33,7 @@ import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -108,9 +108,8 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifest.setReportFile(getSubmissionReportFile());
         manifest.setProcessDir(getProcessDir());
         manifest.setWebinAuthToken(getAuthTokenFromParam());
-        manifest.setWebinCliTestMode(getTestModeFromParam());
-        manifest.setWebinRestUri(UrlUtils.getWebinRestUrl(getTestModeFromParam()));
-        manifest.setBiosamplesUri(UrlUtils.getBiosamplesUrl(getTestModeFromParam()));
+        manifest.setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(getTestModeFromParam()));
+        manifest.setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(getTestModeFromParam()));
 
         try {
             validationResponse = getValidator().validate(manifest);
@@ -131,7 +130,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifest.setIgnoreErrors(false);
         try {
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
-                .setWebinRestUri(UrlUtils.getWebinRestUrl(getParameters().isTest()))
+                .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
                 .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
                 .build();
 
@@ -151,7 +150,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             RateLimitResult ratelimit;
             try {
                 RatelimitService ratelimitService = new RatelimitService.Builder()
-                    .setWebinRestUri(UrlUtils.getWebinRestUrl(getParameters().isTest()))
+                    .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
                     .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
                     .build();
 

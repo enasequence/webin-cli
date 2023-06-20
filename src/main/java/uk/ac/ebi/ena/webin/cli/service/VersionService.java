@@ -48,7 +48,7 @@ VersionService extends WebinService
 
             () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.getForObject(
-                    resolveAgainstWebinRestUri("/cli/{version}"), Version.class, version),
+                    resolveAgainstWebinRestV1Uri("/cli/{version}"), Version.class, version),
                 retryContext -> log.warn("Retrying version retrieval from server."),
                 HttpServerErrorException.class, ResourceAccessException.class),
 

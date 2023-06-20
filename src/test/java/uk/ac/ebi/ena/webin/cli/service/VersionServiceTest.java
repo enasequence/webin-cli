@@ -16,7 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.entity.Version;
-import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
 public class
 VersionServiceTest {
@@ -29,7 +29,7 @@ VersionServiceTest {
     @BeforeClass
     public static void setup() {
         VersionService versionService = new VersionService.Builder()
-            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .build();
         validVersion = versionService.getVersion( "10.0.0" );
         invalidVersion = versionService.getVersion( "1.0.0" );

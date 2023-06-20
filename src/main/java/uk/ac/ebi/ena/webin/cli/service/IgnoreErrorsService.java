@@ -72,7 +72,7 @@ IgnoreErrorsService extends WebinService {
 
             () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.exchange(
-                    resolveAgainstWebinRestUri("cli/ignore_errors/"),
+                    resolveAgainstWebinRestV1Uri("cli/ignore_errors/"),
                     HttpMethod.POST,
                     new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
                     String.class),

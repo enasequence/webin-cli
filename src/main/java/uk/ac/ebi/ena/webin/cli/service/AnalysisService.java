@@ -77,7 +77,7 @@ AnalysisService extends WebinService
 
             () -> RetryUtils.executeWithRetry(
                 context -> restTemplate.exchange(
-                    resolveAgainstWebinRestUri("cli/reference/analysis/{id}"),
+                    resolveAgainstWebinRestV1Uri("cli/reference/analysis/{id}"),
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     AnalysisResponse.class,
