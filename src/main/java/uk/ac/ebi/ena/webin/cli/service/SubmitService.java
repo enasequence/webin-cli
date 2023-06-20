@@ -111,7 +111,7 @@ public class SubmitService extends WebinService {
 
             () -> RetryUtils.executeWithRetry(
                 context -> restTemplate.exchange(
-                    getWebinRestSubmissionUri("submit/", getTest()),
+                    resolveAgainstWebinRestV2Uri("submit/"),
                     HttpMethod.POST,
                     new HttpEntity<>(body, headers), String.class),
                 context -> log.warn("Retrying sending submission to server."),
@@ -161,12 +161,10 @@ public class SubmitService extends WebinService {
                     String xmlFileType = String.valueOf( xmlFile.getType() );
                     String accession = rootNode.getChild( xmlFileType ).getAttributeValue( "accession" );
 
-                    String msg = ( getTest() ? WebinCliMessage.SUBMIT_SERVICE_SUCCESS_TEST
-                                             : WebinCliMessage.SUBMIT_SERVICE_SUCCESS).format( xmlFileType.toLowerCase(), accession );
+                    String msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format( xmlFileType.toLowerCase(), accession );
                    
                     if( null == accession || accession.isEmpty() ) {
-                        msg = (getTest() ? WebinCliMessage.SUBMIT_SERVICE_SUCCESS_TEST_NOACC
-                            : WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC).format(xmlFileType.toLowerCase());
+                        msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC.format(xmlFileType.toLowerCase());
                     }
                     
                     log.info( msg );

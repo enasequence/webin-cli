@@ -18,6 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class 
@@ -47,10 +48,10 @@ RunServiceTest
     {
 
         RunService runService = new RunService.Builder()
-                                              .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                              .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                              .setTest( TEST )
-                                              .build();
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
         Run run = runService.getRun( id );
         assertThat( run ).isNotNull();
         assertThat( run.getName() ).isNotNull();
@@ -63,10 +64,10 @@ RunServiceTest
     {
         String runId = "INVALID";
         RunService runService = new RunService.Builder()
-                                              .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                              .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                              .setTest( TEST )
-                                              .build();
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
 
         assertThatThrownBy( () -> runService.getRun( runId ) ).isInstanceOf( WebinCliException.class )
                                                               .hasMessageContaining( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
@@ -78,10 +79,10 @@ RunServiceTest
     {
         String runId = "INVALID";
         RunService runService = new RunService.Builder()
-                                              .setUserName( "INVALID" )
-                                              .setPassword( "INVALID" )
-                                              .setTest( TEST )
-                                              .build();
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setUserName( "INVALID" )
+            .setPassword( "INVALID" )
+            .build();
 
         assertThatThrownBy( () -> runService.getRun( runId ) ).isInstanceOf( WebinCliException.class )
                                                               .hasMessageContaining( WebinCliMessage.CLI_AUTHENTICATION_ERROR.text() );

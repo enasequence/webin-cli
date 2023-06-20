@@ -62,12 +62,12 @@ RunService extends WebinService
     public Run 
     getRun( String runId )
     {
-        return getRun( runId, getUserName(), getPassword(), getTest() );
+        return getRun( runId, getUserName(), getPassword() );
     }
 
     
     private Run 
-    getRun( String runId, String userName, String password, boolean test )
+    getRun( String runId, String userName, String password )
     {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -76,7 +76,7 @@ RunService extends WebinService
         ResponseEntity<RunResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
 
             () -> RetryUtils.executeWithRetry(
-                retryContext -> restTemplate.exchange(getWebinRestUri("cli/reference/run/{id}", test),
+                retryContext -> restTemplate.exchange(resolveAgainstWebinRestV1Uri("cli/reference/run/{id}"),
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     RunResponse.class,

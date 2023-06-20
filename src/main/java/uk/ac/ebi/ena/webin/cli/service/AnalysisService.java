@@ -62,12 +62,12 @@ AnalysisService extends WebinService
     public Analysis
     getAnalysis( String analysisId )
     {
-        return getAnalysis( analysisId, getUserName(), getPassword(), getTest() );
+        return getAnalysis( analysisId, getUserName(), getPassword() );
     }
 
     
     private Analysis 
-    getAnalysis( String analysisId, String userName, String password, boolean test )
+    getAnalysis( String analysisId, String userName, String password)
     {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -76,7 +76,8 @@ AnalysisService extends WebinService
         ResponseEntity<AnalysisResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
 
             () -> RetryUtils.executeWithRetry(
-                context -> restTemplate.exchange(getWebinRestUri("cli/reference/analysis/{id}", test),
+                context -> restTemplate.exchange(
+                    resolveAgainstWebinRestV1Uri("cli/reference/analysis/{id}"),
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     AnalysisResponse.class,

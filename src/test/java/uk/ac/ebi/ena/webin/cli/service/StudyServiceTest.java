@@ -18,6 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class
@@ -42,10 +43,10 @@ StudyServiceTest {
     private void testGetStudyUsingValidId(String id) {
 
         StudyService studyService = new StudyService.Builder()
-                                                    .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                                    .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                                    .setTest( TEST )
-                                                    .build();
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
         Study study = studyService.getStudy( id );
         assertThat(study).isNotNull();
         assertThat(study.getBioProjectId()).isEqualTo(BIO_PROJECT_ID);
@@ -57,10 +58,10 @@ StudyServiceTest {
     public void testGetStudyUsingInvalidId() {
         String studyId = "INVALID";
         StudyService studyService = new StudyService.Builder()
-                                                    .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                                    .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                                    .setTest( TEST )
-                                                    .build();
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
         assertThatThrownBy( () ->
                 studyService.getStudy( studyId ) )
                 .isInstanceOf(WebinCliException.class)
@@ -71,10 +72,10 @@ StudyServiceTest {
     public void testGetStudyUsingInvalidCredentials() {
         String studyId = "INVALID";
         StudyService studyService = new StudyService.Builder()
-                                                    .setUserName( "INVALID" )
-                                                    .setPassword( "INVALID" )
-                                                    .setTest( TEST )
-                                                    .build();
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setUserName( "INVALID" )
+            .setPassword( "INVALID" )
+            .build();
 
         assertThatThrownBy(() ->
                 studyService.getStudy( studyId )

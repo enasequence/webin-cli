@@ -64,6 +64,7 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
 public class WebinCli {
     public final static int SUCCESS = 0;
@@ -333,12 +334,16 @@ public class WebinCli {
             SubmitService submitService = new SubmitService.Builder()
                 .setSubmitDir(bundle.getSubmitDir().getPath())
                 .setSaveSubmissionXmlFiles(getParameters().isSaveSubmissionXmlFiles())
+                .setWebinRestSubmissionUri(RemoteServiceUrlHelper.getWebinRestV2Url(parameters.isTest()))
                 .setUserName(parameters.getWebinServiceUserName())
                 .setPassword(parameters.getPassword())
-                .setTest(parameters.isTest())
                 .build();
 
             submitService.doSubmission(bundle.getXMLFileList());
+
+            if (parameters.isTest()) {
+                log.info("This was a TEST submission and no data was submitted.");
+            }
 
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
@@ -687,7 +692,7 @@ public class WebinCli {
             return;
 
         Version version = new VersionService.Builder()
-            .setTest(test)
+            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(test))
             .build().getVersion(currentVersion);
 
         log.info(WebinCliMessage.CLI_CURRENT_VERSION.format(currentVersion));

@@ -17,6 +17,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.SampleService;
 import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
@@ -51,10 +52,12 @@ public class SampleProcessor implements ManifestFieldProcessor {
     try {
       SampleService sampleService =
           new SampleService.Builder()
+              .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
               .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
+              .setWebinAuthUri(RemoteServiceUrlHelper.getWebinAuthUrl(parameters.isTest()))
+              .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(parameters.isTest()))
               .setBiosamplesWebinUserName(parameters.getWebinServiceUserName())
               .setBiosamplesWebinPassword(parameters.getPassword())
-              .setTest(parameters.isTest())
               .build();
 
       Sample sample = ExceptionUtils.executeWithRestExceptionHandling(() -> sampleService.getSample(value),
