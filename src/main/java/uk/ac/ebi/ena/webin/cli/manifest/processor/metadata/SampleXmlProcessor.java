@@ -18,6 +18,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.SampleXmlService;
 import uk.ac.ebi.ena.webin.cli.service.exception.ServiceException;
 import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
@@ -48,8 +49,8 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
     try {
       SampleXmlService sampleXmlService =
           new SampleXmlService.Builder()
+              .setWebinRestUri(UrlUtils.getWebinRestUrl(parameters.isTest()))
               .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
-              .setTest(parameters.isTest())
               .build();
 
       Sample source = ExceptionUtils.executeWithRestExceptionHandling(() -> sampleXmlService.getSample(value),

@@ -18,6 +18,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.web.client.HttpClientErrorException;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
@@ -50,19 +51,19 @@ SampleXmlServiceTest {
         String id = "INVALID";
         exceptionRule.expect(HttpClientErrorException.NotFound.class);
         SampleXmlService sampleService = new SampleXmlService.Builder()
-                .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                .setTest( TEST )
-                .build();
+            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
         sampleService.getSample(id);
     }
 
     private void testGetSourceFeatureUsingValidId(String id) {
         SampleXmlService sampleService = new SampleXmlService.Builder()
-                                                                     .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                                                     .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                                                     .setTest( TEST )
-                                                                     .build();
+            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
         Sample sample = sampleService.getSample( id );
         assertThat(sample).isNotNull();
         assertThat(sample.getTaxId()).isEqualTo(TAX_ID);

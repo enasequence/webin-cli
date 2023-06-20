@@ -41,19 +41,14 @@ VersionService extends WebinService
         super( builder );
     }
 
-    public Version getVersion(String version )
-    {
-        return getVersion( version, getTest() );
-    }
-
-    private Version getVersion(String version, boolean test ) {
+    public Version getVersion(String version) {
         RestTemplate restTemplate = new RestTemplate();
 
         return ExceptionUtils.executeWithRestExceptionHandling(
 
             () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.getForObject(
-                    getWebinRestUri("/cli/{version}", test), Version.class, version),
+                    resolveAgainstWebinRestUri("/cli/{version}"), Version.class, version),
                 retryContext -> log.warn("Retrying version retrieval from server."),
                 HttpServerErrorException.class, ResourceAccessException.class),
 

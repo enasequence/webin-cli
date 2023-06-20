@@ -18,6 +18,7 @@ import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
 public class 
@@ -46,10 +47,10 @@ AnalysisServiceTest
     {
 
         AnalysisService analysisService = new AnalysisService.Builder()
-                                                             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                                             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                                             .setTest( TEST )
-                                                             .build();
+            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
         Analysis analysis = analysisService.getAnalysis( id );
         assertThat( analysis ).isNotNull();
         assertThat( analysis.getName() ).isNotNull();
@@ -62,10 +63,10 @@ AnalysisServiceTest
     {
         String analysisId = "INVALID";
         AnalysisService analysisService = new AnalysisService.Builder()
-                                                             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                                             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                                             .setTest( TEST )
-                                                             .build();
+            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .build();
 
         assertThatThrownBy( () -> analysisService.getAnalysis( analysisId ) ).isInstanceOf( WebinCliException.class )
                                                                              .hasMessageContaining( WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ) );
@@ -77,10 +78,10 @@ AnalysisServiceTest
     {
         String analysisId = "INVALID";
         AnalysisService analysisService = new AnalysisService.Builder()
-                                                             .setUserName( "INVALID" )
-                                                             .setPassword( "INVALID" )
-                                                             .setTest( TEST )
-                                                             .build();
+            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+            .setUserName( "INVALID" )
+            .setPassword( "INVALID" )
+            .build();
 
         assertThatThrownBy( () -> analysisService.getAnalysis( analysisId ) ).isInstanceOf( WebinCliException.class )
                                                                              .hasMessageContaining( WebinCliMessage.CLI_AUTHENTICATION_ERROR.text() );

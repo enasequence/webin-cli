@@ -58,11 +58,11 @@ IgnoreErrorsService extends WebinService {
 
     public boolean
     getIgnoreErrors(String context, String name) {
-        return getIgnoreErrors(getUserName(), getPassword(), context, name, getTest());
+        return getIgnoreErrors(getUserName(), getPassword(), context, name);
     }
     
     
-    private boolean getIgnoreErrors(String userName, String password, String context, String name, boolean test) {
+    private boolean getIgnoreErrors(String userName, String password, String context, String name) {
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -72,7 +72,7 @@ IgnoreErrorsService extends WebinService {
 
             () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.exchange(
-                    getWebinRestUri("cli/ignore_errors/", test),
+                    resolveAgainstWebinRestUri("cli/ignore_errors/"),
                     HttpMethod.POST,
                     new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
                     String.class),

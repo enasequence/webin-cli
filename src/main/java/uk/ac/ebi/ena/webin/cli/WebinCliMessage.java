@@ -50,8 +50,6 @@ public enum WebinCliMessage implements MessageFormatSource {
 
     SUBMIT_SERVICE_SUCCESS("The submission has been completed successfully. The following {0} accession was assigned to the submission: {1}"),
     SUBMIT_SERVICE_SUCCESS_NOACC("The submission has been completed successfully. No accession was assigned to the {0} submission. Please contact the helpdesk."),
-    SUBMIT_SERVICE_SUCCESS_TEST("The TEST submission has been completed successfully. This was a TEST submission and no data was submitted. The following {0} accession was assigned to the submission: {1}"),
-    SUBMIT_SERVICE_SUCCESS_TEST_NOACC("The TEST submission has been completed successfully. This was a TEST submission and no data was submitted. No accession was assigned to the {0} submission."),
     SUBMIT_SERVICE_SYSTEM_ERROR("A server error occurred when attempting to submit."),
     IGNORE_ERRORS_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving ignore error information."),
     RATE_LIMIT_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving rate limit information."),

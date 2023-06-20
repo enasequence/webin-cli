@@ -33,6 +33,7 @@ import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundleHelper;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -108,6 +109,8 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifest.setProcessDir(getProcessDir());
         manifest.setWebinAuthToken(getAuthTokenFromParam());
         manifest.setWebinCliTestMode(getTestModeFromParam());
+        manifest.setWebinRestUri(UrlUtils.getWebinRestUrl(getTestModeFromParam()));
+        manifest.setBiosamplesUri(UrlUtils.getBiosamplesUrl(getTestModeFromParam()));
 
         try {
             validationResponse = getValidator().validate(manifest);
@@ -128,10 +131,9 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifest.setIgnoreErrors(false);
         try {
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
-                    .setCredentials(getParameters().getWebinServiceUserName(),
-                            getParameters().getPassword())
-                    .setTest(getParameters().isTest())
-                    .build();
+                .setWebinRestUri(UrlUtils.getWebinRestUrl(getParameters().isTest()))
+                .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
+                .build();
 
             manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName()));
         }
@@ -149,10 +151,9 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             RateLimitResult ratelimit;
             try {
                 RatelimitService ratelimitService = new RatelimitService.Builder()
-                        .setCredentials(getParameters().getWebinServiceUserName(),
-                                getParameters().getPassword())
-                        .setTest(getParameters().isTest())
-                        .build();
+                    .setWebinRestUri(UrlUtils.getWebinRestUrl(getParameters().isTest()))
+                    .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
+                    .build();
 
                 String submissionAccountId = getParameters().getWebinServiceUserName();
                 String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();

@@ -62,12 +62,12 @@ public class StudyService extends WebinService {
     public Study
     getStudy( String studyId )
     {
-        return getStudy( studyId, getUserName(), getPassword(), getTest() );
+        return getStudy( studyId, getUserName(), getPassword() );
     }
     
 
     private Study
-    getStudy(String studyId, String userName, String password, boolean test) {
+    getStudy(String studyId, String userName, String password) {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
@@ -76,7 +76,7 @@ public class StudyService extends WebinService {
 
             () -> RetryUtils.executeWithRetry(
                 retryContext -> restTemplate.exchange(
-                    getWebinRestUri("cli/reference/project/{id}", test),
+                    resolveAgainstWebinRestUri("cli/reference/project/{id}"),
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     StudyResponse.class,

@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.cli.utils.UrlUtils;
 
 public class
 IgnoreErrorsServiceTest 
@@ -25,11 +26,11 @@ IgnoreErrorsServiceTest
     testGetIgnoreErrorsFalse() 
     {
         assertThat( new IgnoreErrorsService.Builder()
-                                           .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-                                           .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-                                           .setTest( TEST )
-                                           .build()
-                                           .getIgnoreErrors( "UNKNOWN", "UNKNOWN" )
+            .setWebinRestUri(UrlUtils.getWebinRestUrl(TEST))
+           .setUserName( WebinCliTestUtils.getTestWebinUsername() )
+           .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+           .build()
+           .getIgnoreErrors( "UNKNOWN", "UNKNOWN" )
         ).isFalse();
     }
 }
