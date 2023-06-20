@@ -59,7 +59,7 @@ public class AnalysisProcessor implements ManifestFieldProcessor {
       try {
         AnalysisService analysisService =
             new AnalysisService.Builder()
-                .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
+                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
                 .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
                 .build();
         analysis_list.add(analysisService.getAnalysis(id));

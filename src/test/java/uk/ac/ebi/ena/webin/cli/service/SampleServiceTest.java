@@ -49,7 +49,7 @@ SampleServiceTest {
         String id = "INVALID";
         exceptionRule.expect(HttpClientErrorException.NotFound.class);
         SampleService sampleService = new SampleService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(TEST))
@@ -59,7 +59,7 @@ SampleServiceTest {
 
     private void testGetSampleUsingValidId(String id) {
         SampleService sampleService = new SampleService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(TEST))

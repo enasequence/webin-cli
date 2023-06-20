@@ -23,7 +23,7 @@ RatelimitServiceTest {
     public void
     testRatelimitFalse() {
         assertThat(new RatelimitService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(true))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(true))
             .setUserName(WebinCliTestUtils.getTestWebinUsername())
             .setPassword(WebinCliTestUtils.getTestWebinPassword())
             .build()

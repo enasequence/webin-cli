@@ -48,7 +48,7 @@ RunServiceTest
     {
 
         RunService runService = new RunService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -64,7 +64,7 @@ RunServiceTest
     {
         String runId = "INVALID";
         RunService runService = new RunService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -79,7 +79,7 @@ RunServiceTest
     {
         String runId = "INVALID";
         RunService runService = new RunService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( "INVALID" )
             .setPassword( "INVALID" )
             .build();

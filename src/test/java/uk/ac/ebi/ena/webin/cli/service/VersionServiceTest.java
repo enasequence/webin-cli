@@ -29,7 +29,7 @@ VersionServiceTest {
     @BeforeClass
     public static void setup() {
         VersionService versionService = new VersionService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .build();
         validVersion = versionService.getVersion( "10.0.0" );
         invalidVersion = versionService.getVersion( "1.0.0" );

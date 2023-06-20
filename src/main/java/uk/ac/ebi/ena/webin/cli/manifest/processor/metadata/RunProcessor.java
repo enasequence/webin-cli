@@ -59,7 +59,7 @@ public class RunProcessor implements ManifestFieldProcessor {
       try {
         RunService runService =
             new RunService.Builder()
-                .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
+                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
                 .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
                 .build();
         run_list.add(runService.getRun(id));

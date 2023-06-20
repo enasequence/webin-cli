@@ -26,7 +26,7 @@ IgnoreErrorsServiceTest
     testGetIgnoreErrorsFalse() 
     {
         assertThat( new IgnoreErrorsService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
            .build()

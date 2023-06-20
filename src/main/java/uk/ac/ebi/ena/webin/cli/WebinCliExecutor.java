@@ -130,7 +130,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
         manifest.setIgnoreErrors(false);
         try {
             IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
-                .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
+                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
                 .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
                 .build();
 
@@ -150,7 +150,7 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             RateLimitResult ratelimit;
             try {
                 RatelimitService ratelimitService = new RatelimitService.Builder()
-                    .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
+                    .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
                     .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
                     .build();
 

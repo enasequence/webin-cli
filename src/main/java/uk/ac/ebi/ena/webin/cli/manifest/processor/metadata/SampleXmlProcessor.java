@@ -49,7 +49,7 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
     try {
       SampleXmlService sampleXmlService =
           new SampleXmlService.Builder()
-              .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
+              .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
               .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
               .build();
 

@@ -50,7 +50,7 @@ public class StudyProcessor implements ManifestFieldProcessor {
     try {
       StudyService studyService =
           new StudyService.Builder()
-              .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
+              .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
               .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
               .build();
       Study study = studyService.getStudy(value);

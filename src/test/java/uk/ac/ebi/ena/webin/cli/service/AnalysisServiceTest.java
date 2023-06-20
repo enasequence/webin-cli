@@ -47,7 +47,7 @@ AnalysisServiceTest
     {
 
         AnalysisService analysisService = new AnalysisService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -63,7 +63,7 @@ AnalysisServiceTest
     {
         String analysisId = "INVALID";
         AnalysisService analysisService = new AnalysisService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -78,7 +78,7 @@ AnalysisServiceTest
     {
         String analysisId = "INVALID";
         AnalysisService analysisService = new AnalysisService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( "INVALID" )
             .setPassword( "INVALID" )
             .build();

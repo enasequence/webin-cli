@@ -334,7 +334,7 @@ public class WebinCli {
             SubmitService submitService = new SubmitService.Builder()
                 .setSubmitDir(bundle.getSubmitDir().getPath())
                 .setSaveSubmissionXmlFiles(getParameters().isSaveSubmissionXmlFiles())
-                .setWebinRestSubmissionUri(RemoteServiceUrlHelper.getWebinRestV2Url(parameters.isTest()))
+                .setWebinRestV2Uri(RemoteServiceUrlHelper.getWebinRestV2Url(parameters.isTest()))
                 .setUserName(parameters.getWebinServiceUserName())
                 .setPassword(parameters.getPassword())
                 .build();
@@ -692,7 +692,7 @@ public class WebinCli {
             return;
 
         Version version = new VersionService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(test))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(test))
             .build().getVersion(currentVersion);
 
         log.info(WebinCliMessage.CLI_CURRENT_VERSION.format(currentVersion));

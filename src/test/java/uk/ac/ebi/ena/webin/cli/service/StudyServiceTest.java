@@ -43,7 +43,7 @@ StudyServiceTest {
     private void testGetStudyUsingValidId(String id) {
 
         StudyService studyService = new StudyService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -58,7 +58,7 @@ StudyServiceTest {
     public void testGetStudyUsingInvalidId() {
         String studyId = "INVALID";
         StudyService studyService = new StudyService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( WebinCliTestUtils.getTestWebinUsername() )
             .setPassword( WebinCliTestUtils.getTestWebinPassword() )
             .build();
@@ -72,7 +72,7 @@ StudyServiceTest {
     public void testGetStudyUsingInvalidCredentials() {
         String studyId = "INVALID";
         StudyService studyService = new StudyService.Builder()
-            .setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName( "INVALID" )
             .setPassword( "INVALID" )
             .build();
