@@ -1,11 +1,10 @@
 plugins {
     id 'org.springframework.boot' version '2.2.0.RELEASE'
-    id "io.github.ddimtirov.codacy" version "0.1.0"
     id "com.diffplug.spotless" version "5.1.1"
     id "com.palantir.docker" version "0.22.1"
     id 'java'
+    id 'java-library'
     id 'maven-publish'
-    id 'idea'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -115,10 +114,12 @@ task printWebinTestCredentials {
 }
 
 dependencies {
-    implementation( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.7.1' )
-    implementation( 'uk.ac.ebi.ena.sequence:sequencetools:2.17.1')
-    implementation( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
-    implementation( 'uk.ac.ebi.ena:readtools:1.17.7' )
+    // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library without the
+    // need to explicitly import them again.
+    api( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:1.7.1' )
+    api( 'uk.ac.ebi.ena.sequence:sequencetools:2.17.1' )
+    api( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
+    api( 'uk.ac.ebi.ena:readtools:1.17.7' )
 
     implementation( 'ch.qos.logback:logback-classic:1.2.3' )
 
