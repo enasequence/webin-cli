@@ -338,10 +338,18 @@ public class WebinCliSubmissionTest {
 
     @Test
     public void testReadsMultipleFastq() {
-        testReads(m -> readsMetaManifest(m), m -> m.file("FASTQ", "10x/4fastq/I1.fastq.gz")
-                .file("FASTQ", "10x/4fastq/R1.fastq.gz")
-                .file("FASTQ", "10x/4fastq/R2.fastq.gz")
-                .file("FASTQ", "10x/4fastq/R3.fastq.gz"));
+        ManifestBuilder manifestBuilder = new ManifestBuilder();
+        manifestBuilder.jsonFormat();
+        manifestBuilder.name();
+        readsMetaManifest(manifestBuilder);
+        manifestBuilder.file("FASTQ", "10x/4fastq/I1.fastq.gz").attribute("READ_TYPE", "cell_barcode");
+        manifestBuilder.file("FASTQ", "10x/4fastq/R1.fastq.gz").attribute("READ_TYPE", "umi_barcode");
+        manifestBuilder.file("FASTQ", "10x/4fastq/R2.fastq.gz").attribute("READ_TYPE", "feature_barcode");
+        manifestBuilder.file("FASTQ", "10x/4fastq/R3.fastq.gz").attribute("READ_TYPE", "sample_barcode");
+
+        WebinCliBuilder webinCliBuilder = WebinCliBuilder.READS;
+        webinCliBuilder.submit(true);
+        webinCliBuilder.build(READS_RESOURCE_DIR, manifestBuilder).execute();
     }
 
     // Genome

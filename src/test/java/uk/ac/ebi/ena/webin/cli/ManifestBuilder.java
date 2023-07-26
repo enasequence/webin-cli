@@ -114,7 +114,7 @@ public class ManifestBuilder {
 
     public ManifestBuilder attribute(String attributeKey, String attributeValue) {
         if (manifestFormat != ManifestFormat.JSON || lastModifiedField == null) {
-            return this;
+            throw new IllegalArgumentException("Attributes are only supported in JSON manifest.");
         }
 
         if (lastModifiedField.isValueNode()) {
@@ -224,15 +224,7 @@ public class ManifestBuilder {
     }
 
     public File build() {
-        if (manifestFormat == ManifestFormat.KEY_VALUE) {
-            return TempFileBuilder.file(manifest).toFile();
-        } else {
-            try {
-                return TempFileBuilder.file(new ObjectMapper().writeValueAsString(jsonManifest)).toFile();
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        return build((Path)null);
     }
 
     public File build(File inputDir) {
@@ -240,7 +232,19 @@ public class ManifestBuilder {
     }
 
     public File build(Path inputDir) {
-        return  TempFileBuilder.file(inputDir, manifest).toFile();
+        if (manifestFormat == ManifestFormat.KEY_VALUE) {
+            return inputDir == null
+                ? TempFileBuilder.file(manifest).toFile()
+                : TempFileBuilder.file(inputDir, manifest).toFile();
+        } else {
+            try {
+                return inputDir == null
+                    ? TempFileBuilder.file(new ObjectMapper().writeValueAsString(jsonManifest)).toFile()
+                    : TempFileBuilder.file(inputDir, new ObjectMapper().writeValueAsString(jsonManifest)).toFile();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Override
