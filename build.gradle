@@ -1,78 +1,17 @@
 plugins {
-    id 'org.springframework.boot' version '2.2.0.RELEASE'
-    id "com.diffplug.spotless" version "5.1.1"
-    id "com.palantir.docker" version "0.22.1"
     id 'java'
     id 'java-library'
     id 'maven-publish'
+    id 'org.springframework.boot' version '2.2.0.RELEASE'
+    id "com.diffplug.spotless" version "5.1.1"
+    id "com.palantir.docker" version "0.22.1"
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
 version = '6.5.1'
+
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
-
-spotless {
-    java {
-        licenseHeader('''/*
- * Copyright 2018-2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
-''')
-        importOrder 'java', 'javax', 'org', 'com', '', 'uk'
-        removeUnusedImports()
-    }
-}
-
-bootJar {
-    mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
-    excludeDevtools = true
-   	manifest {
-        attributes 'Implementation-Title': project.name,
-                   'Implementation-Version': project.version,
-                   'Built-By': System.getProperty('user.name'),
-                   'Built-Date': new Date()
-    }
-}
-
-/**
- * Works when '-x bootJar' is used. See 'Library Jar Publishing' in README.md.
- */
-jar {
-    enabled true
-
-    manifest {
-        attributes 'Implementation-Title': project.name,
-                'Implementation-Version': project.version,
-                'Built-By': System.getProperty('user.name'),
-                'Built-Date': new Date()
-    }
-
-    exclude('logback.xml')
-}
-
-test {
-	jvmArgs "-Dfile.encoding=UTF-8"
-	maxHeapSize = '4G'
-
-	if( System.env.webin_cli_password ) {
-      	environment 'webin-cli-password', System.env.webin_cli_password
-    } else {
-    	environment 'webin-cli-password', webinCliPassword
-    }
-
-	if( System.env.webin_cli_username ) {
-      	environment 'webin-cli-username', System.env.webin_cli_username
-    } else {
-    	environment 'webin-cli-username', webinCliUsername
-    }
-}
 
 repositories {
     mavenLocal()
@@ -136,6 +75,71 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+test {
+    jvmArgs "-Dfile.encoding=UTF-8"
+    maxHeapSize = '4G'
+
+    if( System.env.webin_cli_password ) {
+        environment 'webin-cli-password', System.env.webin_cli_password
+    } else {
+        environment 'webin-cli-password', webinCliPassword
+    }
+
+    if( System.env.webin_cli_username ) {
+        environment 'webin-cli-username', System.env.webin_cli_username
+    } else {
+        environment 'webin-cli-username', webinCliUsername
+    }
+}
+
+spotless {
+    encoding 'UTF-8'
+    lineEndings 'UNIX'
+    java {
+        licenseHeader('''/*
+ * Copyright 2018-2023 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+''')
+        importOrder 'java', 'javax', 'org', 'com', '', 'uk'
+        removeUnusedImports()
+    }
+}
+
+/**
+ * Works when '-x bootJar' is used. See 'Library Jar Publishing' in README.md.
+ */
+jar {
+    enabled true
+
+    manifest {
+        attributes 'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Built-By': System.getProperty('user.name'),
+                'Built-Date': new Date()
+    }
+
+    exclude('logback.xml')
+}
+
+bootJar {
+    manifest {
+        attributes 'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Built-By': System.getProperty('user.name'),
+                'Built-Date': new Date()
+    }
+
+    excludeDevtools = true
+    mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
+}
+
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
     archiveClassifier = 'sources'
@@ -144,13 +148,13 @@ task sourceJar(type: Jar) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-        	artifactId project.name
+            artifactId project.name
             from components.java
             artifact sourceJar
         }
     }
     repositories {
-	    maven {
+        maven {
             url "https://gitlab.ebi.ac.uk/api/v4/projects/811/packages/maven"
             credentials(HttpHeaderCredentials) {
                 name = "Private-Token"
@@ -159,7 +163,7 @@ publishing {
             authentication {
                 header( HttpHeaderAuthentication )
             }
-	    }
+        }
     }
 }
 
@@ -167,7 +171,6 @@ publishing {
 // gradle docker
 // gradle dockerTag
 // gradle dockerTagsPush
-
 docker {
     dependsOn build
     def repository = "enasequence/webin-cli"
