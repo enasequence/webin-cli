@@ -27,8 +27,34 @@ RatelimitServiceTest {
             .setUserName(WebinCliTestUtils.getTestWebinUsername())
             .setPassword(WebinCliTestUtils.getTestWebinPassword())
             .build()
-            .ratelimit("GENOME", "Webin-1234", "PRJEB1234", "SAMP1234")
+            .ratelimit("GENOME", "Webin-1234", "ERP129098", "ERS11253593")
             .isRateLimited()
         ).isFalse();
+    }
+
+    @Test
+    public void
+    testRatelimitTrueFailsWithBioSampleAccession() {
+        assertThat(new RatelimitService.Builder()
+                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(true))
+                .setUserName(WebinCliTestUtils.getTestWebinUsername())
+                .setPassword(WebinCliTestUtils.getTestWebinPassword())
+                .build()
+                .ratelimit("genome", "Webin-58771", "ERP129098", "SAMEA113618321")
+                .isRateLimited()
+        ).isTrue();
+    }
+
+    @Test
+    public void
+    testRatelimitTrueFailsWithBioProjectAccession() {
+        assertThat(new RatelimitService.Builder()
+                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(true))
+                .setUserName(WebinCliTestUtils.getTestWebinUsername())
+                .setPassword(WebinCliTestUtils.getTestWebinPassword())
+                .build()
+                .ratelimit("genome", "Webin-58771", "PRJEB44987", "ERS15612497")
+                .isRateLimited()
+        ).isTrue();
     }
 }
