@@ -425,6 +425,14 @@ public class WebinCliTest {
                 "│                    │           │* DNBSEQ-G400 FAST                           │\n" +
                 "│                    │           │* Element AVITI                              │\n" +
                 "│                    │           │* UG 100                                     │\n" +
+                "│                    │           │* Sentosa SQ301                              │\n" +
+                "│                    │           │* GENIUS                                     │\n" +
+                "│                    │           │* Genapsys Sequencer                         │\n" +
+                "│                    │           │* GS111                                      │\n" +
+                "│                    │           │* GenoCare 1600                              │\n" +
+                "│                    │           │* GenoLab M                                  │\n" +
+                "│                    │           │* FASTASeq 300                               │\n" +
+                "│                    │           │* Tapestri                                   │\n" +
                 "│                    │           │* unspecified                                │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│LIBRARY_SOURCE      │Mandatory  │Source material:                             │\n" +
@@ -528,6 +536,10 @@ public class WebinCliTest {
                 "│                    │           │* DNBSEQ                                     │\n" +
                 "│                    │           │* ELEMENT                                    │\n" +
                 "│                    │           │* ULTIMA                                     │\n" +
+                "│                    │           │* VELA_DIAGNOSTICS                           │\n" +
+                "│                    │           │* GENAPSYS                                   │\n" +
+                "│                    │           │* GENEMIND                                   │\n" +
+                "│                    │           │* TAPESTRI                                   │\n" +
                 "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n" +
                 "│LIBRARY_CONSTRUCTION│Optional   │Protocol used to construct the sequencing    │\n" +
                 "│_PROTOCOL           │           │library                                      │\n" +
