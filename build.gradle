@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'java-library'
     id 'maven-publish'
-    id 'org.springframework.boot' version '2.2.0.RELEASE'
+    id 'org.springframework.boot' version '2.7.5'
     id "com.diffplug.spotless" version "5.1.1"
     id "com.palantir.docker" version "0.22.1"
 }
@@ -112,22 +112,6 @@ spotless {
     }
 }
 
-/**
- * Works when '-x bootJar' is used. See 'Library Jar Publishing' in README.md.
- */
-jar {
-    enabled true
-
-    manifest {
-        attributes 'Implementation-Title': project.name,
-                'Implementation-Version': project.version,
-                'Built-By': System.getProperty('user.name'),
-                'Built-Date': new Date()
-    }
-
-    exclude('logback.xml')
-}
-
 bootJar {
     manifest {
         attributes 'Implementation-Title': project.name,
@@ -136,8 +120,15 @@ bootJar {
                 'Built-Date': new Date()
     }
 
-    excludeDevtools = true
-    mainClassName = 'uk.ac.ebi.ena.webin.cli.WebinCli'
+    mainClass = 'uk.ac.ebi.ena.webin.cli.WebinCli'
+}
+
+jar {
+    manifest {
+        attributes.putAll(bootJar.manifest.attributes)
+    }
+
+    exclude('logback.xml')
 }
 
 task sourceJar(type: Jar) {

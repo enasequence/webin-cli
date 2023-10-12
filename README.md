@@ -77,10 +77,8 @@ Testing requires the following environmental variables to be set:
 
 ## Library Jar Publishing
 
-To publish webin-cli as a library (slim/regular jar) :
+To publish webin-cli as a library :
 
 ```
-gradlew jar publish -x bootJar
+gradle publish
 ```
-
-**Note** : '-x bootJar' is important as it excludes execution of Spring's Boot jar task which creates a fat jar instead.
