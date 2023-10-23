@@ -723,10 +723,13 @@ public class WebinCli {
             throw WebinCliException.systemError(WebinCliMessage.CLI_MISSING_OUTPUT_DIR_ERROR.text());
         }
 
+        if (!outputDir.isDirectory())
+            throw WebinCliException.userError(WebinCliMessage.CLI_OUTPUT_PATH_NOT_DIR.format(outputDir));
+
         String[] safeDirs = getSafeOutputDirs(dirs);
 
         Path p;
-
+        
         try {
             p = Paths.get(outputDir.getPath(), safeDirs);
         } catch (InvalidPathException ex) {
