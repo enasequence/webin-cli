@@ -275,8 +275,8 @@ public class WebinCliSubmissionTest {
     private void covid19GenomeMetaManifest(ManifestBuilder manifestBuilder) {
         manifestBuilder
                 .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
-                .field("STUDY", "ERP011959")
-                .field("SAMPLE", "ERS829308")
+                .field("STUDY", "ERP121228")
+                .field("SAMPLE", "ERS5249578")
                 .field("COVERAGE", "1.0")
                 .field("PROGRAM", "prog-123")
                 .field("PLATFORM", "ILLUMINA");
