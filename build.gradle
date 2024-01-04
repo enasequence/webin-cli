@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '6.7.2'
+version = '6.8.0'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -59,9 +59,9 @@ dependencies {
 
     implementation( "org.jdom:jdom:2.0.2" )
 
-    implementation( "commons-net:commons-net:3.7.2" )
+    implementation( "commons-net:commons-net:3.10.0" )
 
-    implementation( 'org.apache.commons:commons-compress:1.20')
+    implementation( 'org.apache.commons:commons-compress:1.25.0')
 
     implementation( 'org.apache.poi:poi:4.0.1' )
     implementation( 'org.apache.poi:poi-ooxml:4.0.1' )

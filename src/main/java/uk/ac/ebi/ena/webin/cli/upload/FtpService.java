@@ -40,7 +40,9 @@ public class FtpService implements UploadService {
 
     private static final Logger log = LoggerFactory.getLogger(FtpService.class);
 
-    private final FTPSClient ftpClient = new FTPSClient();
+    // FTP team has recommended that the client uses TLS 1.2. Java 8 should use TLS 1.2 by default anyway but it is being
+    // forced here just in case.
+    private final FTPSClient ftpClient = new FTPSClient("TLSv1.2");
 
     private String username;
     private String password;
@@ -142,7 +144,7 @@ public class FtpService implements UploadService {
                     throw WebinCliException.systemError(WebinCliMessage.FTP_SERVER_ERROR.text());
                 }
 
-                // Upon reconnect change FTP server's working back to what it was before.
+                // Upon reconnect change FTP server's working directory back to what it was before.
                 if (ftpServerWorkingDir != null) {
                     if( !ftpClient.changeWorkingDirectory(
                         FileUtils.replaceIncompatibleFileSeparators(ftpServerWorkingDir.toString()))) {
