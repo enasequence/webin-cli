@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -55,10 +56,11 @@ public class FtpService implements UploadService {
         this.password = password;
 
         ftpClient.setRemoteVerificationEnabled(false);
-        ftpClient.setActivePortRange(40000, 50000);
         ftpClient.setConnectTimeout(10_000);
         ftpClient.setDefaultTimeout(10_000);
         ftpClient.setDataTimeout(10_000);
+        ftpClient.setControlKeepAliveTimeout(Duration.ofMinutes(1));
+        ftpClient.setControlKeepAliveReplyTimeout(Duration.ofSeconds(5));
 
         connectToFtpServer();
     }
@@ -132,15 +134,23 @@ public class FtpService implements UploadService {
         try {
             RetryUtils.executeWithRetry((RetryCallback<Void, Exception>) context -> {
                 ftpClient.connect(SERVER, FTP_PORT);
+
+                // As connect() method does not return anything. It is adivised to check the reply code after calling
+                // it. Here we are only interested in logging the FTP reply if the return code is either in the
+                // negative reply range (4xx and 5xx) or protected reply range (6xx).
+                if (ftpClient.getReplyCode() >= 400 && ftpClient.getReplyCode() <= 699) {
+                    logLastFtpReply();
+                }
+
                 ftpClient.enterLocalPassiveMode();
 
                 if (!ftpClient.login(username, password)) {
-                    logErrorFtpReply();
+                    logLastFtpReply();
                     throw WebinCliException.userError(WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("FTP"));
                 }
 
                 if( !ftpClient.setFileType( FTP.BINARY_FILE_TYPE ) ) {
-                    logErrorFtpReply();
+                    logLastFtpReply();
                     throw WebinCliException.systemError(WebinCliMessage.FTP_SERVER_ERROR.text());
                 }
 
@@ -148,7 +158,7 @@ public class FtpService implements UploadService {
                 if (ftpServerWorkingDir != null) {
                     if( !ftpClient.changeWorkingDirectory(
                         FileUtils.replaceIncompatibleFileSeparators(ftpServerWorkingDir.toString()))) {
-                        logErrorFtpReply();
+                        logLastFtpReply();
                         throw WebinCliException.systemError(WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(ftpServerWorkingDir));
                     }
                 } else {
@@ -185,7 +195,7 @@ public class FtpService implements UploadService {
                 if(Stream.of( ftpDirs ).noneMatch(f -> dir.equals( f.getName() ) )) {
                     executeWithReconnect(() -> {
                         if( !ftpClient.makeDirectory( dir ) ) {
-                            logErrorFtpReply();
+                            logLastFtpReply();
                             throw WebinCliException.systemError(WebinCliMessage.FTP_CREATE_DIR_ERROR.format(dir));
                         }
                         return null;
@@ -194,7 +204,7 @@ public class FtpService implements UploadService {
 
                 executeWithReconnect(() -> {
                     if( !ftpClient.changeWorkingDirectory( dir ) ) {
-                        logErrorFtpReply();
+                        logLastFtpReply();
                         throw WebinCliException.systemError(WebinCliMessage.FTP_CHANGE_DIR_ERROR.format(dir));
                     }
 
@@ -220,7 +230,7 @@ public class FtpService implements UploadService {
                 // will need to be re-created as well.
                 try (InputStream fileInputStream = new BufferedInputStream(Files.newInputStream(localFilePath))) {
                     if (!ftpClient.storeFile(remoteFileName, fileInputStream)) {
-                        logErrorFtpReply();
+                        logLastFtpReply();
                         throw WebinCliException.systemError(WebinCliMessage.FTP_UPLOAD_ERROR.format(remoteFileName));
                     }
                 }
@@ -234,8 +244,8 @@ public class FtpService implements UploadService {
         }
     }
 
-    private void logErrorFtpReply() {
-        log.error("FTP error. ReplyCode : {}, ReplyStrings : {}",
+    private void logLastFtpReply() {
+        log.error("Last received FTP Reply. ReplyCode : {}, ReplyStrings : {}",
             ftpClient.getReplyCode(), Arrays.toString(ftpClient.getReplyStrings()));
     }
 
