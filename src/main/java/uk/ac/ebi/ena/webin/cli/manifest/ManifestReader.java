@@ -41,6 +41,7 @@ import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
@@ -236,14 +237,14 @@ ManifestReader<M extends Manifest> {
     private void
     parseManifest( Path inputDir, List<String> lines )
     {
-        if (isJsonBasedFormat(inputDir, lines)) {
+        if (isJsonBasedFormat(lines)) {
             parseJsonManifest(inputDir, lines);
         } else {
             parseKeyValueManifest(inputDir, lines);
         }
     }
 
-    private boolean isJsonBasedFormat( Path inputDir, List<String> lines ) {
+    private boolean isJsonBasedFormat(List<String> lines) {
         if (lines.isEmpty()) {
             return false;
         }
@@ -357,7 +358,17 @@ ManifestReader<M extends Manifest> {
                         }
                     });
                 } else {
-                    handleFieldWithAttributes(inputDir, fieldDefinition, field);
+                    // ValueNode is JsonObject
+                    if(fieldName.equalsIgnoreCase("sample")){
+                        // Check if sample alias is present in sample JSON.
+                        if(null == field.get("alias")){
+                            throw WebinCliException.userError(WebinCliMessage.MANIFEST_READER_MISSING_SAMPLE_ALIAS.text());
+                        }
+                        // Add json as manifest field
+                        addManifestField(inputDir, fieldDefinition, field.toString(), new ArrayList<>());
+                    }else {
+                        handleFieldWithAttributes(inputDir, fieldDefinition, field);
+                    }
                 }
             });
         } catch (IOException e) {

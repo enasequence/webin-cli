@@ -162,6 +162,7 @@ public class WebinCli {
         parameters.setSubmit(cmd.submit);
         parameters.setTest(cmd.test);
         parameters.setAscp(cmd.ascp);
+        parameters.setSampleUpdate(cmd.isSampleUpdate);
         return parameters;
     }
 

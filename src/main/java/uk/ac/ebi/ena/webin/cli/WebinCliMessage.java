@@ -51,6 +51,7 @@ public enum WebinCliMessage implements MessageFormatSource {
     SUBMIT_SERVICE_SUCCESS("The submission has been completed successfully. The following {0} accession was assigned to the submission: {1}"),
     SUBMIT_SERVICE_SUCCESS_NOACC("The submission has been completed successfully. No accession was assigned to the {0} submission. Please contact the helpdesk."),
     SUBMIT_SERVICE_SYSTEM_ERROR("A server error occurred when attempting to submit."),
+    SUBMIT_SAMPLE_SERVICE_SYSTEM_ERROR("A server error occurred when attempting to submit sample."),
     IGNORE_ERRORS_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving ignore error information."),
     RATE_LIMIT_SERVICE_SYSTEM_ERROR("A server error occurred when retrieving rate limit information."),
     VERSION_SERVICE_SYSTEM_ERROR("A server error occurred when checking application version."),
@@ -79,6 +80,8 @@ public enum WebinCliMessage implements MessageFormatSource {
     MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR("Please provide both address and author details or neither."),
     MANIFEST_READER_MANIFEST_FILE_MALFORMED("Malformed manifest file content."),
     MANIFEST_READER_UNKNOWN_ATTRIBUTE_FIELD_ERROR("Unknown attribute field: {0}."),
+    MANIFEST_READER_MISSING_SAMPLE_ALIAS("Missing sample alias. Sample alias is mandatory for sample json format"),
+    MANIFEST_READER_INVALID_SAMPLE_ALIAS("Invalid sample alias: {0}."),
 
     FILE_SUFFIX_PROCESSOR_ERROR("Invalid {0} file suffix: \"{1}\". Valid file suffixes are: {2}."),
     CV_FIELD_PROCESSOR_ERROR("Invalid {0} field value: \"{1}\". Valid values are: {2}."),
@@ -90,8 +93,8 @@ public enum WebinCliMessage implements MessageFormatSource {
     READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR("Invalid quality score: {0}"),
     CUSTOM_FIELD_PROCESSOR_INCORRECT_FIELD_VALUE("Field \"{0}\" value \"{1}\" format is incorrect \"{2}\". Expected format: \"CUSTOM_FIELD name:value\" "),
     SERVICE_AUTHENTICATION_ERROR("{0} service authentication error. Invalid submission account user name or password. Please try enclosing your password in single quotes."),
-    SERVICE_SYSTEM_ERROR("A server error was returned by {0} service.");
-
+    SERVICE_SYSTEM_ERROR("A server error was returned by {0} service."),
+    SERVICE_JSON_SUBMISSION_ERROR("Submission error: {0}");
     private final String text;
 
     WebinCliMessage(String text) {

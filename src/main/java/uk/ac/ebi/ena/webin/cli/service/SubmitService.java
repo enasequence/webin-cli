@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 
 import org.jdom2.Document;
@@ -39,6 +40,11 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
@@ -49,6 +55,7 @@ import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 public class SubmitService extends WebinService {
 
     private final static String SUBMISSION_XML_NAME = "webin-submission.xml";
+    private final static String SUBMISSION_JSON_NAME = "webin-submission.json";
     private final static String RECEIPT_XML_NAME = "receipt.xml";
 
     private static final Logger log = LoggerFactory.getLogger(SubmitService.class);
@@ -60,8 +67,8 @@ public class SubmitService extends WebinService {
         private String submitDir;
 
         private boolean saveSubmissionXmlFiles = true;
-        
-        public Builder setSubmitDir( String submitDir ) {
+
+        public Builder setSubmitDir(String submitDir) {
             this.submitDir = submitDir;
             return this;
         }
@@ -70,20 +77,20 @@ public class SubmitService extends WebinService {
             this.saveSubmissionXmlFiles = saveSubmissionXmlFiles;
             return this;
         }
-        
+
         @Override
         public SubmitService build() {
-            return new SubmitService( this );
+            return new SubmitService(this);
         }
     }
-    
-    
-    protected SubmitService( Builder builder ) {
-        super( builder );
+
+
+    protected SubmitService(Builder builder) {
+        super(builder);
         this.submitDir = builder.submitDir;
         this.saveSubmissionXmlFiles = builder.saveSubmissionXmlFiles;
     }
-    
+
 
     public void
     doSubmission(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
@@ -92,36 +99,50 @@ public class SubmitService extends WebinService {
             saveToFile(Paths.get(submitDir, SUBMISSION_XML_NAME), submissionXml);
         }
 
+        MultiValueMap<String, Object> body = getRequestBody(submissionXml, SUBMISSION_XML_NAME);
+        ResponseEntity<String> response = submit(body);
+        processReceipt(response.getBody(), xmlFileList);
+    }
+
+    public void
+    doJsonSubmission(String jsonSubmission) {
+        MultiValueMap<String, Object> body = getRequestBody(jsonSubmission, SUBMISSION_JSON_NAME);
+        ResponseEntity<String> response = submit(body);
+        processJsonReceipt(response);
+    }
+
+    private ResponseEntity<String> submit(MultiValueMap<String, Object> body) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaderBuilder().basicAuth(getUserName(), getPassword()).multipartFormData().build();
+
+        return ExceptionUtils.executeWithRestExceptionHandling(
+
+                () -> RetryUtils.executeWithRetry(
+                        context -> restTemplate.exchange(
+                                resolveAgainstWebinRestV2Uri("submit/"),
+                                HttpMethod.POST,
+                                new HttpEntity<>(body, headers), String.class),
+                        context -> log.warn("Retrying sending submission to server."),
+                        HttpServerErrorException.class, ResourceAccessException.class),
+
+                WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Submit"),
+                null,
+                WebinCliMessage.SUBMIT_SAMPLE_SERVICE_SYSTEM_ERROR.text());
+    }
+    
+    private MultiValueMap<String, Object> getRequestBody(String requestContent, String fileName) {
+
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", new ByteArrayResource(submissionXml.getBytes(StandardCharsets.UTF_8)) {
+        body.add("file", new ByteArrayResource(requestContent.getBytes(StandardCharsets.UTF_8)) {
             //The remote endpoint responds back with 400 status code if file name is not present in
             //content-disposition header. overriding the following method this way adds the file name in
             //the header allowing the submission to get accepted.
             @Override
             public String getFilename() {
-                return SUBMISSION_XML_NAME;
+                return fileName;
             }
         });
-
-        HttpHeaders headers = new HttpHeaderBuilder().basicAuth( getUserName(), getPassword() ).multipartFormData().build();
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        ResponseEntity<String> response = ExceptionUtils.executeWithRestExceptionHandling(
-
-            () -> RetryUtils.executeWithRetry(
-                context -> restTemplate.exchange(
-                    resolveAgainstWebinRestV2Uri("submit/"),
-                    HttpMethod.POST,
-                    new HttpEntity<>(body, headers), String.class),
-                context -> log.warn("Retrying sending submission to server."),
-                HttpServerErrorException.class, ResourceAccessException.class),
-
-            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Submit"),
-            null,
-            WebinCliMessage.SUBMIT_SERVICE_SYSTEM_ERROR.text());
-
-        processReceipt(response.getBody(), xmlFileList);
+        return body;
     }
 
     private String createSubmissionXml(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
@@ -151,23 +172,23 @@ public class SubmitService extends WebinService {
 
             Element rootNode = doc.getRootElement();
 
-            if( Boolean.valueOf( rootNode.getAttributeValue( "success" ) ) ) {
-                for (SubmissionBundle.SubmissionXMLFile xmlFile : xmlFileList ) {
+            if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
+                for (SubmissionBundle.SubmissionXMLFile xmlFile : xmlFileList) {
                     //Do not show submission accession in the output.
                     if (xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.SUBMISSION) {
                         continue;
                     }
 
-                    String xmlFileType = String.valueOf( xmlFile.getType() );
-                    String accession = rootNode.getChild( xmlFileType ).getAttributeValue( "accession" );
+                    String xmlFileType = String.valueOf(xmlFile.getType());
+                    String accession = rootNode.getChild(xmlFileType).getAttributeValue("accession");
 
-                    String msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format( xmlFileType.toLowerCase(), accession );
-                   
-                    if( null == accession || accession.isEmpty() ) {
+                    String msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format(xmlFileType.toLowerCase(), accession);
+
+                    if (null == accession || accession.isEmpty()) {
                         msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC.format(xmlFileType.toLowerCase());
                     }
-                    
-                    log.info( msg );
+
+                    log.info(msg);
                 }
             } else {
                 List<Element> childrenList = rootNode.getChildren("MESSAGES");
@@ -175,8 +196,7 @@ public class SubmitService extends WebinService {
                     List<Element> errorList = child.getChildren("ERROR");
                     if (errorList != null && !errorList.isEmpty()) {
                         errorList.stream().forEach(e -> errorsSb.append(e.getValue()));
-                    }
-                    else {
+                    } else {
                         errorsSb.append("The submission failed because of an XML submission error.");
                     }
                 }
@@ -190,6 +210,25 @@ public class SubmitService extends WebinService {
         }
     }
 
+    private void processJsonReceipt(ResponseEntity<String> response) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            WebinResponse webinResponse = objectMapper.readValue(response.getBody(), WebinResponse.class);
+
+            if (webinResponse.isSaved) {
+                String msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format(webinResponse.submissionType, webinResponse.getAccession());
+                if (null == webinResponse.getAccession()) {
+                    msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC.format(webinResponse.submissionType);
+                }
+                log.info(msg);
+            } else {
+                WebinCliMessage.SERVICE_JSON_SUBMISSION_ERROR.format(webinResponse.message.error[0]);
+            }
+        } catch (JsonProcessingException e) {
+            throw WebinCliException.systemError(e);
+        }
+    }
+
     private void saveToFile(Path filePath, String data) {
         try {
             if (Files.exists(filePath)) {
@@ -199,6 +238,64 @@ public class SubmitService extends WebinService {
             Files.write(filePath, data.getBytes(StandardCharsets.UTF_8));
         } catch (IOException ex) {
             throw WebinCliException.systemError(ex);
+        }
+    }
+
+    private static class WebinResponse {
+        @JsonAlias({"success", "isSaved"})
+        public boolean isSaved;
+        public Date receiptDate;
+        public List<SampleResponse> samples;
+        public SubmissionResponse submission;
+        @JsonAlias({"messages", "message"})
+        public Message message;
+        @JsonIgnore
+        public String[] actions;
+        @JsonIgnore
+        private SubmissionType submissionType;
+
+        public SubmissionType getSubmissionType() {
+            if (samples.size() > 0) {
+                return SubmissionType.SAMPLE;
+            }
+            return null;
+        }
+
+        public String getAccession() {
+            if (samples.size() > 0) {
+                return samples.get(0).accession;
+            }
+            return null;
+        }
+
+        public static class SampleResponse {
+            public String alias;
+            public String accession;
+            public String status;
+            public ExternalAccession externalAccession;
+        }
+
+        public static class SubmissionResponse {
+            public String alias;
+            @JsonAlias({"accession", "submissionId"})
+            public String submissionId;
+        }
+
+        private static class ExternalAccession {
+            @JsonAlias({"id", "bioSampleId"})
+            public String bioSampleId;
+            public String db;
+        }
+
+        private static class Message {
+            public String[] info;
+            public String[] error;
+
+        }
+
+        // Enum definition
+        private enum SubmissionType {
+            SAMPLE
         }
     }
 }

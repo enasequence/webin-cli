@@ -21,6 +21,7 @@ public class WebinCliBuilder {
   private boolean submit = true;
   private boolean ascp = false;
   private boolean ignoreErrors = false;
+  private boolean isSampleUpdate = false;
 
   private boolean saveSubmissionBundleFile = true;
 
@@ -60,6 +61,11 @@ public class WebinCliBuilder {
 
   public WebinCliBuilder ignoreErrors(boolean ignoreErrors) {
     this.ignoreErrors = ignoreErrors;
+    return this;
+  }
+
+  public WebinCliBuilder isSampleUpdate(boolean isSampleUpdate) {
+    this.isSampleUpdate = isSampleUpdate;
     return this;
   }
 
@@ -103,6 +109,7 @@ public class WebinCliBuilder {
     }
     WebinCliParameters parameters = WebinCli.initParameters(submissionAccount, authToken, cmd);
     parameters.setIgnoreErrors(ignoreErrors);
+    parameters.setSampleUpdate(isSampleUpdate);
     parameters.setSaveSubmissionBundleFile(saveSubmissionBundleFile);
     parameters.setSaveSubmissionXmlFiles(saveSubmissionXmlFiles);
     return new WebinCli(parameters);

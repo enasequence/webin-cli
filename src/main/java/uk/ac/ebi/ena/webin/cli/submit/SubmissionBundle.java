@@ -41,44 +41,29 @@ public class SubmissionBundle implements Serializable {
         RUN,
         EXPERIMENT
     }
+    
+    public static class SubmissionFile implements Serializable{
 
-    public static class SubmissionXMLFile implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        /** XML written in file. */
         private final File file;
-        private final SubmissionXMLFileType type;
-
+        
         /** MD5 checksum for the XML file. Only meant to be used during validation of the submission bundle. */
         private String md5;
 
-        /** XML cached in memory. No need to serialize as it gets written in an xml file separately. */
-        private transient String xmlContent;
-
-        public SubmissionXMLFile( SubmissionXMLFileType type, File file, String xmlContent) {
-            this.type = type;
+        private transient String fileContent;
+        
+        public SubmissionFile( File file, String md5, String fileContent){
             this.file = file;
-            this.xmlContent = xmlContent;
+            this.md5 = md5;
+            this.fileContent = fileContent;
         }
 
-        public String toString() {
-            return String.format( "%s|%s|%s", type, file, md5 );
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SubmissionXMLFile xmlFile = (SubmissionXMLFile) o;
-            return file.equals(xmlFile.file) && type == xmlFile.type && Objects.equals(md5, xmlFile.md5);
+        public SubmissionFile( File file, String fileContent){
+            this.file = file;
+            this.fileContent = fileContent;
         }
 
         public File getFile() {
             return file;
-        }
-
-        public SubmissionXMLFileType getType() {
-            return type;
         }
 
         public String getMd5() {
@@ -88,6 +73,79 @@ public class SubmissionBundle implements Serializable {
         public void setMd5(String md5) {
             this.md5 = md5;
         }
+
+        public String getFileContent() {
+            return fileContent;
+        }
+
+        public void setFileContent(String xmlContent) {
+            this.fileContent = fileContent;
+        }
+
+        public String toString() {
+            return String.format( "%s|%s", file, md5 );
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SubmissionXMLFile xmlFile = (SubmissionXMLFile) o;
+            return file.equals(xmlFile.file) && Objects.equals(md5, xmlFile.getMd5());
+        }
+    }
+
+    public static class SubmissionJsonFile extends SubmissionFile {
+        public SubmissionJsonFile( File file, String md5, String fileContent) {
+            
+           super(file,md5, fileContent);
+        }
+    }
+    
+    public static class SubmissionXMLFile extends SubmissionFile {
+        private static final long serialVersionUID = 1L;
+
+        /** XML written in file. */
+        private final File file;
+        private final SubmissionXMLFileType type;
+        
+        /** XML cached in memory. No need to serialize as it gets written in an xml file separately. */
+        private transient String xmlContent;
+
+        public SubmissionXMLFile( SubmissionXMLFileType type, File file, String xmlContent) {
+            super(file,xmlContent);
+            this.type = type;
+            this.file = file;
+            this.xmlContent = xmlContent;
+        }
+
+        public String toString() {
+            return String.format( "%s|%s|%s", type, file, getMd5() );
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SubmissionXMLFile xmlFile = (SubmissionXMLFile) o;
+            return file.equals(xmlFile.file) && type == xmlFile.type && Objects.equals(getMd5(), xmlFile.getMd5());
+        }
+
+        /*public File getFile() {
+            return file;
+        }*/
+
+        public SubmissionXMLFileType getType() {
+            return type;
+        }
+
+        /*public String getMd5() {
+            return md5;
+        }
+
+        public void setMd5(String md5) {
+            this.md5 = md5;
+        }*/
 
         public String getXmlContent() {
             return xmlContent;

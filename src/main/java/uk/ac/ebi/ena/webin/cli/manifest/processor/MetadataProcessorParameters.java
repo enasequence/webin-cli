@@ -22,4 +22,5 @@ public interface MetadataProcessorParameters {
     SampleXmlProcessor getSampleXmlProcessor();
     RunProcessor getRunProcessor();
     AnalysisProcessor getAnalysisProcessor();
+    boolean isSampleUpdate();
 }

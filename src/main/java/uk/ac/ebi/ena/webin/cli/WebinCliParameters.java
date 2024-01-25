@@ -37,6 +37,7 @@ public class WebinCliParameters implements MetadataProcessorParameters {
   private boolean test;
   private boolean ascp;
   private boolean ignoreErrors;
+  private boolean isSampleUpdate;
 
   /** Save submission bundle file to avoid unnecessary revalidation. */
   private boolean saveSubmissionBundleFile = true;
@@ -238,6 +239,14 @@ public class WebinCliParameters implements MetadataProcessorParameters {
 
   public String getWebinServiceUserName() {
     return username;
+  }
+
+  public boolean isSampleUpdate() {
+    return isSampleUpdate;
+  }
+
+  public void setSampleUpdate(boolean sampleUpdate) {
+    this.isSampleUpdate = sampleUpdate;
   }
 
   public String getFileUploadServiceUserName() {

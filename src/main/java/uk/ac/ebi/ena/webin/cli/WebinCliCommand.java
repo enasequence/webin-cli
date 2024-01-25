@@ -92,6 +92,9 @@ WebinCliCommand
     @Option(names = Options.version, description = Descriptions.version, versionHelp = true, order = 101)
     public boolean version;
 
+    @Option(names = Options.sampleUpdate, description = Descriptions.sampleUpdate, defaultValue = "false", order = 102)
+    public boolean isSampleUpdate;
+
     public interface Options {
         String context    = "-context";
         String manifest   = "-manifest";
@@ -115,6 +118,7 @@ WebinCliCommand
         String centerNameSynonym = "-centername";
         String outputDirSynonym  = "-outputdir";
         String inputDirSynonym   = "-inputdir";
+        String sampleUpdate   = "-sample-update";
     }
 
     public interface Descriptions {
@@ -151,5 +155,6 @@ WebinCliCommand
                 "Show manifest fields for all contexts or for the given -context.";
         String version =
                 "Print version information and exit.";
+        String sampleUpdate = "Modifies the provided JSON sample in the manifest file.";
     }
 }

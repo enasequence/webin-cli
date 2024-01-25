@@ -1,0 +1,26 @@
+{
+  "study": "sample-study",
+  "sample": {
+    "title": "human gastric microbiota, mucosal",
+    "organism": {
+      "taxonId": "1284369"
+    },
+    "attributes": [
+      {
+        "tag": "Geographic location (country and/or sea)",
+        "value": "France"
+      },
+      {
+        "tag": "collection date",
+        "value": "2010-01-20"
+      },
+      {
+        "tag": "ena-checklist",
+        "value": "ERC000011"
+      }
+    ]
+
+
+  },
+  "platform": "ILLUMINA"
+}
