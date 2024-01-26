@@ -118,7 +118,7 @@ WebinCliCommand
         String centerNameSynonym = "-centername";
         String outputDirSynonym  = "-outputdir";
         String inputDirSynonym   = "-inputdir";
-        String sampleUpdate   = "-sample-update";
+        String sampleUpdate   = "-sampleUpdate";
     }
 
     public interface Descriptions {
@@ -155,6 +155,6 @@ WebinCliCommand
                 "Show manifest fields for all contexts or for the given -context.";
         String version =
                 "Print version information and exit.";
-        String sampleUpdate = "Modifies the provided JSON sample in the manifest file.";
+        String sampleUpdate = "Update the submitted sample if it already exists.";
     }
 }

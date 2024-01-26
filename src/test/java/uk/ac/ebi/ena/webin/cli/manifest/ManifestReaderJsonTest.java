@@ -17,13 +17,12 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.junit.rules.ExpectedException;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
@@ -177,21 +176,6 @@ public class ManifestReaderJsonTest {
         JsonNode sampleNode = new ObjectMapper().readTree(sampleFieldValue.getValue());
         Assert.assertEquals(sampleNode.get("alias").asText(), "stomach_microbiota");
     }
-
-    @Test public void testSampleJsonValueWithoutAlias() throws JsonProcessingException {
-
-        exceptionRule.expect(WebinCliException.class);
-        exceptionRule.expectMessage(WebinCliMessage.MANIFEST_READER_MISSING_SAMPLE_ALIAS.text());
-        TestManifestReader manifestReader = new TestManifestReader(new ManifestFieldDefinition.Builder()
-                .meta().required().name("sample").desc("some desc")
-                .build());
-
-        File manifestFile = new File(WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/manifests/json/valid/"),
-                "invalid-sample.json");
-
-        manifestReader.readManifest(Paths.get("."), manifestFile);
-    }
-
 
     /** A good example of all possible ways to format the fields. */
     @Test public void testAllValues() {

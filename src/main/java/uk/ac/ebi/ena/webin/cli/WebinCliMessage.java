@@ -81,7 +81,6 @@ public enum WebinCliMessage implements MessageFormatSource {
     MANIFEST_READER_MANIFEST_FILE_MALFORMED("Malformed manifest file content."),
     MANIFEST_READER_UNKNOWN_ATTRIBUTE_FIELD_ERROR("Unknown attribute field: {0}."),
     MANIFEST_READER_MISSING_SAMPLE_ALIAS("Missing sample alias. Sample alias is mandatory for sample json format"),
-    MANIFEST_READER_INVALID_SAMPLE_ALIAS("Invalid sample alias: {0}."),
 
     FILE_SUFFIX_PROCESSOR_ERROR("Invalid {0} file suffix: \"{1}\". Valid file suffixes are: {2}."),
     CV_FIELD_PROCESSOR_ERROR("Invalid {0} field value: \"{1}\". Valid values are: {2}."),

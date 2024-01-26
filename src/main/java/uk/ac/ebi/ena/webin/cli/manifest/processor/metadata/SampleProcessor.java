@@ -29,6 +29,13 @@ import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.WebinSubmission;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.submission.Submission;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.submission.action.Action;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.submission.action.ActionType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SampleProcessor implements ManifestFieldProcessor {
 
@@ -57,14 +64,16 @@ public class SampleProcessor implements ManifestFieldProcessor {
   public void process(ValidationResult result, ManifestFieldValue fieldValue) {
     String sampleValue = fieldValue.getValue();
     try {
-      if (isJsonSample(sampleValue)) {
-        JsonNode sampleJson = new ObjectMapper().readTree(sampleValue);
-        String action = isSampleExists(getAlias(sampleJson)) ? "MODIFY" : "ADD";
-        String sampleSubmission = generateSampleSubmissionJson(action, sampleJson);
-        if (action.equals("ADD") || (action.equals("MODIFY") && parameters.isSampleUpdate())) {
-          getSubmitService().doJsonSubmission(sampleSubmission);
+      if (isJsonValue(sampleValue)) {
+        uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample jsonSample = getJsonSample(sampleValue);
+        Submission submission = createSubmission(jsonSample);
+        WebinSubmission webinSubmission = createWebinSubmission(jsonSample,submission);
+        // There will be only one action for a sample
+        ActionType actionType = submission.getActions().get(0).getType();
+        if (actionType== ActionType.ADD || (actionType == ActionType.MODIFY && parameters.isSampleUpdate())) {
+          getSubmitService().doJsonSubmission(webinSubmission);
         }
-        sampleValue = getAlias(sampleJson);
+        sampleValue = jsonSample.getAlias();
       }
       
       Sample sample = getSample(sampleValue);
@@ -76,6 +85,35 @@ public class SampleProcessor implements ManifestFieldProcessor {
     }
   }
   
+  private WebinSubmission createWebinSubmission(uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sample, Submission submission){
+    List<uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample> sampleList = new ArrayList();
+    sampleList.add(sample);
+    WebinSubmission webinSubmission = new WebinSubmission();
+    webinSubmission.setSubmission(submission);
+    webinSubmission.setSamples(sampleList);
+    return webinSubmission;
+  }
+  
+  private uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample getJsonSample(String sampleValue) throws JsonProcessingException {
+    uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sampleFromUser = new ObjectMapper().readValue(sampleValue, uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample.class);
+    return sampleFromUser;
+  }
+  
+  private Submission createSubmission(uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sample) {
+    Submission submission = new Submission();
+    List<Action> actions = new ArrayList<>();
+    Action action = isSample(sample) ? createAction(ActionType.MODIFY) : createAction(ActionType.ADD);
+    actions.add(action);
+    submission.setActions(actions);
+    return submission;
+  }
+
+  private Action createAction(ActionType type){
+    Action action=new Action();
+    action.setType(type);
+    return action;
+  }
+  
   private Sample getSample(String sampleIdOrAlias){
   
     return  ExceptionUtils.executeWithRestExceptionHandling(() -> getSampleService().getSample(sampleIdOrAlias),
@@ -85,13 +123,17 @@ public class SampleProcessor implements ManifestFieldProcessor {
   
   }
 
-  private boolean isSampleExists(String sampleIdOrAlias){
+  private boolean isSample(uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sampleFromUser){
     try {
-      return getSampleService().getSample(sampleIdOrAlias)!=null;
+      if(null == sampleFromUser.getAlias()){
+        throw WebinCliException.userError(WebinCliMessage.MANIFEST_READER_MISSING_SAMPLE_ALIAS.format(sampleFromUser.getAlias()));
+      }
+      
+      return getSampleService().getSample(sampleFromUser.getAlias())!=null;
     }catch (HttpClientErrorException.NotFound notFound){
       return false;
     }catch (Exception ex){
-      throw WebinCliException.systemError(WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleIdOrAlias));
+      throw WebinCliException.systemError(WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleFromUser.getAlias()));
     }
   }
   
@@ -117,36 +159,14 @@ public class SampleProcessor implements ManifestFieldProcessor {
     
   }
   
-  
-  private boolean isJsonSample(String value){
+  private boolean isJsonValue(String value){
     return value.startsWith("{");
   }
   
   private static String getAlias(JsonNode sampleJson) {
     return sampleJson.get("alias").asText();
   }
-
-  public String generateSampleSubmissionJson(String action, JsonNode sampleJson) {
-    return "{\n"
-            + generateSubmissionJson(action,sampleJson)
-            + " ,\n"
-            + "\"samples\":[\n"
-            + sampleJson
-            + "]\n"
-            + "}";
-  }
-
-  public static String generateSubmissionJson(String action,JsonNode sampleJson) {
-    return "\"submission\":{\n"
-            + "   \"alias\":\""
-            + "submission-"+ getAlias(sampleJson)
-            + "\",\n"
-            + "   \"actions\":[\n"
-            + "      {\n"
-            + "         \"type\":\""+action+"\"\n"
-            + "      }\n"
-            + "   ]\n"
-            + "}";
-  }
+  
+  
   
 }

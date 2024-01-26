@@ -358,13 +358,7 @@ ManifestReader<M extends Manifest> {
                         }
                     });
                 } else {
-                    // ValueNode is JsonObject
                     if(fieldName.equalsIgnoreCase("sample")){
-                        // Check if sample alias is present in sample JSON.
-                        if(null == field.get("alias")){
-                            throw WebinCliException.userError(WebinCliMessage.MANIFEST_READER_MISSING_SAMPLE_ALIAS.text());
-                        }
-                        // Add json as manifest field
                         addManifestField(inputDir, fieldDefinition, field.toString(), new ArrayList<>());
                     }else {
                         handleFieldWithAttributes(inputDir, fieldDefinition, field);

@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.web.client.HttpServerErrorException;
@@ -118,11 +119,16 @@ LoginService
     
     private RequestEntity<LoginRequestBody> getAuthRequest(String url){
         LoginRequestBody requestBody = new LoginRequestBody(username, password);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", HttpHeaderBuilder.basicAuthHeaderValue(username, password));
+        
         RequestEntity< LoginRequestBody > request=null;
         try {
             request = RequestEntity
                     .post(new URI(getUri(url, test)))
-                    .header("Authorization", HttpHeaderBuilder.basicAuthHeaderValue(username, password))
+                    .headers(headers)
                     .accept(MediaType.APPLICATION_JSON)
                     .body(requestBody);
         }

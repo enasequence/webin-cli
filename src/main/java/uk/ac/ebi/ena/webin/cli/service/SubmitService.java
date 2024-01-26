@@ -18,9 +18,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -40,8 +44,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,6 +53,9 @@ import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.WebinSubmission;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.receipt.Receipt;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.receipt.ReceiptObject;
 
 public class SubmitService extends WebinService {
 
@@ -105,8 +110,10 @@ public class SubmitService extends WebinService {
     }
 
     public void
-    doJsonSubmission(String jsonSubmission) {
-        MultiValueMap<String, Object> body = getRequestBody(jsonSubmission, SUBMISSION_JSON_NAME);
+    doJsonSubmission(WebinSubmission jsonSubmission) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        MultiValueMap<String, Object> body = getRequestBody(objectMapper.writeValueAsString(jsonSubmission), SUBMISSION_JSON_NAME);
         ResponseEntity<String> response = submit(body);
         processJsonReceipt(response);
     }
@@ -213,20 +220,44 @@ public class SubmitService extends WebinService {
     private void processJsonReceipt(ResponseEntity<String> response) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            WebinResponse webinResponse = objectMapper.readValue(response.getBody(), WebinResponse.class);
+            Receipt receipt = objectMapper.readValue(response.getBody(), Receipt.class);
 
-            if (webinResponse.isSaved) {
-                String msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format(webinResponse.submissionType, webinResponse.getAccession());
-                if (null == webinResponse.getAccession()) {
-                    msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC.format(webinResponse.submissionType);
+            if (receipt.isSuccess()) {
+                String submissionTypes = getSubmissionsAndAccessions(receipt).keySet().stream().collect(Collectors.joining(", "));
+                String accessions = getSubmissionsAndAccessions(receipt).values().stream().collect(Collectors.joining(", "));
+                String msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format(submissionTypes, accessions);
+                if (StringUtils.isEmpty(accessions)) {
+                    msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC.format(submissionTypes);
                 }
                 log.info(msg);
             } else {
-                WebinCliMessage.SERVICE_JSON_SUBMISSION_ERROR.format(webinResponse.message.error[0]);
+                WebinCliMessage.SERVICE_JSON_SUBMISSION_ERROR.format(receipt.getMessages().getErrorMessages());
             }
         } catch (JsonProcessingException e) {
             throw WebinCliException.systemError(e);
         }
+    }
+    
+    private Map<String,String> getSubmissionsAndAccessions(Receipt receipt) {
+
+        Map<String, String> submissionsAccessions = new HashMap();
+        Map<String, List<ReceiptObject>> collectionMappings = new HashMap<>();
+        collectionMappings.put("Analysis",receipt.getAnalyses());
+        collectionMappings.put("Experiments", receipt.getExperiments());
+        collectionMappings.put("Runs", receipt.getRuns());
+        collectionMappings.put("Samples", receipt.getSamples());
+        collectionMappings.put("Studies", receipt.getStudies());
+        collectionMappings.put("Projects", receipt.getProjects());
+
+        for (Map.Entry<String, List<ReceiptObject>> entry : collectionMappings.entrySet()) {
+            String label = entry.getKey();
+            List<ReceiptObject> objects = entry.getValue();
+
+            if (objects!=null && !objects.isEmpty()) {
+                submissionsAccessions.put(label, objects.stream().map(ReceiptObject::getAccession).collect(Collectors.joining(",")));
+            }
+        }
+        return submissionsAccessions;
     }
 
     private void saveToFile(Path filePath, String data) {
@@ -238,64 +269,6 @@ public class SubmitService extends WebinService {
             Files.write(filePath, data.getBytes(StandardCharsets.UTF_8));
         } catch (IOException ex) {
             throw WebinCliException.systemError(ex);
-        }
-    }
-
-    private static class WebinResponse {
-        @JsonAlias({"success", "isSaved"})
-        public boolean isSaved;
-        public Date receiptDate;
-        public List<SampleResponse> samples;
-        public SubmissionResponse submission;
-        @JsonAlias({"messages", "message"})
-        public Message message;
-        @JsonIgnore
-        public String[] actions;
-        @JsonIgnore
-        private SubmissionType submissionType;
-
-        public SubmissionType getSubmissionType() {
-            if (samples.size() > 0) {
-                return SubmissionType.SAMPLE;
-            }
-            return null;
-        }
-
-        public String getAccession() {
-            if (samples.size() > 0) {
-                return samples.get(0).accession;
-            }
-            return null;
-        }
-
-        public static class SampleResponse {
-            public String alias;
-            public String accession;
-            public String status;
-            public ExternalAccession externalAccession;
-        }
-
-        public static class SubmissionResponse {
-            public String alias;
-            @JsonAlias({"accession", "submissionId"})
-            public String submissionId;
-        }
-
-        private static class ExternalAccession {
-            @JsonAlias({"id", "bioSampleId"})
-            public String bioSampleId;
-            public String db;
-        }
-
-        private static class Message {
-            public String[] info;
-            public String[] error;
-
-        }
-
-        // Enum definition
-        private enum SubmissionType {
-            SAMPLE
         }
     }
 }

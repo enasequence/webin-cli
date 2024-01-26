@@ -65,6 +65,9 @@ dependencies {
 
     implementation( 'org.apache.poi:poi:4.0.1' )
     implementation( 'org.apache.poi:poi-ooxml:4.0.1' )
+    
+    implementation( 'uk.ac.ebi.ena.sra:webin-xml:2.4.1' )
+    
 
     testImplementation( 'junit:junit:4.13' )
     testImplementation( 'org.assertj:assertj-core:3.11.1' )
