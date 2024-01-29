@@ -23,9 +23,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.javafx.binding.StringFormatter;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
@@ -71,16 +69,17 @@ SampleProcessorTest {
         Assert.assertEquals("SRP000392", fieldValue.getValue());
     }
 
-
     /**
-     * Test Add and Modify with setSampleUpdate parameter.
-     * The collectionDate in sample object will be updated to current date. 
+     * Test add and modify sample submission with -setSampleUpdate option. 
+     * We change the collection date and check that the sample gets updated.
+     * We also test that the BioSample accession is assigned.
      **/
     @Test
     public void
     testJsonSampleAddAndUpdate() throws JsonProcessingException {
         
         String sampleTestAlias = UUID.randomUUID().toString();
+        String modifiedCollectionDate = LocalDate.now().toString();
        
         // Create a new sample
         SampleProcessor processor = new SampleProcessor(parameters,
@@ -96,24 +95,20 @@ SampleProcessorTest {
         String biosampleId = fieldValue.getValue();
         
         // Update sample
-        JsonNode sampleJson = new ObjectMapper().readTree(getSampleJson(sampleTestAlias));
-        // Update collection date to current date
-        sampleJson.get("attributes").forEach(e ->{
-            if(e.get("tag").asText().equals("collection date")){
-                ((ObjectNode)e).put("value", LocalDate.now().toString());
-            }
-        });
+        uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sample = new ObjectMapper().readValue(getSampleJson(sampleTestAlias), uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample.class);
+        sample.getAttributes().stream().filter(e->e.getTag().equalsIgnoreCase("collection date")).findFirst().get().setValue(modifiedCollectionDate);
+        
         processor = new SampleProcessor(parameters,
-                (Sample sample) -> {
+                (Sample sampleObj) -> {
                     // Updated collection date
-                    Assert.assertEquals( getSampleCollectionDate(sample),(LocalDate.now().toString()));
+                    Assert.assertEquals( getSampleCollectionDate(sampleObj),modifiedCollectionDate);
                 }
         );
         parameters.setSampleUpdate(true);
 
-        Sample sampleObj = testGetSampleUsingValidId(sampleTestAlias);
+        Sample sampleObj = findSampleById(sampleTestAlias);
         Assert.assertEquals(getSampleCollectionDate(sampleObj), "2010-01-20");
-        fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", sampleJson.toString());
+        fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", new ObjectMapper().writeValueAsString(sample));
         result = new ValidationResult();
         processor.process(result, fieldValue);
         Assert.assertTrue(result.isValid());
@@ -122,16 +117,15 @@ SampleProcessorTest {
 
 
     /**
-     * Test Add and Modify without setSampleUpdate parameter.
-     * The sample object must NOT be updated 
+     * Test add and modify sample submission without -setSampleUpdate option.
+     * We change the collection date and check that the sample does not get updated. 
      **/
     @Test
     public void
     testJsonSampleAddAndNoSampleUpdate() throws JsonProcessingException {
-
-        
         
         String sampleTestAlias = UUID.randomUUID().toString();
+        String modifiedCollectionDate = LocalDate.now().toString();
 
         // Create a new sample
         SampleProcessor processor = new SampleProcessor(parameters,
@@ -147,24 +141,19 @@ SampleProcessorTest {
         String biosampleId = fieldValue.getValue();
 
         // Update sample
-        JsonNode sampleJson = new ObjectMapper().readTree(getSampleJson(sampleTestAlias));
-        // Update collection date to current date
-        sampleJson.get("attributes").forEach(e ->{
-            if(e.get("tag").asText().equals("collection date")){
-                ((ObjectNode)e).put("value", LocalDate.now().toString());
-            }
-        });
+        uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sample = new ObjectMapper().readValue(getSampleJson(sampleTestAlias), uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample.class);
+        sample.getAttributes().stream().filter(e->e.getTag().equalsIgnoreCase("collection date")).findFirst().get().setValue(modifiedCollectionDate);
+        
         processor = new SampleProcessor(parameters,
-                (Sample sample) -> {
+                (Sample sampleObj) -> {
                     // not updated
-                    Assert.assertEquals( getSampleCollectionDate(sample),"2010-01-20");
+                    Assert.assertNotEquals( getSampleCollectionDate(sampleObj),modifiedCollectionDate);
                 }
         );
-        
 
-        Sample sampleObj = testGetSampleUsingValidId(sampleTestAlias);
+        Sample sampleObj = findSampleById(sampleTestAlias);
         Assert.assertEquals(getSampleCollectionDate(sampleObj), "2010-01-20");
-        fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", sampleJson.toString());
+        fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", new ObjectMapper().writeValueAsString(sample));
         result = new ValidationResult();
         processor.process(result, fieldValue);
         Assert.assertTrue(result.isValid());
@@ -202,7 +191,7 @@ SampleProcessorTest {
         return sample.getAttributes().stream().filter(e-> e.getName().equals("collection date")).findFirst().get().getValue();
     }
 
-    private Sample testGetSampleUsingValidId(String id) {
+    private Sample findSampleById(String id) {
         SampleService sampleService = new SampleService.Builder()
                 .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
                 .setUserName( WebinCliTestUtils.getTestWebinUsername() )

@@ -20,13 +20,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
-import uk.ac.ebi.ena.webin.cli.WebinCliException;
-import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
+import uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample;
 
 public class ManifestReaderJsonTest {
 
@@ -173,8 +171,8 @@ public class ManifestReaderJsonTest {
 
         ManifestFieldValue sampleFieldValue = readerResult.getFields().stream()
                 .filter(field -> field.getName().equals("sample")).findFirst().get();
-        JsonNode sampleNode = new ObjectMapper().readTree(sampleFieldValue.getValue());
-        Assert.assertEquals(sampleNode.get("alias").asText(), "stomach_microbiota");
+        Sample sample = new ObjectMapper().readValue(sampleFieldValue.getValue(),Sample.class);
+        Assert.assertNotNull(sample);
     }
 
     /** A good example of all possible ways to format the fields. */

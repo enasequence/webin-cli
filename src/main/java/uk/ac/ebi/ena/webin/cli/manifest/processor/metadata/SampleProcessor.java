@@ -11,6 +11,9 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,9 +36,6 @@ import uk.ac.ebi.ena.webin.xml.conversion.json.model.WebinSubmission;
 import uk.ac.ebi.ena.webin.xml.conversion.json.model.submission.Submission;
 import uk.ac.ebi.ena.webin.xml.conversion.json.model.submission.action.Action;
 import uk.ac.ebi.ena.webin.xml.conversion.json.model.submission.action.ActionType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SampleProcessor implements ManifestFieldProcessor {
 
@@ -68,11 +68,13 @@ public class SampleProcessor implements ManifestFieldProcessor {
         uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample jsonSample = getJsonSample(sampleValue);
         Submission submission = createSubmission(jsonSample);
         WebinSubmission webinSubmission = createWebinSubmission(jsonSample,submission);
+        
         // There will be only one action for a sample
         ActionType actionType = submission.getActions().get(0).getType();
         if (actionType== ActionType.ADD || (actionType == ActionType.MODIFY && parameters.isSampleUpdate())) {
           getSubmitService().doJsonSubmission(webinSubmission);
         }
+        // Replace sample JSON with sample alias.
         sampleValue = jsonSample.getAlias();
       }
       
@@ -123,17 +125,18 @@ public class SampleProcessor implements ManifestFieldProcessor {
   
   }
 
-  private boolean isSample(uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sampleFromUser){
+  /** Return true if the sample being submitters already exists in the submission account.*/
+  private boolean isSample(uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample sample){
     try {
-      if(null == sampleFromUser.getAlias()){
-        throw WebinCliException.userError(WebinCliMessage.MANIFEST_READER_MISSING_SAMPLE_ALIAS.format(sampleFromUser.getAlias()));
+      if(null == sample.getAlias()){
+        throw WebinCliException.userError(WebinCliMessage.MANIFEST_READER_MISSING_SAMPLE_ALIAS.format(sample.getAlias()));
       }
       
-      return getSampleService().getSample(sampleFromUser.getAlias())!=null;
+      return getSampleService().getSample(sample.getAlias())!=null;
     }catch (HttpClientErrorException.NotFound notFound){
       return false;
     }catch (Exception ex){
-      throw WebinCliException.systemError(WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sampleFromUser.getAlias()));
+      throw WebinCliException.systemError(WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(sample.getAlias()));
     }
   }
   

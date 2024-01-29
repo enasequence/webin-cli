@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -44,6 +43,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -223,13 +223,17 @@ public class SubmitService extends WebinService {
             Receipt receipt = objectMapper.readValue(response.getBody(), Receipt.class);
 
             if (receipt.isSuccess()) {
-                String submissionTypes = getSubmissionsAndAccessions(receipt).keySet().stream().collect(Collectors.joining(", "));
-                String accessions = getSubmissionsAndAccessions(receipt).values().stream().collect(Collectors.joining(", "));
-                String msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format(submissionTypes, accessions);
-                if (StringUtils.isEmpty(accessions)) {
-                    msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC.format(submissionTypes);
+                Map<String, String> assignedAccessionsByObjectType = getAssignedAccessionsByObjectType(receipt);
+                String objectTypes = assignedAccessionsByObjectType.keySet().stream().collect(Collectors.joining(", "));
+                String assignedAccessions = assignedAccessionsByObjectType.values().stream().collect(Collectors.joining(", "));
+                String msg = null;
+                if (StringUtils.isEmpty(assignedAccessions)) {
+                    msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS_NOACC.format(objectTypes);
+                } else {
+                    msg = WebinCliMessage.SUBMIT_SERVICE_SUCCESS.format(objectTypes, assignedAccessions);
                 }
                 log.info(msg);
+                
             } else {
                 WebinCliMessage.SERVICE_JSON_SUBMISSION_ERROR.format(receipt.getMessages().getErrorMessages());
             }
@@ -238,7 +242,7 @@ public class SubmitService extends WebinService {
         }
     }
     
-    private Map<String,String> getSubmissionsAndAccessions(Receipt receipt) {
+    private Map<String,String> getAssignedAccessionsByObjectType(Receipt receipt) {
 
         Map<String, String> submissionsAccessions = new HashMap();
         Map<String, List<ReceiptObject>> collectionMappings = new HashMap<>();
