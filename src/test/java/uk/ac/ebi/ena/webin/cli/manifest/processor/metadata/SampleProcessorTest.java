@@ -15,6 +15,7 @@ import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.crea
 import java.time.LocalDate;
 import java.util.UUID;
 
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ import org.springframework.web.client.ResourceAccessException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.javafx.binding.StringFormatter;
+
 
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -184,7 +185,7 @@ SampleProcessorTest {
                 "            ]" +
                 "        }";
 
-        return StringFormatter.format(sampleJson, alias).getValue();
+        return String.format(sampleJson, alias);
     }
 
     private String getSampleCollectionDate(Sample sample){
