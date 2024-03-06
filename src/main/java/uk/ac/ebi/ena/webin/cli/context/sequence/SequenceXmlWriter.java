@@ -21,6 +21,7 @@ import java.util.List;
 import org.jdom2.Element;
 
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
@@ -46,11 +47,11 @@ public class SequenceXmlWriter extends SequenceToolsXmlWriter<SequenceManifest, 
 
     manifest.files(FileType.FLATFILE).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "flatfile")));
+        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "flatfile")));
 
     manifest.files(FileType.TAB).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "tab")));
+        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "tab")));
 
     return list;
   }

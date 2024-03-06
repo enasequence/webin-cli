@@ -322,7 +322,7 @@ public class WebinCli {
 
         try {
             fileUploadService.connect(parameters.getFileUploadServiceUserName(), parameters.getPassword());
-            fileUploadService.upload(bundle.getUploadFileList(), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath());
+            fileUploadService.upload(bundle.getUploadFileList().stream().map(submissionUploadFile -> submissionUploadFile.getFile()).collect(Collectors.toList()), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath());
             log.info(WebinCliMessage.CLI_UPLOAD_SUCCESS.text());
 
         } catch (WebinCliException e) {

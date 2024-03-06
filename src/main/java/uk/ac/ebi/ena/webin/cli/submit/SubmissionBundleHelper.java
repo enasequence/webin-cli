@@ -19,7 +19,6 @@ import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,20 +100,24 @@ public class SubmissionBundleHelper {
             }
         }
 
-        List<File> uploadFileList = sb.getUploadFileList();
-        for( int index = 0; index < uploadFileList.size(); index ++ ) {
-            File file = uploadFileList.get( index );
-            Long fileSize = sb.getUploadFileSize().get( index );
+        sb.getUploadFileList().forEach(submissionUploadFile -> {
+            File file = submissionUploadFile.getFile();
 
             if( !file.exists() || file.isDirectory() ) {
                 result.add( ValidationMessage.info("Error reading file: " + file.getPath() ) );
-                continue;
+                return;
             }
 
-            if( file.length() != fileSize ) {
-                result.add(ValidationMessage.info("Error confirming length for: " + file.getPath() + ", expected: " + fileSize + " got: " + file.length()));
+            if( file.length() != submissionUploadFile.getCachedLength() ) {
+                result.add(ValidationMessage.info("Error confirming length for: " + file.getPath() + ", expected: " + submissionUploadFile.getCachedLength() + " got: " + file.length()));
+                return;
             }
-        }
+
+            String currentMd5 = FileUtils.calculateDigest("MD5", file);
+            if (!currentMd5.equalsIgnoreCase(submissionUploadFile.getCachedMd5())) {
+                result.add(ValidationMessage.info("File content changed. Error verifying checksum for: " + file.getPath() + ", expected: " + submissionUploadFile.getCachedMd5() + " got: " + currentMd5));
+            }
+        });
     }
 
     private static void computeXmlFilesChecksums(SubmissionBundle sb) {

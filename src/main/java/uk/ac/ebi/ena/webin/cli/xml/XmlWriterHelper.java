@@ -29,6 +29,10 @@ public class XmlWriterHelper {
 
   private static Element createFileElement(
       String fileName, String fileType, String digest, String checksum, List<Map.Entry<String, String>> attributes) {
+    if (checksum == null) {
+      throw new IllegalArgumentException("File checksum cannot be null.");
+    }
+
     Element e = new Element("FILE");
     e.setAttribute("filename", fileName);
     e.setAttribute("filetype", String.valueOf(fileType));
@@ -46,19 +50,20 @@ public class XmlWriterHelper {
   }
 
   public static Element createFileElement(
-          Path inputDir, Path uploadDir, Path file, String fileType) {
-    return createFileElement(inputDir, uploadDir, file, fileType, null);
+          Path inputDir, Path uploadDir, Path file, String fileMd5, String fileType) {
+    return createFileElement(inputDir, uploadDir, file, fileMd5, fileType, null);
   }
 
   public static Element createFileElement(
-          Path inputDir, Path uploadDir, Path file, String fileType, List<Map.Entry<String, String>> attributes) {
+          Path inputDir, Path uploadDir, Path file, String fileMd5, String fileType, List<Map.Entry<String, String>> attributes) {
     String fileName = file.toFile().getName();
 
     return createFileElement(
         FileUtils.replaceIncompatibleFileSeparators(String.valueOf(uploadDir.resolve(fileName))),
         String.valueOf(fileType),
         "MD5",
-        FileUtils.calculateDigest("MD5", file.toFile()), attributes);
+        fileMd5,
+        attributes);
   }
 
   private static Element createAttributeElement(String attName, String attValue) {

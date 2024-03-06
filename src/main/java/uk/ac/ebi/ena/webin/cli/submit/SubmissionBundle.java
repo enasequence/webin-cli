@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import uk.ac.ebi.ena.webin.cli.WebinCli;
 
@@ -29,9 +28,7 @@ public class SubmissionBundle implements Serializable {
 
     private final String uploadDir;
 
-    private final List<File> uploadFileList;
-
-    private final List<Long> uploadFileSize;
+    private final List<SubmissionUploadFile> uploadFileList;
 
     private final String manifestMd5;
 
@@ -98,13 +95,52 @@ public class SubmissionBundle implements Serializable {
         }
     }
 
-    public SubmissionBundle(File submitDir, String uploadDir, List<File> uploadFileList,
+    public static class SubmissionUploadFile implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private final File file;
+
+        private final Long cachedLength;
+
+        private final String cachedMd5;
+
+        public SubmissionUploadFile(File file, Long cachedLength, String cachedMd5) {
+            this.file = file;
+            this.cachedLength = cachedLength;
+            this.cachedMd5 = cachedMd5;
+        }
+
+        public String toString() {
+            return String.format( "%s|%d|%s", file, cachedLength, cachedMd5);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SubmissionUploadFile uploadFile = (SubmissionUploadFile) o;
+            return file.equals(uploadFile.file) && Objects.equals(cachedLength, uploadFile.cachedLength) && Objects.equals(cachedMd5, uploadFile.cachedMd5);
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public Long getCachedLength() {
+            return cachedLength;
+        }
+
+        public String getCachedMd5() {
+            return cachedMd5;
+        }
+    }
+
+    public SubmissionBundle(File submitDir, String uploadDir, List<SubmissionUploadFile> uploadFileList,
                             List<SubmissionXMLFile> xmlFileList, String manifestMd5 ) {
         this.version = WebinCli.getVersion();
         this.submitDir = submitDir;
         this.uploadDir = uploadDir;
         this.uploadFileList = uploadFileList;
-        this.uploadFileSize = uploadFileList.stream().sequential().map( f -> f.length() ).collect( Collectors.toList() );
         this.xmlFileList = xmlFileList;
         this.manifestMd5 = manifestMd5;
     }
@@ -116,7 +152,6 @@ public class SubmissionBundle implements Serializable {
                 && this.submitDir.equals( sb.submitDir )
                 && this.uploadDir.equals( sb.uploadDir )
                 && this.uploadFileList.equals( sb.uploadFileList )
-                && this.uploadFileSize.equals( sb.uploadFileSize )
                 && this.manifestMd5.equals( sb.manifestMd5);
         }
         return false;
@@ -138,12 +173,8 @@ public class SubmissionBundle implements Serializable {
         return uploadDir;
     }
 
-    public List<File> getUploadFileList() {
+    public List<SubmissionUploadFile> getUploadFileList() {
         return uploadFileList;
-    }
-
-    public List<Long> getUploadFileSize() {
-        return uploadFileSize;
     }
 
     public List<SubmissionXMLFile> getXMLFileList() {

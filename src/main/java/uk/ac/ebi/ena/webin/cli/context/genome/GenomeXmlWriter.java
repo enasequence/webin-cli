@@ -21,6 +21,7 @@ import java.util.List;
 import org.jdom2.Element;
 
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
@@ -64,21 +65,21 @@ public class GenomeXmlWriter extends SequenceToolsXmlWriter<GenomeManifest, Vali
 
     manifest.files(FileType.CHROMOSOME_LIST).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "chromosome_list")));
+        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "chromosome_list")));
 
     manifest.files(FileType.UNLOCALISED_LIST).stream()
         .map(file -> file.getFile().toPath())
         .forEach(
-            file -> list.add(createFileElement(inputDir, uploadDir, file, "unlocalised_list")));
+            file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "unlocalised_list")));
     manifest.files(FileType.FASTA).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "fasta")));
+        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "fasta")));
     manifest.files(FileType.FLATFILE).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "flatfile")));
+        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "flatfile")));
     manifest.files(FileType.AGP).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "agp")));
+        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "agp")));
 
     return list;
   }

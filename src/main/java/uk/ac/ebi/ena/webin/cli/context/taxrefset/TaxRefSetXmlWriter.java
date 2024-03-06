@@ -20,6 +20,7 @@ import java.util.List;
 import org.jdom2.Element;
 
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
@@ -58,10 +59,10 @@ public class TaxRefSetXmlWriter extends SequenceToolsXmlWriter<TaxRefSetManifest
 
         manifest.files(TaxRefSetManifest.FileType.FASTA).stream()
                 .map(file -> file.getFile().toPath())
-                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "fasta")));
+                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "fasta")));
         manifest.files(TaxRefSetManifest.FileType.TAB).stream()
                 .map(file -> file.getFile().toPath())
-                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, "tab")));
+                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "tab")));
 
         return list;
     }
