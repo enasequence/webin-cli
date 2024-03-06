@@ -20,6 +20,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -64,6 +65,7 @@ import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
 import uk.ac.ebi.ena.webin.cli.upload.FtpService;
 import uk.ac.ebi.ena.webin.cli.upload.UploadService;
+import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
 public class WebinCli {
@@ -95,23 +97,36 @@ public class WebinCli {
     __main(String... args) {
         System.setProperty("picocli.trace", "OFF");
         try {
-            WebinCliCommand cmd = parseCmd(args);
-            if (null == cmd) {
-                return USER_ERROR;
+            WebinCli webinCli;
+
+            // This try block is necessary to log exceptions thrown before WebinCli.execute().
+            try {
+                WebinCliCommand cmd = parseCmd(args);
+                if (null == cmd) {
+                    return USER_ERROR;
+                }
+
+                if (cmd.help || cmd.fields || cmd.version) {
+                    return SUCCESS;
+                }
+
+                checkVersion(cmd.test);
+
+                webinCli = new WebinCli(cmd);
+
+            // Any exception logging needed before WebinCli.execute() should be done in this try's catch blocks.
+            } catch (Throwable thr) {
+                log.error(thr.getMessage(), thr);
+                throw thr;
             }
 
-            if (cmd.help || cmd.fields || cmd.version) {
-                return SUCCESS;
-            }
-
-            checkVersion(cmd.test);
-
-            WebinCli webinCli = new WebinCli(cmd);
             webinCli.execute();
 
             return SUCCESS;
+
+        // Avoid logging exceptions thrown by WebinCli.execute() in the following catch blocks as the method does that already.
+        // Any logging done for exceptions thrown by that method here will produce duplicate output.
         } catch (WebinCliException ex) {
-            log.error(ex.getMessage(), ex);
             switch (ex.getErrorType()) {
                 case USER_ERROR:
                     return USER_ERROR;
@@ -121,19 +136,18 @@ public class WebinCli {
                     return SYSTEM_ERROR;
             }
         } catch (Throwable e) {
-            log.error(e.getMessage(), e);
             return SYSTEM_ERROR;
         }
     }
 
-    public WebinCli(WebinCliCommand cmd) {
+    public WebinCli(WebinCliCommand cmd) throws WebinCliException, RuntimeException {
         initFileLogging(createOutputDir(cmd.outputDir, "."));
 
         this.parameters = initParameters(getSubmissionAccount(cmd), getAuthToken(cmd), cmd);
         this.executor = this.parameters.getContext().createExecutor(parameters);
     }
 
-    public WebinCli(WebinCliParameters parameters) {
+    public WebinCli(WebinCliParameters parameters) throws WebinCliException, RuntimeException {
         initFileLogging(createOutputDir(parameters.getOutputDir(), "."));
 
         this.parameters = parameters;
@@ -141,7 +155,7 @@ public class WebinCli {
     }
 
     public static WebinCliParameters initParameters(
-        String submissionAccount, String authToken, WebinCliCommand cmd) {
+        String submissionAccount, String authToken, WebinCliCommand cmd) throws WebinCliException {
         if (!cmd.inputDir.isDirectory())
             throw WebinCliException.userError(WebinCliMessage.CLI_INPUT_PATH_NOT_DIR.format(cmd.inputDir.getPath()));
         if (!cmd.outputDir.isDirectory())
@@ -166,6 +180,10 @@ public class WebinCli {
         return parameters;
     }
 
+    /**
+     * As webin-cli is also usable as a library, it is important that logging is separately setup for every instance of
+     * WebinCli class. This way logs from different instances will not get mixed up.
+     */
     private void initFileLogging(File outputDir) {
         if (!SIFTING_APPENDER_CREATED.get()) {
             synchronized (WebinCli.class) {
@@ -229,7 +247,7 @@ public class WebinCli {
     }
 
     private void cleanupFileAppender() {
-        //MDC should be cleared before the appender is looked up below to avoid getting the file appender created
+        //MDC should be cleared before the appender is looked up below to prevent the file appender from getting created
         //in case it was not created earlier.
         MDC.remove(SIFTING_APPENDER_DISCRIMINATOR_KEY);
         MDC.remove(MDC_LOG_FILE_KEY);
@@ -253,7 +271,7 @@ public class WebinCli {
     }
 
     public void
-    execute() {
+    execute() throws WebinCliException, Throwable {
         try {
             executor.readManifest();
 
@@ -267,7 +285,7 @@ public class WebinCli {
 
         //It is important that following catch blocks log errors so they get written to the report file.
         //It is becuase the underlying appender that writes to the report file will be removed when the cleanup happens
-        //in the finally block. Any logging done after the cleanup will not be sent to the report file.
+        //in the finally block. Any logging done after the cleanup will not get written to the report file.
         } catch (WebinCliException ex) {
             log.error(ex.getMessage(), ex);
             throw ex;
@@ -322,7 +340,12 @@ public class WebinCli {
 
         try {
             fileUploadService.connect(parameters.getFileUploadServiceUserName(), parameters.getPassword());
-            fileUploadService.upload(bundle.getUploadFileList(), bundle.getUploadDir(), executor.getParameters().getInputDir().toPath());
+            fileUploadService.upload(
+                bundle.getUploadFileList().stream()
+                    .map(submissionUploadFile -> submissionUploadFile.getFile())
+                    .collect(Collectors.toList()),
+                bundle.getUploadDir(),
+                executor.getParameters().getInputDir().toPath());
             log.info(WebinCliMessage.CLI_UPLOAD_SUCCESS.text());
 
         } catch (WebinCliException e) {
@@ -330,6 +353,8 @@ public class WebinCli {
         } finally {
             fileUploadService.disconnect();
         }
+
+        checkUploadedFilesModified(bundle.getUploadFileList());
 
         try {
             SubmitService submitService = new SubmitService.Builder()
@@ -345,7 +370,6 @@ public class WebinCli {
             if (parameters.isTest()) {
                 log.info("This was a TEST submission and no data was submitted.");
             }
-
         } catch (WebinCliException e) {
             throw WebinCliException.error(e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
         }
@@ -674,19 +698,19 @@ public class WebinCli {
         return WebinCli.class.getPackage().getImplementationVersion();
     }
 
-    public static String getSubmissionAccount(WebinCliCommand cmd) {
+    public static String getSubmissionAccount(WebinCliCommand cmd) throws WebinCliException, RuntimeException {
         // Return the Webin-N submission account returned by the login service.
         // This may be different from the username used to login as email address
         // or su-Webin- superuser can also be used as a username.
         return new LoginService(cmd.userName, cmd.password, cmd.test).login();
     }
 
-    public static String getAuthToken(WebinCliCommand cmd) {
+    public static String getAuthToken(WebinCliCommand cmd) throws WebinCliException, RuntimeException {
         // Return the Webin authentication token for the given user.
         return new LoginService(cmd.userName, cmd.password, cmd.test).getAuthToken();
     }
 
-    private static void checkVersion(boolean test) {
+    private static void checkVersion(boolean test) throws WebinCliException {
         String currentVersion = getVersion();
 
         if (null == currentVersion || currentVersion.isEmpty())
@@ -730,7 +754,6 @@ public class WebinCli {
         String[] safeDirs = getSafeOutputDirs(dirs);
 
         Path p;
-        
         try {
             p = Paths.get(outputDir.getPath(), safeDirs);
         } catch (InvalidPathException ex) {
@@ -738,7 +761,6 @@ public class WebinCli {
         }
 
         File dir = p.toFile();
-
         if (!dir.exists() && !dir.mkdirs()) {
             throw WebinCliException.systemError(WebinCliMessage.CLI_CREATE_DIR_ERROR.format(dir.getPath()));
         }
@@ -760,6 +782,27 @@ public class WebinCli {
         return Arrays.stream(dirs)
             .map(dir -> getSafeOutputDir(dir))
             .toArray(String[]::new);
+    }
+
+    private void checkUploadedFilesModified(List<SubmissionBundle.SubmissionUploadFile> uploadFileList)
+        throws WebinCliException {
+        try {
+            uploadFileList.forEach(uploadFile -> {
+                long currentLastModifiedTime = FileUtils.getLastModifiedTime(uploadFile.getFile());
+                if (currentLastModifiedTime != uploadFile.getCachedLastModifiedTime()) {
+                    throw WebinCliException.userError(String.format(
+                        "Uploaded file modification detected : %s. File's current last modified time is : %s. " +
+                            "File's last modified time before upload was : %s. Submission will be aborted.",
+                        uploadFile.getFile().getAbsolutePath(),
+                        Instant.ofEpochMilli(currentLastModifiedTime),
+                        Instant.ofEpochMilli(uploadFile.getCachedLastModifiedTime())));
+                }
+            });
+        } catch (WebinCliException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            throw WebinCliException.systemError(ex, "Error checking uploaded files for modifications.");
+        }
     }
 
     private String getUserOrSystemError(String message, String validationDir, String errorType) {

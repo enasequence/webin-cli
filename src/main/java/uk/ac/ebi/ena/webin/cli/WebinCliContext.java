@@ -91,7 +91,7 @@ public enum WebinCliContext {
   }
 
   public static <M extends Manifest, R extends ValidationResponse> WebinCliExecutor<M, R> createExecutor(
-      Class<M> manifestClass, WebinCliParameters parameters) {
+      Class<M> manifestClass, WebinCliParameters parameters) throws RuntimeException {
     for (WebinCliContext context : WebinCliContext.values()) {
       if (context.getManifestClass().equals(manifestClass)) {
         return (WebinCliExecutor<M, R>) context.createExecutor(parameters);
@@ -100,19 +100,18 @@ public enum WebinCliContext {
     return null;
   }
 
-  public WebinCliExecutor<?, ?> createExecutor(WebinCliParameters parameters) {
+  public WebinCliExecutor<?, ?> createExecutor(WebinCliParameters parameters) throws RuntimeException {
     return createExecutor(parameters,
         new ManifestReaderBuilder(manifestReaderClass, parameters).build());
   }
 
   public WebinCliExecutor<?, ?> createExecutor(
-      WebinCliParameters parameters, ManifestReader<?> manifestReader) {
+      WebinCliParameters parameters, ManifestReader<?> manifestReader) throws RuntimeException {
 
     try {
       XmlWriter<?, ?> xmlWriter = xmlWriterClass.newInstance();
       Validator<?, ?> validator = validatorClass.newInstance();
       return new WebinCliExecutor(this, parameters, manifestReader, xmlWriter, validator);
-
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }

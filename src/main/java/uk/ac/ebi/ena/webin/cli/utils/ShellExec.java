@@ -10,11 +10,13 @@
  */
 package uk.ac.ebi.ena.webin.cli.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.ProcessBuilder.Redirect;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -22,147 +24,109 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
-public class 
-ShellExec
-{
+public class ShellExec {
     private static final Logger log = LoggerFactory.getLogger(ShellExec.class);
 
-    class 
-    VerboseStreamConsumer extends Thread
-    {
+    private final String command;
+
+    private final Map<String, String> vars;
+
+    private static class StreamConsumer extends Thread {
         private final Reader ireader;
-        private long read_cnt;
+
+        private final StringBuilder consumedInput = new StringBuilder(8192);
         
-        
-        VerboseStreamConsumer( InputStream istream )
-        {
+        public StreamConsumer( InputStream istream ) {
             this.ireader = new InputStreamReader( istream, StandardCharsets.UTF_8 );
+
             setName( getClass().getSimpleName() );
         }
-        
-        
-        @Override public void
-        run()
-        {
-            try
-            {
+
+        public String getConsumedInput() {
+            return consumedInput.toString();
+        }
+
+        @Override
+        public void run() {
+            try {
                 int ch = 0;
-                while( -1 != ( ch = ireader.read() ) )
-                {
-                    ++read_cnt;
-                    if( ch > 0 )
-                        printFlush( (char)ch );
+                while( ( ch = ireader.read() ) != -1 ) {
+                    if( ch > 0 ) {
+                        consumedInput.append((char)ch);
+                    }
                 }
-                
-            } catch( IOException e )
-            {
-            }
-        }
-        
-        
-        protected void 
-        printFlush( char ch )
-        {
-            System.out.print( String.format( "%c", (char)ch ) );
-            System.out.flush();
-        }
-        
-        
-        public long
-        getReadCnt()
-        {
-            return read_cnt;
+            } catch( IOException e ) { }
         }
     }
-    
 
-    class 
-    StreamConsumer extends VerboseStreamConsumer
-    {
-        StreamConsumer( InputStream istream )
-        {
-            super( istream );
+    public static class Result {
+        private final int exitCode;
+
+        private final String stdout;
+        private final String stderr;
+
+        public Result(int exitCode, String stdout, String stderr) {
+            this.exitCode = exitCode;
+            this.stdout = stdout;
+            this.stderr = stderr;
         }
-        
-        
-        @Override protected void
-        printFlush( char ch ) {}
+
+        public int getExitCode() {
+            return exitCode;
+        }
+
+        public String getStdout() {
+            return stdout;
+        }
+
+        public String getStderr() {
+            return stderr;
+        }
     }
 
-
-    public 
-    ShellExec( String command, Map<String, String> vars )
-    {
+    public ShellExec( String command, Map<String, String> vars ) {
         this.command = command;
         this.vars = vars;
     }
-    
-    
-    private final String command;
-    private final Map<String, String> vars;
 
-    
-    public int
-    exec() throws IOException, InterruptedException
-    {
-        return exec( false );
-    }
-    
-    
-    public int
-    exec( boolean verbose ) throws IOException, InterruptedException
-    {
-        return exec( getCommand(), getVars(), verbose );
-    }
-
-    
-    public Map<String, String> 
-    getVars()
-    {
+    public Map<String, String> getVars() {
         return vars;
     }
 
-
-    public String 
-    getCommand()
-    {
+    public String getCommand() {
         return command;
     }
-
     
-    private int
-    exec(String command, Map<String, String> vars, boolean verbose) throws IOException, InterruptedException
-    {
-        ExecutorService es = null;
-        try
-        {   
-            es = Executors.newFixedThreadPool( 2 );
+    public Result exec() throws IOException, InterruptedException {
+        return exec( getCommand(), getVars() );
+    }
+    
+    private Result exec(String command, Map<String, String> vars) throws IOException, InterruptedException {
+        ExecutorService es = Executors.newFixedThreadPool( 2 );
+
+        try {
             ((ThreadPoolExecutor) es).prestartAllCoreThreads();
 
-            if( verbose )
-            {
-                log.info( String.format( "Invoking: %s\n", command ) );
-            }
+            log.debug( "Invoking: {}", command );
             
-            ProcessBuilder pb = System.getProperty( "os.name" ).toLowerCase().contains( "win" ) ? new ProcessBuilder( "cmd", "/c", command )
-                                                                                                : new ProcessBuilder( "sh", "-c",  command );
+            ProcessBuilder pb = System.getProperty( "os.name" ).toLowerCase().contains( "win" )
+                ? new ProcessBuilder( "cmd", "/c", command )
+                : new ProcessBuilder( "sh", "-c",  command );
             pb.environment().putAll( vars );
             pb.directory( null );
-            if( verbose )
-                pb.redirectOutput( Redirect.INHERIT );
             
             Process proc = pb.start();
+
+            StreamConsumer inputStreamConsumer = new StreamConsumer( proc.getInputStream() );
+            StreamConsumer errorStreamConsumer = new StreamConsumer( proc.getErrorStream() );
             
-            es.submit( verbose ? new VerboseStreamConsumer( proc.getInputStream() ) : new StreamConsumer( proc.getInputStream() ) );
-            es.submit( new StreamConsumer( proc.getErrorStream() ) );
-            return proc.waitFor();
-    
-        } finally
-        {
+            es.submit( inputStreamConsumer );
+            es.submit( errorStreamConsumer );
+
+            int exitCode = proc.waitFor();
+
+            return new Result(exitCode, inputStreamConsumer.getConsumedInput(), errorStreamConsumer.getConsumedInput());
+        } finally {
             es.shutdown();
             es.awaitTermination( 30, TimeUnit.SECONDS );
         }

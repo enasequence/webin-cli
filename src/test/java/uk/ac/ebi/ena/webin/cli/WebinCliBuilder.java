@@ -27,16 +27,27 @@ public class WebinCliBuilder {
 
   private boolean saveSubmissionXmlFiles = true;
 
-  public static final WebinCliBuilder READS = new WebinCliBuilder(WebinCliContext.reads);
-  public static final WebinCliBuilder GENOME = new WebinCliBuilder(WebinCliContext.genome);
-  public static final WebinCliBuilder TRANSCRIPTOME = new WebinCliBuilder(WebinCliContext.transcriptome);
-  public static final WebinCliBuilder SEQUENCE = new WebinCliBuilder(WebinCliContext.sequence);
-
   private static String submissionAccount;
   private static String authToken;
 
   public WebinCliBuilder(WebinCliContext context) {
     this.context = context;
+  }
+
+  public static final WebinCliBuilder createForReads() {
+    return new WebinCliBuilder(WebinCliContext.reads);
+  }
+
+  public static final WebinCliBuilder createForGenome() {
+    return new WebinCliBuilder(WebinCliContext.genome);
+  }
+
+  public static final WebinCliBuilder createForTranscriptome() {
+    return new WebinCliBuilder(WebinCliContext.transcriptome);
+  }
+
+  public static final WebinCliBuilder createForSequence() {
+    return new WebinCliBuilder(WebinCliContext.sequence);
   }
 
   public WebinCliBuilder validate(boolean validate) {

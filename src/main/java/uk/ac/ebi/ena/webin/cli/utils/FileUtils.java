@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.GZIPInputStream;
@@ -110,4 +112,11 @@ FileUtils
 		return inputStr.replaceAll("\\\\+", "/");
 	}
 
+	public static final long getLastModifiedTime(File file) throws RuntimeException {
+		try {
+			return Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis();
+		} catch (IOException e) {
+			throw new RuntimeException("Error reading file attributes : " + file.getAbsolutePath(), e);
+		}
+	}
 }

@@ -26,7 +26,7 @@ public enum WebinCliMessage implements MessageFormatSource {
     CLI_INVALID_REPORT_DIR_ERROR("invalid report directory: {0}"),
     CLI_MISSING_OUTPUT_DIR_ERROR("Missing output directory."),
     CLI_CREATE_DIR_ERROR("Unable to create directory: {0}"),
-    CLI_UPLOAD_ERROR("Failed to upload files to FTP server because of a {0}. "),
+    CLI_UPLOAD_ERROR("Failed to upload files to server because of a {0}. "),
     CLI_SUBMIT_ERROR("The submission has failed because of a {0}. "),
     CLI_AUTHENTICATION_ERROR("Invalid submission account user name or password. Please try enclosing your password in single quotes."),
     CLI_GENOME_RATELIMIT_ERROR("Cannot submit more than 1 genome within 24 hours for one submission account, sample and study."),

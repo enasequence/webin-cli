@@ -30,7 +30,7 @@ public class XmlWriterHelperTest {
         Path file = Files.createTempFile(Files.createDirectories(inputDir.resolve("dir1").resolve("dir2"))
             , "test-file-", ".temp");
 
-        Element fileElement = XmlWriterHelper.createFileElement(inputDir, uploadDir, file, "FASTQ");
+        Element fileElement = XmlWriterHelper.createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "FASTQ");
 
         String expectedFileName = FileUtils.replaceIncompatibleFileSeparators(uploadDir.resolve(file.getFileName()).toString());
 

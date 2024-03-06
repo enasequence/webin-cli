@@ -71,7 +71,7 @@ LoginService
         this.test = test;
     }
 
-    public String login() {
+    public String login() throws WebinCliException, RuntimeException {
         RequestEntity< LoginRequestBody > request =  getAuthRequest("/login");
 
         RestTemplate restTemplate = new RestTemplate();
@@ -100,7 +100,7 @@ LoginService
      * This method returns authentication token for the given webin-cli user/paassword 
      * @return token
      */
-    public String getAuthToken() {
+    public String getAuthToken() throws WebinCliException, RuntimeException {
         RequestEntity< LoginRequestBody > request =  getAuthRequest("/token");
 
         RestTemplate restTemplate = new RestTemplate();
@@ -117,7 +117,7 @@ LoginService
             WebinCliMessage.SERVICE_SYSTEM_ERROR.format(SERVICE_NAME));
     }
     
-    private RequestEntity<LoginRequestBody> getAuthRequest(String url){
+    private RequestEntity<LoginRequestBody> getAuthRequest(String url) throws RuntimeException {
         LoginRequestBody requestBody = new LoginRequestBody(username, password);
 
         HttpHeaders headers = new HttpHeaders();

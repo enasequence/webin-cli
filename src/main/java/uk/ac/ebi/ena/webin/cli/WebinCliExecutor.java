@@ -186,13 +186,18 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             getManifestFileContent(),
             manifestMd5));
 
+        // Calculate MD5 checksum of data files so it can be written in to the XML.
+        List<SubmissionFile> submissionFiles = getManifestReader().getManifest().files().get();
+        submissionFiles.forEach(file -> file.setMd5(FileUtils.calculateDigest("MD5", file.getFile())));
+
         xmls.putAll(xmlWriter.createXml(
             getManifestReader().getManifest(),
             getValidationResponse(),
             getParameters().getCenterName(),
             getSubmissionTitle(),
             getSubmissionAlias(),
-            getParameters().getInputDir().toPath(), uploadDir));
+            getParameters().getInputDir().toPath(),
+            uploadDir));
 
         List<SubmissionBundle.SubmissionXMLFile> xmlFileList = xmls.entrySet().stream()
             .map(entry -> {
@@ -202,19 +207,24 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
                 return new SubmissionBundle.SubmissionXMLFile(entry.getKey(), xmlFilePath.toFile(), entry.getValue());
             }).collect(Collectors.toList());
 
-        List<File> uploadFileList = new ArrayList<>();
-        uploadFileList.addAll(getManifestReader().getManifest().files().files());
+        List<SubmissionBundle.SubmissionUploadFile> uploadFileList = new ArrayList<>();
+        submissionFiles.forEach(file -> uploadFileList.add(
+            new SubmissionBundle.SubmissionUploadFile(
+                file.getFile(),
+                file.getFile().length(),
+                FileUtils.getLastModifiedTime(file.getFile()),
+                file.getMd5())));
 
         this.submissionBundle = new SubmissionBundle(
             getSubmitDir(), uploadDir.toString(), uploadFileList, xmlFileList, manifestMd5);
         if (getParameters().isSaveSubmissionBundleFile()) {
-            SubmissionBundleHelper.write(this.submissionBundle, getSubmitDir());
+            SubmissionBundleHelper.write(this.submissionBundle, getSubmissionBundleFileDir());
         }
     }
 
     public SubmissionBundle getSubmissionBundle() {
         if (submissionBundle == null && getParameters().isSaveSubmissionBundleFile()) {
-            return SubmissionBundleHelper.read(calculateManifestMd5(), getSubmitDir());
+            return SubmissionBundleHelper.read(calculateManifestMd5(), getSubmissionBundleFileDir());
         }
 
         return submissionBundle;
@@ -247,6 +257,14 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
 
     public File getSubmitDir() {
         return submitDir;
+    }
+
+    public File getSubmissionBundleFileDir() {
+        if (StringUtils.isBlank(getSubmissionName())) {
+            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
+        }
+
+        return WebinCli.createOutputDir( parameters.getOutputDir(), String.valueOf( context ), getSubmissionName());
     }
 
     public File

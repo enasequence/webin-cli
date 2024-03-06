@@ -45,7 +45,7 @@ public class ASCPService implements UploadService
             HashMap<String, String> vars = new HashMap<>();
             vars.put( "PATH", System.getenv( "PATH" ) );
 
-            int exitVal = new ShellExec( EXECUTABLE + " -h", vars ).exec();
+            int exitVal = new ShellExec( EXECUTABLE + " -h", vars ).exec().getExitCode();
             if( 0 != exitVal )
                 return false;
             
@@ -117,12 +117,29 @@ public class ASCPService implements UploadService
             vars.put( "PATH", System.getenv( "PATH" ) );
 
             RetryUtils.executeWithRetry(context -> {
-                int exitVal = new ShellExec( cmd, vars ).exec( true );
+                ShellExec.Result result = new ShellExec( cmd, vars ).exec();
 
                 // Even when the process completes without exception, throw error as long as exit code is not 0 so a
                 // retry can be attempted.
-                if( 0 != exitVal )
+                if( 0 != result.getExitCode() ) {
+                    log.warn("Aspera upload failed. Client exit code : {}", result.getExitCode());
+
+                    String error = "";
+                    if (!result.getStdout().isEmpty()) {
+                        error += result.getStdout();
+                    }
+
+                    if (!result.getStderr().isEmpty()) {
+                        if (!error.isEmpty()) {
+                            error += System.lineSeparator();
+                        }
+                        error += result.getStderr();
+                    }
+
+                    log.warn("Client error : \n{}", error);
+
                     throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
+                }
 
                 return null;
             }, context -> log.warn("Retrying file upload."), Exception.class);
