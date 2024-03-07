@@ -45,7 +45,7 @@ dependencies {
     // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library.
     api( 'uk.ac.ebi.ena.sequence:sequencetools:2.19.7' )
     api( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
-    api( 'uk.ac.ebi.ena:readtools:1.17.7' )
+    api( 'uk.ac.ebi.ena:readtools:2.3.4' )
 
     implementation( 'ch.qos.logback:logback-classic:1.2.3' )
 

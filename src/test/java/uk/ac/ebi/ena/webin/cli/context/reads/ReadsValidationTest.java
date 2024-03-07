@@ -69,7 +69,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).textInFileReport("invalid.bam", "File contains no valid reads");
+        new ReportTester(executor).textInFileReport("webin-cli", "Submitted files must contain a minimum of 1 sequence read");
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).textInFileReport("invalid.fastq.gz", "Sequence header must start with @");
+        new ReportTester(executor).textInFileReport("webin-cli", "Sequence header must start with @");
     }
 
     @Test
@@ -218,7 +218,7 @@ public class ReadsValidationTest {
                 .isInstanceOf(WebinCliException.class)
                 .hasMessage("");
 
-        new ReportTester(executor).textInFileReport("invalid.cram", "File contains no valid reads");
+        new ReportTester(executor).textInFileReport("webin-cli", "Submitted files must contain a minimum of 1 sequence read");
     }
 
     @Test
