@@ -11,16 +11,16 @@
 package uk.ac.ebi.ena.webin.cli;
 
 public enum WebinSubmissionTool {
-    WEBIN_CLI("webin-cli"),
-    WEBIN_CLI_REST("webin-cli-rest");
+  WEBIN_CLI("webin-cli"),
+  WEBIN_CLI_REST("webin-cli-rest");
 
-    public String getToolName() {
-        return toolName;
-    }
+  public String getToolName() {
+    return toolName;
+  }
 
-    private String toolName;
+  private String toolName;
 
-    WebinSubmissionTool(String toolName) {
-        this.toolName = toolName;
-    }
+  WebinSubmissionTool(String toolName) {
+    this.toolName = toolName;
+  }
 }

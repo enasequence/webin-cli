@@ -14,7 +14,6 @@ import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileSuffixTester.in
 import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileSuffixTester.valid;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class TranscriptomeManifestReaderFileSuffixTest {
@@ -35,5 +34,4 @@ public class TranscriptomeManifestReaderFileSuffixTest {
     invalid(manifestReader, TranscriptomeManifest.FileType.FASTA, ".fasta");
     invalid(manifestReader, TranscriptomeManifest.FileType.FLATFILE, ".txt");
   }
-
 }

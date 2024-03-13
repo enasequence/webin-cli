@@ -14,44 +14,40 @@ import static uk.ac.ebi.ena.webin.cli.manifest.processor.ProcessorTestUtils.crea
 
 import org.junit.Assert;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
-public class 
-ASCIIFileNameProcessorTest
-{
-    @Test public void 
-    test() 
-    {
-        ASCIIFileNameProcessor processor = new ASCIIFileNameProcessor();
+public class ASCIIFileNameProcessorTest {
+  @Test
+  public void test() {
+    ASCIIFileNameProcessor processor = new ASCIIFileNameProcessor();
 
-        ManifestFieldValue fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a.bam" );
-        ValidationResult result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( 0, result.count() );
-        Assert.assertEquals( "a.bam", fieldValue.getValue() );
+    ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a.bam");
+    ValidationResult result = new ValidationResult();
+    processor.process(result, fieldValue);
+    Assert.assertEquals(0, result.count());
+    Assert.assertEquals("a.bam", fieldValue.getValue());
 
-        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "/a/b/c.bam" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( 0, result.count() );
-        
-        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a:\\B\\c.bam" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( 0, result.count() );
-        
-        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a|b.cram" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( false, result.isValid() );
+    fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "/a/b/c.bam");
+    result = new ValidationResult();
+    processor.process(result, fieldValue);
+    Assert.assertEquals(0, result.count());
 
-        fieldValue = createFieldValue( ManifestFieldType.META, "FIELD1", "a&b.cram" );
-        result = new ValidationResult();
-        processor.process( result, fieldValue );
-        Assert.assertEquals( false, result.isValid() );
-        Assert.assertEquals( "a&b.cram", fieldValue.getValue() );
-    }
+    fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a:\\B\\c.bam");
+    result = new ValidationResult();
+    processor.process(result, fieldValue);
+    Assert.assertEquals(0, result.count());
+
+    fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a|b.cram");
+    result = new ValidationResult();
+    processor.process(result, fieldValue);
+    Assert.assertEquals(false, result.isValid());
+
+    fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a&b.cram");
+    result = new ValidationResult();
+    processor.process(result, fieldValue);
+    Assert.assertEquals(false, result.isValid());
+    Assert.assertEquals("a&b.cram", fieldValue.getValue());
+  }
 }

@@ -15,30 +15,30 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public class ManifestReaderBuilder<M extends Manifest> {
-    private final Class<ManifestReader<M>> manifestReaderClass;
-    private final MetadataProcessorFactory metadataProcessorFactory;
-    private final WebinCliParameters webinCliParameters;
+  private final Class<ManifestReader<M>> manifestReaderClass;
+  private final MetadataProcessorFactory metadataProcessorFactory;
+  private final WebinCliParameters webinCliParameters;
 
-    public ManifestReaderBuilder(Class<ManifestReader<M>> manifestReaderClass) {
-        this.manifestReaderClass = manifestReaderClass;
-        this.webinCliParameters = null;
-        this.metadataProcessorFactory = new MetadataProcessorFactory(null);
+  public ManifestReaderBuilder(Class<ManifestReader<M>> manifestReaderClass) {
+    this.manifestReaderClass = manifestReaderClass;
+    this.webinCliParameters = null;
+    this.metadataProcessorFactory = new MetadataProcessorFactory(null);
+  }
+
+  public ManifestReaderBuilder(
+      Class<ManifestReader<M>> manifestReaderClass, WebinCliParameters webinCliParameters) {
+    this.manifestReaderClass = manifestReaderClass;
+    this.webinCliParameters = webinCliParameters;
+    this.metadataProcessorFactory = new MetadataProcessorFactory(webinCliParameters);
+  }
+
+  public ManifestReader<M> build() {
+    try {
+      return manifestReaderClass
+          .getDeclaredConstructor(WebinCliParameters.class, MetadataProcessorFactory.class)
+          .newInstance(webinCliParameters, metadataProcessorFactory);
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
     }
-
-
-    public ManifestReaderBuilder(Class<ManifestReader<M>> manifestReaderClass, WebinCliParameters webinCliParameters) {
-        this.manifestReaderClass = manifestReaderClass;
-        this.webinCliParameters = webinCliParameters;
-        this.metadataProcessorFactory = new MetadataProcessorFactory(webinCliParameters);
-    }
-
-    public ManifestReader<M> build() {
-        try {
-            return manifestReaderClass
-                    .getDeclaredConstructor(WebinCliParameters.class, MetadataProcessorFactory.class)
-                    .newInstance(webinCliParameters, metadataProcessorFactory);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+  }
 }

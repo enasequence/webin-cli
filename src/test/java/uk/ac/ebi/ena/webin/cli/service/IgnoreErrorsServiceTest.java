@@ -13,24 +13,21 @@ package uk.ac.ebi.ena.webin.cli.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
-public class
-IgnoreErrorsServiceTest 
-{
-    private static final boolean TEST = true;
+public class IgnoreErrorsServiceTest {
+  private static final boolean TEST = true;
 
-    @Test public void 
-    testGetIgnoreErrorsFalse() 
-    {
-        assertThat( new IgnoreErrorsService.Builder()
-            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
-           .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-           .setPassword( WebinCliTestUtils.getTestWebinPassword() )
-           .build()
-           .getIgnoreErrors( "UNKNOWN", "UNKNOWN" )
-        ).isFalse();
-    }
+  @Test
+  public void testGetIgnoreErrorsFalse() {
+    assertThat(
+            new IgnoreErrorsService.Builder()
+                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
+                .setUserName(WebinCliTestUtils.getTestWebinUsername())
+                .setPassword(WebinCliTestUtils.getTestWebinPassword())
+                .build()
+                .getIgnoreErrors("UNKNOWN", "UNKNOWN"))
+        .isFalse();
+  }
 }

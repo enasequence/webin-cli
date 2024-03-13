@@ -14,36 +14,35 @@ import java.time.Duration;
 
 public class RateLimitResult {
 
-    private boolean rateLimited;
+  private boolean rateLimited;
 
-    private Duration rateLimiDuration;
+  private Duration rateLimiDuration;
 
-    private String lastSubmittedAnalysisId;
+  private String lastSubmittedAnalysisId;
 
-    public RateLimitResult() {
-    }
+  public RateLimitResult() {}
 
-    public boolean isRateLimited() {
-        return rateLimited;
-    }
+  public boolean isRateLimited() {
+    return rateLimited;
+  }
 
-    public void setRateLimited(boolean rateLimited) {
-        this.rateLimited = rateLimited;
-    }
+  public void setRateLimited(boolean rateLimited) {
+    this.rateLimited = rateLimited;
+  }
 
-    public Duration getRateLimiDuration() {
-        return rateLimiDuration;
-    }
+  public Duration getRateLimiDuration() {
+    return rateLimiDuration;
+  }
 
-    public void setRateLimiDuration(Duration rateLimiDuration) {
-        this.rateLimiDuration = rateLimiDuration;
-    }
+  public void setRateLimiDuration(Duration rateLimiDuration) {
+    this.rateLimiDuration = rateLimiDuration;
+  }
 
-    public String getLastSubmittedAnalysisId() {
-        return lastSubmittedAnalysisId;
-    }
+  public String getLastSubmittedAnalysisId() {
+    return lastSubmittedAnalysisId;
+  }
 
-    public void setLastSubmittedAnalysisId(String lastSubmittedAnalysisId) {
-        this.lastSubmittedAnalysisId = lastSubmittedAnalysisId;
-    }
+  public void setLastSubmittedAnalysisId(String lastSubmittedAnalysisId) {
+    this.lastSubmittedAnalysisId = lastSubmittedAnalysisId;
+  }
 }

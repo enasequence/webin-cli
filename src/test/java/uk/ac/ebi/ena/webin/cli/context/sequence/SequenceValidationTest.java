@@ -16,10 +16,8 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
 import java.util.Locale;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
@@ -35,9 +33,11 @@ public class SequenceValidationTest {
     return new ManifestBuilder().field("STUDY", "test").field("NAME", "test");
   }
 
-  private static final WebinCliExecutorBuilder<SequenceManifest, ValidationResponse> executorBuilder =
-      new WebinCliExecutorBuilder(SequenceManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-          .sample(getDefaultSample());
+  private static final WebinCliExecutorBuilder<SequenceManifest, ValidationResponse>
+      executorBuilder =
+          new WebinCliExecutorBuilder(
+                  SequenceManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
+              .sample(getDefaultSample());
 
   @Before
   public void before() {
@@ -46,14 +46,17 @@ public class SequenceValidationTest {
 
   @Test
   public void testValidTab() {
-    File[] files = VALID_DIR.listFiles((dir, name) -> (name.endsWith("tsv.gz") && !name.endsWith("field.tsv.gz")));
+    File[] files =
+        VALID_DIR.listFiles(
+            (dir, name) -> (name.endsWith("tsv.gz") && !name.endsWith("field.tsv.gz")));
     assertThat(files.length).isGreaterThan(0);
     for (File file : files) {
       String fileName = file.getName();
       System.out.println("Testing valid tab file: " + fileName);
       File manifestFile = manifestBuilder().file(FileType.TAB, fileName).build();
-      WebinCliExecutor<SequenceManifest, ValidationResponse> executor = executorBuilder.build(manifestFile, VALID_DIR);
-      
+      WebinCliExecutor<SequenceManifest, ValidationResponse> executor =
+          executorBuilder.build(manifestFile, VALID_DIR);
+
       executor.readManifest();
       executor.validateSubmission();
       assertThat(executor.getManifestReader().getManifest().files().get(FileType.TAB))

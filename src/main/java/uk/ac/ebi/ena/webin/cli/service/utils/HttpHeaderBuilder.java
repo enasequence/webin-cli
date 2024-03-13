@@ -11,34 +11,33 @@
 package uk.ac.ebi.ena.webin.cli.service.utils;
 
 import java.util.Base64;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 public class HttpHeaderBuilder {
 
-    private final HttpHeaders headers = new HttpHeaders();
+  private final HttpHeaders headers = new HttpHeaders();
 
-    private HttpHeaderBuilder set(String headerName, String headerValue) {
-        headers.set(headerName, headerValue);
-        return this;
-    }
+  private HttpHeaderBuilder set(String headerName, String headerValue) {
+    headers.set(headerName, headerValue);
+    return this;
+  }
 
-    public HttpHeaderBuilder basicAuth(String userName, String password) {
-        return set("Authorization", basicAuthHeaderValue(userName, password));
-    }
+  public HttpHeaderBuilder basicAuth(String userName, String password) {
+    return set("Authorization", basicAuthHeaderValue(userName, password));
+  }
 
-    public static String basicAuthHeaderValue(String userName, String password) {
-        String auth = userName + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
-    }
+  public static String basicAuthHeaderValue(String userName, String password) {
+    String auth = userName + ":" + password;
+    return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
+  }
 
-    public HttpHeaderBuilder multipartFormData() {
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        return this;
-    }
+  public HttpHeaderBuilder multipartFormData() {
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    return this;
+  }
 
-    public HttpHeaders build() {
-        return headers;
-    }
+  public HttpHeaders build() {
+    return headers;
+  }
 }

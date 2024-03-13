@@ -18,68 +18,88 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import org.junit.Assert;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 public class SubmissionBundleTest {
 
-    @Test
-    public void test() throws IOException {
-        File submitDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toFile();
-        String uploadDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toString();
+  @Test
+  public void test() throws IOException {
+    File submitDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toFile();
+    String uploadDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toString();
 
-        SubmissionBundle.SubmissionXMLFile xmlFile = new SubmissionXMLFile(
+    SubmissionBundle.SubmissionXMLFile xmlFile =
+        new SubmissionXMLFile(
             SubmissionBundle.SubmissionXMLFileType.SUBMISSION,
             new File(submitDirectory, "submission.xml"),
             "<SUBMISSION_SET><SUBMISSION><ACTIONS><ACTION><ADD/></ACTION></ACTIONS></SUBMISSION></SUBMISSION_SET>");
-        xmlFile.setMd5(FileUtils.calculateDigest( "MD5", xmlFile.getXmlContent().getBytes(StandardCharsets.UTF_8) ));
+    xmlFile.setMd5(
+        FileUtils.calculateDigest("MD5", xmlFile.getXmlContent().getBytes(StandardCharsets.UTF_8)));
 
-        File manifestFile = File.createTempFile( "TEST-SB", "MANIFEST" );
-        String manifestMd5 = FileUtils.calculateDigest( "MD5", manifestFile );
+    File manifestFile = File.createTempFile("TEST-SB", "MANIFEST");
+    String manifestMd5 = FileUtils.calculateDigest("MD5", manifestFile);
 
-        SubmissionBundle expectedSb = new SubmissionBundle( submitDirectory, uploadDirectory, new ArrayList<>(), Arrays.asList(xmlFile), manifestMd5 );
+    SubmissionBundle expectedSb =
+        new SubmissionBundle(
+            submitDirectory,
+            uploadDirectory,
+            new ArrayList<>(),
+            Arrays.asList(xmlFile),
+            manifestMd5);
 
-        SubmissionBundleHelper.write( expectedSb, submitDirectory );
-        
-        SubmissionBundle actualSb = SubmissionBundleHelper.read( manifestMd5, submitDirectory );
+    SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
-        Assert.assertEquals( expectedSb, actualSb );
-        Assert.assertEquals( expectedSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent(),
-            actualSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent() );
-    }
+    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifestMd5, submitDirectory);
 
-    @Test
-    public void testValidationFailureDueToDataFileContentChange() throws IOException {
-        File submitDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toFile();
-        String uploadDirectory = Files.createTempDirectory( "TEST-SUBMITION-BUNDLE" ).toString();
+    Assert.assertEquals(expectedSb, actualSb);
+    Assert.assertEquals(
+        expectedSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent(),
+        actualSb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
+  }
 
-        Path dataFile = Files.createTempFile(Paths.get(uploadDirectory), "test", ".temp");
+  @Test
+  public void testValidationFailureDueToDataFileContentChange() throws IOException {
+    File submitDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toFile();
+    String uploadDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toString();
 
-        Files.write(dataFile, "abc".getBytes(StandardCharsets.UTF_8));
+    Path dataFile = Files.createTempFile(Paths.get(uploadDirectory), "test", ".temp");
 
-        SubmissionBundle.SubmissionUploadFile uploadFile = new SubmissionBundle.SubmissionUploadFile(
-            dataFile.toFile(), dataFile.toFile().length(), FileUtils.getLastModifiedTime(dataFile.toFile()), FileUtils.calculateDigest("MD5", dataFile.toFile()));
+    Files.write(dataFile, "abc".getBytes(StandardCharsets.UTF_8));
 
-        File manifestFile = File.createTempFile( "TEST-SB", "MANIFEST" );
-        String manifestMd5 = FileUtils.calculateDigest( "MD5", manifestFile );
+    SubmissionBundle.SubmissionUploadFile uploadFile =
+        new SubmissionBundle.SubmissionUploadFile(
+            dataFile.toFile(),
+            dataFile.toFile().length(),
+            FileUtils.getLastModifiedTime(dataFile.toFile()),
+            FileUtils.calculateDigest("MD5", dataFile.toFile()));
 
-        SubmissionBundle expectedSb = new SubmissionBundle( submitDirectory, uploadDirectory, Arrays.asList(uploadFile), new ArrayList<>(), manifestMd5 );
+    File manifestFile = File.createTempFile("TEST-SB", "MANIFEST");
+    String manifestMd5 = FileUtils.calculateDigest("MD5", manifestFile);
 
-        SubmissionBundleHelper.write( expectedSb, submitDirectory );
+    SubmissionBundle expectedSb =
+        new SubmissionBundle(
+            submitDirectory,
+            uploadDirectory,
+            Arrays.asList(uploadFile),
+            new ArrayList<>(),
+            manifestMd5);
 
-        // Change the content of the file so the checksum comes out to be different.
-        Files.write(dataFile, "xyz".getBytes(StandardCharsets.UTF_8));
+    SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
-        SubmissionBundle actualSb = SubmissionBundleHelper.read( manifestMd5, submitDirectory );
+    // Change the content of the file so the checksum comes out to be different.
+    Files.write(dataFile, "xyz".getBytes(StandardCharsets.UTF_8));
 
-        // Not the best way to check expected output. The method that returns submission bundle above does not give
-        // anything else back which can be used to ensure the processing failed because of the anticipated error
-        // and not due to something else. However, the console output of this test can be checked to look for the
-        // expected error if there are any doubts.
-        Assert.assertNull(actualSb);
-    }
+    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifestMd5, submitDirectory);
+
+    // Not the best way to check expected output. The method that returns submission bundle above
+    // does not give
+    // anything else back which can be used to ensure the processing failed because of the
+    // anticipated error
+    // and not due to something else. However, the console output of this test can be checked to
+    // look for the
+    // expected error if there are any doubts.
+    Assert.assertNull(actualSb);
+  }
 }

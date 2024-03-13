@@ -14,10 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Locale;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
@@ -39,9 +37,11 @@ public class TranscriptomeValidationTest {
         .field("NAME", "test");
   }
 
-  private static final WebinCliExecutorBuilder<TranscriptomeManifest, ValidationResponse> executorBuilder =
-      new WebinCliExecutorBuilder(TranscriptomeManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-          .sample(WebinCliTestUtils.getDefaultSample());
+  private static final WebinCliExecutorBuilder<TranscriptomeManifest, ValidationResponse>
+      executorBuilder =
+          new WebinCliExecutorBuilder(
+                  TranscriptomeManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
+              .sample(WebinCliTestUtils.getDefaultSample());
 
   @Before
   public void before() {
@@ -51,19 +51,21 @@ public class TranscriptomeValidationTest {
   @Test
   public void testValidFasta() {
     File manifestFile =
-          manifestBuilder().file(TranscriptomeManifest.FileType.FASTA, "valid.fasta.gz").
-                  field(TranscriptomeManifestReader.Field.ASSEMBLY_TYPE, "isolate").build();
+        manifestBuilder()
+            .file(TranscriptomeManifest.FileType.FASTA, "valid.fasta.gz")
+            .field(TranscriptomeManifestReader.Field.ASSEMBLY_TYPE, "isolate")
+            .build();
     WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
-          executorBuilder.build(manifestFile, RESOURCE_DIR);
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
     executor.validateSubmission();
     assertThat(
             executor
-                  .getManifestReader()
-                  .getManifest()
-                  .files()
-                  .get(TranscriptomeManifest.FileType.FASTA))
-          .size()
-          .isOne();
-    }
+                .getManifestReader()
+                .getManifest()
+                .files()
+                .get(TranscriptomeManifest.FileType.FASTA))
+        .size()
+        .isOne();
+  }
 }

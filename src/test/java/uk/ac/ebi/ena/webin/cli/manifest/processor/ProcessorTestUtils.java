@@ -11,16 +11,24 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import java.util.ArrayList;
-
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldType;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 
 public class ProcessorTestUtils {
 
-    public static ManifestFieldValue
-    createFieldValue(ManifestFieldType type, String name, String value) {
-        return new ManifestFieldValue(
-                new ManifestFieldDefinition.Builder().type(type).optional().name(name).desc(name).build().get(0), value, new ArrayList<>(), null);
-    }
+  public static ManifestFieldValue createFieldValue(
+      ManifestFieldType type, String name, String value) {
+    return new ManifestFieldValue(
+        new ManifestFieldDefinition.Builder()
+            .type(type)
+            .optional()
+            .name(name)
+            .desc(name)
+            .build()
+            .get(0),
+        value,
+        new ArrayList<>(),
+        null);
+  }
 }

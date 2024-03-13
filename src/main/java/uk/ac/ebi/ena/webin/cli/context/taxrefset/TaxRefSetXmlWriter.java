@@ -16,54 +16,73 @@ import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jdom2.Element;
-
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
-public class TaxRefSetXmlWriter extends SequenceToolsXmlWriter<TaxRefSetManifest, ValidationResponse> {
+public class TaxRefSetXmlWriter
+    extends SequenceToolsXmlWriter<TaxRefSetManifest, ValidationResponse> {
 
-    @Override
-    protected Element createXmlAnalysisTypeElement(TaxRefSetManifest manifest) {
-        Element e = new Element("TAXONOMIC_REFERENCE_SET");
+  @Override
+  protected Element createXmlAnalysisTypeElement(TaxRefSetManifest manifest) {
+    Element e = new Element("TAXONOMIC_REFERENCE_SET");
 
-        e.addContent(createTextElement("NAME", manifest.getName()));
-        e.addContent(createTextElement("TAXONOMY_SYSTEM", manifest.getTaxonomySystem()));
-        if (null != manifest.getTaxonomySystemVersion() && !manifest.getTaxonomySystemVersion().trim().isEmpty())
-            e.addContent(createTextElement("TAXONOMY_SYSTEM_VERSION", manifest.getTaxonomySystemVersion()));
-        if (null != manifest.getCustomFields() && !manifest.getCustomFields().isEmpty()) {
+    e.addContent(createTextElement("NAME", manifest.getName()));
+    e.addContent(createTextElement("TAXONOMY_SYSTEM", manifest.getTaxonomySystem()));
+    if (null != manifest.getTaxonomySystemVersion()
+        && !manifest.getTaxonomySystemVersion().trim().isEmpty())
+      e.addContent(
+          createTextElement("TAXONOMY_SYSTEM_VERSION", manifest.getTaxonomySystemVersion()));
+    if (null != manifest.getCustomFields() && !manifest.getCustomFields().isEmpty()) {
 
-            Element customFieldsE = new Element("CUSTOM_FIELDS");
+      Element customFieldsE = new Element("CUSTOM_FIELDS");
 
-            manifest.getCustomFields().forEach((key, value) -> {
-                        Element fileldsE = new Element("FIELD");
-                        fileldsE.addContent(createTextElement("NAME", key));
-                        fileldsE.addContent(createTextElement("DESCRIPTION", value));
-                        customFieldsE.addContent(fileldsE);
-                    }
-            );
+      manifest
+          .getCustomFields()
+          .forEach(
+              (key, value) -> {
+                Element fileldsE = new Element("FIELD");
+                fileldsE.addContent(createTextElement("NAME", key));
+                fileldsE.addContent(createTextElement("DESCRIPTION", value));
+                customFieldsE.addContent(fileldsE);
+              });
 
-            e.addContent(customFieldsE);
-        }
-
-        return e;
+      e.addContent(customFieldsE);
     }
 
-    @Override
-    protected List<Element> createXmlFileElements(TaxRefSetManifest manifest, Path inputDir, Path uploadDir) {
-        List<Element> list = new ArrayList<>();
+    return e;
+  }
 
+  @Override
+  protected List<Element> createXmlFileElements(
+      TaxRefSetManifest manifest, Path inputDir, Path uploadDir) {
+    List<Element> list = new ArrayList<>();
 
-        manifest.files(TaxRefSetManifest.FileType.FASTA).stream()
-                .map(file -> file.getFile().toPath())
-                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "fasta")));
-        manifest.files(TaxRefSetManifest.FileType.TAB).stream()
-                .map(file -> file.getFile().toPath())
-                .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "tab")));
+    manifest.files(TaxRefSetManifest.FileType.FASTA).stream()
+        .map(file -> file.getFile().toPath())
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "fasta")));
+    manifest.files(TaxRefSetManifest.FileType.TAB).stream()
+        .map(file -> file.getFile().toPath())
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "tab")));
 
-        return list;
-    }
+    return list;
+  }
 }

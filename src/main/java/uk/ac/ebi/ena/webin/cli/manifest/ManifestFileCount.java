@@ -13,75 +13,77 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 import java.util.ArrayList;
 
 public class ManifestFileCount {
-    private final String fileType;
-    private final int minCount;
-    private final Integer maxCount;
+  private final String fileType;
+  private final int minCount;
+  private final Integer maxCount;
 
-    public ManifestFileCount(String fileType, int minCount, Integer maxCount) {
-        this.fileType = fileType;
-        this.minCount = minCount;
-        this.maxCount = maxCount;
+  public ManifestFileCount(String fileType, int minCount, Integer maxCount) {
+    this.fileType = fileType;
+    this.minCount = minCount;
+    this.maxCount = maxCount;
+  }
+
+  public String getFileType() {
+    return fileType;
+  }
+
+  public int getMinCount() {
+    return minCount;
+  }
+
+  public Integer getMaxCount() {
+    return maxCount;
+  }
+
+  public static class Builder {
+    private final ArrayList<ManifestFileGroup> fileGroups = new ArrayList<>();
+
+    public static class Group {
+      private final Builder builder;
+      private final ManifestFileGroup fileGroup;
+
+      private Group(Builder builder, String description) {
+        this.builder = builder;
+        this.fileGroup = new ManifestFileGroup(description);
+        builder.fileGroups.add(this.fileGroup);
+      }
+
+      public Group required(String fieldName) {
+        fileGroup.addFileCount(new ManifestFileCount(fieldName, 1, 1));
+        return this;
+      }
+
+      public Group required(String fieldName, int maxCount) {
+        fileGroup.addFileCount(new ManifestFileCount(fieldName, 1, maxCount));
+        return this;
+      }
+
+      public Group required(String fieldName, int minCount, int maxCount) {
+        fileGroup.addFileCount(new ManifestFileCount(fieldName, minCount, maxCount));
+        return this;
+      }
+
+      public Group optional(String fieldName) {
+        fileGroup.addFileCount(new ManifestFileCount(fieldName, 0, 1));
+        return this;
+      }
+
+      public Group optional(String fieldName, int maxCount) {
+        fileGroup.addFileCount(new ManifestFileCount(fieldName, 0, maxCount));
+        return this;
+      }
+
+      public Builder and() {
+        return builder;
+      }
+
+      public ArrayList<ManifestFileGroup> build() {
+        return builder.fileGroups;
+      }
     }
 
-    public String getFileType() {
-        return fileType;
+    public Group group(String description) {
+      return new Group(this, description);
     }
-    public int getMinCount() {
-        return minCount;
-    }
-    public Integer getMaxCount() {
-        return maxCount;
-    }
-
-    public static class Builder {
-        private final ArrayList<ManifestFileGroup> fileGroups = new ArrayList<>();
-
-        public static class Group {
-            private final Builder builder;
-            private final ManifestFileGroup fileGroup;
-
-            private Group(Builder builder, String description) {
-                this.builder = builder;
-                this.fileGroup = new ManifestFileGroup(description);
-                builder.fileGroups.add(this.fileGroup);
-            }
-
-            public Group required(String fieldName) {
-                fileGroup.addFileCount(new ManifestFileCount(fieldName, 1, 1));
-                return this;
-            }
-
-            public Group required(String fieldName, int maxCount) {
-                fileGroup.addFileCount(new ManifestFileCount(fieldName, 1, maxCount));
-                return this;
-            }
-
-            public Group required(String fieldName, int minCount, int maxCount) {
-                fileGroup.addFileCount(new ManifestFileCount(fieldName, minCount, maxCount));
-                return this;
-            }
-
-            public Group optional(String fieldName) {
-                fileGroup.addFileCount(new ManifestFileCount(fieldName, 0, 1));
-                return this;
-            }
-
-            public Group optional(String fieldName, int maxCount) {
-                fileGroup.addFileCount(new ManifestFileCount(fieldName, 0, maxCount));
-                return this;
-            }
-
-            public Builder and() {
-                return builder;
-            }
-
-            public ArrayList<ManifestFileGroup> build() {
-                return builder.fileGroups;
-            }
-        }
-
-        public Group group(String description) {
-            return new Group(this, description);
-        }
-    }
+  }
 }

@@ -18,85 +18,76 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class ManifestCVList
-{
-    private final Properties cvMap = new Properties();
-    private final ArrayList<String> cvList = new ArrayList();
+public class ManifestCVList {
+  private final Properties cvMap = new Properties();
+  private final ArrayList<String> cvList = new ArrayList();
 
-    private static InputStream getResourceAsStream( File resource ) {
-        return ManifestCVList.class.getClassLoader().getResourceAsStream(
-                resource.getPath().replaceAll( "\\\\+", "/" ));
+  private static InputStream getResourceAsStream(File resource) {
+    return ManifestCVList.class
+        .getClassLoader()
+        .getResourceAsStream(resource.getPath().replaceAll("\\\\+", "/"));
+  }
+
+  public ManifestCVList(File resource) {
+    try (InputStream in = getResourceAsStream(resource)) {
+      this.cvMap.load(in);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    public ManifestCVList( File resource )
-    {
-        try (InputStream in = getResourceAsStream( resource )) {
-            this.cvMap.load(in);
-        }
-        catch( IOException e ) {
-            throw new RuntimeException( e );
-        }
-
-        try (InputStream in = getResourceAsStream( resource )) {
-                new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8))
-                        .lines()
-                        .forEach(line -> cvList.add(line.split("\\s*=\\s*")[0]
-                                .replaceAll("\\\\", "")));
-        }
-        catch( IOException e ) {
-            throw new RuntimeException( e );
-        }
+    try (InputStream in = getResourceAsStream(resource)) {
+      new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
+          .lines()
+          .forEach(line -> cvList.add(line.split("\\s*=\\s*")[0].replaceAll("\\\\", "")));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public ManifestCVList( String ... values )
-    {
-        for (String value: values) {
-            cvMap.setProperty(value, value);
-            cvList.add(value);
-        }
+  public ManifestCVList(String... values) {
+    for (String value : values) {
+      cvMap.setProperty(value, value);
+      cvList.add(value);
     }
+  }
 
+  private static String normalizeString(Object s) {
+    return String.valueOf(s).toLowerCase().replaceAll("[ _-]+", "");
+  }
 
-    private static String
-    normalizeString( Object s )
-    {
-        return String.valueOf( s ).toLowerCase().replaceAll( "[ _-]+", "" );
-    }
+  public boolean contains(String key) {
+    return cvMap.keySet().stream().anyMatch(e -> normalizeString(e).equals(normalizeString(key)));
+  }
 
+  public String getKey(String key) {
+    return cvMap.entrySet().stream()
+        .map(
+            e ->
+                new AbstractMap.SimpleEntry<>(
+                    normalizeString(e.getKey()), String.valueOf(e.getKey())))
+        .filter(e -> e.getKey().equals(normalizeString(key)))
+        .findFirst()
+        .orElse(new AbstractMap.SimpleEntry<>(null, null))
+        .getValue();
+  }
 
-    public boolean
-    contains( String key )
-    {
-        return cvMap.keySet().stream().anyMatch(e -> normalizeString( e ).equals( normalizeString( key ) ) );
-    }
+  public String getValue(String key) {
+    return cvMap.entrySet().stream()
+        .map(
+            e ->
+                new AbstractMap.SimpleEntry<>(
+                    normalizeString(e.getKey()), String.valueOf(e.getValue())))
+        .filter(e -> e.getKey().equals(normalizeString(key)))
+        .findFirst()
+        .orElse(new AbstractMap.SimpleEntry<>(null, null))
+        .getValue();
+  }
 
-    public String
-    getKey( String key )
-    {
-        return cvMap.entrySet().stream()
-                .map( e -> new AbstractMap.SimpleEntry<>( normalizeString( e.getKey() ), String.valueOf( e.getKey() ) ) )
-                .filter( e -> e.getKey().equals( normalizeString( key ) ) ).findFirst()
-                .orElse( new AbstractMap.SimpleEntry<>( null, null ) ).getValue();
-    }
+  public List<String> keyList() {
+    return cvList.stream().collect(Collectors.toList());
+  }
 
-    public String
-    getValue( String key )
-    {
-        return cvMap.entrySet().stream()
-                .map( e -> new AbstractMap.SimpleEntry<>( normalizeString( e.getKey() ), String.valueOf( e.getValue() ) ) )
-                .filter( e -> e.getKey().equals( normalizeString( key ) ) ).findFirst()
-                .orElse( new AbstractMap.SimpleEntry<>( null, null ) ).getValue();
-    }
-
-    public List<String>
-    keyList()
-    {
-        return cvList.stream().collect( Collectors.toList() );
-    }
-
-    public String
-    toString()
-    {
-        return String.valueOf( cvMap.entrySet() );
-    }
+  public String toString() {
+    return String.valueOf(cvMap.entrySet());
+  }
 }

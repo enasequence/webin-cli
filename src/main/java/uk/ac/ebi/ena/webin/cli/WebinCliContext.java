@@ -56,16 +56,18 @@ public enum WebinCliContext {
       ReadsValidator.class,
       "Raw reads"),
   taxrefset(
-          TaxRefSetManifest.class,
-          TaxRefSetManifestReader.class,
-          TaxRefSetXmlWriter.class,
-          TxmbValidator.class,
-          "Taxonomy reference set");
+      TaxRefSetManifest.class,
+      TaxRefSetManifestReader.class,
+      TaxRefSetXmlWriter.class,
+      TxmbValidator.class,
+      "Taxonomy reference set");
 
   private final Class<? extends Manifest> manifestClass;
   private final Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass;
-  private final Class<? extends XmlWriter<? extends Manifest, ? extends ValidationResponse>> xmlWriterClass;
-  private final Class<? extends Validator<? extends Manifest, ? extends ValidationResponse>> validatorClass;
+  private final Class<? extends XmlWriter<? extends Manifest, ? extends ValidationResponse>>
+      xmlWriterClass;
+  private final Class<? extends Validator<? extends Manifest, ? extends ValidationResponse>>
+      validatorClass;
 
   private final String titlePrefix;
 
@@ -90,8 +92,9 @@ public enum WebinCliContext {
     return manifestReaderClass;
   }
 
-  public static <M extends Manifest, R extends ValidationResponse> WebinCliExecutor<M, R> createExecutor(
-      Class<M> manifestClass, WebinCliParameters parameters) throws RuntimeException {
+  public static <M extends Manifest, R extends ValidationResponse>
+      WebinCliExecutor<M, R> createExecutor(Class<M> manifestClass, WebinCliParameters parameters)
+          throws RuntimeException {
     for (WebinCliContext context : WebinCliContext.values()) {
       if (context.getManifestClass().equals(manifestClass)) {
         return (WebinCliExecutor<M, R>) context.createExecutor(parameters);
@@ -100,9 +103,10 @@ public enum WebinCliContext {
     return null;
   }
 
-  public WebinCliExecutor<?, ?> createExecutor(WebinCliParameters parameters) throws RuntimeException {
-    return createExecutor(parameters,
-        new ManifestReaderBuilder(manifestReaderClass, parameters).build());
+  public WebinCliExecutor<?, ?> createExecutor(WebinCliParameters parameters)
+      throws RuntimeException {
+    return createExecutor(
+        parameters, new ManifestReaderBuilder(manifestReaderClass, parameters).build());
   }
 
   public WebinCliExecutor<?, ?> createExecutor(

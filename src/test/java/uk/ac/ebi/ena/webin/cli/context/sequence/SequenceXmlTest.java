@@ -15,10 +15,8 @@ import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
 import java.util.Locale;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -71,7 +69,8 @@ public class SequenceXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -127,7 +126,8 @@ public class SequenceXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -159,7 +159,8 @@ public class SequenceXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,

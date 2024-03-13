@@ -16,64 +16,63 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.web.client.HttpClientErrorException;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Attribute;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
-public class
-SampleXmlServiceTest {
+public class SampleXmlServiceTest {
 
-    private static final boolean TEST = true;
+  private static final boolean TEST = true;
 
-    private static final String BIO_SAMPLE_ID = "SAMEA749881";
-    private static final String SAMPLE_ID = "ERS000002";
-    private static final String SCIENTIFIC_NAME = "Saccharomyces cerevisiae SK1";
-    private static final String STRAIN_NAME = "SK1";
-    private static final int TAX_ID = 580239;
+  private static final String BIO_SAMPLE_ID = "SAMEA749881";
+  private static final String SAMPLE_ID = "ERS000002";
+  private static final String SCIENTIFIC_NAME = "Saccharomyces cerevisiae SK1";
+  private static final String STRAIN_NAME = "SK1";
+  private static final int TAX_ID = 580239;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
+  @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
-    @Test
-    public void testGetSourceFeatureUsingPublicBioSampleId() {
-            testGetSourceFeatureUsingValidId(BIO_SAMPLE_ID);
-    }
+  @Test
+  public void testGetSourceFeatureUsingPublicBioSampleId() {
+    testGetSourceFeatureUsingValidId(BIO_SAMPLE_ID);
+  }
 
-    @Test
-    public void testGetSourceFeatureUsingPublicSampleId() {
-        testGetSourceFeatureUsingValidId(SAMPLE_ID);
-    }
+  @Test
+  public void testGetSourceFeatureUsingPublicSampleId() {
+    testGetSourceFeatureUsingValidId(SAMPLE_ID);
+  }
 
-    @Test
-    public void testGetSourceFeatureUsingInvalidId() {
-        String id = "INVALID";
-        exceptionRule.expect(HttpClientErrorException.NotFound.class);
-        SampleXmlService sampleService = new SampleXmlService.Builder()
+  @Test
+  public void testGetSourceFeatureUsingInvalidId() {
+    String id = "INVALID";
+    exceptionRule.expect(HttpClientErrorException.NotFound.class);
+    SampleXmlService sampleService =
+        new SampleXmlService.Builder()
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
-            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .setUserName(WebinCliTestUtils.getTestWebinUsername())
+            .setPassword(WebinCliTestUtils.getTestWebinPassword())
             .build();
-        sampleService.getSample(id);
-    }
+    sampleService.getSample(id);
+  }
 
-    private void testGetSourceFeatureUsingValidId(String id) {
-        SampleXmlService sampleService = new SampleXmlService.Builder()
+  private void testGetSourceFeatureUsingValidId(String id) {
+    SampleXmlService sampleService =
+        new SampleXmlService.Builder()
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
-            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .setUserName(WebinCliTestUtils.getTestWebinUsername())
+            .setPassword(WebinCliTestUtils.getTestWebinPassword())
             .build();
-        Sample sample = sampleService.getSample( id );
-        assertThat(sample).isNotNull();
-        assertThat(sample.getTaxId()).isEqualTo(TAX_ID);
-        assertThat(sample.getOrganism()).isEqualTo(SCIENTIFIC_NAME);
-        boolean assertStrain = false;
-        for (Attribute attribute : sample.getAttributes()) {
-            if (attribute.getName().equals("strain") && attribute.getValue().equals(STRAIN_NAME)) {
-                assertStrain = true;
-            }
-        }
-        assertThat(assertStrain);
+    Sample sample = sampleService.getSample(id);
+    assertThat(sample).isNotNull();
+    assertThat(sample.getTaxId()).isEqualTo(TAX_ID);
+    assertThat(sample.getOrganism()).isEqualTo(SCIENTIFIC_NAME);
+    boolean assertStrain = false;
+    for (Attribute attribute : sample.getAttributes()) {
+      if (attribute.getName().equals("strain") && attribute.getValue().equals(STRAIN_NAME)) {
+        assertStrain = true;
+      }
     }
+    assertThat(assertStrain);
+  }
 }

@@ -25,98 +25,88 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.GZIPInputStream;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
-public class 
-FileUtils 
-{
+public class FileUtils {
 
-	public static BufferedReader 
-	getBufferedReader( File file ) throws IOException
-	{
-		if( file.getName().matches( "^.+\\.gz$" ) || file.getName().matches( "^.+\\.gzip$" ) ) 
-		{
-			GZIPInputStream gzip = new GZIPInputStream( new FileInputStream( file ) );
-			return new BufferedReader( new InputStreamReader( gzip ) );
-			
-		} else if( file.getName().matches( "^.+\\.bz2$" ) || file.getName().matches( "^.+\\.bzip2$" ) ) 
-		{
-			BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream( new FileInputStream( file ) );
-			return new BufferedReader( new InputStreamReader( bzIn ) );
-			
-		} else 
-		{
-			return new BufferedReader( new FileReader(file ) );
-		}
-	}
+  public static BufferedReader getBufferedReader(File file) throws IOException {
+    if (file.getName().matches("^.+\\.gz$") || file.getName().matches("^.+\\.gzip$")) {
+      GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(file));
+      return new BufferedReader(new InputStreamReader(gzip));
 
-    public static String calculateDigest( String digestName, File file ) {
-    	try {
-			return calculateDigest(digestName, new BufferedInputStream(new FileInputStream( file ), 1024 * 1024));
-		} catch( IOException ex ) {
-			throw WebinCliException.systemError( ex );
-		}
+    } else if (file.getName().matches("^.+\\.bz2$") || file.getName().matches("^.+\\.bzip2$")) {
+      BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(new FileInputStream(file));
+      return new BufferedReader(new InputStreamReader(bzIn));
+
+    } else {
+      return new BufferedReader(new FileReader(file));
     }
+  }
 
-	public static String calculateDigest(String digestName, byte[] bytes) {
-		return calculateDigest(digestName, new ByteArrayInputStream(bytes));
-	}
+  public static String calculateDigest(String digestName, File file) {
+    try {
+      return calculateDigest(
+          digestName, new BufferedInputStream(new FileInputStream(file), 1024 * 1024));
+    } catch (IOException ex) {
+      throw WebinCliException.systemError(ex);
+    }
+  }
 
-	public static String calculateDigest(String digestName, InputStream is) {
-		try {
-			MessageDigest digest = MessageDigest.getInstance( digestName );
-			byte[] buf = new byte[ 4096 ];
-			int  read = 0;
-			try( BufferedInputStream bis = new BufferedInputStream( is ) ) {
-				while( ( read = bis.read( buf ) ) > 0 ) {
-					digest.update(buf, 0, read);
-				}
+  public static String calculateDigest(String digestName, byte[] bytes) {
+    return calculateDigest(digestName, new ByteArrayInputStream(bytes));
+  }
 
-				byte[] message_digest = digest.digest();
-				BigInteger value = new BigInteger( 1, message_digest );
-				return String.format( String.format( "%%0%dx", message_digest.length << 1 ), value );
-			}
-		} catch( NoSuchAlgorithmException | IOException ex ) {
-			throw WebinCliException.systemError( ex );
-		}
-	}
+  public static String calculateDigest(String digestName, InputStream is) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance(digestName);
+      byte[] buf = new byte[4096];
+      int read = 0;
+      try (BufferedInputStream bis = new BufferedInputStream(is)) {
+        while ((read = bis.read(buf)) > 0) {
+          digest.update(buf, 0, read);
+        }
 
-	public static boolean 
-	emptyDirectory( File dir )
-	{
-		if (dir == null)
-			return false;
-	    if( dir.exists() )
-	    {
-	        File[] files = dir.listFiles();
-			for (File file : files) {
-				if (file.isDirectory()) {
-					emptyDirectory(file);
-					file.delete();
-				} else {
-					file.delete();
-				}
-			}
-	    }
-	    return dir.listFiles().length == 0;
-	}
+        byte[] message_digest = digest.digest();
+        BigInteger value = new BigInteger(1, message_digest);
+        return String.format(String.format("%%0%dx", message_digest.length << 1), value);
+      }
+    } catch (NoSuchAlgorithmException | IOException ex) {
+      throw WebinCliException.systemError(ex);
+    }
+  }
 
-	/**
-	 * Returns a new string in which Windows file separators are replaced with Linux's. If the input contains only Linux
-	 * file separators then the same string is returned unchanged.
-	 */
-	public static String replaceIncompatibleFileSeparators(String inputStr) {
-		return inputStr.replaceAll("\\\\+", "/");
-	}
+  public static boolean emptyDirectory(File dir) {
+    if (dir == null) return false;
+    if (dir.exists()) {
+      File[] files = dir.listFiles();
+      for (File file : files) {
+        if (file.isDirectory()) {
+          emptyDirectory(file);
+          file.delete();
+        } else {
+          file.delete();
+        }
+      }
+    }
+    return dir.listFiles().length == 0;
+  }
 
-	public static final long getLastModifiedTime(File file) throws RuntimeException {
-		try {
-			return Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis();
-		} catch (IOException e) {
-			throw new RuntimeException("Error reading file attributes : " + file.getAbsolutePath(), e);
-		}
-	}
+  /**
+   * Returns a new string in which Windows file separators are replaced with Linux's. If the input
+   * contains only Linux file separators then the same string is returned unchanged.
+   */
+  public static String replaceIncompatibleFileSeparators(String inputStr) {
+    return inputStr.replaceAll("\\\\+", "/");
+  }
+
+  public static final long getLastModifiedTime(File file) throws RuntimeException {
+    try {
+      return Files.readAttributes(file.toPath(), BasicFileAttributes.class)
+          .lastModifiedTime()
+          .toMillis();
+    } catch (IOException e) {
+      throw new RuntimeException("Error reading file attributes : " + file.getAbsolutePath(), e);
+    }
+  }
 }

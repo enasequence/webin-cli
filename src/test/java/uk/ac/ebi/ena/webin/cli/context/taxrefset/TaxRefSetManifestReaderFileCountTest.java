@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
@@ -22,7 +21,7 @@ public class TaxRefSetManifestReaderFileCountTest {
     new ManifestReaderFileCountTester<>(
             TaxRefSetManifestReader.class, TaxRefSetManifest.FileType.values())
         // Supported file groups
-        .files(TaxRefSetManifest.FileType.TAB,TaxRefSetManifest.FileType.FASTA)
+        .files(TaxRefSetManifest.FileType.TAB, TaxRefSetManifest.FileType.FASTA)
         .test();
   }
 }

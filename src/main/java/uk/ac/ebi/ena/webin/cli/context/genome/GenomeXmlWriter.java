@@ -17,9 +17,7 @@ import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jdom2.Element;
-
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -65,21 +63,60 @@ public class GenomeXmlWriter extends SequenceToolsXmlWriter<GenomeManifest, Vali
 
     manifest.files(FileType.CHROMOSOME_LIST).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "chromosome_list")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "chromosome_list")));
 
     manifest.files(FileType.UNLOCALISED_LIST).stream()
         .map(file -> file.getFile().toPath())
         .forEach(
-            file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "unlocalised_list")));
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "unlocalised_list")));
     manifest.files(FileType.FASTA).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "fasta")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "fasta")));
     manifest.files(FileType.FLATFILE).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "flatfile")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "flatfile")));
     manifest.files(FileType.AGP).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "agp")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "agp")));
 
     return list;
   }

@@ -16,11 +16,9 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -29,7 +27,8 @@ import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
-public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends ValidationResponse> implements XmlWriter<M, R> {
+public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends ValidationResponse>
+    implements XmlWriter<M, R> {
 
   protected abstract Element createXmlAnalysisTypeElement(M manifest);
 
@@ -102,7 +101,8 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
 
     if (manifest.getSubmissionTool() != null && !manifest.getSubmissionTool().isEmpty()) {
       Element submissionToolAnalysisAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL");
-      Element submissionToolAnalysisAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionTool());
+      Element submissionToolAnalysisAttributeValueE =
+          new Element("VALUE").setText(manifest.getSubmissionTool());
 
       Element submissionToolAnalysisAttributeE = new Element("ANALYSIS_ATTRIBUTE");
       submissionToolAnalysisAttributeE.addContent(submissionToolAnalysisAttributeTagE);
@@ -111,13 +111,18 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
       analysisAttributesE.addContent(submissionToolAnalysisAttributeE);
     }
 
-    if (manifest.getSubmissionToolVersion() != null && !manifest.getSubmissionToolVersion().isEmpty()) {
-      Element submissionToolVersionAnalysisAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
-      Element submissionToolVersionAnalysisAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionToolVersion());
+    if (manifest.getSubmissionToolVersion() != null
+        && !manifest.getSubmissionToolVersion().isEmpty()) {
+      Element submissionToolVersionAnalysisAttributeTagE =
+          new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
+      Element submissionToolVersionAnalysisAttributeValueE =
+          new Element("VALUE").setText(manifest.getSubmissionToolVersion());
 
       Element submissionToolVersionAnalysisAttributeE = new Element("ANALYSIS_ATTRIBUTE");
-      submissionToolVersionAnalysisAttributeE.addContent(submissionToolVersionAnalysisAttributeTagE);
-      submissionToolVersionAnalysisAttributeE.addContent(submissionToolVersionAnalysisAttributeValueE);
+      submissionToolVersionAnalysisAttributeE.addContent(
+          submissionToolVersionAnalysisAttributeTagE);
+      submissionToolVersionAnalysisAttributeE.addContent(
+          submissionToolVersionAnalysisAttributeValueE);
 
       analysisAttributesE.addContent(submissionToolVersionAnalysisAttributeE);
     }

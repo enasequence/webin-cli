@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
@@ -106,9 +105,9 @@ public class GenomeManifestReaderFileCountTest {
   public void testClinicalIsolateAssemblyFileCount() {
     new ManifestReaderFileCountTester<>(
             GenomeManifestReader.class, GenomeManifest.FileType.values())
-            // Supported file groups
-            .files(GenomeManifest.FileType.FASTA)
-            .field("ASSEMBLY_TYPE", "clinical isolate assembly")
-            .test();
+        // Supported file groups
+        .files(GenomeManifest.FileType.FASTA)
+        .field("ASSEMBLY_TYPE", "clinical isolate assembly")
+        .test();
   }
 }

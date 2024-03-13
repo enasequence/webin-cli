@@ -17,15 +17,14 @@ import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jdom2.Element;
-
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
-public class TranscriptomeXmlWriter extends SequenceToolsXmlWriter<TranscriptomeManifest, ValidationResponse> {
+public class TranscriptomeXmlWriter
+    extends SequenceToolsXmlWriter<TranscriptomeManifest, ValidationResponse> {
 
   @Override
   protected Element createXmlAnalysisTypeElement(TranscriptomeManifest manifest) {
@@ -54,11 +53,27 @@ public class TranscriptomeXmlWriter extends SequenceToolsXmlWriter<Transcriptome
 
     manifest.files(FileType.FASTA).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "fasta")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "fasta")));
 
     manifest.files(FileType.FLATFILE).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "flatfile")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "flatfile")));
 
     return list;
   }

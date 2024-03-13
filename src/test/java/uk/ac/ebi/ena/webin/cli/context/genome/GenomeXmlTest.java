@@ -15,10 +15,8 @@ import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
 import java.util.Locale;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -76,7 +74,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -137,7 +136,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -168,7 +168,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -199,7 +200,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -230,7 +232,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -257,12 +260,13 @@ public class GenomeXmlTest {
   @Test
   public void testFastaFile() {
     GenomeManifest manifest = getDefaultManifest();
-    Path fastaFile =  TempFileBuilder.gzip("flatfile.fasta.gz", ">123\nACGT");
+    Path fastaFile = TempFileBuilder.gzip("flatfile.fasta.gz", ">123\nACGT");
     manifest.files().add(new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -301,7 +305,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -343,7 +348,8 @@ public class GenomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,

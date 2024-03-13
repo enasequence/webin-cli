@@ -14,56 +14,52 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 
-public class
-LoginServiceTest {
+public class LoginServiceTest {
 
-    @Test
-    public void
-    testValidLoginProd() {
-        String userName = new LoginService(
+  @Test
+  public void testValidLoginProd() {
+    String userName =
+        new LoginService(
                 WebinCliTestUtils.getTestWebinUsername(),
                 WebinCliTestUtils.getTestWebinPassword(),
-                false).login();
+                false)
+            .login();
 
-        assertThat(userName).matches("Webin-\\d+");
-    }
+    assertThat(userName).matches("Webin-\\d+");
+  }
 
-    @Test
-    public void
-    testValidLoginTest() {
-        String userName = new LoginService(
+  @Test
+  public void testValidLoginTest() {
+    String userName =
+        new LoginService(
                 WebinCliTestUtils.getTestWebinUsername(),
                 WebinCliTestUtils.getTestWebinPassword(),
-                true).login();
+                true)
+            .login();
 
-        assertThat(userName).matches("Webin-\\d+");
-    }
+    assertThat(userName).matches("Webin-\\d+");
+  }
 
-    @Test
-    public void
-    testInvalidLoginProd() {
-        assertThatThrownBy(() -> new LoginService(
-                WebinCliTestUtils.getTestWebinUsername(),
-                "INVALID",
-                false).login())
-                .isInstanceOf(WebinCliException.class)
-                .hasMessage(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
-    }
+  @Test
+  public void testInvalidLoginProd() {
+    assertThatThrownBy(
+            () ->
+                new LoginService(WebinCliTestUtils.getTestWebinUsername(), "INVALID", false)
+                    .login())
+        .isInstanceOf(WebinCliException.class)
+        .hasMessage(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+  }
 
-    @Test
-    public void
-    testInvalidLoginTest() {
-        assertThatThrownBy(() -> new LoginService(
-                WebinCliTestUtils.getTestWebinUsername(),
-                "INVALID",
-                true).login())
-                .isInstanceOf(WebinCliException.class)
-                .hasMessage(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
-    }
-
+  @Test
+  public void testInvalidLoginTest() {
+    assertThatThrownBy(
+            () ->
+                new LoginService(WebinCliTestUtils.getTestWebinUsername(), "INVALID", true).login())
+        .isInstanceOf(WebinCliException.class)
+        .hasMessage(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+  }
 }

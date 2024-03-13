@@ -15,10 +15,8 @@ import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
 import java.util.Locale;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -76,7 +74,8 @@ public class TranscriptomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -134,7 +133,8 @@ public class TranscriptomeXmlTest {
     manifest.setTpa(true);
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -167,7 +167,8 @@ public class TranscriptomeXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,
@@ -199,14 +200,15 @@ public class TranscriptomeXmlTest {
   public void testFlatFile() {
     TranscriptomeManifest manifest = getDefaultManifest();
 
-    Path fastaFile =  TempFileBuilder.gzip("flatfile.dat.gz", ">123\nACGT");
+    Path fastaFile = TempFileBuilder.gzip("flatfile.dat.gz", ">123\nACGT");
     manifest
         .files()
         .add(new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
         analysisXml,

@@ -19,70 +19,63 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
-public class 
-IgnoreErrorsService extends WebinService {
+public class IgnoreErrorsService extends WebinService {
 
-    private static final Logger log = LoggerFactory.getLogger(IgnoreErrorsService.class);
+  private static final Logger log = LoggerFactory.getLogger(IgnoreErrorsService.class);
 
-    protected
-    IgnoreErrorsService( AbstractBuilder<IgnoreErrorsService> builder )
-    {
-        super( builder );
+  protected IgnoreErrorsService(AbstractBuilder<IgnoreErrorsService> builder) {
+    super(builder);
+  }
+
+  public static class Builder extends AbstractBuilder<IgnoreErrorsService> {
+    @Override
+    public IgnoreErrorsService build() {
+      return new IgnoreErrorsService(this);
     }
+  }
 
+  private static class IgnoreErrorsRequest {
+    public final String context;
+    public final String name;
 
-    public static class
-    Builder extends AbstractBuilder<IgnoreErrorsService> {
-        @Override
-        public IgnoreErrorsService
-        build() {
-            return new IgnoreErrorsService(this);
-        }
+    public IgnoreErrorsRequest(String context, String name) {
+      this.context = context;
+      this.name = name;
     }
-    
-    private static class IgnoreErrorsRequest {
-        public final String context;
-        public final String name;
+  }
 
-        public IgnoreErrorsRequest(String context, String name) {
-            this.context = context;
-            this.name = name;
-        }
-    }
+  public boolean getIgnoreErrors(String context, String name) {
+    return getIgnoreErrors(getUserName(), getPassword(), context, name);
+  }
 
-    public boolean
-    getIgnoreErrors(String context, String name) {
-        return getIgnoreErrors(getUserName(), getPassword(), context, name);
-    }
-    
-    
-    private boolean getIgnoreErrors(String userName, String password, String context, String name) {
+  private boolean getIgnoreErrors(String userName, String password, String context, String name) {
 
-        RestTemplate restTemplate = new RestTemplate();
+    RestTemplate restTemplate = new RestTemplate();
 
-        HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
+    HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
-        ResponseEntity<String> response = ExceptionUtils.executeWithRestExceptionHandling(
-
-            () -> RetryUtils.executeWithRetry(
-                retryContext -> restTemplate.exchange(
-                    resolveAgainstWebinRestV1Uri("cli/ignore_errors/"),
-                    HttpMethod.POST,
-                    new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
-                    String.class),
-                retryContext -> log.warn("Retrying getting ignore error status from server."),
-                HttpServerErrorException.class, ResourceAccessException.class),
-
+    ResponseEntity<String> response =
+        ExceptionUtils.executeWithRestExceptionHandling(
+            () ->
+                RetryUtils.executeWithRetry(
+                    retryContext ->
+                        restTemplate.exchange(
+                            resolveAgainstWebinRestV1Uri("cli/ignore_errors/"),
+                            HttpMethod.POST,
+                            new HttpEntity<>(new IgnoreErrorsRequest(context, name), headers),
+                            String.class),
+                    retryContext -> log.warn("Retrying getting ignore error status from server."),
+                    HttpServerErrorException.class,
+                    ResourceAccessException.class),
             WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("IgnoreError"),
             null,
             WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
 
-        return "true".equals(response.getBody());
-    }
+    return "true".equals(response.getBody());
+  }
 }

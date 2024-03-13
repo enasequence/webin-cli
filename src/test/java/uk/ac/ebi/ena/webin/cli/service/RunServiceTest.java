@@ -14,77 +14,69 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
-public class 
-RunServiceTest 
-{
+public class RunServiceTest {
 
-    private final static boolean TEST = true;
+  private static final boolean TEST = true;
 
-    @Test public void 
-    testGetRunUsingPublicRunId()
-    {
-        Run run = getRunUsingValidId( "ERR2486461" );
-        assertThat( run.getRunId() ).isEqualTo( "ERR2486461" );
-    }
+  @Test
+  public void testGetRunUsingPublicRunId() {
+    Run run = getRunUsingValidId("ERR2486461");
+    assertThat(run.getRunId()).isEqualTo("ERR2486461");
+  }
 
-    
-    @Test public void 
-    testGetRunUsingPrivateRunId()
-    {
-        Run run = getRunUsingValidId( "ERR6111314" );
-        assertThat( run.getRunId() ).isEqualTo( "ERR6111314" );
-    }
+  @Test
+  public void testGetRunUsingPrivateRunId() {
+    Run run = getRunUsingValidId("ERR6111314");
+    assertThat(run.getRunId()).isEqualTo("ERR6111314");
+  }
 
-    
-    private Run 
-    getRunUsingValidId( String id )
-    {
+  private Run getRunUsingValidId(String id) {
 
-        RunService runService = new RunService.Builder()
+    RunService runService =
+        new RunService.Builder()
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
-            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .setUserName(WebinCliTestUtils.getTestWebinUsername())
+            .setPassword(WebinCliTestUtils.getTestWebinPassword())
             .build();
-        Run run = runService.getRun( id );
-        assertThat( run ).isNotNull();
-        assertThat( run.getName() ).isNotNull();
-        return run;
-    }
+    Run run = runService.getRun(id);
+    assertThat(run).isNotNull();
+    assertThat(run.getName()).isNotNull();
+    return run;
+  }
 
-    
-    @Test public void 
-    testGetRunUsingInvalidId()
-    {
-        String runId = "INVALID";
-        RunService runService = new RunService.Builder()
+  @Test
+  public void testGetRunUsingInvalidId() {
+    String runId = "INVALID";
+    RunService runService =
+        new RunService.Builder()
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
-            .setUserName( WebinCliTestUtils.getTestWebinUsername() )
-            .setPassword( WebinCliTestUtils.getTestWebinPassword() )
+            .setUserName(WebinCliTestUtils.getTestWebinUsername())
+            .setPassword(WebinCliTestUtils.getTestWebinPassword())
             .build();
 
-        assertThatThrownBy( () -> runService.getRun( runId ) ).isInstanceOf( WebinCliException.class )
-                                                              .hasMessageContaining( WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format( runId ) );
-    }
+    assertThatThrownBy(() -> runService.getRun(runId))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageContaining(WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.format(runId));
+  }
 
-    
-    @Test public void 
-    testGetRunUsingInvalidCredentials()
-    {
-        String runId = "INVALID";
-        RunService runService = new RunService.Builder()
+  @Test
+  public void testGetRunUsingInvalidCredentials() {
+    String runId = "INVALID";
+    RunService runService =
+        new RunService.Builder()
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
-            .setUserName( "INVALID" )
-            .setPassword( "INVALID" )
+            .setUserName("INVALID")
+            .setPassword("INVALID")
             .build();
 
-        assertThatThrownBy( () -> runService.getRun( runId ) ).isInstanceOf( WebinCliException.class )
-                                                              .hasMessageContaining( WebinCliMessage.CLI_AUTHENTICATION_ERROR.text() );
-    }
+    assertThatThrownBy(() -> runService.getRun(runId))
+        .isInstanceOf(WebinCliException.class)
+        .hasMessageContaining(WebinCliMessage.CLI_AUTHENTICATION_ERROR.text());
+  }
 }

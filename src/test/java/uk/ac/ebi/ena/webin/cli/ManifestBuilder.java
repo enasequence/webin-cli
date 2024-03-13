@@ -10,245 +10,245 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import java.io.File;
-import java.nio.file.Path;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.File;
+import java.nio.file.Path;
 
 public class ManifestBuilder {
 
-    public enum ManifestFormat {
-        KEY_VALUE,
-        JSON
+  public enum ManifestFormat {
+    KEY_VALUE,
+    JSON
+  }
+
+  private ManifestFormat manifestFormat = ManifestFormat.KEY_VALUE;
+
+  private String manifest = "";
+
+  private ObjectMapper objectMapper = new ObjectMapper();
+
+  private ObjectNode jsonManifest;
+
+  private String lastModifiedFieldName;
+  private JsonNode lastModifiedField;
+
+  public ManifestBuilder jsonFormat() {
+    manifestFormat = ManifestFormat.JSON;
+    return this;
+  }
+
+  public ManifestBuilder manifest(String manifest) {
+    if (manifest != null) {
+      this.manifest += manifest;
     }
+    return this;
+  }
 
-    private ManifestFormat manifestFormat = ManifestFormat.KEY_VALUE;
-
-    private String manifest = "";
-
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    private ObjectNode jsonManifest;
-
-    private String lastModifiedFieldName;
-    private JsonNode lastModifiedField;
-
-    public ManifestBuilder jsonFormat() {
-        manifestFormat = ManifestFormat.JSON;
-        return this;
+  public ManifestBuilder manifest(ManifestBuilder manifest) {
+    if (manifest != null) {
+      this.manifest += manifest;
     }
+    return this;
+  }
 
-    public ManifestBuilder manifest(String manifest) {
-        if (manifest != null) {
-            this.manifest += manifest;
-        }
-        return this;
-    }
+  public ManifestBuilder name() {
+    return field("NAME", String.format("TEST %X", System.nanoTime()));
+  }
 
-    public ManifestBuilder manifest(ManifestBuilder manifest) {
-        if (manifest != null) {
-            this.manifest += manifest;
-        }
-        return this;
-    }
+  public ManifestBuilder field(String fieldName, String value) {
+    if (manifestFormat == ManifestFormat.KEY_VALUE) {
+      if (fieldName != null && value != null) {
+        manifest += fieldName + "\t" + value + "\n";
+      }
+    } else {
+      if (jsonManifest == null) {
+        jsonManifest = objectMapper.createObjectNode();
+      }
 
-    public ManifestBuilder name() {
-        return field("NAME", String.format("TEST %X", System.nanoTime()));
-    }
+      JsonNode existingField = jsonManifest.get(fieldName);
+      if (existingField != null) {
+        if (existingField.isArray()) {
+          ObjectNode newField = objectMapper.createObjectNode();
+          newField.put("value", value);
+          ((ArrayNode) existingField).add(newField);
 
-    public ManifestBuilder field(String fieldName, String value) {
-        if (manifestFormat == ManifestFormat.KEY_VALUE) {
-            if (fieldName != null && value != null) {
-                manifest += fieldName + "\t" + value + "\n";
-            }
+          lastModifiedFieldName = fieldName;
+          lastModifiedField = newField;
         } else {
-            if (jsonManifest == null) {
-                jsonManifest = objectMapper.createObjectNode();
-            }
+          // convert this field into array
+          ArrayNode convertedArrayNode = jsonManifest.putArray(fieldName);
 
-            JsonNode existingField = jsonManifest.get(fieldName);
-            if (existingField != null) {
-                if (existingField.isArray()) {
-                    ObjectNode newField = objectMapper.createObjectNode();
-                    newField.put("value", value);
-                    ((ArrayNode)existingField).add(newField);
+          // add existing object into the array
+          if (existingField.isValueNode()) {
+            // convert it into object
+            ObjectNode newField = objectMapper.createObjectNode();
+            newField.put("value", existingField.asText());
 
-                    lastModifiedFieldName = fieldName;
-                    lastModifiedField = newField;
-                } else {
-                    //convert this field into array
-                    ArrayNode convertedArrayNode = jsonManifest.putArray(fieldName);
+            convertedArrayNode.add(existingField);
+          } else {
+            convertedArrayNode.add(existingField);
+          }
 
-                    //add existing object into the array
-                    if (existingField.isValueNode()) {
-                        //convert it into object
-                        ObjectNode newField = objectMapper.createObjectNode();
-                        newField.put("value", existingField.asText());
+          // new object into the array
+          ObjectNode newField = objectMapper.createObjectNode();
+          newField.put("value", value);
+          convertedArrayNode.add(newField);
 
-                        convertedArrayNode.add(existingField);
-                    } else {
-                        convertedArrayNode.add(existingField);
-                    }
-
-                    //new object into the array
-                    ObjectNode newField = objectMapper.createObjectNode();
-                    newField.put("value", value);
-                    convertedArrayNode.add(newField);
-
-                    lastModifiedFieldName = fieldName;
-                    lastModifiedField = newField;
-                }
-            } else {
-                jsonManifest.put(fieldName, value);
-                lastModifiedFieldName = fieldName;
-                lastModifiedField = jsonManifest.get(fieldName);
-            }
+          lastModifiedFieldName = fieldName;
+          lastModifiedField = newField;
         }
-
-        return this;
+      } else {
+        jsonManifest.put(fieldName, value);
+        lastModifiedFieldName = fieldName;
+        lastModifiedField = jsonManifest.get(fieldName);
+      }
     }
 
-    public ManifestBuilder attribute(String attributeKey, String attributeValue) {
-        if (manifestFormat != ManifestFormat.JSON || lastModifiedField == null) {
-            throw new IllegalArgumentException("Attributes are only supported in JSON manifest.");
-        }
+    return this;
+  }
 
-        if (lastModifiedField.isValueNode()) {
-            //replace {field: value} with {field: {value: value, attributes: {...}}}
+  public ManifestBuilder attribute(String attributeKey, String attributeValue) {
+    if (manifestFormat != ManifestFormat.JSON || lastModifiedField == null) {
+      throw new IllegalArgumentException("Attributes are only supported in JSON manifest.");
+    }
 
-            String currentValue = lastModifiedField.asText();
+    if (lastModifiedField.isValueNode()) {
+      // replace {field: value} with {field: {value: value, attributes: {...}}}
 
-            ObjectNode newField = jsonManifest.putObject(lastModifiedFieldName);
-            newField.put("value", currentValue);
-            newField.putObject("attributes").put(attributeKey, attributeValue);
+      String currentValue = lastModifiedField.asText();
 
-            lastModifiedField = newField;
+      ObjectNode newField = jsonManifest.putObject(lastModifiedFieldName);
+      newField.put("value", currentValue);
+      newField.putObject("attributes").put(attributeKey, attributeValue);
+
+      lastModifiedField = newField;
+    } else {
+      ObjectNode fieldObjectNode = (ObjectNode) lastModifiedField;
+
+      if (fieldObjectNode.has("attributes")) {
+        ObjectNode atts = (ObjectNode) fieldObjectNode.get("attributes");
+        if (!atts.has(attributeKey)) {
+          atts.put(attributeKey, attributeValue);
         } else {
-            ObjectNode fieldObjectNode = (ObjectNode) lastModifiedField;
+          if (atts.get(attributeKey).isArray()) {
+            // if attribute is already an array then append the value to it.
+            ((ArrayNode) atts.get(attributeKey)).add(attributeValue);
+          } else {
+            // convert attribute to array and put back old and new values in it.
 
-            if (fieldObjectNode.has("attributes")) {
-                ObjectNode atts = (ObjectNode) fieldObjectNode.get("attributes");
-                if (!atts.has(attributeKey)) {
-                    atts.put(attributeKey, attributeValue);
-                } else {
-                    if (atts.get(attributeKey).isArray()) {
-                        //if attribute is already an array then append the value to it.
-                        ((ArrayNode)atts.get(attributeKey)).add(attributeValue);
-                    } else {
-                        //convert attribute to array and put back old and new values in it.
+            String currentValue = atts.get(attributeKey).asText();
 
-                        String currentValue = atts.get(attributeKey).asText();
-
-                        ArrayNode attArray = atts.putArray(attributeKey);
-                        attArray.add(currentValue);
-                        attArray.add(attributeValue);
-                    }
-                }
-            } else {
-                fieldObjectNode.putObject("attributes").put(attributeKey, attributeValue);
-            }
+            ArrayNode attArray = atts.putArray(attributeKey);
+            attArray.add(currentValue);
+            attArray.add(attributeValue);
+          }
         }
-
-        return this;
+      } else {
+        fieldObjectNode.putObject("attributes").put(attributeKey, attributeValue);
+      }
     }
 
-    public ManifestBuilder file(String field, File file) {
-        return field(field, file.getName());
-    }
+    return this;
+  }
 
-    public ManifestBuilder file(String field, String file) {
-        return field(field, file);
-    }
+  public ManifestBuilder file(String field, File file) {
+    return field(field, file.getName());
+  }
 
-    public ManifestBuilder file(String field, Path file) {
-        return field(field, file.getFileName().toString());
-    }
+  public ManifestBuilder file(String field, String file) {
+    return field(field, file);
+  }
 
-    public <FileType extends Enum<FileType>> ManifestBuilder file(
-            FileType fileType, String fileName) {
-        return field(fileType.name(), fileName);
-    }
+  public ManifestBuilder file(String field, Path file) {
+    return field(field, file.getFileName().toString());
+  }
 
-    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, File file) {
-        return field(fileType.name(), file.getName());
-    }
+  public <FileType extends Enum<FileType>> ManifestBuilder file(
+      FileType fileType, String fileName) {
+    return field(fileType.name(), fileName);
+  }
 
-    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, Path file) {
-        return field(fileType.name(), file.getFileName().toString());
-    }
+  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, File file) {
+    return field(fileType.name(), file.getName());
+  }
 
-    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, int cnt) {
-        for (int i = 0; i < cnt; ++i) {
-            file(fileType);
+  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, Path file) {
+    return field(fileType.name(), file.getFileName().toString());
+  }
+
+  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType fileType, int cnt) {
+    for (int i = 0; i < cnt; ++i) {
+      file(fileType);
+    }
+    return this;
+  }
+
+  public <FileType extends Enum<FileType>> ManifestBuilder file(FileType... fileTypes) {
+    for (FileType fileType : fileTypes) {
+      if (fileType != null) {
+        switch (fileType.name()) {
+          case "FASTA":
+            file(fileType, ".fasta.gz");
+            break;
+          case "FLATFILE":
+            file(fileType, ".dat.gz");
+            break;
+          case "AGP":
+            file(fileType, ".agp.gz");
+            break;
+          case "CHROMOSOME_LIST":
+          case "UNLOCALISED_LIST":
+          case "TAB":
+            file(fileType, ".tab.gz");
+            break;
+          case "BAM":
+            file(fileType, ".bam");
+            break;
+          case "CRAM":
+            file(fileType, ".cram");
+            break;
+          case "FASTQ":
+            file(fileType, ".fastq.gz");
+            break;
+          default:
+            throw new RuntimeException("Unknown file type: " + fileType.name());
         }
-        return this;
+      }
     }
+    return this;
+  }
 
-    public <FileType extends Enum<FileType>> ManifestBuilder file(FileType... fileTypes) {
-        for (FileType fileType : fileTypes) {
-            if (fileType != null) {
-                switch (fileType.name()) {
-                    case "FASTA":
-                        file(fileType, ".fasta.gz");
-                        break;
-                    case "FLATFILE":
-                        file(fileType, ".dat.gz");
-                        break;
-                    case "AGP":
-                        file(fileType, ".agp.gz");
-                        break;
-                    case "CHROMOSOME_LIST":
-                    case "UNLOCALISED_LIST":
-                    case "TAB":
-                        file(fileType, ".tab.gz");
-                        break;
-                    case "BAM":
-                        file(fileType, ".bam");
-                        break;
-                    case "CRAM":
-                        file(fileType, ".cram");
-                        break;
-                    case "FASTQ":
-                        file(fileType, ".fastq.gz");
-                        break;
-                    default:
-                        throw new RuntimeException("Unknown file type: " + fileType.name());
-                }
-            }
-        }
-        return this;
-    }
+  public File build() {
+    return build((Path) null);
+  }
 
-    public File build() {
-        return build((Path)null);
-    }
+  public File build(File inputDir) {
+    return build(inputDir.toPath());
+  }
 
-    public File build(File inputDir) {
-        return build(inputDir.toPath());
+  public File build(Path inputDir) {
+    if (manifestFormat == ManifestFormat.KEY_VALUE) {
+      return inputDir == null
+          ? TempFileBuilder.file(manifest).toFile()
+          : TempFileBuilder.file(inputDir, manifest).toFile();
+    } else {
+      try {
+        return inputDir == null
+            ? TempFileBuilder.file(new ObjectMapper().writeValueAsString(jsonManifest)).toFile()
+            : TempFileBuilder.file(inputDir, new ObjectMapper().writeValueAsString(jsonManifest))
+                .toFile();
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
     }
+  }
 
-    public File build(Path inputDir) {
-        if (manifestFormat == ManifestFormat.KEY_VALUE) {
-            return inputDir == null
-                ? TempFileBuilder.file(manifest).toFile()
-                : TempFileBuilder.file(inputDir, manifest).toFile();
-        } else {
-            try {
-                return inputDir == null
-                    ? TempFileBuilder.file(new ObjectMapper().writeValueAsString(jsonManifest)).toFile()
-                    : TempFileBuilder.file(inputDir, new ObjectMapper().writeValueAsString(jsonManifest)).toFile();
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    @Override
-    public String toString() {
-        return manifest;
-    }
+  @Override
+  public String toString() {
+    return manifest;
+  }
 }

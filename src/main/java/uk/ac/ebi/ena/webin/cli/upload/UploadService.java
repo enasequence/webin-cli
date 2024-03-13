@@ -14,11 +14,12 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface
-UploadService
-{
-    void connect( String userName, String password );
-    void upload(List<File> uploadFilesList, String uploadDir, Path inputDir );
-    void disconnect();
-    boolean isAvailable();
+public interface UploadService {
+  void connect(String userName, String password);
+
+  void upload(List<File> uploadFilesList, String uploadDir, Path inputDir);
+
+  void disconnect();
+
+  boolean isAvailable();
 }

@@ -13,7 +13,6 @@ package uk.ac.ebi.ena.webin.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
@@ -29,16 +28,24 @@ public class WebinCliContextTest {
   public void testCreateExecutor() {
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
 
-    assertThat(WebinCliContext.genome.createExecutor(parameters).getManifestReader()).isInstanceOf(GenomeManifestReader.class);
-    assertThat(WebinCliContext.genome.createExecutor(parameters).getXmlWriter()).isInstanceOf(GenomeXmlWriter.class);
+    assertThat(WebinCliContext.genome.createExecutor(parameters).getManifestReader())
+        .isInstanceOf(GenomeManifestReader.class);
+    assertThat(WebinCliContext.genome.createExecutor(parameters).getXmlWriter())
+        .isInstanceOf(GenomeXmlWriter.class);
 
-    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getManifestReader()).isInstanceOf(TranscriptomeManifestReader.class);
-    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getXmlWriter()).isInstanceOf(TranscriptomeXmlWriter.class);
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getManifestReader())
+        .isInstanceOf(TranscriptomeManifestReader.class);
+    assertThat(WebinCliContext.transcriptome.createExecutor(parameters).getXmlWriter())
+        .isInstanceOf(TranscriptomeXmlWriter.class);
 
-    assertThat(WebinCliContext.sequence.createExecutor(parameters).getManifestReader()).isInstanceOf(SequenceManifestReader.class);
-    assertThat(WebinCliContext.sequence.createExecutor(parameters).getXmlWriter()).isInstanceOf(SequenceXmlWriter.class);
+    assertThat(WebinCliContext.sequence.createExecutor(parameters).getManifestReader())
+        .isInstanceOf(SequenceManifestReader.class);
+    assertThat(WebinCliContext.sequence.createExecutor(parameters).getXmlWriter())
+        .isInstanceOf(SequenceXmlWriter.class);
 
-    assertThat(WebinCliContext.reads.createExecutor(parameters).getManifestReader()).isInstanceOf(ReadsManifestReader.class);
-    assertThat(WebinCliContext.reads.createExecutor(parameters).getXmlWriter()).isInstanceOf(ReadsXmlWriter.class);
+    assertThat(WebinCliContext.reads.createExecutor(parameters).getManifestReader())
+        .isInstanceOf(ReadsManifestReader.class);
+    assertThat(WebinCliContext.reads.createExecutor(parameters).getXmlWriter())
+        .isInstanceOf(ReadsXmlWriter.class);
   }
 }

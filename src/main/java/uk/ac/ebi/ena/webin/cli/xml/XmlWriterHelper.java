@@ -14,9 +14,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.jdom2.Element;
-
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 
 public class XmlWriterHelper {
@@ -28,7 +26,11 @@ public class XmlWriterHelper {
   }
 
   private static Element createFileElement(
-      String fileName, String fileType, String digest, String checksum, List<Map.Entry<String, String>> attributes) {
+      String fileName,
+      String fileType,
+      String digest,
+      String checksum,
+      List<Map.Entry<String, String>> attributes) {
     if (checksum == null) {
       throw new IllegalArgumentException("File checksum cannot be null.");
     }
@@ -41,21 +43,26 @@ public class XmlWriterHelper {
 
     if (attributes != null && !attributes.isEmpty()) {
       attributes.stream()
-              .map(att -> createAttributeElement(att.getKey(), att.getValue()))
-              .filter(Objects::nonNull)
-              .forEach(attElement -> e.addContent(attElement));
+          .map(att -> createAttributeElement(att.getKey(), att.getValue()))
+          .filter(Objects::nonNull)
+          .forEach(attElement -> e.addContent(attElement));
     }
 
     return e;
   }
 
   public static Element createFileElement(
-          Path inputDir, Path uploadDir, Path file, String fileMd5, String fileType) {
+      Path inputDir, Path uploadDir, Path file, String fileMd5, String fileType) {
     return createFileElement(inputDir, uploadDir, file, fileMd5, fileType, null);
   }
 
   public static Element createFileElement(
-          Path inputDir, Path uploadDir, Path file, String fileMd5, String fileType, List<Map.Entry<String, String>> attributes) {
+      Path inputDir,
+      Path uploadDir,
+      Path file,
+      String fileMd5,
+      String fileType,
+      List<Map.Entry<String, String>> attributes) {
     String fileName = file.toFile().getName();
 
     return createFileElement(
@@ -68,12 +75,13 @@ public class XmlWriterHelper {
 
   private static Element createAttributeElement(String attName, String attValue) {
     switch (attName) {
-      case "READ_TYPE": {
-        Element e = new Element(attName);
-        e.addContent(attValue);
+      case "READ_TYPE":
+        {
+          Element e = new Element(attName);
+          e.addContent(attValue);
 
-        return e;
-      }
+          return e;
+        }
 
       default:
         return null;

@@ -15,45 +15,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
-public class 
-VersionService extends WebinService
-{
-    private static final Logger log = LoggerFactory.getLogger(VersionService.class);
+public class VersionService extends WebinService {
+  private static final Logger log = LoggerFactory.getLogger(VersionService.class);
 
-    public static class 
-    Builder extends AbstractBuilder<VersionService> {
-        public VersionService
-        build()
-        {
-          return new VersionService( this );
-        }
+  public static class Builder extends AbstractBuilder<VersionService> {
+    public VersionService build() {
+      return new VersionService(this);
     }
+  }
 
-    protected 
-    VersionService( Builder builder )
-    {
-        super( builder );
-    }
+  protected VersionService(Builder builder) {
+    super(builder);
+  }
 
-    public Version getVersion(String version) {
-        RestTemplate restTemplate = new RestTemplate();
+  public Version getVersion(String version) {
+    RestTemplate restTemplate = new RestTemplate();
 
-        return ExceptionUtils.executeWithRestExceptionHandling(
-
-            () -> RetryUtils.executeWithRetry(
-                retryContext -> restTemplate.getForObject(
-                    resolveAgainstWebinRestV1Uri("/cli/{version}"), Version.class, version),
+    return ExceptionUtils.executeWithRestExceptionHandling(
+        () ->
+            RetryUtils.executeWithRetry(
+                retryContext ->
+                    restTemplate.getForObject(
+                        resolveAgainstWebinRestV1Uri("/cli/{version}"), Version.class, version),
                 retryContext -> log.warn("Retrying version retrieval from server."),
-                HttpServerErrorException.class, ResourceAccessException.class),
-
-            WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Version"),
-            null,
-            WebinCliMessage.VERSION_SERVICE_SYSTEM_ERROR.text());
-    }
+                HttpServerErrorException.class,
+                ResourceAccessException.class),
+        WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Version"),
+        null,
+        WebinCliMessage.VERSION_SERVICE_SYSTEM_ERROR.text());
+  }
 }

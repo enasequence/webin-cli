@@ -17,145 +17,133 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 import uk.ac.ebi.ena.webin.cli.utils.ShellExec;
 
+public class ASCPService implements UploadService {
+  private static final String SERVER = "webin.ebi.ac.uk";
 
-public class ASCPService implements UploadService
-{
-    private final static String SERVER = "webin.ebi.ac.uk";
+  private static final Logger log = LoggerFactory.getLogger(ASCPService.class);
 
-    private static final Logger log = LoggerFactory.getLogger(ASCPService.class);
+  private static final String EXECUTABLE = "ascp";
+  private String userName;
+  private String password;
 
-    private static final String EXECUTABLE = "ascp";
-    private String userName;
-    private String password;
+  @Override
+  public boolean isAvailable() {
+    try {
+      HashMap<String, String> vars = new HashMap<>();
+      vars.put("PATH", System.getenv("PATH"));
 
-    @Override public boolean
-    isAvailable()
-    {
-        try
-        {
-            HashMap<String, String> vars = new HashMap<>();
-            vars.put( "PATH", System.getenv( "PATH" ) );
+      int exitVal = new ShellExec(EXECUTABLE + " -h", vars).exec().getExitCode();
+      if (0 != exitVal) return false;
 
-            int exitVal = new ShellExec( EXECUTABLE + " -h", vars ).exec().getExitCode();
-            if( 0 != exitVal )
-                return false;
-            
-        } catch( Throwable t )
-        {
-            return false;
-        }
-        return true;
+    } catch (Throwable t) {
+      return false;
     }
-    
-    
-    @Override public void
-    connect( String userName, String password )
-    {
-        this.password = password;
-        this.userName = userName;
+    return true;
+  }
+
+  @Override
+  public void connect(String userName, String password) {
+    this.password = password;
+    this.userName = userName;
+  }
+
+  private String createUploadList(List<File> uploadFilesList, Path inputDir) {
+    StringBuilder sb = new StringBuilder();
+    for (File f : uploadFilesList) {
+      String from =
+          f.isAbsolute() ? f.toString() : inputDir.resolve(f.toPath()).normalize().toString();
+      sb.append(String.format("%s\n", from));
     }
+    return sb.toString();
+  }
 
-    
-    private String
-    createUploadList( List<File> uploadFilesList, Path inputDir )
-    {
-        StringBuilder sb = new StringBuilder();
-        for( File f : uploadFilesList )
-        {
-            String from = f.isAbsolute() ? f.toString() : inputDir.resolve( f.toPath() ).normalize().toString();
-            sb.append( String.format( "%s\n", from ) );
-        }
-        return sb.toString();
-    }
-    
-       
-    private String[] 
-    getCommand( Path file_list, String uploadDir )
-    {
-        return new String[] { EXECUTABLE, 
-                              "--file-checksum=md5",
-                              "-d",
-                              "--mode=send",
-                              "--overwrite=always",
-                              "-QT",
-                              "-l300M",
-                              //"-L-",
-                              String.format("--host=%s", SERVER),
-                              String.format( "--user=\"%s\"", this.userName ),
-                              String.format( "--file-list=\"%s\"", file_list ),
-                              String.format( "\"%s\"", uploadDir ) };
-    }
-    
-    
-    @Override public void
-    upload(List<File> uploadFilesList,
-           String uploadDir,
-           Path inputDir )
-    {
-        log.info("Uploading files to : {}", SERVER);
+  private String[] getCommand(Path file_list, String uploadDir) {
+    return new String[] {
+      EXECUTABLE,
+      "--file-checksum=md5",
+      "-d",
+      "--mode=send",
+      "--overwrite=always",
+      "-QT",
+      "-l300M",
+      // "-L-",
+      String.format("--host=%s", SERVER),
+      String.format("--user=\"%s\"", this.userName),
+      String.format("--file-list=\"%s\"", file_list),
+      String.format("\"%s\"", uploadDir)
+    };
+  }
 
-        try
-        {      
-            String file_list = createUploadList( uploadFilesList, inputDir );
-            String[] command = getCommand( Files.write( Files.createTempFile( "FILE", "LIST"),
-                                                      file_list.getBytes(), 
-                                                      StandardOpenOption.CREATE, StandardOpenOption.SYNC ),
-                                         uploadDir );
-            
-            String cmd = String.join(" ", command);
-            Map<String, String> vars = new HashMap<>();
-            vars.put( "ASPERA_SCP_PASS", this.password );
-            vars.put( "PATH", System.getenv( "PATH" ) );
+  @Override
+  public void upload(List<File> uploadFilesList, String uploadDir, Path inputDir) {
+    log.info("Uploading files to : {}", SERVER);
 
-            RetryUtils.executeWithRetry(context -> {
-                ShellExec.Result result = new ShellExec( cmd, vars ).exec();
+    try {
+      String file_list = createUploadList(uploadFilesList, inputDir);
+      String[] command =
+          getCommand(
+              Files.write(
+                  Files.createTempFile("FILE", "LIST"),
+                  file_list.getBytes(),
+                  StandardOpenOption.CREATE,
+                  StandardOpenOption.SYNC),
+              uploadDir);
 
-                // Even when the process completes without exception, throw error as long as exit code is not 0 so a
-                // retry can be attempted.
-                if( 0 != result.getExitCode() ) {
-                    log.warn("Aspera upload failed. Client exit code : {}", result.getExitCode());
+      String cmd = String.join(" ", command);
+      Map<String, String> vars = new HashMap<>();
+      vars.put("ASPERA_SCP_PASS", this.password);
+      vars.put("PATH", System.getenv("PATH"));
 
-                    String error = "";
-                    if (!result.getStdout().isEmpty()) {
-                        error += result.getStdout();
-                    }
+      RetryUtils.executeWithRetry(
+          context -> {
+            ShellExec.Result result = new ShellExec(cmd, vars).exec();
 
-                    if (!result.getStderr().isEmpty()) {
-                        if (!error.isEmpty()) {
-                            error += System.lineSeparator();
-                        }
-                        error += result.getStderr();
-                    }
+            // Even when the process completes without exception, throw error as long as exit code
+            // is not 0 so a
+            // retry can be attempted.
+            if (0 != result.getExitCode()) {
+              log.warn("Aspera upload failed. Client exit code : {}", result.getExitCode());
 
-                    log.warn("Client error : \n{}", error);
+              String error = "";
+              if (!result.getStdout().isEmpty()) {
+                error += result.getStdout();
+              }
 
-                    throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
+              if (!result.getStderr().isEmpty()) {
+                if (!error.isEmpty()) {
+                  error += System.lineSeparator();
                 }
+                error += result.getStderr();
+              }
 
-                return null;
-            }, context -> log.warn("Retrying file upload."), Exception.class);
-        } catch (WebinCliException ex) {
-            throw ex;
-        } catch( Exception ex ) {
-            throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text(), ex.getMessage());
-        }
-    }
+              log.warn("Client error : \n{}", error);
 
-    
-    @Override public void
-    disconnect()
-    {
-        //do nothing
-        this.password = null;
-        this.userName = null;
+              throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
+            }
+
+            return null;
+          },
+          context -> log.warn("Retrying file upload."),
+          Exception.class);
+    } catch (WebinCliException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      throw WebinCliException.systemError(
+          WebinCliMessage.ASCP_UPLOAD_ERROR.text(), ex.getMessage());
     }
+  }
+
+  @Override
+  public void disconnect() {
+    // do nothing
+    this.password = null;
+    this.userName = null;
+  }
 }

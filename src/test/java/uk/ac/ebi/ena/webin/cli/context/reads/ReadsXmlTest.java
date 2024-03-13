@@ -20,11 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
 import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliContext;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
@@ -64,7 +62,7 @@ public class ReadsXmlTest {
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
     parameters.setTest(false);
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
-        (WebinCliExecutor<ReadsManifest,ReadsValidationResponse>)
+        (WebinCliExecutor<ReadsManifest, ReadsValidationResponse>)
             WebinCliContext.reads.createExecutor(parameters, manifestReader);
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> mockedExecutor = Mockito.spy(executor);
     ReadsValidationResponse rvr = new ReadsValidationResponse();
@@ -143,26 +141,26 @@ public class ReadsXmlTest {
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
-            runXml,
-            "<RUN_SET>\n"
-                    + "  <RUN>\n"
-                    + "    <TITLE>Raw reads: test_reads</TITLE>\n"
-                    + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
-                    + "    <DATA_BLOCK>\n"
-                    + "        <FILES/>\n"
-                    + "    </DATA_BLOCK>\n"
-                    + "    <RUN_ATTRIBUTES>\n"
-                    + "        <RUN_ATTRIBUTE>\n"
-                    + "            <TAG>SUBMISSION_TOOL</TAG>\n"
-                    + "            <VALUE>ST-001</VALUE>\n"
-                    + "        </RUN_ATTRIBUTE>\n"
-                    + "        <RUN_ATTRIBUTE>\n"
-                    + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
-                    + "            <VALUE>STV-001</VALUE>\n"
-                    + "        </RUN_ATTRIBUTE>\n"
-                    + "    </RUN_ATTRIBUTES>\n"
-                    + "  </RUN>\n"
-                    + "</RUN_SET>");
+        runXml,
+        "<RUN_SET>\n"
+            + "  <RUN>\n"
+            + "    <TITLE>Raw reads: test_reads</TITLE>\n"
+            + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
+            + "    <DATA_BLOCK>\n"
+            + "        <FILES/>\n"
+            + "    </DATA_BLOCK>\n"
+            + "    <RUN_ATTRIBUTES>\n"
+            + "        <RUN_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL</TAG>\n"
+            + "            <VALUE>ST-001</VALUE>\n"
+            + "        </RUN_ATTRIBUTE>\n"
+            + "        <RUN_ATTRIBUTE>\n"
+            + "            <TAG>SUBMISSION_TOOL_VERSION</TAG>\n"
+            + "            <VALUE>STV-001</VALUE>\n"
+            + "        </RUN_ATTRIBUTE>\n"
+            + "    </RUN_ATTRIBUTES>\n"
+            + "  </RUN>\n"
+            + "</RUN_SET>");
   }
 
   @Test
@@ -219,7 +217,7 @@ public class ReadsXmlTest {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
-    Path file =  TempFileBuilder.empty("bam");
+    Path file = TempFileBuilder.empty("bam");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.BAM, file.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
@@ -227,22 +225,22 @@ public class ReadsXmlTest {
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
-            runXml,
-            "<RUN_SET>\n"
-                    + "  <RUN>\n"
-                    + "    <TITLE>Raw reads: test_reads</TITLE>\n"
-                    + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
-                    + "    <DATA_BLOCK>\n"
-                    + "      <FILES>\n"
-                    + "        <FILE filename=\"webin-cli/reads/"
-                    + NAME
-                    + "/"
-                    + file.getFileName()
-                    + "\" filetype=\"bam\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
-                    + "      </FILES>\n"
-                    + "    </DATA_BLOCK>\n"
-                    + "  </RUN>\n"
-                    + "</RUN_SET>");
+        runXml,
+        "<RUN_SET>\n"
+            + "  <RUN>\n"
+            + "    <TITLE>Raw reads: test_reads</TITLE>\n"
+            + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
+            + "    <DATA_BLOCK>\n"
+            + "      <FILES>\n"
+            + "        <FILE filename=\"webin-cli/reads/"
+            + NAME
+            + "/"
+            + file.getFileName()
+            + "\" filetype=\"bam\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
+            + "      </FILES>\n"
+            + "    </DATA_BLOCK>\n"
+            + "  </RUN>\n"
+            + "</RUN_SET>");
   }
 
   @Test
@@ -250,7 +248,7 @@ public class ReadsXmlTest {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
-    Path file =  TempFileBuilder.empty("fastq");
+    Path file = TempFileBuilder.empty("fastq");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile()));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
@@ -258,22 +256,22 @@ public class ReadsXmlTest {
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
-            runXml,
-            "<RUN_SET>\n"
-                    + "  <RUN>\n"
-                    + "    <TITLE>Raw reads: test_reads</TITLE>\n"
-                    + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
-                    + "    <DATA_BLOCK>\n"
-                    + "      <FILES>\n"
-                    + "        <FILE filename=\"webin-cli/reads/"
-                    + NAME
-                    + "/"
-                    + file.getFileName()
-                    + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
-                    + "      </FILES>\n"
-                    + "    </DATA_BLOCK>\n"
-                    + "  </RUN>\n"
-                    + "</RUN_SET>");
+        runXml,
+        "<RUN_SET>\n"
+            + "  <RUN>\n"
+            + "    <TITLE>Raw reads: test_reads</TITLE>\n"
+            + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
+            + "    <DATA_BLOCK>\n"
+            + "      <FILES>\n"
+            + "        <FILE filename=\"webin-cli/reads/"
+            + NAME
+            + "/"
+            + file.getFileName()
+            + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
+            + "      </FILES>\n"
+            + "    </DATA_BLOCK>\n"
+            + "  </RUN>\n"
+            + "</RUN_SET>");
   }
 
   @Test
@@ -282,7 +280,7 @@ public class ReadsXmlTest {
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
     Path file1 = TempFileBuilder.empty("fastq");
-    Path file2= TempFileBuilder.empty("fastq");
+    Path file2 = TempFileBuilder.empty("fastq");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file1.toFile()));
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file2.toFile()));
 
@@ -291,27 +289,27 @@ public class ReadsXmlTest {
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
-            runXml,
-            "<RUN_SET>\n"
-                    + "  <RUN>\n"
-                    + "    <TITLE>Raw reads: test_reads</TITLE>\n"
-                    + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
-                    + "    <DATA_BLOCK>\n"
-                    + "      <FILES>\n"
-                    + "        <FILE filename=\"webin-cli/reads/"
-                    + NAME
-                    + "/"
-                    + file1.getFileName()
-                    + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
-                    + "        <FILE filename=\"webin-cli/reads/"
-                    + NAME
-                    + "/"
-                    + file2.getFileName()
-                    + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
-                    + "      </FILES>\n"
-                    + "    </DATA_BLOCK>\n"
-                    + "  </RUN>\n"
-                    + "</RUN_SET>");
+        runXml,
+        "<RUN_SET>\n"
+            + "  <RUN>\n"
+            + "    <TITLE>Raw reads: test_reads</TITLE>\n"
+            + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
+            + "    <DATA_BLOCK>\n"
+            + "      <FILES>\n"
+            + "        <FILE filename=\"webin-cli/reads/"
+            + NAME
+            + "/"
+            + file1.getFileName()
+            + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
+            + "        <FILE filename=\"webin-cli/reads/"
+            + NAME
+            + "/"
+            + file2.getFileName()
+            + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\"/>\n"
+            + "      </FILES>\n"
+            + "    </DATA_BLOCK>\n"
+            + "  </RUN>\n"
+            + "</RUN_SET>");
   }
 
   @Test
@@ -319,49 +317,81 @@ public class ReadsXmlTest {
     ReadsManifest manifest = getDefaultManifest();
     manifest.setPlatform("ILLUMINA");
     manifest.setInstrument("unspecified");
-    Path file =  TempFileBuilder.empty("fastq");
-    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), createReadTypeAttributes("sample_barcode")));
-    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), createReadTypeAttributes("paired", "umi_barcode")));
-    manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile(), createReadTypeAttributes("paired", "cell_barcode")));
+    Path file = TempFileBuilder.empty("fastq");
+    manifest
+        .files()
+        .add(
+            new SubmissionFile(
+                ReadsManifest.FileType.FASTQ,
+                file.toFile(),
+                createReadTypeAttributes("sample_barcode")));
+    manifest
+        .files()
+        .add(
+            new SubmissionFile(
+                ReadsManifest.FileType.FASTQ,
+                file.toFile(),
+                createReadTypeAttributes("paired", "umi_barcode")));
+    manifest
+        .files()
+        .add(
+            new SubmissionFile(
+                ReadsManifest.FileType.FASTQ,
+                file.toFile(),
+                createReadTypeAttributes("paired", "cell_barcode")));
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
     XmlTester.assertXml(
-            runXml,
-            "<RUN_SET>\n"
-                    + "  <RUN>\n"
-                    + "    <TITLE>Raw reads: test_reads</TITLE>\n"
-                    + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
-                    + "    <DATA_BLOCK>\n"
-                    + "      <FILES>\n"
-                    + "        <FILE filename=\"webin-cli/reads/" + NAME + "/" + file.getFileName() + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
-                    + "          <READ_TYPE>sample_barcode</READ_TYPE>\n"
-                    + "        </FILE>\n"
-                    + "        <FILE filename=\"webin-cli/reads/" + NAME + "/" + file.getFileName() + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
-                    + "          <READ_TYPE>paired</READ_TYPE>\n"
-                    + "          <READ_TYPE>umi_barcode</READ_TYPE>\n"
-                    + "        </FILE>\n"
-                    + "        <FILE filename=\"webin-cli/reads/" + NAME + "/" + file.getFileName() + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
-                    + "          <READ_TYPE>paired</READ_TYPE>\n"
-                    + "          <READ_TYPE>cell_barcode</READ_TYPE>\n"
-                    + "        </FILE>\n"
-                    + "      </FILES>\n"
-                    + "    </DATA_BLOCK>\n"
-                    + "  </RUN>\n"
-                    + "</RUN_SET>");
+        runXml,
+        "<RUN_SET>\n"
+            + "  <RUN>\n"
+            + "    <TITLE>Raw reads: test_reads</TITLE>\n"
+            + "    <EXPERIMENT_REF refname=\"webin-reads-test_reads\"/>\n"
+            + "    <DATA_BLOCK>\n"
+            + "      <FILES>\n"
+            + "        <FILE filename=\"webin-cli/reads/"
+            + NAME
+            + "/"
+            + file.getFileName()
+            + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
+            + "          <READ_TYPE>sample_barcode</READ_TYPE>\n"
+            + "        </FILE>\n"
+            + "        <FILE filename=\"webin-cli/reads/"
+            + NAME
+            + "/"
+            + file.getFileName()
+            + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
+            + "          <READ_TYPE>paired</READ_TYPE>\n"
+            + "          <READ_TYPE>umi_barcode</READ_TYPE>\n"
+            + "        </FILE>\n"
+            + "        <FILE filename=\"webin-cli/reads/"
+            + NAME
+            + "/"
+            + file.getFileName()
+            + "\" filetype=\"fastq\" checksum_method=\"MD5\" checksum=\"d41d8cd98f00b204e9800998ecf8427e\">\n"
+            + "          <READ_TYPE>paired</READ_TYPE>\n"
+            + "          <READ_TYPE>cell_barcode</READ_TYPE>\n"
+            + "        </FILE>\n"
+            + "      </FILES>\n"
+            + "    </DATA_BLOCK>\n"
+            + "  </RUN>\n"
+            + "</RUN_SET>");
   }
 
   private List<Map.Entry<String, String>> createReadTypeAttributes(String... atts) {
     List<Map.Entry<String, String>> readTypeAttributes = new ArrayList<>();
 
-    Stream.of(atts).forEach(readType -> {
-      Map<String, String> map = new HashMap<>();
-      map.put("READ_TYPE", readType);
+    Stream.of(atts)
+        .forEach(
+            readType -> {
+              Map<String, String> map = new HashMap<>();
+              map.put("READ_TYPE", readType);
 
-      readTypeAttributes.add(map.entrySet().stream().findFirst().get());
-    });
+              readTypeAttributes.add(map.entrySet().stream().findFirst().get());
+            });
 
     return readTypeAttributes;
   }

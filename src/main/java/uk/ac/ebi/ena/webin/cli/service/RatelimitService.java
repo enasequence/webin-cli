@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.models.RateLimitResult;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
@@ -28,56 +27,61 @@ import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 public class RatelimitService extends WebinService {
 
-    private static final Logger log = LoggerFactory.getLogger(RatelimitService.class);
+  private static final Logger log = LoggerFactory.getLogger(RatelimitService.class);
 
-    protected RatelimitService(AbstractBuilder<?> builder) {
-        super(builder);
+  protected RatelimitService(AbstractBuilder<?> builder) {
+    super(builder);
+  }
+
+  public static class Builder extends AbstractBuilder<RatelimitService> {
+    @Override
+    public RatelimitService build() {
+      return new RatelimitService(this);
     }
+  }
 
-    public static class
-    Builder extends AbstractBuilder<RatelimitService> {
-        @Override
-        public RatelimitService
-        build() {
-            return new RatelimitService(this);
-        }
+  private static class RatelimitServiceRequest {
+    public final String context;
+    public final String submissionAccountId;
+    public final String studyId;
+    public final String sampleId;
+
+    public RatelimitServiceRequest(
+        String context, String submissionAccountId, String studyId, String sampleId) {
+      this.context = context;
+      this.submissionAccountId = submissionAccountId;
+      this.studyId = studyId;
+      this.sampleId = sampleId;
     }
+  }
 
-    private static class RatelimitServiceRequest {
-        public final String context;
-        public final String submissionAccountId;
-        public final String studyId;
-        public final String sampleId;
+  public RateLimitResult ratelimit(
+      String context, String submissionAccountId, String studyId, String sampleId) {
+    RestTemplate restTemplate = new RestTemplate();
 
-        public RatelimitServiceRequest(String context, String submissionAccountId, String studyId, String sampleId) {
-            this.context = context;
-            this.submissionAccountId = submissionAccountId;
-            this.studyId = studyId;
-            this.sampleId = sampleId;
-        }
-    }
+    HttpHeaders headers = new HttpHeaderBuilder().basicAuth(getUserName(), getPassword()).build();
+    String url = resolveAgainstWebinRestV1Uri("cli/submission/v2/ratelimit/");
 
-    public RateLimitResult ratelimit(String context, String submissionAccountId, String studyId, String sampleId) {
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaderBuilder().basicAuth(getUserName(), getPassword()).build();
-        String url = resolveAgainstWebinRestV1Uri("cli/submission/v2/ratelimit/");
-
-        ResponseEntity<RateLimitResult> response = ExceptionUtils.executeWithRestExceptionHandling(
-
-            () -> RetryUtils.executeWithRetry(
-                retryContext -> restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    new HttpEntity<>(new RatelimitService.RatelimitServiceRequest(context, submissionAccountId, studyId, sampleId), headers),
-                    RateLimitResult.class),
-                retryContext -> log.warn("Retrying submission rate limiting check on server."),
-                HttpServerErrorException.class, ResourceAccessException.class),
-
+    ResponseEntity<RateLimitResult> response =
+        ExceptionUtils.executeWithRestExceptionHandling(
+            () ->
+                RetryUtils.executeWithRetry(
+                    retryContext ->
+                        restTemplate.exchange(
+                            url,
+                            HttpMethod.POST,
+                            new HttpEntity<>(
+                                new RatelimitService.RatelimitServiceRequest(
+                                    context, submissionAccountId, studyId, sampleId),
+                                headers),
+                            RateLimitResult.class),
+                    retryContext -> log.warn("Retrying submission rate limiting check on server."),
+                    HttpServerErrorException.class,
+                    ResourceAccessException.class),
             WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("RateLimit"),
             null,
             WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
 
-        return response.getBody();
-    }
+    return response.getBody();
+  }
 }

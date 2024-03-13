@@ -17,16 +17,15 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class AssemblyTypeProcessor implements ManifestFieldProcessor {
 
-    @Override public void
-    process(ValidationResult result, ManifestFieldValue fieldValue ) {
-        String value = fieldValue.getValue();
-        if (value == null) {
-            return;
-        }
-        if (value.trim().toUpperCase().equals("CLONE") ||
-            value.trim().toUpperCase().equals("ISOLATE")) {
-            fieldValue.setValue(GenomeManifestReader.ASSEMBLY_TYPE_PRIMARY_CLONE_OR_ISOLATE);
-        }
+  @Override
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+    String value = fieldValue.getValue();
+    if (value == null) {
+      return;
     }
-
+    if (value.trim().toUpperCase().equals("CLONE")
+        || value.trim().toUpperCase().equals("ISOLATE")) {
+      fieldValue.setValue(GenomeManifestReader.ASSEMBLY_TYPE_PRIMARY_CLONE_OR_ISOLATE);
+    }
+  }
 }

@@ -13,22 +13,20 @@ package uk.ac.ebi.ena.webin.cli.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
-public class
-RatelimitServiceTest {
-    @Test
-    public void
-    testRatelimitFalse() {
-        assertThat(new RatelimitService.Builder()
-            .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(true))
-            .setUserName(WebinCliTestUtils.getTestWebinUsername())
-            .setPassword(WebinCliTestUtils.getTestWebinPassword())
-            .build()
-            .ratelimit("GENOME", "Webin-1234", "ERP129098", "ERS11253593")
-            .isRateLimited()
-        ).isFalse();
-    }
+public class RatelimitServiceTest {
+  @Test
+  public void testRatelimitFalse() {
+    assertThat(
+            new RatelimitService.Builder()
+                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(true))
+                .setUserName(WebinCliTestUtils.getTestWebinUsername())
+                .setPassword(WebinCliTestUtils.getTestWebinPassword())
+                .build()
+                .ratelimit("GENOME", "Webin-1234", "ERP129098", "ERS11253593")
+                .isRateLimited())
+        .isFalse();
+  }
 }

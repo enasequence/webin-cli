@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 

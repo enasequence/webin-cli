@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli.upload;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 
 public class FtpServiceTest {

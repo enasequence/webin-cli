@@ -14,42 +14,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.entity.Version;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 
-public class
-VersionServiceTest {
+public class VersionServiceTest {
 
-    private static final boolean TEST = true;
+  private static final boolean TEST = true;
 
-    private static Version validVersion;
-    private static Version invalidVersion;
+  private static Version validVersion;
+  private static Version invalidVersion;
 
-    @BeforeClass
-    public static void setup() {
-        VersionService versionService = new VersionService.Builder()
+  @BeforeClass
+  public static void setup() {
+    VersionService versionService =
+        new VersionService.Builder()
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .build();
-        validVersion = versionService.getVersion( "10.0.0" );
-        invalidVersion = versionService.getVersion( "1.0.0" );
-    }
+    validVersion = versionService.getVersion("10.0.0");
+    invalidVersion = versionService.getVersion("1.0.0");
+  }
 
-    @Test
-    public void testValidVersion() {
-        assertThat( validVersion.valid ).isTrue();
-        assertThat( validVersion.expire ).isNotNull();
-        assertThat( validVersion.update ).isNotNull();
-        assertThat( validVersion.minVersion ).matches("\\d+\\.\\d+\\.\\d+");
-        assertThat( validVersion.latestVersion ).matches("\\d+\\.\\d+\\.\\d+");
-    }
+  @Test
+  public void testValidVersion() {
+    assertThat(validVersion.valid).isTrue();
+    assertThat(validVersion.expire).isNotNull();
+    assertThat(validVersion.update).isNotNull();
+    assertThat(validVersion.minVersion).matches("\\d+\\.\\d+\\.\\d+");
+    assertThat(validVersion.latestVersion).matches("\\d+\\.\\d+\\.\\d+");
+  }
 
-    @Test
-    public void testInvalidVersion() {
-        assertThat( invalidVersion.valid ).isFalse();
-        assertThat( invalidVersion.expire ).isNotNull();
-        assertThat( invalidVersion.update ).isNotNull();
-        assertThat( invalidVersion.minVersion ).matches("\\d+\\.\\d+\\.\\d+");
-        assertThat( invalidVersion.latestVersion ).matches("\\d+\\.\\d+\\.\\d+");
-    }
+  @Test
+  public void testInvalidVersion() {
+    assertThat(invalidVersion.valid).isFalse();
+    assertThat(invalidVersion.expire).isNotNull();
+    assertThat(invalidVersion.update).isNotNull();
+    assertThat(invalidVersion.minVersion).matches("\\d+\\.\\d+\\.\\d+");
+    assertThat(invalidVersion.latestVersion).matches("\\d+\\.\\d+\\.\\d+");
+  }
 }

@@ -12,84 +12,64 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
 
-public class
-ManifestFieldValue 
-{
-    private final ManifestFieldDefinition definition;
-    private String value;
-    private List<ManifestFieldValue> attributes;
-    private final List<ValidationOrigin> origin = new ArrayList<>();
-    private boolean validFieldValueOrFileSuffix = true;
+public class ManifestFieldValue {
+  private final ManifestFieldDefinition definition;
+  private String value;
+  private List<ManifestFieldValue> attributes;
+  private final List<ValidationOrigin> origin = new ArrayList<>();
+  private boolean validFieldValueOrFileSuffix = true;
 
-    public ManifestFieldValue(
-            ManifestFieldDefinition definition, String value, List<ManifestFieldValue> attributes, ValidationOrigin origin ) {
+  public ManifestFieldValue(
+      ManifestFieldDefinition definition,
+      String value,
+      List<ManifestFieldValue> attributes,
+      ValidationOrigin origin) {
 
-        assert( definition != null );
-        assert( value != null );
-        this.definition = definition;
-        this.value = value;
-        this.attributes = attributes;
-        this.origin.add(origin);
-        this.origin.add(new ValidationOrigin("field", definition.getName()));
-        this.origin.add(new ValidationOrigin("value", value));
-    }
-    
-    public String 
-    getName() 
-    {
-        return definition.getName();
-    }
+    assert (definition != null);
+    assert (value != null);
+    this.definition = definition;
+    this.value = value;
+    this.attributes = attributes;
+    this.origin.add(origin);
+    this.origin.add(new ValidationOrigin("field", definition.getName()));
+    this.origin.add(new ValidationOrigin("value", value));
+  }
 
-    
-    public ManifestFieldDefinition 
-    getDefinition() 
-    {
-        return definition;
-    }
+  public String getName() {
+    return definition.getName();
+  }
 
-    
-    public String 
-    getValue() 
-    {
-        return value;
-    }
+  public ManifestFieldDefinition getDefinition() {
+    return definition;
+  }
 
-    
-    public void 
-    setValue( String value )
-    {
-        this.value = value;
-    }
+  public String getValue() {
+    return value;
+  }
 
-    
-    public boolean 
-    isValidFieldValueOrFileSuffix() 
-    {
-        return validFieldValueOrFileSuffix;
-    }
+  public void setValue(String value) {
+    this.value = value;
+  }
 
-    
-    public void 
-    setValidFieldValueOrFileSuffix( boolean validFieldValueOrFileSuffix )
-    {
-        this.validFieldValueOrFileSuffix = validFieldValueOrFileSuffix;
-    }
+  public boolean isValidFieldValueOrFileSuffix() {
+    return validFieldValueOrFileSuffix;
+  }
 
-    
-    public List<ValidationOrigin>
-    getOrigin()
-    {
-        return origin;
-    }
+  public void setValidFieldValueOrFileSuffix(boolean validFieldValueOrFileSuffix) {
+    this.validFieldValueOrFileSuffix = validFieldValueOrFileSuffix;
+  }
 
-    public List<ManifestFieldValue> getAttributes() {
-        return attributes;
-    }
+  public List<ValidationOrigin> getOrigin() {
+    return origin;
+  }
 
-    public void setAttributes(List<ManifestFieldValue> attributes) {
-        this.attributes = attributes;
-    }
+  public List<ManifestFieldValue> getAttributes() {
+    return attributes;
+  }
+
+  public void setAttributes(List<ManifestFieldValue> attributes) {
+    this.attributes = attributes;
+  }
 }

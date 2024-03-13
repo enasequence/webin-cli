@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.springframework.util.Assert;
 
 public class ManifestFieldDefinition {
@@ -188,12 +187,13 @@ public class ManifestFieldDefinition {
 
       public Field processor(ManifestFieldProcessor... processors) {
         this.processors.addAll(
-                Arrays.stream(processors).filter(Objects::nonNull).collect(Collectors.toList()));
+            Arrays.stream(processors).filter(Objects::nonNull).collect(Collectors.toList()));
         return this;
       }
 
       public Field attributes(List<ManifestFieldDefinition> attributes) {
-        this.attributes.addAll(attributes.stream().filter(Objects::nonNull).collect(Collectors.toList()));
+        this.attributes.addAll(
+            attributes.stream().filter(Objects::nonNull).collect(Collectors.toList()));
 
         return this;
       }
@@ -216,19 +216,21 @@ public class ManifestFieldDefinition {
           if (recommendedMaxCount < 1) {
             recommendedMaxCount = 1;
           }
-        }
-        else if (hidden) {
+        } else if (hidden) {
           recommendedMinCount = 0;
           recommendedMaxCount = 0;
         }
 
-        builder.fields.add(new ManifestFieldDefinition(
+        builder.fields.add(
+            new ManifestFieldDefinition(
                 name,
                 synonym,
                 description,
                 type,
-                minCount, maxCount,
-                recommendedMinCount, recommendedMaxCount,
+                minCount,
+                maxCount,
+                recommendedMinCount,
+                recommendedMaxCount,
                 processors,
                 attributes));
       }

@@ -12,21 +12,14 @@ package uk.ac.ebi.ena.webin.cli.manifest;
 
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
-public interface
-ManifestFieldProcessor {
-    /**
-     * Validates and fixes a manifest field.
-     */
-    void process(ValidationResult result, ManifestFieldValue fieldValue);
+public interface ManifestFieldProcessor {
+  /** Validates and fixes a manifest field. */
+  void process(ValidationResult result, ManifestFieldValue fieldValue);
 
-    /**
-     * Interface to notify the user of the field processor.
-     */
-    interface Callback<T> {
+  /** Interface to notify the user of the field processor. */
+  interface Callback<T> {
 
-        /**
-         * Callback to notify the user of the field processor.
-         */
-        void notify(T value);
-    }
+    /** Callback to notify the user of the field processor. */
+    void notify(T value);
+  }
 }

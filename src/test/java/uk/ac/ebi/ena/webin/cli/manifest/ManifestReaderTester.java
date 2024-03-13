@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.file.Path;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
@@ -31,7 +30,9 @@ public class ManifestReaderTester<M extends Manifest> {
   }
 
   private ManifestReader<M> create() {
-    return new ManifestReaderBuilder(manifestReaderClass, WebinCliTestUtils.getTestWebinCliParameters()).build();
+    return new ManifestReaderBuilder(
+            manifestReaderClass, WebinCliTestUtils.getTestWebinCliParameters())
+        .build();
   }
 
   public ManifestReader<M> test(ManifestBuilder manifest) {
@@ -54,13 +55,12 @@ public class ManifestReaderTester<M extends Manifest> {
 
   public ManifestReader<M> testError(
       ManifestBuilder manifest, File inputDir, WebinCliMessage message) {
-      MessageCounter counter = MessageCounter.regex(
-              ValidationMessage.Severity.ERROR,
-              message.regex());
-      ManifestReader<M> reader = create();
-      reader.addListener(counter);
-      reader.readManifest(inputDir.toPath(), manifest.build(inputDir));
-     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
+    MessageCounter counter =
+        MessageCounter.regex(ValidationMessage.Severity.ERROR, message.regex());
+    ManifestReader<M> reader = create();
+    reader.addListener(counter);
+    reader.readManifest(inputDir.toPath(), manifest.build(inputDir));
+    assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
     return reader;
   }
 }

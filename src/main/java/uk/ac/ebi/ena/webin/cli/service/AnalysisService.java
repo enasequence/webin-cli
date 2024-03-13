@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
@@ -27,75 +26,61 @@ import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 
-public class
-AnalysisService extends WebinService
-{
-    private static final Logger log = LoggerFactory.getLogger(AnalysisService.class);
+public class AnalysisService extends WebinService {
+  private static final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
-    protected 
-    AnalysisService( AbstractBuilder<AnalysisService> builder )
-    {
-        super( builder );
+  protected AnalysisService(AbstractBuilder<AnalysisService> builder) {
+    super(builder);
+  }
+
+  public static class Builder extends AbstractBuilder<AnalysisService> {
+    @Override
+    public AnalysisService build() {
+      return new AnalysisService(this);
     }
+  };
 
-    
-    public static class 
-    Builder extends AbstractBuilder<AnalysisService>
-    {
-        @Override public AnalysisService 
-        build()
-        {
-            return new AnalysisService( this );
-        }
-    };
+  public static class AnalysisResponse {
+    public String id;
+    public String alias;
+    public boolean canBeReferenced;
+  }
 
-    
-    public static class 
-    AnalysisResponse 
-    {
-        public String id;
-        public String alias;
-        public boolean canBeReferenced;
-    }
+  public Analysis getAnalysis(String analysisId) {
+    return getAnalysis(analysisId, getUserName(), getPassword());
+  }
 
-    
-    public Analysis
-    getAnalysis( String analysisId )
-    {
-        return getAnalysis( analysisId, getUserName(), getPassword() );
-    }
+  private Analysis getAnalysis(String analysisId, String userName, String password) {
+    RestTemplate restTemplate = new RestTemplate();
 
-    
-    private Analysis 
-    getAnalysis( String analysisId, String userName, String password)
-    {
-        RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = new HttpHeaderBuilder().basicAuth(userName, password).build();
 
-        HttpHeaders headers = new HttpHeaderBuilder().basicAuth( userName, password ).build();
-
-        ResponseEntity<AnalysisResponse> response = ExceptionUtils.executeWithRestExceptionHandling(
-
-            () -> RetryUtils.executeWithRetry(
-                context -> restTemplate.exchange(
-                    resolveAgainstWebinRestV1Uri("cli/reference/analysis/{id}"),
-                    HttpMethod.GET,
-                    new HttpEntity<>(headers),
-                    AnalysisResponse.class,
-                    analysisId.trim()),
-                context -> log.warn("Retrying analysis retrieval from server."),
-                HttpServerErrorException.class, ResourceAccessException.class),
-
+    ResponseEntity<AnalysisResponse> response =
+        ExceptionUtils.executeWithRestExceptionHandling(
+            () ->
+                RetryUtils.executeWithRetry(
+                    context ->
+                        restTemplate.exchange(
+                            resolveAgainstWebinRestV1Uri("cli/reference/analysis/{id}"),
+                            HttpMethod.GET,
+                            new HttpEntity<>(headers),
+                            AnalysisResponse.class,
+                            analysisId.trim()),
+                    context -> log.warn("Retrying analysis retrieval from server."),
+                    HttpServerErrorException.class,
+                    ResourceAccessException.class),
             WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Analysis"),
-            WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format( analysisId ),
-            WebinCliMessage.ANALYSIS_SERVICE_SYSTEM_ERROR.format( analysisId ));
+            WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format(analysisId),
+            WebinCliMessage.ANALYSIS_SERVICE_SYSTEM_ERROR.format(analysisId));
 
-        AnalysisResponse analysisResponse = response.getBody();
-        if (analysisResponse == null || !analysisResponse.canBeReferenced)
-            throw WebinCliException.userError(WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format(analysisId));
+    AnalysisResponse analysisResponse = response.getBody();
+    if (analysisResponse == null || !analysisResponse.canBeReferenced)
+      throw WebinCliException.userError(
+          WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.format(analysisId));
 
-        Analysis analysis = new Analysis();
-        analysis.setAnalysisId(analysisResponse.id);
-        analysis.setName(analysisResponse.alias);
-        return analysis;
-    }
+    Analysis analysis = new Analysis();
+    analysis.setAnalysisId(analysisResponse.id);
+    analysis.setName(analysisResponse.alias);
+    return analysis;
+  }
 }

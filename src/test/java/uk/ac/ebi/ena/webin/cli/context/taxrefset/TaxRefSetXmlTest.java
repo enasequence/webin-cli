@@ -17,10 +17,8 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -44,9 +42,9 @@ public class TaxRefSetXmlTest {
     manifest.getStudy().setBioProjectId("test_study");
     manifest.setDescription("test_description");
     manifest.setTaxonomySystem("12345");
-    Map<String,String> customFields = new LinkedHashMap<>();
-    customFields.put("test_key_1","test_val_1");
-    customFields.put("test_key_2","test_val_2");
+    Map<String, String> customFields = new LinkedHashMap<>();
+    customFields.put("test_key_1", "test_val_1");
+    customFields.put("test_key_2", "test_val_2");
     manifest.addCustomFields(customFields);
 
     return manifest;
@@ -77,40 +75,46 @@ public class TaxRefSetXmlTest {
 
     SubmissionBundle sb = prepareSubmissionBundle(manifest);
 
-    String analysisXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
-
+    String analysisXml =
+        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
 
     XmlTester.assertXml(
-            analysisXml,
-            "<ANALYSIS_SET>\n" +
-                    "<ANALYSIS>\n"+
-                    "<TITLE>Taxonomy reference set: test_taxon_xref_set</TITLE>\n" +
-                    "<DESCRIPTION>test_description</DESCRIPTION>\n" +
-                    "<STUDY_REF accession=\"test_study\"/>\n" +
-                    "<ANALYSIS_TYPE>\n" +
-                    "<TAXONOMIC_REFERENCE_SET>\n" +
-                    "<NAME>test_taxon_xref_set</NAME>\n" +
-                    "<TAXONOMY_SYSTEM>12345</TAXONOMY_SYSTEM>\n" +
-                    "<CUSTOM_FIELDS>\n" +
-                      "<FIELD>\n" +
-                        "<NAME>test_key_1</NAME>\n" +
-                        "<DESCRIPTION>test_val_1</DESCRIPTION>\n" +
-                      "</FIELD>\n" +
-                      "<FIELD>\n" +
-                        "<NAME>test_key_2</NAME>\n" +
-                        "<DESCRIPTION>test_val_2</DESCRIPTION>\n" +
-                      "</FIELD>\n" +
-                    "</CUSTOM_FIELDS>\n"+
-                    "</TAXONOMIC_REFERENCE_SET>\n" +
-                    "</ANALYSIS_TYPE>\n"+
-                     "<FILES>\n"+
-                     "      <FILE filename=\"webin-cli/taxrefset/"+ NAME+ "/"+ fastaFile.getFileName()+
-                    "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"+
-                     "      <FILE filename=\"webin-cli/taxrefset/"+ NAME+ "/"+ tsvFile.getFileName()+
-                     "\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"+
-                     "</FILES>\n"+
-                     "</ANALYSIS>\n"+
-                     "</ANALYSIS_SET>");
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "<ANALYSIS>\n"
+            + "<TITLE>Taxonomy reference set: test_taxon_xref_set</TITLE>\n"
+            + "<DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "<STUDY_REF accession=\"test_study\"/>\n"
+            + "<ANALYSIS_TYPE>\n"
+            + "<TAXONOMIC_REFERENCE_SET>\n"
+            + "<NAME>test_taxon_xref_set</NAME>\n"
+            + "<TAXONOMY_SYSTEM>12345</TAXONOMY_SYSTEM>\n"
+            + "<CUSTOM_FIELDS>\n"
+            + "<FIELD>\n"
+            + "<NAME>test_key_1</NAME>\n"
+            + "<DESCRIPTION>test_val_1</DESCRIPTION>\n"
+            + "</FIELD>\n"
+            + "<FIELD>\n"
+            + "<NAME>test_key_2</NAME>\n"
+            + "<DESCRIPTION>test_val_2</DESCRIPTION>\n"
+            + "</FIELD>\n"
+            + "</CUSTOM_FIELDS>\n"
+            + "</TAXONOMIC_REFERENCE_SET>\n"
+            + "</ANALYSIS_TYPE>\n"
+            + "<FILES>\n"
+            + "      <FILE filename=\"webin-cli/taxrefset/"
+            + NAME
+            + "/"
+            + fastaFile.getFileName()
+            + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"
+            + "      <FILE filename=\"webin-cli/taxrefset/"
+            + NAME
+            + "/"
+            + tsvFile.getFileName()
+            + "\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"
+            + "</FILES>\n"
+            + "</ANALYSIS>\n"
+            + "</ANALYSIS_SET>");
   }
 
   @Test

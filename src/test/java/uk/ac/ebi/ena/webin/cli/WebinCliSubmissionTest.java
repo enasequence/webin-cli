@@ -15,440 +15,545 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
 import java.util.function.Consumer;
-
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Test;
 
 public class WebinCliSubmissionTest {
 
-    private enum WebinCliTestType {
-        VALIDATE,
-        SUBMIT
+  private enum WebinCliTestType {
+    VALIDATE,
+    SUBMIT
+  }
+
+  private static final WebinCliTestType TEST_TYPE = WebinCliTestType.SUBMIT;
+
+  private static final File READS_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/reads/");
+  private static final File GENOME_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/genome/");
+  private static final File TRANSCRIPTOME_RESOURCE_DIR =
+      getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/");
+  private static final File SEQUENCE_RESOURCE_DIR =
+      getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/");
+
+  private static void expectError(
+      ThrowableAssert.ThrowingCallable shouldThrow, WebinCliException.ErrorType errorType) {
+    assertThatThrownBy(shouldThrow)
+        .isInstanceOf(WebinCliException.class)
+        .hasFieldOrPropertyWithValue("errorType", errorType);
+  }
+
+  private static WebinCli webinCliForValidate(
+      File resourceDir,
+      WebinCliBuilder webinCliBuilder,
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig) {
+    ManifestBuilder manifestBuilder = new ManifestBuilder();
+    manifestBuilder.name();
+    metaManifestConfig.accept(manifestBuilder);
+    filesManifestConfig.accept(manifestBuilder);
+    webinCliConfig.accept(webinCliBuilder);
+    webinCliBuilder.submit(false);
+    return webinCliBuilder.build(resourceDir, manifestBuilder);
+  }
+
+  private static WebinCli webinCLiForValidateFiles(
+      File resourceDir,
+      WebinCliBuilder webinCliBuilder,
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig) {
+    ManifestBuilder manifestBuilder = new ManifestBuilder();
+    manifestBuilder.name();
+    metaManifestConfig.accept(manifestBuilder);
+    filesManifestConfig.accept(manifestBuilder);
+    webinCliConfig.accept(webinCliBuilder);
+    webinCliBuilder.validateFiles(true);
+    webinCliBuilder.submit(false);
+    return webinCliBuilder.build(resourceDir, manifestBuilder);
+  }
+
+  private static WebinCli webinCliForSubmit(
+      File resourceDir,
+      WebinCliBuilder webinCliBuilder,
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig) {
+    ManifestBuilder manifestBuilder = new ManifestBuilder();
+    manifestBuilder.name();
+    metaManifestConfig.accept(manifestBuilder);
+    filesManifestConfig.accept(manifestBuilder);
+    webinCliConfig.accept(webinCliBuilder);
+    webinCliBuilder.submit(true);
+    return webinCliBuilder.build(resourceDir, manifestBuilder);
+  }
+
+  public static void testReads(
+      Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
+      throws Throwable {
+    testReads(metaManifestConfig, filesManifestConfig, c -> {});
+  }
+
+  public static void testReads(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig)
+      throws Throwable {
+    // Test -validateFiles option
+    webinCLiForValidateFiles(
+            READS_RESOURCE_DIR,
+            WebinCliBuilder.createForReads(),
+            metaManifestConfig,
+            filesManifestConfig,
+            webinCliConfig)
+        .execute();
+
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      webinCliForValidate(
+              READS_RESOURCE_DIR,
+              WebinCliBuilder.createForReads(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
+    } else {
+      webinCliForSubmit(
+              READS_RESOURCE_DIR,
+              WebinCliBuilder.createForReads(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
+    }
+  }
+
+  public static void testReadError(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<ReportTester> reportTesterConfig,
+      WebinCliException.ErrorType errorType) {
+    // Test -validateFiles option
+    {
+      WebinCli webinCli =
+          webinCLiForValidateFiles(
+              READS_RESOURCE_DIR,
+              WebinCliBuilder.createForReads(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
     }
 
-    private static final WebinCliTestType TEST_TYPE = WebinCliTestType.SUBMIT;
-
-    private static final File READS_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/reads/");
-    private static final File GENOME_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/genome/");
-    private static final File TRANSCRIPTOME_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/");
-    private static final File SEQUENCE_RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/");
-
-    private static void expectError(ThrowableAssert.ThrowingCallable shouldThrow, WebinCliException.ErrorType errorType) {
-        assertThatThrownBy(shouldThrow)
-                .isInstanceOf(WebinCliException.class)
-                .hasFieldOrPropertyWithValue("errorType", errorType);
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      WebinCli webinCli =
+          webinCliForValidate(
+              READS_RESOURCE_DIR,
+              WebinCliBuilder.createForReads(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    } else {
+      WebinCli webinCli =
+          webinCliForSubmit(
+              READS_RESOURCE_DIR,
+              WebinCliBuilder.createForReads(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
     }
+  }
 
-    private static WebinCli webinCliForValidate(
-            File resourceDir,
-            WebinCliBuilder webinCliBuilder,
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<WebinCliBuilder> webinCliConfig) {
-        ManifestBuilder manifestBuilder = new ManifestBuilder();
-        manifestBuilder.name();
-        metaManifestConfig.accept(manifestBuilder);
-        filesManifestConfig.accept(manifestBuilder);
-        webinCliConfig.accept(webinCliBuilder);
-        webinCliBuilder.submit(false);
-        return webinCliBuilder.build(resourceDir, manifestBuilder);
+  public static void testGenome(
+      Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
+      throws Throwable {
+    testGenome(metaManifestConfig, filesManifestConfig, c -> {});
+  }
+
+  public static void testGenome(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig)
+      throws Throwable {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      webinCliForValidate(
+              GENOME_RESOURCE_DIR,
+              WebinCliBuilder.createForGenome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
+    } else {
+      webinCliForSubmit(
+              GENOME_RESOURCE_DIR,
+              WebinCliBuilder.createForGenome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
     }
+  }
 
-    private static WebinCli webinCLiForValidateFiles(
-            File resourceDir,
-            WebinCliBuilder webinCliBuilder,
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<WebinCliBuilder> webinCliConfig) {
-        ManifestBuilder manifestBuilder = new ManifestBuilder();
-        manifestBuilder.name();
-        metaManifestConfig.accept(manifestBuilder);
-        filesManifestConfig.accept(manifestBuilder);
-        webinCliConfig.accept(webinCliBuilder);
-        webinCliBuilder.validateFiles(true);
-        webinCliBuilder.submit(false);
-        return webinCliBuilder.build(resourceDir, manifestBuilder);
+  public static void testGenomeError(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<ReportTester> reportTesterConfig,
+      WebinCliException.ErrorType errorType) {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      WebinCli webinCli =
+          webinCliForValidate(
+              GENOME_RESOURCE_DIR,
+              WebinCliBuilder.createForGenome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    } else {
+      WebinCli webinCli =
+          webinCliForSubmit(
+              GENOME_RESOURCE_DIR,
+              WebinCliBuilder.createForGenome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
     }
+  }
 
-    private static WebinCli webinCliForSubmit(
-            File resourceDir,
-            WebinCliBuilder webinCliBuilder,
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<WebinCliBuilder> webinCliConfig) {
-        ManifestBuilder manifestBuilder = new ManifestBuilder();
-        manifestBuilder.name();
-        metaManifestConfig.accept(manifestBuilder);
-        filesManifestConfig.accept(manifestBuilder);
-        webinCliConfig.accept(webinCliBuilder);
-        webinCliBuilder.submit(true);
-        return webinCliBuilder.build(resourceDir, manifestBuilder);
+  public static void testSequence(
+      Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
+      throws Throwable {
+    testSequence(metaManifestConfig, filesManifestConfig, c -> {});
+  }
+
+  public static void testSequence(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig)
+      throws Throwable {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      webinCliForValidate(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForSequence(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
+    } else {
+      webinCliForSubmit(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForSequence(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
     }
+  }
 
-    public static void testReads(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig) throws Throwable {
-        testReads(metaManifestConfig, filesManifestConfig, c -> {
-        });
+  public static void testSequenceError(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<ReportTester> reportTesterConfig,
+      WebinCliException.ErrorType errorType) {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      WebinCli webinCli =
+          webinCliForValidate(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForSequence(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    } else {
+      WebinCli webinCli =
+          webinCliForSubmit(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForSequence(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
     }
+  }
 
-    public static void testReads(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<WebinCliBuilder> webinCliConfig) throws Throwable {
-        // Test -validateFiles option
-        webinCLiForValidateFiles(READS_RESOURCE_DIR, WebinCliBuilder.createForReads(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
+  public static void testTranscriptome(
+      Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
+      throws Throwable {
+    testTranscriptome(metaManifestConfig, filesManifestConfig, c -> {});
+  }
 
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            webinCliForValidate(READS_RESOURCE_DIR, WebinCliBuilder.createForReads(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        } else {
-            webinCliForSubmit(READS_RESOURCE_DIR, WebinCliBuilder.createForReads(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        }
+  public static void testTranscriptome(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig)
+      throws Throwable {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      webinCliForValidate(
+              TRANSCRIPTOME_RESOURCE_DIR,
+              WebinCliBuilder.createForTranscriptome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
+    } else {
+      webinCliForSubmit(
+              TRANSCRIPTOME_RESOURCE_DIR,
+              WebinCliBuilder.createForTranscriptome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
     }
+  }
 
-    public static void testReadError(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig,
-            WebinCliException.ErrorType errorType) {
-        // Test -validateFiles option
-        {
-            WebinCli webinCli = webinCLiForValidateFiles(READS_RESOURCE_DIR, WebinCliBuilder.createForReads(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        }
-
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            WebinCli webinCli = webinCliForValidate(READS_RESOURCE_DIR, WebinCliBuilder.createForReads(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        } else {
-            WebinCli webinCli = webinCliForSubmit(READS_RESOURCE_DIR, WebinCliBuilder.createForReads(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        }
+  public static void testTranscriptomeError(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<ReportTester> reportTesterConfig,
+      WebinCliException.ErrorType errorType) {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      WebinCli webinCli =
+          webinCliForValidate(
+              TRANSCRIPTOME_RESOURCE_DIR,
+              WebinCliBuilder.createForTranscriptome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    } else {
+      WebinCli webinCli =
+          webinCliForSubmit(
+              TRANSCRIPTOME_RESOURCE_DIR,
+              WebinCliBuilder.createForTranscriptome(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
     }
+  }
 
-    public static void testGenome(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig) throws Throwable {
-        testGenome(metaManifestConfig, filesManifestConfig, c -> {
-        });
-    }
+  // Manifest meta fields
+  //
 
-    public static void testGenome(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<WebinCliBuilder> webinCliConfig) throws Throwable {
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            webinCliForValidate(GENOME_RESOURCE_DIR, WebinCliBuilder.createForGenome(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        } else {
-            webinCliForSubmit(GENOME_RESOURCE_DIR, WebinCliBuilder.createForGenome(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        }
-    }
+  private void readsMetaManifest(ManifestBuilder manifestBuilder) {
+    manifestBuilder
+        .field("STUDY", "SRP052303")
+        .field("SAMPLE", "ERS2554688")
+        .field("PLATFORM", "ILLUMINA")
+        .field("INSTRUMENT", "unspecifieD")
+        .field("INSERT_SIZE", "1")
+        .field("LIBRARY_NAME", "YOBA LIB")
+        .field("LIBRARY_STRATEGY", "CLONEEND")
+        .field("LIBRARY_SOURCE", "OTHER")
+        .field("LIBRARY_SELECTION", "Inverse rRNA selection")
+        .field("LIBRARY_CONSTRUCTION_PROTOCOL", "Protocol")
+        .field("DESCRIPTION", "Some reads description");
+  }
 
-    public static void testGenomeError(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig,
-            WebinCliException.ErrorType errorType) {
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            WebinCli webinCli = webinCliForValidate(GENOME_RESOURCE_DIR, WebinCliBuilder.createForGenome(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        } else {
-            WebinCli webinCli = webinCliForSubmit(GENOME_RESOURCE_DIR, WebinCliBuilder.createForGenome(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        }
-    }
+  private void genomeMetaManifest(ManifestBuilder manifestBuilder) {
+    manifestBuilder
+        .field("ASSEMBLY_TYPE", "clone or isolate")
+        .field("COVERAGE", "45")
+        .field("PROGRAM", "assembly")
+        .field("PLATFORM", "fghgf")
+        .field("MINGAPLENGTH", "34")
+        .field("MOLECULETYPE", "genomic DNA")
+        .field("SAMPLE", "SAMN04526268")
+        .field("STUDY", "PRJEB20083")
+        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+        .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+        .field("DESCRIPTION", "Some genome assembly description");
+  }
 
-    public static void testSequence(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig) throws Throwable {
-        testSequence(metaManifestConfig, filesManifestConfig, c -> {
-        });
-    }
+  private void covid19GenomeMetaManifest(ManifestBuilder manifestBuilder) {
+    manifestBuilder
+        .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
+        .field("STUDY", "ERP121228")
+        .field("SAMPLE", "ERS5249578")
+        .field("COVERAGE", "1.0")
+        .field("PROGRAM", "prog-123")
+        .field("PLATFORM", "ILLUMINA");
+  }
 
-    public static void testSequence(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<WebinCliBuilder> webinCliConfig) throws Throwable {
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            webinCliForValidate(SEQUENCE_RESOURCE_DIR, WebinCliBuilder.createForSequence(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        } else {
-            webinCliForSubmit(SEQUENCE_RESOURCE_DIR, WebinCliBuilder.createForSequence(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        }
-    }
+  private void transcriptomeMetaManifest(ManifestBuilder manifestBuilder) {
+    manifestBuilder
+        .field("PROGRAM", "assembly")
+        .field("PLATFORM", "fghgf")
+        .field("SAMPLE", "SAMN04526268")
+        .field("STUDY", "PRJEB20083")
+        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+        .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+        .field("DESCRIPTION", "Some transcriptome assembly description")
+        .field("ASSEMBLY_TYPE", "isolate");
+  }
 
-    public static void testSequenceError(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig,
-            WebinCliException.ErrorType errorType) {
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            WebinCli webinCli = webinCliForValidate(SEQUENCE_RESOURCE_DIR, WebinCliBuilder.createForSequence(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        } else {
-            WebinCli webinCli = webinCliForSubmit(SEQUENCE_RESOURCE_DIR, WebinCliBuilder.createForSequence(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        }
-    }
+  private void sequenceMetaManifest(ManifestBuilder manifestBuilder) {
+    manifestBuilder
+        .field("STUDY", "PRJEB20083")
+        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+        .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+        .field("DESCRIPTION", "Some sequence assembly description");
+  }
 
-    public static void testTranscriptome(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig) throws Throwable {
-        testTranscriptome(metaManifestConfig, filesManifestConfig, c -> {
-        });
-    }
+  // Reads
+  //
 
-    public static void testTranscriptome(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<WebinCliBuilder> webinCliConfig) throws Throwable {
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            webinCliForValidate(TRANSCRIPTOME_RESOURCE_DIR, WebinCliBuilder.createForTranscriptome(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        } else {
-            webinCliForSubmit(TRANSCRIPTOME_RESOURCE_DIR, WebinCliBuilder.createForTranscriptome(), metaManifestConfig, filesManifestConfig, webinCliConfig).execute();
-        }
-    }
+  @Test
+  public void testReadsCram() throws Throwable {
+    testReads(m -> readsMetaManifest(m), m -> m.file("CRAM", "valid.cram"));
+  }
 
-    public static void testTranscriptomeError(
-            Consumer<ManifestBuilder> metaManifestConfig,
-            Consumer<ManifestBuilder> filesManifestConfig,
-            Consumer<ReportTester> reportTesterConfig,
-            WebinCliException.ErrorType errorType) {
-        if (TEST_TYPE == WebinCliTestType.VALIDATE) {
-            WebinCli webinCli = webinCliForValidate(TRANSCRIPTOME_RESOURCE_DIR, WebinCliBuilder.createForTranscriptome(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        } else {
-            WebinCli webinCli = webinCliForSubmit(TRANSCRIPTOME_RESOURCE_DIR, WebinCliBuilder.createForTranscriptome(), metaManifestConfig, filesManifestConfig, c -> {
-            });
-            expectError(() -> webinCli.execute(), errorType);
-            reportTesterConfig.accept(new ReportTester(webinCli));
-        }
-    }
+  @Test
+  public void testReadsCramNormalizePath() throws Throwable {
+    testReads(
+        m -> readsMetaManifest(m),
+        m -> m.file("CRAM", "../" + READS_RESOURCE_DIR.getName() + "/valid.cram"));
+  }
 
-    // Manifest meta fields
-    //
+  @Test
+  public void testReadsCramWithInfo() throws Throwable {
+    ManifestBuilder infoManifestBuilder = new ManifestBuilder();
+    readsMetaManifest(infoManifestBuilder);
+    File infoFile = infoManifestBuilder.build();
+    testReads(m -> {}, m -> m.file("CRAM", "valid.cram").field("INFO", infoFile.getAbsolutePath()));
+  }
 
-    private void readsMetaManifest(ManifestBuilder manifestBuilder) {
-        manifestBuilder
-                .field("STUDY", "SRP052303")
-                .field("SAMPLE", "ERS2554688")
-                .field("PLATFORM", "ILLUMINA")
-                .field("INSTRUMENT", "unspecifieD")
-                .field("INSERT_SIZE", "1")
-                .field("LIBRARY_NAME", "YOBA LIB")
-                .field("LIBRARY_STRATEGY", "CLONEEND")
-                .field("LIBRARY_SOURCE", "OTHER")
-                .field("LIBRARY_SELECTION", "Inverse rRNA selection")
-                .field("LIBRARY_CONSTRUCTION_PROTOCOL", "Protocol")
-                .field("DESCRIPTION", "Some reads description");
-    }
+  // Failures that are not caused by webin-cli can be ignored. Following is an example of such
+  // errors :
+  // Session Stop  (Error: Failure processing peer license: Deprecated peer license)
+  @Test
+  public void testReadsCramWithAscp() throws Throwable {
+    testReads(m -> readsMetaManifest(m), m -> m.file("CRAM", "valid.cram"), c -> c.ascp(true));
+  }
 
-    private void genomeMetaManifest(ManifestBuilder manifestBuilder) {
-        manifestBuilder
-                .field("ASSEMBLY_TYPE", "clone or isolate")
-                .field("COVERAGE", "45")
-                .field("PROGRAM", "assembly")
-                .field("PLATFORM", "fghgf")
-                .field("MINGAPLENGTH", "34")
-                .field("MOLECULETYPE", "genomic DNA")
-                .field("SAMPLE", "SAMN04526268")
-                .field("STUDY", "PRJEB20083")
-                .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
-                .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-                .field("DESCRIPTION", "Some genome assembly description");
-    }
+  @Test
+  public void testReadsSingleFastq() throws Throwable {
+    testReads(m -> readsMetaManifest(m), m -> m.file("FASTQ", "10x/4fastq/I1.fastq.gz"));
+  }
 
-    private void covid19GenomeMetaManifest(ManifestBuilder manifestBuilder) {
-        manifestBuilder
-                .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
-                .field("STUDY", "ERP121228")
-                .field("SAMPLE", "ERS5249578")
-                .field("COVERAGE", "1.0")
-                .field("PROGRAM", "prog-123")
-                .field("PLATFORM", "ILLUMINA");
-    }
+  @Test
+  public void testReadsMultipleFastq() throws Throwable {
+    ManifestBuilder manifestBuilder = new ManifestBuilder();
+    manifestBuilder.jsonFormat();
+    manifestBuilder.name();
+    readsMetaManifest(manifestBuilder);
+    manifestBuilder.file("FASTQ", "10x/4fastq/I1.fastq.gz").attribute("READ_TYPE", "cell_barcode");
+    manifestBuilder.file("FASTQ", "10x/4fastq/R1.fastq.gz").attribute("READ_TYPE", "umi_barcode");
+    manifestBuilder
+        .file("FASTQ", "10x/4fastq/R2.fastq.gz")
+        .attribute("READ_TYPE", "feature_barcode");
+    manifestBuilder
+        .file("FASTQ", "10x/4fastq/R3.fastq.gz")
+        .attribute("READ_TYPE", "sample_barcode");
 
-    private void transcriptomeMetaManifest(ManifestBuilder manifestBuilder) {
-        manifestBuilder
-                .field("PROGRAM", "assembly")
-                .field("PLATFORM", "fghgf")
-                .field("SAMPLE", "SAMN04526268")
-                .field("STUDY", "PRJEB20083")
-                .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
-                .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-                .field("DESCRIPTION", "Some transcriptome assembly description")
-                .field("ASSEMBLY_TYPE", "isolate");
-    }
+    WebinCliBuilder webinCliBuilder = WebinCliBuilder.createForReads();
+    webinCliBuilder.submit(true);
+    webinCliBuilder.build(READS_RESOURCE_DIR, manifestBuilder).execute();
+  }
 
-    private void sequenceMetaManifest(ManifestBuilder manifestBuilder) {
-        manifestBuilder
-                .field("STUDY", "PRJEB20083")
-                .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
-                .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
-                .field("DESCRIPTION", "Some sequence assembly description");
-    }
+  // Genome
+  //
 
-    // Reads
-    //
+  @Test
+  public void testGenomeFlatFileAgp() throws Throwable {
+    testGenome(
+        m -> genomeMetaManifest(m),
+        m -> m.file("FLATFILE", "valid.flatfile.gz").file("AGP", "valid.agp.gz"));
+  }
 
-    @Test
-    public void testReadsCram() throws Throwable {
-        testReads(m -> readsMetaManifest(m), m -> m.file("CRAM", "valid.cram"));
-    }
-
-    @Test
-    public void testReadsCramNormalizePath() throws Throwable {
-        testReads(
-                m -> readsMetaManifest(m),
-                m -> m.file("CRAM", "../" + READS_RESOURCE_DIR.getName() + "/valid.cram"));
-    }
-
-    @Test
-    public void testReadsCramWithInfo() throws Throwable {
-        ManifestBuilder infoManifestBuilder = new ManifestBuilder();
-        readsMetaManifest(infoManifestBuilder);
-        File infoFile = infoManifestBuilder.build();
-        testReads(m -> {
-        }, m -> m.file("CRAM", "valid.cram").field("INFO", infoFile.getAbsolutePath()));
-    }
-
-    // Failures that are not caused by webin-cli can be ignored. Following is an example of such errors :
-    // Session Stop  (Error: Failure processing peer license: Deprecated peer license)
-    @Test
-    public void testReadsCramWithAscp() throws Throwable {
-        testReads(m -> readsMetaManifest(m), m -> m.file("CRAM", "valid.cram"), c -> c.ascp(true));
-    }
-
-    @Test
-    public void testReadsSingleFastq() throws Throwable {
-        testReads(m -> readsMetaManifest(m), m -> m.file("FASTQ", "10x/4fastq/I1.fastq.gz"));
-    }
-
-    @Test
-    public void testReadsMultipleFastq() throws Throwable {
-        ManifestBuilder manifestBuilder = new ManifestBuilder();
-        manifestBuilder.jsonFormat();
-        manifestBuilder.name();
-        readsMetaManifest(manifestBuilder);
-        manifestBuilder.file("FASTQ", "10x/4fastq/I1.fastq.gz").attribute("READ_TYPE", "cell_barcode");
-        manifestBuilder.file("FASTQ", "10x/4fastq/R1.fastq.gz").attribute("READ_TYPE", "umi_barcode");
-        manifestBuilder.file("FASTQ", "10x/4fastq/R2.fastq.gz").attribute("READ_TYPE", "feature_barcode");
-        manifestBuilder.file("FASTQ", "10x/4fastq/R3.fastq.gz").attribute("READ_TYPE", "sample_barcode");
-
-        WebinCliBuilder webinCliBuilder = WebinCliBuilder.createForReads();
-        webinCliBuilder.submit(true);
-        webinCliBuilder.build(READS_RESOURCE_DIR, manifestBuilder).execute();
-    }
-
-    // Genome
-    //
-
-    @Test
-    public void testGenomeFlatFileAgp() throws Throwable {
-        testGenome(m -> genomeMetaManifest(m), m -> m
-                .file("FLATFILE", "valid.flatfile.gz")
-                .file("AGP", "valid.agp.gz"));
-    }
-
-    @Test
-    public void testGenomeFlatFileAgpWithInfo() throws Throwable {
-        ManifestBuilder infoManifestBuilder = new ManifestBuilder();
-        genomeMetaManifest(infoManifestBuilder);
-        File infoFile = infoManifestBuilder.build();
-        testGenome(
-                m -> {
-                },
-                m -> m
-                        .file("FLATFILE", "valid.flatfile.gz")
-                        .file("AGP", "valid.agp.gz")
-                        .field("INFO", infoFile.getAbsolutePath()));
-    }
-
-    @Test
-    public void testCovid19Genome() throws Throwable {
-        testGenome(m -> covid19GenomeMetaManifest(m), m -> m
-                        .file("FASTA", "valid-covid19.fasta.gz")
-                        .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz"),
-                c -> c.ignoreErrors(true)); // cannot submit more than 1 genome within 24 hours
-    }
-
-    @Test
-    public void testGenomeFlatFileWithFormatError() {
-        testGenomeError(m -> genomeMetaManifest(m),
-                m -> m.file("FLATFILE", "invalid.flatfile.gz"),
-                r -> r.textInFileReport("invalid.flatfile.gz",
-                        "ERROR: Invalid ID line format [ line: 1]"),
-                WebinCliException.ErrorType.VALIDATION_ERROR);
-    }
-
-    @Test
-    public void testSequenceTab() throws Throwable {
-        testSequence(m -> sequenceMetaManifest(m),
-                m -> m.file("TAB", "valid/ERT000003-EST.tsv.gz"));
-    }
-
-    @Test
-    public void testSequenceTabWithSampleInOrganismField() throws Throwable {
-        testSequence(m -> sequenceMetaManifest(m),
-                m -> m.file("TAB", "valid/ERT000002_rRNA-with-sample-field.tsv.gz"));
-    }
-
-    @Test
-    public void testSequenceTabWithInvalidSample() {
-        testSequenceError(m -> sequenceMetaManifest(m),
-                m -> m.file("TAB", "invalid-sample.tsv.gz"),
-                r -> r.textInFileReport("invalid-sample.tsv.gz",
-                        "Organism name \"ERS000000\" is not submittable"),
-                WebinCliException.ErrorType.VALIDATION_ERROR);
-    }
-
-    @Test
-    public void testSequenceFlatFileWithFormatError() {
-        testSequenceError(m -> sequenceMetaManifest(m),
-                m -> m.file("FLATFILE", "invalid.flatfile.gz"),
-                r -> r.textInFileReport("invalid.flatfile.gz",
-                        "ERROR: Invalid ID line format [ line: 1]"),
-                WebinCliException.ErrorType.VALIDATION_ERROR);
-    }
-
-    @Test
-    public void testTranscriptomeFasta() throws Throwable {
-        testTranscriptome(m -> transcriptomeMetaManifest(m),
-                m -> m.file("FASTA", "valid.fasta.gz"));
-    }
-
-    @Test
-    public void testTranscriptomeFastaWithInfo() throws Throwable {
-        ManifestBuilder infoManifestBuilder = new ManifestBuilder();
-        transcriptomeMetaManifest(infoManifestBuilder);
-        File infoFile = infoManifestBuilder.build();
-        testTranscriptome(m -> {
-        }, m -> m
-                .file("FASTA", "valid.fasta.gz")
+  @Test
+  public void testGenomeFlatFileAgpWithInfo() throws Throwable {
+    ManifestBuilder infoManifestBuilder = new ManifestBuilder();
+    genomeMetaManifest(infoManifestBuilder);
+    File infoFile = infoManifestBuilder.build();
+    testGenome(
+        m -> {},
+        m ->
+            m.file("FLATFILE", "valid.flatfile.gz")
+                .file("AGP", "valid.agp.gz")
                 .field("INFO", infoFile.getAbsolutePath()));
-    }
+  }
 
-    @Test
-    public void testTranscriptomeFlatFileWithFormatError() {
-        testTranscriptomeError(m -> transcriptomeMetaManifest(m),
-                m -> m.file("FLATFILE", "invalid.flatfile.gz"),
-                r -> r.textInFileReport("invalid.flatfile.gz",
-                        "ERROR: Invalid ID line format [ line: 1]"),
-                WebinCliException.ErrorType.VALIDATION_ERROR);
-    }
+  @Test
+  public void testCovid19Genome() throws Throwable {
+    testGenome(
+        m -> covid19GenomeMetaManifest(m),
+        m ->
+            m.file("FASTA", "valid-covid19.fasta.gz")
+                .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz"),
+        c -> c.ignoreErrors(true)); // cannot submit more than 1 genome within 24 hours
+  }
+
+  @Test
+  public void testGenomeFlatFileWithFormatError() {
+    testGenomeError(
+        m -> genomeMetaManifest(m),
+        m -> m.file("FLATFILE", "invalid.flatfile.gz"),
+        r -> r.textInFileReport("invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
+        WebinCliException.ErrorType.VALIDATION_ERROR);
+  }
+
+  @Test
+  public void testSequenceTab() throws Throwable {
+    testSequence(m -> sequenceMetaManifest(m), m -> m.file("TAB", "valid/ERT000003-EST.tsv.gz"));
+  }
+
+  @Test
+  public void testSequenceTabWithSampleInOrganismField() throws Throwable {
+    testSequence(
+        m -> sequenceMetaManifest(m),
+        m -> m.file("TAB", "valid/ERT000002_rRNA-with-sample-field.tsv.gz"));
+  }
+
+  @Test
+  public void testSequenceTabWithInvalidSample() {
+    testSequenceError(
+        m -> sequenceMetaManifest(m),
+        m -> m.file("TAB", "invalid-sample.tsv.gz"),
+        r ->
+            r.textInFileReport(
+                "invalid-sample.tsv.gz", "Organism name \"ERS000000\" is not submittable"),
+        WebinCliException.ErrorType.VALIDATION_ERROR);
+  }
+
+  @Test
+  public void testSequenceFlatFileWithFormatError() {
+    testSequenceError(
+        m -> sequenceMetaManifest(m),
+        m -> m.file("FLATFILE", "invalid.flatfile.gz"),
+        r -> r.textInFileReport("invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
+        WebinCliException.ErrorType.VALIDATION_ERROR);
+  }
+
+  @Test
+  public void testTranscriptomeFasta() throws Throwable {
+    testTranscriptome(m -> transcriptomeMetaManifest(m), m -> m.file("FASTA", "valid.fasta.gz"));
+  }
+
+  @Test
+  public void testTranscriptomeFastaWithInfo() throws Throwable {
+    ManifestBuilder infoManifestBuilder = new ManifestBuilder();
+    transcriptomeMetaManifest(infoManifestBuilder);
+    File infoFile = infoManifestBuilder.build();
+    testTranscriptome(
+        m -> {}, m -> m.file("FASTA", "valid.fasta.gz").field("INFO", infoFile.getAbsolutePath()));
+  }
+
+  @Test
+  public void testTranscriptomeFlatFileWithFormatError() {
+    testTranscriptomeError(
+        m -> transcriptomeMetaManifest(m),
+        m -> m.file("FLATFILE", "invalid.flatfile.gz"),
+        r -> r.textInFileReport("invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
+        WebinCliException.ErrorType.VALIDATION_ERROR);
+  }
 }

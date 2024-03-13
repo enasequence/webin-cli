@@ -11,7 +11,6 @@
 package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
-
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.AnalysisProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.RunProcessor;

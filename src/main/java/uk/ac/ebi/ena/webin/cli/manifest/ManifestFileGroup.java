@@ -15,26 +15,26 @@ import java.util.List;
 
 public class ManifestFileGroup {
 
-    private final List<ManifestFileCount> fileCounts = new ArrayList<>();
-    private final String description;
+  private final List<ManifestFileCount> fileCounts = new ArrayList<>();
+  private final String description;
 
-    public ManifestFileGroup(String description) {
-        this.description = description;
-    }
+  public ManifestFileGroup(String description) {
+    this.description = description;
+  }
 
-    public void addFileCount(ManifestFileCount fileCount) {
-        fileCounts.add(fileCount);
-    }
+  public void addFileCount(ManifestFileCount fileCount) {
+    fileCounts.add(fileCount);
+  }
 
-    public List<ManifestFileCount> getFileCounts() {
-        return fileCounts;
-    }
+  public List<ManifestFileCount> getFileCounts() {
+    return fileCounts;
+  }
 
-    public int getFileCountsSize() {
-        return fileCounts.size();
-    }
+  public int getFileCountsSize() {
+    return fileCounts.size();
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 }

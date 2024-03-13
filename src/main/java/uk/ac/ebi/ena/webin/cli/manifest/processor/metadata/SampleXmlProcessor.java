@@ -53,10 +53,12 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
               .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
               .build();
 
-      Sample source = ExceptionUtils.executeWithRestExceptionHandling(() -> sampleXmlService.getSample(value),
-          WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(SampleXmlService.SERVICE_NAME),
-          WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(value),
-          WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(value));
+      Sample source =
+          ExceptionUtils.executeWithRestExceptionHandling(
+              () -> sampleXmlService.getSample(value),
+              WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format(SampleXmlService.SERVICE_NAME),
+              WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(value),
+              WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(value));
 
       callback.notify(source);
 

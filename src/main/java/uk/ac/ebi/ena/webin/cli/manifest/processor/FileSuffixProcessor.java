@@ -11,39 +11,36 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import java.util.List;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
-public class
-FileSuffixProcessor implements ManifestFieldProcessor {
-    private final List<String> suffixes;
+public class FileSuffixProcessor implements ManifestFieldProcessor {
+  private final List<String> suffixes;
 
+  public FileSuffixProcessor(List<String> suffixes) {
+    this.suffixes = suffixes;
+  }
 
-    public FileSuffixProcessor(List<String> suffixes) {
-        this.suffixes = suffixes;
+  @Override
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+    if (null == suffixes || suffixes.isEmpty()) {
+      return;
     }
 
-
-    @Override
-    public void
-    process(ValidationResult result, ManifestFieldValue fieldValue) {
-        if (null == suffixes || suffixes.isEmpty()) {
-            return;
-        }
-
-        for (String suffix : suffixes) {
-            if (fieldValue.getValue().endsWith(suffix)) {
-                return;
-            }
-        }
-
-        result.add(ValidationMessage.error(WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR,
-                fieldValue.getName(),
-                fieldValue.getValue(),
-                String.join(", ", suffixes)));
+    for (String suffix : suffixes) {
+      if (fieldValue.getValue().endsWith(suffix)) {
+        return;
+      }
     }
+
+    result.add(
+        ValidationMessage.error(
+            WebinCliMessage.FILE_SUFFIX_PROCESSOR_ERROR,
+            fieldValue.getName(),
+            fieldValue.getValue(),
+            String.join(", ", suffixes)));
+  }
 }

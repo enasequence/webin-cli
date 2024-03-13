@@ -17,11 +17,9 @@ import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 import java.io.File;
 import java.util.Locale;
 import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
@@ -31,19 +29,21 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 public class TaxRefSetValidationTest {
 
   private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/taxxrefset/valid");
-  private static final WebinCliExecutorBuilder<TaxRefSetManifest, ValidationResponse> executorBuilder =
-          new WebinCliExecutorBuilder(TaxRefSetManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-                  .sample(getDefaultSample());
+  private static final WebinCliExecutorBuilder<TaxRefSetManifest, ValidationResponse>
+      executorBuilder =
+          new WebinCliExecutorBuilder(
+                  TaxRefSetManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
+              .sample(getDefaultSample());
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
-            .field("NAME", "test")
-            .field("DESCRIPTION", "test_desc")
-            .field("STUDY", "ERP115786")
-            .field("TAXONOMY_SYSTEM", "NCBI")
-            .field("TAXONOMY_SYSTEM_VERSION", "1")
-            .field("CUSTOM_FIELD", "Annotation:Source of annotation")
-            .field("CUSTOM_FIELD", "ITSoneDB URL:URL within ITSoneDB");
+        .field("NAME", "test")
+        .field("DESCRIPTION", "test_desc")
+        .field("STUDY", "ERP115786")
+        .field("TAXONOMY_SYSTEM", "NCBI")
+        .field("TAXONOMY_SYSTEM_VERSION", "1")
+        .field("CUSTOM_FIELD", "Annotation:Source of annotation")
+        .field("CUSTOM_FIELD", "ITSoneDB URL:URL within ITSoneDB");
   }
 
   @Before
@@ -61,21 +61,31 @@ public class TaxRefSetValidationTest {
     assertThat(files.length).isEqualTo(1);
     String fastaFileName = files[0].getName();
 
-    File manifestFile = manifestBuilder().file(TaxRefSetManifest.FileType.TAB, tsvFileName).file(TaxRefSetManifest.FileType.FASTA, fastaFileName).build();
+    File manifestFile =
+        manifestBuilder()
+            .file(TaxRefSetManifest.FileType.TAB, tsvFileName)
+            .file(TaxRefSetManifest.FileType.FASTA, fastaFileName)
+            .build();
 
-    WebinCliExecutor<TaxRefSetManifest, ValidationResponse> executor = executorBuilder.build(manifestFile, VALID_DIR);
+    WebinCliExecutor<TaxRefSetManifest, ValidationResponse> executor =
+        executorBuilder.build(manifestFile, VALID_DIR);
     executor.readManifest();
     executor.validateSubmission();
-    assertThat(executor.getManifestReader().getManifest().files().get(TaxRefSetManifest.FileType.TAB))
-            .size()
-            .isOne();
-    assertThat(executor.getManifestReader().getManifest().files().get(TaxRefSetManifest.FileType.FASTA))
-            .size()
-            .isOne();
-    Map<String,String> customFields = executor.getManifestReader().getManifest().getCustomFields();
+    assertThat(
+            executor.getManifestReader().getManifest().files().get(TaxRefSetManifest.FileType.TAB))
+        .size()
+        .isOne();
+    assertThat(
+            executor
+                .getManifestReader()
+                .getManifest()
+                .files()
+                .get(TaxRefSetManifest.FileType.FASTA))
+        .size()
+        .isOne();
+    Map<String, String> customFields = executor.getManifestReader().getManifest().getCustomFields();
     Assert.assertEquals(2, customFields.size());
     Assert.assertEquals("Source of annotation", customFields.get("Annotation"));
     Assert.assertEquals("URL within ITSoneDB", customFields.get("ITSoneDB URL"));
-
   }
 }

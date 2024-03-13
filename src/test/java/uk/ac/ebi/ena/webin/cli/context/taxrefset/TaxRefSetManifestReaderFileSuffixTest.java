@@ -14,7 +14,6 @@ import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileSuffixTester.in
 import static uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileSuffixTester.valid;
 
 import org.junit.Test;
-
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
 public class TaxRefSetManifestReaderFileSuffixTest {
@@ -38,6 +37,5 @@ public class TaxRefSetManifestReaderFileSuffixTest {
     invalid(manifestReader, TaxRefSetManifest.FileType.TAB, ".tab");
     invalid(manifestReader, TaxRefSetManifest.FileType.FASTA, ".txt");
     invalid(manifestReader, TaxRefSetManifest.FileType.FASTA, ".fasta");
-
   }
 }

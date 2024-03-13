@@ -20,11 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import uk.ac.ebi.ena.webin.cli.context.SubmissionXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
@@ -40,157 +38,182 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
-public class
-WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
-{
-    private final WebinCliContext context;
-    private final WebinCliParameters parameters;
-    private final ManifestReader<M> manifestReader;
-    private final Validator<M,R> validator;
-    private final XmlWriter<M, R> xmlWriter;
+public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> {
+  private final WebinCliContext context;
+  private final WebinCliParameters parameters;
+  private final ManifestReader<M> manifestReader;
+  private final Validator<M, R> validator;
+  private final XmlWriter<M, R> xmlWriter;
 
-    private File validationDir;
-    private File processDir;
-    private File submitDir;
+  private File validationDir;
+  private File processDir;
+  private File submitDir;
 
-    private SubmissionBundle submissionBundle;
+  private SubmissionBundle submissionBundle;
 
-    protected R validationResponse;
+  protected R validationResponse;
 
-    private static final String REPORT_FILE = "webin-cli.report";
+  private static final String REPORT_FILE = "webin-cli.report";
 
-    private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
+  private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
 
-    public WebinCliExecutor(WebinCliContext context, WebinCliParameters parameters, ManifestReader<M> manifestReader, XmlWriter<M, R> xmlWriter, Validator<M,R> validator) {
-        this.context = context;
-        this.parameters = parameters;
-        this.manifestReader = manifestReader;
-        this.xmlWriter = xmlWriter;
-        this.validator = validator;
+  public WebinCliExecutor(
+      WebinCliContext context,
+      WebinCliParameters parameters,
+      ManifestReader<M> manifestReader,
+      XmlWriter<M, R> xmlWriter,
+      Validator<M, R> validator) {
+    this.context = context;
+    this.parameters = parameters;
+    this.manifestReader = manifestReader;
+    this.xmlWriter = xmlWriter;
+    this.validator = validator;
+  }
+
+  public final void readManifest() {
+    this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
+
+    File manifestReportFile = getManifestReportFile();
+    manifestReportFile.delete();
+
+    try {
+      getManifestReader()
+          .readManifest(
+              getParameters().getInputDir().toPath(),
+              getParameters().getManifestFile(),
+              getManifestReportFile());
+    } catch (WebinCliException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      throw WebinCliException.systemError(
+          ex, WebinCliMessage.EXECUTOR_INIT_ERROR.format(ex.getMessage()));
     }
 
-    public final void readManifest() {
-        this.validationDir = WebinCli.createOutputDir(parameters.getOutputDir(), ".");
+    if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
+      throw WebinCliException.userError(
+          WebinCliMessage.MANIFEST_READER_INVALID_MANIFEST_FILE_ERROR.format(
+              manifestReportFile.getPath()));
+    }
+  }
 
-        File manifestReportFile = getManifestReportFile();
-        manifestReportFile.delete();
+  public final void validateSubmission() {
+    this.validationDir = createSubmissionDir(WebinCliConfig.VALIDATE_DIR);
+    this.processDir = createSubmissionDir(WebinCliConfig.PROCESS_DIR);
 
-        try {
-            getManifestReader().readManifest(
-                    getParameters().getInputDir().toPath(),
-                    getParameters().getManifestFile(),
-                    getManifestReportFile());
-        } catch (WebinCliException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw WebinCliException.systemError(ex, WebinCliMessage.EXECUTOR_INIT_ERROR.format(ex.getMessage()));
-        }
+    M manifest = getManifestReader().getManifest();
+    setIgnoreErrors(manifest);
 
-        if (manifestReader == null || !manifestReader.getValidationResult().isValid()) {
-            throw WebinCliException.userError( WebinCliMessage.MANIFEST_READER_INVALID_MANIFEST_FILE_ERROR.format(manifestReportFile.getPath()) );
-        }
+    checkGenomeSubmissionRatelimit();
+
+    if (!manifest.getFiles().get().isEmpty()) {
+      for (SubmissionFile subFile : (List<SubmissionFile>) manifest.getFiles().get()) {
+        subFile.setReportFile(
+            Paths.get(getValidationDir().getPath())
+                .resolve(subFile.getFile().getName() + ".report")
+                .toFile());
+      }
+    }
+    manifest.setReportFile(getSubmissionReportFile());
+    manifest.setProcessDir(getProcessDir());
+    manifest.setWebinAuthToken(getAuthTokenFromParam());
+    manifest.setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(getTestModeFromParam()));
+    manifest.setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(getTestModeFromParam()));
+
+    try {
+      validationResponse = getValidator().validate(manifest);
+    } catch (RuntimeException ex) {
+      throw WebinCliException.systemError(ex);
+    }
+    if (validationResponse != null
+        && validationResponse.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
+      throw WebinCliException.validationError("");
+    }
+  }
+
+  private void setIgnoreErrors(M manifest) {
+    // if ignore errors is already set to true then do nothing.
+    if (manifest.isIgnoreErrors()) {
+      return;
     }
 
-    public final void validateSubmission() {
-        this.validationDir = createSubmissionDir(WebinCliConfig.VALIDATE_DIR );
-        this.processDir = createSubmissionDir(WebinCliConfig.PROCESS_DIR );
+    manifest.setIgnoreErrors(false);
+    try {
+      IgnoreErrorsService ignoreErrorsService =
+          new IgnoreErrorsService.Builder()
+              .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
+              .setCredentials(
+                  getParameters().getWebinServiceUserName(), getParameters().getPassword())
+              .build();
 
-        M manifest = getManifestReader().getManifest();
-        setIgnoreErrors(manifest);
-
-        checkGenomeSubmissionRatelimit();
-
-        if(!manifest.getFiles().get().isEmpty()) {
-            for (SubmissionFile subFile : (List<SubmissionFile>) manifest.getFiles().get()) {
-                subFile.setReportFile(Paths.get(getValidationDir().getPath()).resolve(subFile.getFile().getName() + ".report").toFile());
-            }
-        }
-        manifest.setReportFile(getSubmissionReportFile());
-        manifest.setProcessDir(getProcessDir());
-        manifest.setWebinAuthToken(getAuthTokenFromParam());
-        manifest.setWebinRestUri(RemoteServiceUrlHelper.getWebinRestV1Url(getTestModeFromParam()));
-        manifest.setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(getTestModeFromParam()));
-
-        try {
-            validationResponse = getValidator().validate(manifest);
-        } catch (RuntimeException ex) {
-            throw WebinCliException.systemError(ex);
-        }
-        if(validationResponse != null && validationResponse.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
-            throw WebinCliException.validationError("");
-        }
+      manifest.setIgnoreErrors(
+          ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName()));
+    } catch (RuntimeException ex) {
+      log.warn(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
     }
+  }
 
-    private void setIgnoreErrors(M manifest) {
-        //if ignore errors is already set to true then do nothing.
-        if (manifest.isIgnoreErrors()) {
-            return;
-        }
-
-        manifest.setIgnoreErrors(false);
-        try {
-            IgnoreErrorsService ignoreErrorsService = new IgnoreErrorsService.Builder()
-                .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
-                .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
+  private void checkGenomeSubmissionRatelimit() {
+    if (getContext().equals(WebinCliContext.genome)) {
+      M manifest = getManifestReader().getManifest();
+      if (manifest.isIgnoreErrors()) {
+        return;
+      }
+      RateLimitResult ratelimit;
+      try {
+        RatelimitService ratelimitService =
+            new RatelimitService.Builder()
+                .setWebinRestV1Uri(
+                    RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
+                .setCredentials(
+                    getParameters().getWebinServiceUserName(), getParameters().getPassword())
                 .build();
 
-            manifest.setIgnoreErrors(ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName()));
-        }
-        catch (RuntimeException ex) {
-            log.warn(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
-        }
+        String submissionAccountId = getParameters().getWebinServiceUserName();
+        String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
+        String sampleId =
+            manifest.getSample() == null ? null : manifest.getSample().getSraSampleId();
+
+        ratelimit =
+            ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId);
+      } catch (RuntimeException ex) {
+        throw WebinCliException.systemError(
+            ex, WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
+      }
+      if (ratelimit.isRateLimited()) {
+        throw WebinCliException.userError(
+            WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR_WITH_ANALYSIS_ID.format(
+                ratelimit.getLastSubmittedAnalysisId()));
+      }
     }
+  }
 
-    private void checkGenomeSubmissionRatelimit() {
-        if (getContext().equals(WebinCliContext.genome)) {
-            M manifest = getManifestReader().getManifest();
-            if (manifest.isIgnoreErrors()) {
-                return;
-            }
-            RateLimitResult ratelimit;
-            try {
-                RatelimitService ratelimitService = new RatelimitService.Builder()
-                    .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(getParameters().isTest()))
-                    .setCredentials(getParameters().getWebinServiceUserName(), getParameters().getPassword())
-                    .build();
+  public final void prepareSubmissionBundle() {
+    this.submitDir = createSubmissionDir(WebinCliConfig.SUBMIT_DIR);
 
-                String submissionAccountId = getParameters().getWebinServiceUserName();
-                String studyId = manifest.getStudy() == null ? null : manifest.getStudy().getStudyId();
-                String sampleId = manifest.getSample() == null ? null : manifest.getSample().getSraSampleId();
+    Path uploadDir =
+        Paths.get(this.parameters.isTest() ? "webin-cli-test" : "webin-cli")
+            .resolve(String.valueOf(this.context))
+            .resolve(WebinCli.getSafeOutputDir(getSubmissionName()));
 
-                ratelimit = ratelimitService.ratelimit(getContext().name(), submissionAccountId, studyId, sampleId);
-            } catch (RuntimeException ex) {
-                throw WebinCliException.systemError(ex, WebinCliMessage.RATE_LIMIT_SERVICE_SYSTEM_ERROR.text());
-            }
-            if (ratelimit.isRateLimited()) {
-                throw WebinCliException.userError(WebinCliMessage.CLI_GENOME_RATELIMIT_ERROR_WITH_ANALYSIS_ID.format(ratelimit.getLastSubmittedAnalysisId()));
-            }
-        }
-    }
+    String manifestMd5 = calculateManifestMd5();
 
-    public final void prepareSubmissionBundle() {
-        this.submitDir = createSubmissionDir(WebinCliConfig.SUBMIT_DIR );
+    Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
 
-        Path uploadDir = Paths.get( this.parameters.isTest() ? "webin-cli-test" : "webin-cli" )
-            .resolve( String.valueOf( this.context ) )
-            .resolve( WebinCli.getSafeOutputDir( getSubmissionName() ) );
+    xmls.putAll(
+        new SubmissionXmlWriter()
+            .createXml(
+                getValidationResponse(),
+                getParameters().getCenterName(),
+                WebinCli.getVersionForSubmission(parameters.getWebinSubmissionTool()),
+                getManifestFileContent(),
+                manifestMd5));
 
-        String manifestMd5 = calculateManifestMd5();
+    // Calculate MD5 checksum of data files so it can be written in to the XML.
+    List<SubmissionFile> submissionFiles = getManifestReader().getManifest().files().get();
+    submissionFiles.forEach(file -> file.setMd5(FileUtils.calculateDigest("MD5", file.getFile())));
 
-        Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
-
-        xmls.putAll(new SubmissionXmlWriter().createXml(
-            getValidationResponse(),
-            getParameters().getCenterName(),
-            WebinCli.getVersionForSubmission(parameters.getWebinSubmissionTool()),
-            getManifestFileContent(),
-            manifestMd5));
-
-        // Calculate MD5 checksum of data files so it can be written in to the XML.
-        List<SubmissionFile> submissionFiles = getManifestReader().getManifest().files().get();
-        submissionFiles.forEach(file -> file.setMd5(FileUtils.calculateDigest("MD5", file.getFile())));
-
-        xmls.putAll(xmlWriter.createXml(
+    xmls.putAll(
+        xmlWriter.createXml(
             getManifestReader().getManifest(),
             getValidationResponse(),
             getParameters().getCenterName(),
@@ -199,152 +222,159 @@ WebinCliExecutor<M extends Manifest, R extends ValidationResponse>
             getParameters().getInputDir().toPath(),
             uploadDir));
 
-        List<SubmissionBundle.SubmissionXMLFile> xmlFileList = xmls.entrySet().stream()
-            .map(entry -> {
-                String xmlFileName = entry.getKey().name().toLowerCase() + ".xml";
-                Path xmlFilePath = getSubmitDir().toPath().resolve( xmlFileName );
+    List<SubmissionBundle.SubmissionXMLFile> xmlFileList =
+        xmls.entrySet().stream()
+            .map(
+                entry -> {
+                  String xmlFileName = entry.getKey().name().toLowerCase() + ".xml";
+                  Path xmlFilePath = getSubmitDir().toPath().resolve(xmlFileName);
 
-                return new SubmissionBundle.SubmissionXMLFile(entry.getKey(), xmlFilePath.toFile(), entry.getValue());
-            }).collect(Collectors.toList());
+                  return new SubmissionBundle.SubmissionXMLFile(
+                      entry.getKey(), xmlFilePath.toFile(), entry.getValue());
+                })
+            .collect(Collectors.toList());
 
-        List<SubmissionBundle.SubmissionUploadFile> uploadFileList = new ArrayList<>();
-        submissionFiles.forEach(file -> uploadFileList.add(
-            new SubmissionBundle.SubmissionUploadFile(
-                file.getFile(),
-                file.getFile().length(),
-                FileUtils.getLastModifiedTime(file.getFile()),
-                file.getMd5())));
+    List<SubmissionBundle.SubmissionUploadFile> uploadFileList = new ArrayList<>();
+    submissionFiles.forEach(
+        file ->
+            uploadFileList.add(
+                new SubmissionBundle.SubmissionUploadFile(
+                    file.getFile(),
+                    file.getFile().length(),
+                    FileUtils.getLastModifiedTime(file.getFile()),
+                    file.getMd5())));
 
-        this.submissionBundle = new SubmissionBundle(
+    this.submissionBundle =
+        new SubmissionBundle(
             getSubmitDir(), uploadDir.toString(), uploadFileList, xmlFileList, manifestMd5);
-        if (getParameters().isSaveSubmissionBundleFile()) {
-            SubmissionBundleHelper.write(this.submissionBundle, getSubmissionBundleFileDir());
-        }
+    if (getParameters().isSaveSubmissionBundleFile()) {
+      SubmissionBundleHelper.write(this.submissionBundle, getSubmissionBundleFileDir());
+    }
+  }
+
+  public SubmissionBundle getSubmissionBundle() {
+    if (submissionBundle == null && getParameters().isSaveSubmissionBundleFile()) {
+      return SubmissionBundleHelper.read(calculateManifestMd5(), getSubmissionBundleFileDir());
     }
 
-    public SubmissionBundle getSubmissionBundle() {
-        if (submissionBundle == null && getParameters().isSaveSubmissionBundleFile()) {
-            return SubmissionBundleHelper.read(calculateManifestMd5(), getSubmissionBundleFileDir());
-        }
+    return submissionBundle;
+  }
 
-        return submissionBundle;
+  // TODO: remove
+  public WebinCliContext getContext() {
+    return context;
+  }
+
+  public ManifestReader<M> getManifestReader() {
+    return manifestReader;
+  }
+
+  public Validator<M, R> getValidator() {
+    return validator;
+  }
+
+  public XmlWriter<M, R> getXmlWriter() {
+    return xmlWriter;
+  }
+
+  public File getValidationDir() {
+    return validationDir;
+  }
+
+  public File getProcessDir() {
+    return processDir;
+  }
+
+  public File getSubmitDir() {
+    return submitDir;
+  }
+
+  public File getSubmissionBundleFileDir() {
+    if (StringUtils.isBlank(getSubmissionName())) {
+      throw WebinCliException.systemError(
+          WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
     }
 
-    // TODO: remove
-    public WebinCliContext getContext() {
-        return context;
-    }
+    return WebinCli.createOutputDir(
+        parameters.getOutputDir(), String.valueOf(context), getSubmissionName());
+  }
 
-    public ManifestReader<M> getManifestReader() {
-        return manifestReader;
-    }
+  public File getSubmissionReportFile() {
+    return Paths.get(getValidationDir().getPath()).resolve(REPORT_FILE).toFile();
+  }
 
-    public Validator<M,R> getValidator() {
-        return validator;
-    }
+  public File getManifestReportFile() {
+    File manifestFile = getParameters().getManifestFile();
 
-    public XmlWriter<M, R> getXmlWriter() {
-        return xmlWriter;
+    if (this.validationDir == null || !this.validationDir.isDirectory()) {
+      throw WebinCliException.systemError(
+          WebinCliMessage.CLI_INVALID_REPORT_DIR_ERROR.format(manifestFile.getName()));
     }
+    return new File(
+        this.validationDir,
+        Paths.get(manifestFile.getName()).getFileName().toString()
+            + WebinCliConfig.REPORT_FILE_SUFFIX);
+  }
 
-    public File getValidationDir() {
-        return validationDir;
+  public WebinCliParameters getParameters() {
+    return this.parameters;
+  }
+
+  public String getSubmissionName() {
+    String name = manifestReader.getManifest().getName();
+    if (name != null) {
+      return name.trim().replaceAll("\\s+", "_");
     }
+    return name;
+  }
 
-    public File getProcessDir() {
-        return processDir;
+  public String getSubmissionAlias() {
+    String alias = "webin-" + context.name() + "-" + getSubmissionName();
+    return alias;
+  }
+
+  public String getSubmissionTitle() {
+    String title = context.getTitlePrefix() + ": " + getSubmissionName();
+    return title;
+  }
+
+  public R getValidationResponse() {
+    return validationResponse;
+  }
+
+  private String getAuthTokenFromParam() {
+    return this.parameters.getWebinAuthToken();
+  }
+
+  private boolean getTestModeFromParam() {
+    return this.parameters.isTest();
+  }
+
+  private File createSubmissionDir(String dir) {
+    if (StringUtils.isBlank(getSubmissionName())) {
+      throw WebinCliException.systemError(
+          WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
     }
-
-    public File getSubmitDir() {
-        return submitDir;
+    File newDir =
+        WebinCli.createOutputDir(
+            parameters.getOutputDir(), String.valueOf(context), getSubmissionName(), dir);
+    if (!FileUtils.emptyDirectory(newDir)) {
+      throw WebinCliException.systemError(
+          WebinCliMessage.EXECUTOR_EMPTY_DIRECTORY_ERROR.format(newDir));
     }
+    return newDir;
+  }
 
-    public File getSubmissionBundleFileDir() {
-        if (StringUtils.isBlank(getSubmissionName())) {
-            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
-        }
-
-        return WebinCli.createOutputDir( parameters.getOutputDir(), String.valueOf( context ), getSubmissionName());
+  private String getManifestFileContent() {
+    try {
+      return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
+    } catch (IOException ioe) {
+      throw WebinCliException.userError(
+          "Exception thrown while reading manifest file", ioe.getMessage());
     }
+  }
 
-    public File
-    getSubmissionReportFile() {
-        return Paths.get(getValidationDir().getPath()).resolve(REPORT_FILE).toFile();
-    }
-
-    public File getManifestReportFile() {
-      File manifestFile = getParameters().getManifestFile();
-
-      if (this.validationDir == null || !this.validationDir.isDirectory()) {
-        throw WebinCliException.systemError(
-                WebinCliMessage.CLI_INVALID_REPORT_DIR_ERROR.format(manifestFile.getName()));
-      }
-      return new File(
-              this.validationDir,
-              Paths.get(manifestFile.getName()).getFileName().toString()
-                      + WebinCliConfig.REPORT_FILE_SUFFIX);
-    }
-
-    public WebinCliParameters
-    getParameters()
-    {
-        return this.parameters;
-    }
-
-    public String
-    getSubmissionName()
-    {
-        String name = manifestReader.getManifest().getName();
-        if (name != null) {
-            return name.trim().replaceAll("\\s+", "_");
-        }
-        return name;
-    }
-
-    public String
-    getSubmissionAlias() {
-        String alias = "webin-" + context.name() + "-" + getSubmissionName();
-        return alias;
-    }
-
-    public String
-    getSubmissionTitle() {
-        String title = context.getTitlePrefix() + ": " + getSubmissionName();
-        return title;
-    }
-
-    public R getValidationResponse() {
-        return validationResponse;
-    }
-    
-    private String getAuthTokenFromParam(){
-        return this.parameters.getWebinAuthToken();
-    }
-
-    private boolean getTestModeFromParam(){
-        return this.parameters.isTest();
-    }
-
-    private File createSubmissionDir(String dir) {
-        if (StringUtils.isBlank(getSubmissionName())) {
-            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
-        }
-        File newDir = WebinCli.createOutputDir( parameters.getOutputDir(), String.valueOf( context ), getSubmissionName(), dir);
-        if (!FileUtils.emptyDirectory(newDir)) {
-            throw WebinCliException.systemError(WebinCliMessage.EXECUTOR_EMPTY_DIRECTORY_ERROR.format(newDir));
-        }
-        return newDir;
-    }
-
-    private String getManifestFileContent() {
-        try {
-            return new String(Files.readAllBytes(getParameters().getManifestFile().toPath()));
-        } catch (IOException ioe) {
-            throw WebinCliException.userError( "Exception thrown while reading manifest file", ioe.getMessage());
-        }
-    }
-
-    private String calculateManifestMd5() {
-        return FileUtils.calculateDigest( "MD5", parameters.getManifestFile());
-    }
+  private String calculateManifestMd5() {
+    return FileUtils.calculateDigest("MD5", parameters.getManifestFile());
+  }
 }

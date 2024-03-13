@@ -46,7 +46,7 @@ public class MetadataProcessorFactory {
     }
     return studyProcessor;
   }
-  
+
   public SampleXmlProcessor getSampleXmlProcessor() {
     if (parameters != null && parameters.getSampleXmlProcessor() != null) {
       return parameters.getSampleXmlProcessor();
@@ -79,7 +79,7 @@ public class MetadataProcessorFactory {
 
   public CustomFieldProcessor getCustomFieldProcessor() {
 
-    if ( customFieldProcessor == null) {
+    if (customFieldProcessor == null) {
       customFieldProcessor = new CustomFieldProcessor();
     }
     return customFieldProcessor;

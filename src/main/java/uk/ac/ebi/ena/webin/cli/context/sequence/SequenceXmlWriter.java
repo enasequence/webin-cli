@@ -17,15 +17,14 @@ import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jdom2.Element;
-
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
-public class SequenceXmlWriter extends SequenceToolsXmlWriter<SequenceManifest, ValidationResponse> {
+public class SequenceXmlWriter
+    extends SequenceToolsXmlWriter<SequenceManifest, ValidationResponse> {
 
   @Override
   protected Element createXmlAnalysisTypeElement(SequenceManifest manifest) {
@@ -47,11 +46,27 @@ public class SequenceXmlWriter extends SequenceToolsXmlWriter<SequenceManifest, 
 
     manifest.files(FileType.FLATFILE).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "flatfile")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "flatfile")));
 
     manifest.files(FileType.TAB).stream()
         .map(file -> file.getFile().toPath())
-        .forEach(file -> list.add(createFileElement(inputDir, uploadDir, file, FileUtils.calculateDigest("MD5", file.toFile()), "tab")));
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "tab")));
 
     return list;
   }

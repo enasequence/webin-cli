@@ -18,12 +18,10 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
@@ -162,7 +160,8 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
 
       if (manifest.getSubmissionTool() != null && !manifest.getSubmissionTool().isEmpty()) {
         Element submissionToolExpAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL");
-        Element submissionToolExpAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionTool());
+        Element submissionToolExpAttributeValueE =
+            new Element("VALUE").setText(manifest.getSubmissionTool());
 
         Element submissionToolExpAttributeE = new Element("EXPERIMENT_ATTRIBUTE");
         submissionToolExpAttributeE.addContent(submissionToolExpAttributeTagE);
@@ -171,9 +170,12 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
         expAttributesE.addContent(submissionToolExpAttributeE);
       }
 
-      if (manifest.getSubmissionToolVersion() != null && !manifest.getSubmissionToolVersion().isEmpty()) {
-        Element submissionToolVersionExpAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
-        Element submissionToolVersionExpAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionToolVersion());
+      if (manifest.getSubmissionToolVersion() != null
+          && !manifest.getSubmissionToolVersion().isEmpty()) {
+        Element submissionToolVersionExpAttributeTagE =
+            new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
+        Element submissionToolVersionExpAttributeValueE =
+            new Element("VALUE").setText(manifest.getSubmissionToolVersion());
 
         Element submissionToolVersionExpAttributeE = new Element("EXPERIMENT_ATTRIBUTE");
         submissionToolVersionExpAttributeE.addContent(submissionToolVersionExpAttributeTagE);
@@ -227,22 +229,47 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
       dataBlockE.addContent(filesE);
 
       manifest.files(FileType.BAM).stream()
-          .forEach(file -> filesE.addContent(
-              createFileElement(inputDir, uploadDir, file.getFile().toPath(), file.getMd5(), "bam", null)));
+          .forEach(
+              file ->
+                  filesE.addContent(
+                      createFileElement(
+                          inputDir,
+                          uploadDir,
+                          file.getFile().toPath(),
+                          file.getMd5(),
+                          "bam",
+                          null)));
 
       manifest.files(FileType.CRAM).stream()
-          .forEach(file -> filesE.addContent(
-              createFileElement(inputDir, uploadDir, file.getFile().toPath(), file.getMd5(), "cram", null)));
+          .forEach(
+              file ->
+                  filesE.addContent(
+                      createFileElement(
+                          inputDir,
+                          uploadDir,
+                          file.getFile().toPath(),
+                          file.getMd5(),
+                          "cram",
+                          null)));
 
       manifest.files(FileType.FASTQ).stream()
-          .forEach(file -> filesE.addContent(
-              createFileElement(inputDir, uploadDir, file.getFile().toPath(), file.getMd5(), "fastq", file.getAttributes())));
+          .forEach(
+              file ->
+                  filesE.addContent(
+                      createFileElement(
+                          inputDir,
+                          uploadDir,
+                          file.getFile().toPath(),
+                          file.getMd5(),
+                          "fastq",
+                          file.getAttributes())));
 
       Element runAttributesE = new Element("RUN_ATTRIBUTES");
 
       if (manifest.getSubmissionTool() != null && !manifest.getSubmissionTool().isEmpty()) {
         Element submissionToolRunAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL");
-        Element submissionToolRunAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionTool());
+        Element submissionToolRunAttributeValueE =
+            new Element("VALUE").setText(manifest.getSubmissionTool());
 
         Element submissionToolRunAttributeE = new Element("RUN_ATTRIBUTE");
         submissionToolRunAttributeE.addContent(submissionToolRunAttributeTagE);
@@ -251,9 +278,12 @@ public class ReadsXmlWriter implements XmlWriter<ReadsManifest, ReadsValidationR
         runAttributesE.addContent(submissionToolRunAttributeE);
       }
 
-      if (manifest.getSubmissionToolVersion() != null && !manifest.getSubmissionToolVersion().isEmpty()) {
-        Element submissionToolVersionRunAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
-        Element submissionToolVersionRunAttributeValueE = new Element("VALUE").setText(manifest.getSubmissionToolVersion());
+      if (manifest.getSubmissionToolVersion() != null
+          && !manifest.getSubmissionToolVersion().isEmpty()) {
+        Element submissionToolVersionRunAttributeTagE =
+            new Element("TAG").setText("SUBMISSION_TOOL_VERSION");
+        Element submissionToolVersionRunAttributeValueE =
+            new Element("VALUE").setText(manifest.getSubmissionToolVersion());
 
         Element submissionToolVersionRunAttributeE = new Element("RUN_ATTRIBUTE");
         submissionToolVersionRunAttributeE.addContent(submissionToolVersionRunAttributeTagE);

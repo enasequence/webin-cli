@@ -11,48 +11,52 @@
 package uk.ac.ebi.ena.webin.cli.utils;
 
 import java.util.function.Supplier;
-
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
-
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 
 public class ExceptionUtils {
 
-    /**
-     * Runs given code and translates any {@link RestClientException} to {@link WebinCliException} if thrown.
-     * Mapping rules are:<br/><br/>
-     * HttpClientErrorException.Unauthorized or HttpClientErrorException.Forbidden -> WebinCliException.userError<br/>
-     * HttpClientErrorException.NotFound -> WebinCliException.validationError<br/>
-     * RestClientException -> WebinCliException.systemError
-     *
-     * @param supplier
-     * @param authenticationUserErrorMessage Message to use for WebinCliException.userError in case of authentication failure.
-     * @param validationErrorMessage Message to use for WebinCliException.validationError thrown in case of validation error.
-     *                               If this is null and validation error occurs then WebinCliException.systemError is thrown instead.
-     * @param systemErrorMessage Message to use for WebinCliException.systemError thrown in case of server error.
-     * @return Returns back what the given supplier returns.
-     * @param <T>
-     * @throws WebinCliException
-     */
-    public static <T> T executeWithRestExceptionHandling(
-        Supplier<T> supplier,
-        String authenticationUserErrorMessage,
-        String validationErrorMessage,
-        String systemErrorMessage) throws WebinCliException {
+  /**
+   * Runs given code and translates any {@link RestClientException} to {@link WebinCliException} if
+   * thrown. Mapping rules are:<br>
+   * <br>
+   * HttpClientErrorException.Unauthorized or HttpClientErrorException.Forbidden ->
+   * WebinCliException.userError<br>
+   * HttpClientErrorException.NotFound -> WebinCliException.validationError<br>
+   * RestClientException -> WebinCliException.systemError
+   *
+   * @param supplier
+   * @param authenticationUserErrorMessage Message to use for WebinCliException.userError in case of
+   *     authentication failure.
+   * @param validationErrorMessage Message to use for WebinCliException.validationError thrown in
+   *     case of validation error. If this is null and validation error occurs then
+   *     WebinCliException.systemError is thrown instead.
+   * @param systemErrorMessage Message to use for WebinCliException.systemError thrown in case of
+   *     server error.
+   * @return Returns back what the given supplier returns.
+   * @param <T>
+   * @throws WebinCliException
+   */
+  public static <T> T executeWithRestExceptionHandling(
+      Supplier<T> supplier,
+      String authenticationUserErrorMessage,
+      String validationErrorMessage,
+      String systemErrorMessage)
+      throws WebinCliException {
 
-        try {
-            return supplier.get();
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
-            throw WebinCliException.userError(ex, authenticationUserErrorMessage);
-        } catch (HttpClientErrorException.NotFound ex) {
-            if (validationErrorMessage != null) {
-                throw WebinCliException.validationError(ex, validationErrorMessage);
-            } else {
-                throw WebinCliException.systemError(ex, systemErrorMessage);
-            }
-        } catch (RestClientException ex) {
-            throw WebinCliException.systemError(ex, systemErrorMessage);
-        }
+    try {
+      return supplier.get();
+    } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden ex) {
+      throw WebinCliException.userError(ex, authenticationUserErrorMessage);
+    } catch (HttpClientErrorException.NotFound ex) {
+      if (validationErrorMessage != null) {
+        throw WebinCliException.validationError(ex, validationErrorMessage);
+      } else {
+        throw WebinCliException.systemError(ex, systemErrorMessage);
+      }
+    } catch (RestClientException ex) {
+      throw WebinCliException.systemError(ex, systemErrorMessage);
     }
+  }
 }
