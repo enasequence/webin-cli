@@ -91,6 +91,7 @@ public class SubmissionBundleHelper {
     for (SubmissionBundle.SubmissionXMLFile file : sb.getXMLFileList()) {
       if (!file.getFile().exists()) {
         result.add(ValidationMessage.info("Generated xml file not found: " + file.getFile()));
+        continue;
       }
 
       try {
