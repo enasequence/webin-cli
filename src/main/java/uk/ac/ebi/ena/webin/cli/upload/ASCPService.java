@@ -123,7 +123,9 @@ public class ASCPService implements UploadService {
                 error += result.getStderr();
               }
 
-              log.warn("Client error : \n{}", error);
+              if (!error.isEmpty()) {
+                log.warn("Client error : \n{}", error);
+              }
 
               throw WebinCliException.systemError(WebinCliMessage.ASCP_UPLOAD_ERROR.text());
             }
