@@ -33,7 +33,7 @@ public class ShellExec {
   private static class StreamConsumer extends Thread {
     private final Reader ireader;
 
-    private final StringBuilder consumedInput = new StringBuilder(8192);
+    private final StringBuffer consumedInput = new StringBuffer(8192);
 
     public StreamConsumer(InputStream istream) {
       this.ireader = new InputStreamReader(istream, StandardCharsets.UTF_8);
