@@ -138,7 +138,7 @@ public class FtpService implements UploadService {
               context -> {
                 ftpClient.connect(SERVER, FTP_PORT);
 
-                // As connect() method does not return anything. It is adivised to check the reply
+                // As connect() method does not return anything. It is advised to check the reply
                 // code after calling
                 // it. Here we are only interested in logging the FTP reply if the return code is
                 // either in the

@@ -10,23 +10,23 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.*;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliContext;
+import uk.ac.ebi.ena.webin.cli.XmlTester;
 
 public class TaxRefSetXmlTest {
+
+  private static final File RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/taxxrefset");
 
   private static final String NAME = "test_taxon_xref_set";
 
@@ -35,48 +35,14 @@ public class TaxRefSetXmlTest {
     Locale.setDefault(Locale.UK);
   }
 
-  private static TaxRefSetManifest getDefaultManifest() {
-    TaxRefSetManifest manifest = new TaxRefSetManifest();
-    manifest.setName(NAME);
-    manifest.setStudy(new Study());
-    manifest.getStudy().setBioProjectId("test_study");
-    manifest.setDescription("test_description");
-    manifest.setTaxonomySystem("12345");
-    Map<String, String> customFields = new LinkedHashMap<>();
-    customFields.put("test_key_1", "test_val_1");
-    customFields.put("test_key_2", "test_val_2");
-    manifest.addCustomFields(customFields);
-
-    return manifest;
-  }
-
-  private static SubmissionBundle prepareSubmissionBundle(TaxRefSetManifest manifest) {
-    TaxRefSetManifestReader manifestReader = mock(TaxRefSetManifestReader.class);
-    when(manifestReader.getManifest()).thenReturn(manifest);
-    WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
-    parameters.setOutputDir(WebinCliTestUtils.createTempDir());
-    parameters.setManifestFile(TempFileBuilder.empty().toFile());
-    parameters.setTest(false);
-    WebinCliExecutor<TaxRefSetManifest, ValidationResponse> executor =
-        (WebinCliExecutor<TaxRefSetManifest, ValidationResponse>)
-            WebinCliContext.taxrefset.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundle();
-    return executor.getSubmissionBundle();
-  }
-
   @Test
-  public void testFastaAndTsvFile() {
-    TaxRefSetManifest manifest = getDefaultManifest();
+  public void testFastaAndTsvFile() throws Throwable {
+    ManifestBuilder manifestBuilder =
+        addDefaultFields(new ManifestBuilder())
+            .file("FASTA", "valid/valid.fasta.gz")
+            .file("TAB", "valid/valid_w_customs.tsv.gz");
 
-    Path fastaFile = TempFileBuilder.gzip("fastafile.dat.gz", "ID   ;");
-    Path tsvFile = TempFileBuilder.gzip("tabFile.dat.gz", "ID   ;");
-    manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.FASTA, fastaFile.toFile()));
-    manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.TAB, tsvFile.toFile()));
-
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
-
-    String analysisXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
 
     XmlTester.assertXml(
         analysisXml,
@@ -84,51 +50,98 @@ public class TaxRefSetXmlTest {
             + "<ANALYSIS>\n"
             + "<TITLE>Taxonomy reference set: test_taxon_xref_set</TITLE>\n"
             + "<DESCRIPTION>test_description</DESCRIPTION>\n"
-            + "<STUDY_REF accession=\"test_study\"/>\n"
+            + "<STUDY_REF accession=\"PRJNA272616\"/>\n"
             + "<ANALYSIS_TYPE>\n"
             + "<TAXONOMIC_REFERENCE_SET>\n"
             + "<NAME>test_taxon_xref_set</NAME>\n"
-            + "<TAXONOMY_SYSTEM>12345</TAXONOMY_SYSTEM>\n"
+            + "<TAXONOMY_SYSTEM>NCBI</TAXONOMY_SYSTEM>\n"
+            + "<TAXONOMY_SYSTEM_VERSION>1</TAXONOMY_SYSTEM_VERSION>\n"
             + "<CUSTOM_FIELDS>\n"
             + "<FIELD>\n"
-            + "<NAME>test_key_1</NAME>\n"
-            + "<DESCRIPTION>test_val_1</DESCRIPTION>\n"
+            + "<NAME>Annotation</NAME>\n"
+            + "<DESCRIPTION>Source of annotation</DESCRIPTION>\n"
             + "</FIELD>\n"
             + "<FIELD>\n"
-            + "<NAME>test_key_2</NAME>\n"
-            + "<DESCRIPTION>test_val_2</DESCRIPTION>\n"
+            + "<NAME>ITSoneDB URL</NAME>\n"
+            + "<DESCRIPTION>URL within ITSoneDB</DESCRIPTION>\n"
             + "</FIELD>\n"
             + "</CUSTOM_FIELDS>\n"
             + "</TAXONOMIC_REFERENCE_SET>\n"
             + "</ANALYSIS_TYPE>\n"
             + "<FILES>\n"
-            + "      <FILE filename=\"webin-cli/taxrefset/"
-            + NAME
-            + "/"
-            + fastaFile.getFileName()
-            + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"
-            + "      <FILE filename=\"webin-cli/taxrefset/"
-            + NAME
-            + "/"
-            + tsvFile.getFileName()
-            + "\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"e334ca8a758084ba2f9f5975e798039e\" />\n"
+            + "      <FILE filename=\"webin-cli-test/taxrefset/test_taxon_xref_set/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"7ff83b2954a1a9ac8f5e2a1d067d05be\" />\n"
+            + "      <FILE filename=\"webin-cli-test/taxrefset/test_taxon_xref_set/valid_w_customs.tsv.gz\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"519fb2891a2b356983e278209989df33\"/>\n"
             + "</FILES>\n"
             + "</ANALYSIS>\n"
             + "</ANALYSIS_SET>");
   }
 
   @Test
-  public void testSubmissionXml() {
-    TaxRefSetManifest manifest = getDefaultManifest();
+  public void testSubmissionXml() throws Throwable {
+    ManifestBuilder manifestBuilder =
+        addDefaultFields(new ManifestBuilder())
+            .file("FASTA", "valid/valid.fasta.gz")
+            .file("TAB", "valid/valid_w_customs.tsv.gz");
 
-    Path fastaFile = TempFileBuilder.gzip("fastafile.dat.gz", "ID   ;");
-    Path tsvFile = TempFileBuilder.gzip("tabFile.dat.gz", "ID   ;");
-    manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.FASTA, fastaFile.toFile()));
-    manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.TAB, tsvFile.toFile()));
+    String submissionXml = getGeneratedXml(manifestBuilder, "submission.xml");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    String expected =
+        "<SUBMISSION_SET>\n"
+            + "  <SUBMISSION>\n"
+            + "    <ACTIONS>\n"
+            + "        <ACTION>\n"
+            + "               <ADD />\n"
+            + "        </ACTION>\n"
+            + "    </ACTIONS>\n"
+            + "    <SUBMISSION_ATTRIBUTES>\n"
+            + "        <SUBMISSION_ATTRIBUTE>\n"
+            + "            <TAG>ENA-SUBMISSION-TOOL</TAG>\n"
+            + "            <VALUE>WebinCli</VALUE>\n"
+            + "        </SUBMISSION_ATTRIBUTE>\n"
+            + "        <SUBMISSION_ATTRIBUTE>\n"
+            + "            <TAG>ENA-MANIFEST-FILE</TAG>\n"
+            + "            <VALUE><![CDATA[NAME\ttest_taxon_xref_set\nDESCRIPTION\ttest_description\nSTUDY\tSRP052303\nTAXONOMY_SYSTEM\tNCBI\nTAXONOMY_SYSTEM_VERSION\t1\nCUSTOM_FIELD\tAnnotation:Source of annotation\nCUSTOM_FIELD\tITSoneDB URL:URL within ITSoneDB\nFASTA\tvalid/valid.fasta.gz\nTAB\tvalid/valid_w_customs.tsv.gz]]></VALUE>\n"
+            + "        </SUBMISSION_ATTRIBUTE>\n"
+            + "        <SUBMISSION_ATTRIBUTE>\n"
+            + "            <TAG>ENA-MANIFEST-FILE-MD5</TAG>\n"
+            + "            <VALUE>3e986982764e706803351c4c11a3f426</VALUE>\n"
+            + "        </SUBMISSION_ATTRIBUTE>\n"
+            + "    </SUBMISSION_ATTRIBUTES>\n"
+            + "  </SUBMISSION>\n"
+            + "</SUBMISSION_SET>";
 
-    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
+    XmlTester.assertXml(submissionXml, expected);
+  }
+
+  private ManifestBuilder addDefaultFields(ManifestBuilder manifestBuilder) {
+    return manifestBuilder
+        .field("NAME", "test_taxon_xref_set")
+        .field("DESCRIPTION", "test_description")
+        .field("STUDY", "SRP052303")
+        .field("TAXONOMY_SYSTEM", "NCBI")
+        .field("TAXONOMY_SYSTEM_VERSION", "1")
+        .field("CUSTOM_FIELD", "Annotation:Source of annotation")
+        .field("CUSTOM_FIELD", "ITSoneDB URL:URL within ITSoneDB");
+  }
+
+  private String getGeneratedXml(ManifestBuilder manifestBuilder, String xmlFileName)
+      throws Throwable {
+    WebinCli webinCli =
+        new WebinCliBuilder(WebinCliContext.taxrefset)
+            .submit(false)
+            .build(RESOURCE_DIR, manifestBuilder);
+    webinCli.execute();
+
+    Path generatedXml =
+        webinCli
+            .getParameters()
+            .getOutputDir()
+            .toPath()
+            .resolve(webinCli.getParameters().getContext().toString())
+            .resolve("test_taxon_xref_set")
+            .resolve("submit")
+            .resolve(xmlFileName);
+
+    return new String(Files.readAllBytes(generatedXml));
   }
 }

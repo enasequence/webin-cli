@@ -33,7 +33,7 @@ public class SampleXmlProcessorTest {
     SampleXmlProcessor processor =
         new SampleXmlProcessor(
             parameters,
-            sample -> {
+            (fieldGroup, sample) -> {
               Assert.assertNotNull(sample);
 
               boolean assertStrain = false;
@@ -54,7 +54,8 @@ public class SampleXmlProcessorTest {
 
   @Test
   public void testIncorrect() {
-    SampleXmlProcessor processor = new SampleXmlProcessor(parameters, Assert::assertNull);
+    SampleXmlProcessor processor =
+        new SampleXmlProcessor(parameters, (fieldGroup, sample) -> Assert.assertNull(sample));
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "SRP000392");
     ValidationResult result = new ValidationResult();
     processor.process(result, fieldValue);

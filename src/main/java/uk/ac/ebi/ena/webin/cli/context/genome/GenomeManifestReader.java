@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -34,7 +35,6 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
 
   public interface Field {
-    String NAME = "NAME";
     String ASSEMBLYNAME = "ASSEMBLYNAME";
     String STUDY = "STUDY";
     String SAMPLE = "SAMPLE";
@@ -106,8 +106,6 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
               .required(Field.FASTA)
               .build();
 
-  private final GenomeManifest manifest = new GenomeManifest();
-
   public GenomeManifestReader(WebinCliParameters parameters, MetadataProcessorFactory factory) {
     super(
         parameters,
@@ -115,7 +113,7 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
         new ManifestFieldDefinition.Builder()
             .meta()
             .required()
-            .name(Field.NAME)
+            .name(Fields.NAME)
             .desc(Description.NAME)
             .synonym(Field.ASSEMBLYNAME)
             .and()
@@ -266,29 +264,35 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .build());
 
     if (factory.getStudyProcessor() != null) {
-      factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
+      factory
+          .getStudyProcessor()
+          .setCallback((fieldGroup, study) -> getManifest(fieldGroup).setStudy(study));
     }
     if (factory.getSampleProcessor() != null) {
-      factory.getSampleProcessor().setCallback(sample -> manifest.setSample(sample));
+      factory
+          .getSampleProcessor()
+          .setCallback((fieldGroup, sample) -> getManifest(fieldGroup).setSample(sample));
     }
     if (factory.getRunProcessor() != null) {
-      factory.getRunProcessor().setCallback(run -> manifest.setRun(run));
+      factory
+          .getRunProcessor()
+          .setCallback((fieldGroup, runs) -> getManifest(fieldGroup).setRun(runs));
     }
     if (factory.getAnalysisProcessor() != null) {
-      factory.getAnalysisProcessor().setCallback(analysis -> manifest.setAnalysis(analysis));
+      factory
+          .getAnalysisProcessor()
+          .setCallback((fieldGroup, analyses) -> getManifest(fieldGroup).setAnalysis(analyses));
     }
     if (factory.getSampleXmlProcessor() != null) {
       factory
           .getSampleXmlProcessor()
           .setCallback(
-              sample -> {
+              (fieldGroup, sample) -> {
+                GenomeManifest manifest = getManifest(fieldGroup);
+
                 manifest.getSample().setName(sample.getName());
                 manifest.getSample().setAttributes(sample.getAttributes());
               });
-    }
-
-    if (parameters != null) {
-      manifest.setQuick(parameters.isQuick());
     }
   }
 
@@ -327,99 +331,116 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
 
   @Override
   public void processManifest() {
-    Map<String, String> authorAndAddress =
-        getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
-    if (!authorAndAddress.isEmpty()) {
-      if (authorAndAddress.size() == 2) {
-        manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
-        manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
-      } else {
-        error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
-      }
-    }
-
-    manifest.setName(getManifestReaderResult().getValue(Field.NAME));
-    manifest.setDescription(getManifestReaderResult().getValue(Field.DESCRIPTION));
-    manifest.setPlatform(getManifestReaderResult().getValue(Field.PLATFORM));
-    manifest.setProgram(getManifestReaderResult().getValue(Field.PROGRAM));
-    manifest.setMoleculeType(
-        getManifestReaderResult().getValue(Field.MOLECULETYPE) == null
-            ? MOLECULE_TYPE_DEFAULT
-            : getManifestReaderResult().getValue(Field.MOLECULETYPE));
-    getAndValidatePositiveFloat(getManifestReaderResult().getField(Field.COVERAGE));
-    manifest.setCoverage(getManifestReaderResult().getValue(Field.COVERAGE));
-
-    if (getManifestReaderResult().getCount(Field.MINGAPLENGTH) > 0) {
-      manifest.setMinGapLength(
-          getAndValidatePositiveInteger(getManifestReaderResult().getField(Field.MINGAPLENGTH)));
-    }
-
-    manifest.setAssemblyType(getManifestReaderResult().getValue(Field.ASSEMBLY_TYPE));
-
-    if (getManifestReaderResult().getCount(Field.TPA) > 0) {
-      manifest.setTpa(getAndValidateBoolean(getManifestReaderResult().getField(Field.TPA)));
-    }
-
-    manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
-    manifest.setSubmissionToolVersion(
-        getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
-
-    manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
-
-    SubmissionFiles<GenomeManifest.FileType> submissionFiles = manifest.files();
-
-    getFiles(getInputDir(), getManifestReaderResult(), Field.FASTA)
+    getManifestReaderResult()
+        .getManifestFieldGroups()
         .forEach(
-            fastaFile ->
-                submissionFiles.add(new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile)));
-    getFiles(getInputDir(), getManifestReaderResult(), Field.AGP)
-        .forEach(
-            agpFile ->
-                submissionFiles.add(new SubmissionFile(GenomeManifest.FileType.AGP, agpFile)));
-    getFiles(getInputDir(), getManifestReaderResult(), Field.FLATFILE)
-        .forEach(
-            flatFile ->
-                submissionFiles.add(
-                    new SubmissionFile(GenomeManifest.FileType.FLATFILE, flatFile)));
-    getFiles(getInputDir(), getManifestReaderResult(), Field.CHROMOSOME_LIST)
-        .forEach(
-            chromosomeListFile ->
-                submissionFiles.add(
-                    new SubmissionFile(
-                        GenomeManifest.FileType.CHROMOSOME_LIST, chromosomeListFile)));
-    getFiles(getInputDir(), getManifestReaderResult(), Field.UNLOCALISED_LIST)
-        .forEach(
-            unlocalisedListFile ->
-                submissionFiles.add(
-                    new SubmissionFile(
-                        GenomeManifest.FileType.UNLOCALISED_LIST, unlocalisedListFile)));
+            fieldGroup -> {
+              GenomeManifest manifest = getManifest(fieldGroup);
 
-    // "primary metagenome" and "binned metagenome" checks
-    if (ASSEMBLY_TYPE_PRIMARY_METAGENOME.equals(
-            getManifestReaderResult().getValue(Field.ASSEMBLY_TYPE))
-        || ASSEMBLY_TYPE_BINNED_METAGENOME.equals(
-            getManifestReaderResult().getValue(Field.ASSEMBLY_TYPE))
-        || ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY.equals(
-            getManifestReaderResult().getValue(Field.ASSEMBLY_TYPE))) {
-      if (submissionFiles.get().stream()
-          .anyMatch(file -> GenomeManifest.FileType.FASTA != file.getFileType())) {
-        error(
-            WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR,
-            getFileGroupText(
-                PRIMARY_AND_BINNED_METAGENOME_AND_CLINICAL_ISOLATE_ASSEMBLY_FILE_GROUPS),
-            " for assembly types: \""
-                + ASSEMBLY_TYPE_PRIMARY_METAGENOME
-                + "\" , \""
-                + ASSEMBLY_TYPE_BINNED_METAGENOME
-                + "\" and \""
-                + ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY
-                + "\"");
-      }
-    }
+              if (getWebinCliParameters() != null) {
+                manifest.setQuick(getWebinCliParameters().isQuick());
+              }
+
+              Map<String, String> authorAndAddress =
+                  fieldGroup.getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+              if (!authorAndAddress.isEmpty()) {
+                if (authorAndAddress.size() == 2) {
+                  manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
+                  manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
+                } else {
+                  error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
+                }
+              }
+
+              manifest.setName(fieldGroup.getValue(Fields.NAME));
+              manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
+              manifest.setPlatform(fieldGroup.getValue(Field.PLATFORM));
+              manifest.setProgram(fieldGroup.getValue(Field.PROGRAM));
+              manifest.setMoleculeType(
+                  fieldGroup.getValue(Field.MOLECULETYPE) == null
+                      ? MOLECULE_TYPE_DEFAULT
+                      : fieldGroup.getValue(Field.MOLECULETYPE));
+              getAndValidatePositiveFloat(fieldGroup.getField(Field.COVERAGE));
+              manifest.setCoverage(fieldGroup.getValue(Field.COVERAGE));
+
+              if (fieldGroup.getCount(Field.MINGAPLENGTH) > 0) {
+                manifest.setMinGapLength(
+                    getAndValidatePositiveInteger(fieldGroup.getField(Field.MINGAPLENGTH)));
+              }
+
+              manifest.setAssemblyType(fieldGroup.getValue(Field.ASSEMBLY_TYPE));
+
+              if (fieldGroup.getCount(Field.TPA) > 0) {
+                manifest.setTpa(getAndValidateBoolean(fieldGroup.getField(Field.TPA)));
+              }
+
+              manifest.setSubmissionTool(fieldGroup.getValue(Fields.SUBMISSION_TOOL));
+              manifest.setSubmissionToolVersion(
+                  fieldGroup.getValue(Fields.SUBMISSION_TOOL_VERSION));
+
+              manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+
+              SubmissionFiles<GenomeManifest.FileType> submissionFiles = manifest.files();
+
+              getFiles(getInputDir(), fieldGroup, Field.FASTA)
+                  .forEach(
+                      fastaFile ->
+                          submissionFiles.add(
+                              new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile)));
+              getFiles(getInputDir(), fieldGroup, Field.AGP)
+                  .forEach(
+                      agpFile ->
+                          submissionFiles.add(
+                              new SubmissionFile(GenomeManifest.FileType.AGP, agpFile)));
+              getFiles(getInputDir(), fieldGroup, Field.FLATFILE)
+                  .forEach(
+                      flatFile ->
+                          submissionFiles.add(
+                              new SubmissionFile(GenomeManifest.FileType.FLATFILE, flatFile)));
+              getFiles(getInputDir(), fieldGroup, Field.CHROMOSOME_LIST)
+                  .forEach(
+                      chromosomeListFile ->
+                          submissionFiles.add(
+                              new SubmissionFile(
+                                  GenomeManifest.FileType.CHROMOSOME_LIST, chromosomeListFile)));
+              getFiles(getInputDir(), fieldGroup, Field.UNLOCALISED_LIST)
+                  .forEach(
+                      unlocalisedListFile ->
+                          submissionFiles.add(
+                              new SubmissionFile(
+                                  GenomeManifest.FileType.UNLOCALISED_LIST, unlocalisedListFile)));
+
+              // "primary metagenome" and "binned metagenome" checks
+              if (ASSEMBLY_TYPE_PRIMARY_METAGENOME.equals(fieldGroup.getValue(Field.ASSEMBLY_TYPE))
+                  || ASSEMBLY_TYPE_BINNED_METAGENOME.equals(
+                      fieldGroup.getValue(Field.ASSEMBLY_TYPE))
+                  || ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY.equals(
+                      fieldGroup.getValue(Field.ASSEMBLY_TYPE))) {
+                if (submissionFiles.get().stream()
+                    .anyMatch(file -> GenomeManifest.FileType.FASTA != file.getFileType())) {
+                  error(
+                      WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR,
+                      getFileGroupText(
+                          PRIMARY_AND_BINNED_METAGENOME_AND_CLINICAL_ISOLATE_ASSEMBLY_FILE_GROUPS),
+                      " for assembly types: \""
+                          + ASSEMBLY_TYPE_PRIMARY_METAGENOME
+                          + "\" , \""
+                          + ASSEMBLY_TYPE_BINNED_METAGENOME
+                          + "\" and \""
+                          + ASSEMBLY_TYPE_CLINICAL_ISOLATE_ASSEMBLY
+                          + "\"");
+                }
+              }
+            });
   }
 
   @Override
-  public GenomeManifest getManifest() {
-    return manifest;
+  public Collection<GenomeManifest> getManifests() {
+    return nameFieldToManifestMap.values();
+  }
+
+  @Override
+  protected GenomeManifest createManifest() {
+    return new GenomeManifest();
   }
 }

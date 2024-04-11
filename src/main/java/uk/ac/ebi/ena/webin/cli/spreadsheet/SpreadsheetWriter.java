@@ -86,7 +86,7 @@ public class SpreadsheetWriter {
   private ArrayList<ManifestFieldDefinition> getFields() {
     ManifestReader manifest = spreadsheetContext.getManifest();
     ArrayList<ManifestFieldDefinition> fields = new ArrayList<>();
-    List<ManifestFieldDefinition> manifestFields = manifest.getFields();
+    List<ManifestFieldDefinition> manifestFields = manifest.getFieldDefinitions();
 
     for (ManifestFieldDefinition field : manifestFields) {
       for (int i = 0; i < field.getRecommendedMaxCount(); ++i) {

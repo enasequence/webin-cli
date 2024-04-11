@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public class ManifestReaderFileCountTester<
     FileType extends Enum<FileType>, T extends ManifestReader> {
@@ -105,37 +106,35 @@ public class ManifestReaderFileCountTester<
         test(level + 1, s);
       }
     } else {
-      ManifestBuilder manifest = new ManifestBuilder();
-      manifest.manifest(this.manifestBuilder);
+      ManifestBuilder mb = new ManifestBuilder();
+      mb.field("NAME", "TEST");
+      mb.manifest(this.manifestBuilder);
 
       System.out.println("Manifest files: " + files);
       for (FileType fileType : files.elementSet()) {
-        manifest.file(fileType, files.count(fileType));
+        mb.file(fileType, files.count(fileType));
       }
 
       ManifestReader manifestReader;
       if (files.isEmpty()) {
         manifestReader =
-            manifestReaderTester.testError(
-                manifest, WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR);
+            manifestReaderTester.testError(mb, WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR);
 
       } else if (isValidFileGroup(files)) {
-        manifestReader = manifestReaderTester.test(manifest);
+        manifestReader = manifestReaderTester.test(mb);
       } else {
         manifestReader =
             manifestReaderTester.testError(
-                manifest, WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR);
+                mb, WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR);
       }
+
+      Manifest manifest = (Manifest) manifestReader.getManifests().stream().findFirst().get();
 
       for (FileType fileType : allFileTypes) {
         System.out.println("Manifest " + fileType + " file count: " + files.count(fileType));
         System.out.println(
-            "ManifestReader "
-                + fileType
-                + " file count: "
-                + manifestReader.getManifest().files().get(fileType).size());
-        assertThat(manifestReader.getManifest().files().get(fileType).size())
-            .isEqualTo(files.count(fileType));
+            "ManifestReader " + fileType + " file count: " + manifest.files().get(fileType).size());
+        assertThat(manifest.files().get(fileType).size()).isEqualTo(files.count(fileType));
       }
     }
   }

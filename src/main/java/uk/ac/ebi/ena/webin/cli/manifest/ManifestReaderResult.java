@@ -10,15 +10,15 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import org.apache.commons.lang.StringUtils;
+import java.util.ArrayList;
+import java.util.Collection;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class ManifestReaderResult {
 
   private final ValidationResult validationResult;
-  private Collection<ManifestFieldValue> fields = new ArrayList<>();
+
+  private final Collection<ManifestFieldGroup> manifestFieldGroups = new ArrayList<>();
 
   public ManifestReaderResult(ValidationResult validationResult) {
     this.validationResult = validationResult;
@@ -28,64 +28,7 @@ public class ManifestReaderResult {
     return validationResult;
   }
 
-  public Collection<ManifestFieldValue> getFields() {
-    return fields;
-  }
-
-  public void setFields(Collection<ManifestFieldValue> fields) {
-    this.fields = fields;
-  }
-
-  public ManifestFieldValue getField(String fieldName) {
-    try {
-      return fields.stream()
-          .filter(field -> field.getName().equalsIgnoreCase(fieldName))
-          .findFirst()
-          .get();
-    } catch (NoSuchElementException ex) {
-      return null;
-    }
-  }
-
-  public String getValue(String fieldName) {
-    try {
-      return fields.stream()
-          .filter(field -> field.getName().equalsIgnoreCase(fieldName))
-          .findFirst()
-          .get()
-          .getValue();
-    } catch (NoSuchElementException ex) {
-      return null;
-    }
-  }
-
-  public Map<String, String> getNonEmptyValues(String... fieldNames) {
-    Map<String, String> nameValues = new HashMap<>();
-    try {
-      fields.forEach(
-          field -> {
-            for (String fieldName : fieldNames) {
-              if (field.getName().equalsIgnoreCase(fieldName)
-                  && StringUtils.isNotBlank(field.getValue())) {
-                nameValues.put(fieldName, field.getValue());
-              }
-            }
-          });
-      return nameValues;
-    } catch (NoSuchElementException ex) {
-      return new HashMap<>();
-    }
-  }
-
-  public Collection<String> getValues(String fieldName) {
-    return fields.stream()
-        .filter(field -> field.getName().equalsIgnoreCase(fieldName))
-        .map(field -> field.getValue())
-        .collect(Collectors.toList());
-  }
-
-  public int getCount(String fieldName) {
-    return (int)
-        fields.stream().filter(field -> field.getName().equalsIgnoreCase(fieldName)).count();
+  public Collection<ManifestFieldGroup> getManifestFieldGroups() {
+    return manifestFieldGroups;
   }
 }

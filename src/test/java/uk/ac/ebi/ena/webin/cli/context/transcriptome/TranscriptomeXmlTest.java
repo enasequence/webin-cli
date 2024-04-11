@@ -10,72 +10,40 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
-import uk.ac.ebi.ena.webin.cli.*;
-import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
-import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
-import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
+import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.WebinCliBuilder;
+import uk.ac.ebi.ena.webin.cli.XmlTester;
 
 public class TranscriptomeXmlTest {
+
+  private static final File RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome");
 
   @Before
   public void before() {
     Locale.setDefault(Locale.UK);
   }
 
-  private static final String NAME = "test_transcriptome";
-
-  private static TranscriptomeManifest getDefaultManifest() {
-    TranscriptomeManifest manifest = new TranscriptomeManifest();
-    manifest.setName(NAME);
-    manifest.setDescription("test_description");
-    manifest.setSample(WebinCliTestUtils.getDefaultSample());
-    manifest.getSample().setBioSampleId("test_sample");
-    manifest.setStudy(new Study());
-    manifest.getStudy().setBioProjectId("test_study");
-    manifest.setProgram("test_program");
-    manifest.setPlatform("test_platform");
-    return manifest;
-  }
-
-  private static SubmissionBundle prepareSubmissionBundle(TranscriptomeManifest manifest) {
-    TranscriptomeManifestReader manifestReader = mock(TranscriptomeManifestReader.class);
-    when(manifestReader.getManifest()).thenReturn(manifest);
-    WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
-    parameters.setOutputDir(WebinCliTestUtils.createTempDir());
-    parameters.setManifestFile(TempFileBuilder.empty().toFile());
-    parameters.setTest(false);
-    WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
-        (WebinCliExecutor<TranscriptomeManifest, ValidationResponse>)
-            WebinCliContext.transcriptome.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundle();
-    return executor.getSubmissionBundle();
-  }
-
   @Test
-  public void testAnalysisAndRunRef() {
-    TranscriptomeManifest manifest = getDefaultManifest();
-    manifest.addAnalysis(
-        new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
-        new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
-    manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
-    manifest.setSubmissionTool("ST-001");
-    manifest.setSubmissionToolVersion("STV-001");
+  public void testAnalysisAndRunRef() throws Throwable {
+    ManifestBuilder manifestBuilder =
+        addDefaultFields(new ManifestBuilder())
+            .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+            .field("RUN_REF", "ERR2836762, ERR2836753")
+            .field("TPA", "true")
+            .field("SUBMISSION_TOOL", "ST-001")
+            .field("SUBMISSION_TOOL_VERSION", "STV-001")
+            .file("FASTA", "valid.fasta.gz");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
-
-    String analysisXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
 
     XmlTester.assertXml(
         analysisXml,
@@ -83,20 +51,24 @@ public class TranscriptomeXmlTest {
             + "  <ANALYSIS>\n"
             + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
             + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-            + "    <STUDY_REF accession=\"test_study\" />\n"
-            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-            + "    <RUN_REF accession=\"RUN_ID1\"/>\n"
-            + "    <RUN_REF accession=\"RUN_ID2\"/>\n"
-            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID1\"/>\n"
-            + "    <ANALYSIS_REF accession=\"ANALYSIS_ID2\"/>\n"
+            + "    <STUDY_REF accession=\"PRJNA272616\" />\n"
+            + "    <SAMPLE_REF accession=\"SAMEA4734564\" />\n"
+            + "    <RUN_REF accession=\"ERR2836762\"/>\n"
+            + "    <RUN_REF accession=\"ERR2836753\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ERZ690501\"/>\n"
+            + "    <ANALYSIS_REF accession=\"ERZ690500\"/>\n"
             + "    <ANALYSIS_TYPE>\n"
             + "      <TRANSCRIPTOME_ASSEMBLY>\n"
             + "        <NAME>test_transcriptome</NAME>\n"
             + "        <PROGRAM>test_program</PROGRAM>\n"
             + "        <PLATFORM>test_platform</PLATFORM>\n"
+            + "        <TPA>true</TPA>\n"
+            + "        <TYPE>isolate</TYPE>\n"
             + "      </TRANSCRIPTOME_ASSEMBLY>\n"
             + "    </ANALYSIS_TYPE>\n"
-            + "    <FILES />\n"
+            + "    <FILES>\n"
+            + "      <FILE filename=\"webin-cli-test/transcriptome/test_transcriptome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"101d3801949d7d315f631b3c3832c3ac\" />\n"
+            + "    </FILES>\n"
             + "    <ANALYSIS_ATTRIBUTES>\n"
             + "        <ANALYSIS_ATTRIBUTE>\n"
             + "            <TAG>SUBMISSION_TOOL</TAG>\n"
@@ -112,29 +84,11 @@ public class TranscriptomeXmlTest {
   }
 
   @Test
-  public void testSubmissionXml() {
-    TranscriptomeManifest manifest = getDefaultManifest();
-    manifest.addAnalysis(
-        new Analysis("ANALYSIS_ID1", "ANALYSIS_ID1_ALIAS"),
-        new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
-    manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
-    manifest.setSubmissionTool("ST-001");
-    manifest.setSubmissionToolVersion("STV-001");
+  public void testFlatFile() throws Throwable {
+    ManifestBuilder manifestBuilder =
+        addDefaultFields(new ManifestBuilder()).file("FLATFILE", "valid.flatfile.gz");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
-
-    XmlTester.assertSubmissionXmlWithEmptyManifestFile(
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
-  }
-
-  @Test
-  public void testTpa() {
-    TranscriptomeManifest manifest = getDefaultManifest();
-    manifest.setTpa(true);
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
-
-    String analysisXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
 
     XmlTester.assertXml(
         analysisXml,
@@ -142,97 +96,90 @@ public class TranscriptomeXmlTest {
             + "  <ANALYSIS>\n"
             + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
             + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-            + "    <STUDY_REF accession=\"test_study\" />\n"
-            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
+            + "    <STUDY_REF accession=\"PRJNA272616\" />\n"
+            + "    <SAMPLE_REF accession=\"SAMEA4734564\" />\n"
             + "    <ANALYSIS_TYPE>\n"
             + "      <TRANSCRIPTOME_ASSEMBLY>\n"
             + "        <NAME>test_transcriptome</NAME>\n"
             + "        <PROGRAM>test_program</PROGRAM>\n"
             + "        <PLATFORM>test_platform</PLATFORM>\n"
-            + "        <TPA>true</TPA>\n"
-            + "      </TRANSCRIPTOME_ASSEMBLY>\n"
-            + "    </ANALYSIS_TYPE>\n"
-            + "    <FILES />\n"
-            + "  </ANALYSIS>\n"
-            + "</ANALYSIS_SET>\n");
-  }
-
-  @Test
-  public void testFastaFile() {
-    TranscriptomeManifest manifest = getDefaultManifest();
-    Path fastaFile = TempFileBuilder.gzip("fasta.gz", ">123\nACGT");
-    manifest
-        .files()
-        .add(new SubmissionFile(TranscriptomeManifest.FileType.FASTA, fastaFile.toFile()));
-
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
-
-    String analysisXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
-
-    XmlTester.assertXml(
-        analysisXml,
-        "<ANALYSIS_SET>\n"
-            + "  <ANALYSIS>\n"
-            + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
-            + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-            + "    <STUDY_REF accession=\"test_study\" />\n"
-            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-            + "    <ANALYSIS_TYPE>\n"
-            + "      <TRANSCRIPTOME_ASSEMBLY>\n"
-            + "        <NAME>test_transcriptome</NAME>\n"
-            + "        <PROGRAM>test_program</PROGRAM>\n"
-            + "        <PLATFORM>test_platform</PLATFORM>\n"
+            + "        <TYPE>isolate</TYPE>\n"
             + "      </TRANSCRIPTOME_ASSEMBLY>\n"
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
-            + "      <FILE filename=\"webin-cli/transcriptome/"
-            + NAME
-            + "/"
-            + fastaFile.getFileName()
-            + "\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n"
+            + "      <FILE filename=\"webin-cli-test/transcriptome/test_transcriptome/valid.flatfile.gz\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"ff20876a8ad754ecae0979af92a84cbc\"/>\n"
             + "    </FILES>\n"
             + "  </ANALYSIS>\n"
             + "</ANALYSIS_SET>\n");
   }
 
   @Test
-  public void testFlatFile() {
-    TranscriptomeManifest manifest = getDefaultManifest();
+  public void testSubmissionXml() throws Throwable {
+    ManifestBuilder manifestBuilder =
+        addDefaultFields(new ManifestBuilder())
+            .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+            .field("RUN_REF", "ERR2836762, ERR2836753")
+            .field("SUBMISSION_TOOL", "ST-001")
+            .field("SUBMISSION_TOOL_VERSION", "STV-001")
+            .file("FASTA", "valid.fasta.gz");
 
-    Path fastaFile = TempFileBuilder.gzip("flatfile.dat.gz", ">123\nACGT");
-    manifest
-        .files()
-        .add(new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile()));
+    String submissionXml = getGeneratedXml(manifestBuilder, "submission.xml");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    String expected =
+        "<SUBMISSION_SET>\n"
+            + "  <SUBMISSION>\n"
+            + "    <ACTIONS>\n"
+            + "        <ACTION>\n"
+            + "               <ADD />\n"
+            + "        </ACTION>\n"
+            + "    </ACTIONS>\n"
+            + "    <SUBMISSION_ATTRIBUTES>\n"
+            + "        <SUBMISSION_ATTRIBUTE>\n"
+            + "            <TAG>ENA-SUBMISSION-TOOL</TAG>\n"
+            + "            <VALUE>WebinCli</VALUE>\n"
+            + "        </SUBMISSION_ATTRIBUTE>\n"
+            + "        <SUBMISSION_ATTRIBUTE>\n"
+            + "            <TAG>ENA-MANIFEST-FILE</TAG>\n"
+            + "            <VALUE><![CDATA[NAME\ttest_transcriptome\nDESCRIPTION\ttest_description\nASSEMBLY_TYPE\tisolate\nSAMPLE\tERS2554688\nSTUDY\tSRP052303\nPROGRAM\ttest_program\nPLATFORM\ttest_platform\nANALYSIS_REF\tERZ690501, ERZ690500\nRUN_REF\tERR2836762, ERR2836753\nSUBMISSION_TOOL\tST-001\nSUBMISSION_TOOL_VERSION\tSTV-001\nFASTA\tvalid.fasta.gz]]></VALUE>\n"
+            + "        </SUBMISSION_ATTRIBUTE>\n"
+            + "        <SUBMISSION_ATTRIBUTE>\n"
+            + "            <TAG>ENA-MANIFEST-FILE-MD5</TAG>\n"
+            + "            <VALUE>1e33620e0123c407ff8ca038101c7e55</VALUE>\n"
+            + "        </SUBMISSION_ATTRIBUTE>\n"
+            + "    </SUBMISSION_ATTRIBUTES>\n"
+            + "  </SUBMISSION>\n"
+            + "</SUBMISSION_SET>";
 
-    String analysisXml =
-        sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
+    XmlTester.assertXml(submissionXml, expected);
+  }
 
-    XmlTester.assertXml(
-        analysisXml,
-        "<ANALYSIS_SET>\n"
-            + "  <ANALYSIS>\n"
-            + "    <TITLE>Transcriptome assembly: test_transcriptome</TITLE>\n"
-            + "    <DESCRIPTION>test_description</DESCRIPTION>\n"
-            + "    <STUDY_REF accession=\"test_study\" />\n"
-            + "    <SAMPLE_REF accession=\"test_sample\" />\n"
-            + "    <ANALYSIS_TYPE>\n"
-            + "      <TRANSCRIPTOME_ASSEMBLY>\n"
-            + "        <NAME>test_transcriptome</NAME>\n"
-            + "        <PROGRAM>test_program</PROGRAM>\n"
-            + "        <PLATFORM>test_platform</PLATFORM>\n"
-            + "      </TRANSCRIPTOME_ASSEMBLY>\n"
-            + "    </ANALYSIS_TYPE>\n"
-            + "    <FILES>\n"
-            + "      <FILE filename=\"webin-cli/transcriptome/"
-            + NAME
-            + "/"
-            + fastaFile.getFileName()
-            + "\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"661926c1c03b059929caaead3ea351a3\" />\n"
-            + "    </FILES>\n"
-            + "  </ANALYSIS>\n"
-            + "</ANALYSIS_SET>\n");
+  private ManifestBuilder addDefaultFields(ManifestBuilder manifestBuilder) {
+    return manifestBuilder
+        .field("NAME", "test_transcriptome")
+        .field("DESCRIPTION", "test_description")
+        .field("ASSEMBLY_TYPE", "isolate")
+        .field("SAMPLE", "ERS2554688")
+        .field("STUDY", "SRP052303")
+        .field("PROGRAM", "test_program")
+        .field("PLATFORM", "test_platform");
+  }
+
+  private String getGeneratedXml(ManifestBuilder manifestBuilder, String xmlFileName)
+      throws Throwable {
+    WebinCli webinCli =
+        WebinCliBuilder.createForTranscriptome().submit(false).build(RESOURCE_DIR, manifestBuilder);
+    webinCli.execute();
+
+    Path generatedXml =
+        webinCli
+            .getParameters()
+            .getOutputDir()
+            .toPath()
+            .resolve(webinCli.getParameters().getContext().toString())
+            .resolve("test_transcriptome")
+            .resolve("submit")
+            .resolve(xmlFileName);
+
+    return new String(Files.readAllBytes(generatedXml));
   }
 }

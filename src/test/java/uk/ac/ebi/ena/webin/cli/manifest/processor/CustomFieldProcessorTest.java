@@ -27,7 +27,8 @@ public class CustomFieldProcessorTest {
 
   @Before
   public void init() {
-    processor.setCallback(keyVal -> parsedValue = new ImmutablePair<>(keyVal.left, keyVal.right));
+    processor.setCallback(
+        (fieldGroup, keyVal) -> parsedValue = new ImmutablePair<>(keyVal.left, keyVal.right));
   }
 
   @Test

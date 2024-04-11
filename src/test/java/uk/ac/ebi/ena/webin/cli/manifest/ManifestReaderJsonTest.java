@@ -16,16 +16,12 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.xml.conversion.json.model.sample.Sample;
 
 public class ManifestReaderJsonTest {
-
-  @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
   @Test
   public void testAlternativePunctuations() {
@@ -81,38 +77,22 @@ public class ManifestReaderJsonTest {
             .attribute("att-name-3", "attval3")
             .build());
 
-    Assert.assertEquals(
-        manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getValue(), "val1");
-    Assert.assertEquals(
-        manifestReader
-            .getManifestReaderResult()
-            .getField("FIELD_NAME_1")
-            .getAttributes()
-            .get(0)
-            .getValue(),
-        "attval1");
+    ManifestFieldGroup fieldGroup =
+        manifestReader.getManifestReaderResult().getManifestFieldGroups().stream()
+            .findFirst()
+            .get();
 
+    Assert.assertEquals(fieldGroup.getField("FIELD_NAME_1").getValue(), "val1");
     Assert.assertEquals(
-        manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getValue(), "val2");
-    Assert.assertEquals(
-        manifestReader
-            .getManifestReaderResult()
-            .getField("FIELD_NAME_2")
-            .getAttributes()
-            .get(0)
-            .getValue(),
-        "attval2");
+        fieldGroup.getField("FIELD_NAME_1").getAttributes().get(0).getValue(), "attval1");
 
+    Assert.assertEquals(fieldGroup.getField("FIELD_NAME_2").getValue(), "val2");
     Assert.assertEquals(
-        manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getValue(), "val3");
+        fieldGroup.getField("FIELD_NAME_2").getAttributes().get(0).getValue(), "attval2");
+
+    Assert.assertEquals(fieldGroup.getField("FIELD_NAME_3").getValue(), "val3");
     Assert.assertEquals(
-        manifestReader
-            .getManifestReaderResult()
-            .getField("FIELD_NAME_3")
-            .getAttributes()
-            .get(0)
-            .getValue(),
-        "attval3");
+        fieldGroup.getField("FIELD_NAME_3").getAttributes().get(0).getValue(), "attval3");
   }
 
   @Test
@@ -133,16 +113,19 @@ public class ManifestReaderJsonTest {
 
     manifestReader.readManifest(Paths.get("."), manifestFile);
 
-    ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+    ManifestFieldGroup fieldGroup =
+        manifestReader.getManifestReaderResult().getManifestFieldGroups().stream()
+            .findFirst()
+            .get();
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field") && field.getValue().equals("val1"))
             .findFirst()
             .isPresent());
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field") && field.getValue().equals("val2"))
             .findFirst()
             .isPresent());
@@ -173,16 +156,19 @@ public class ManifestReaderJsonTest {
 
     manifestReader.readManifest(Paths.get("."), manifestFile);
 
-    ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+    ManifestFieldGroup fieldGroup =
+        manifestReader.getManifestReaderResult().getManifestFieldGroups().stream()
+            .findFirst()
+            .get();
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field") && field.getValue().equals("val1"))
             .findFirst()
             .isPresent());
 
     List<ManifestFieldValue> atts =
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field") && field.getValue().equals("val1"))
             .findFirst()
             .get()
@@ -195,7 +181,7 @@ public class ManifestReaderJsonTest {
             .isPresent());
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field") && field.getValue().equals("val2"))
             .findFirst()
             .isPresent());
@@ -224,10 +210,13 @@ public class ManifestReaderJsonTest {
 
     manifestReader.readManifest(Paths.get("."), manifestFile);
 
-    ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+    ManifestFieldGroup fieldGroup =
+        manifestReader.getManifestReaderResult().getManifestFieldGroups().stream()
+            .findFirst()
+            .get();
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field1") && field.getValue().equals("val1"))
             .findFirst()
             .isPresent());
@@ -256,10 +245,13 @@ public class ManifestReaderJsonTest {
 
     manifestReader.readManifest(Paths.get("."), manifestFile);
 
-    ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+    ManifestFieldGroup fieldGroup =
+        manifestReader.getManifestReaderResult().getManifestFieldGroups().stream()
+            .findFirst()
+            .get();
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field1") && field.getValue().equals("val1"))
             .findFirst()
             .isPresent());
@@ -283,13 +275,13 @@ public class ManifestReaderJsonTest {
 
     manifestReader.readManifest(Paths.get("."), manifestFile);
 
-    ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
-
-    ManifestFieldValue sampleFieldValue =
-        readerResult.getFields().stream()
-            .filter(field -> field.getName().equals("sample"))
+    ManifestFieldGroup fieldGroup =
+        manifestReader.getManifestReaderResult().getManifestFieldGroups().stream()
             .findFirst()
             .get();
+
+    ManifestFieldValue sampleFieldValue =
+        fieldGroup.stream().filter(field -> field.getName().equals("sample")).findFirst().get();
     Sample sample = new ObjectMapper().readValue(sampleFieldValue.getValue(), Sample.class);
     Assert.assertNotNull(sample);
   }
@@ -337,37 +329,40 @@ public class ManifestReaderJsonTest {
 
     manifestReader.readManifest(Paths.get("."), manifestFile);
 
-    ManifestReaderResult readerResult = manifestReader.getManifestReaderResult();
+    ManifestFieldGroup fieldGroup =
+        manifestReader.getManifestReaderResult().getManifestFieldGroups().stream()
+            .findFirst()
+            .get();
 
     // field1
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field1") && field.getValue().equals("val1"))
             .findFirst()
             .isPresent());
 
     // field2
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field2") && field.getValue().equals("val21"))
             .findFirst()
             .isPresent());
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field2") && field.getValue().equals("val22"))
             .findFirst()
             .isPresent());
 
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field2") && field.getValue().equals("val23"))
             .findFirst()
             .isPresent());
 
     // attributes
     List<ManifestFieldValue> atts =
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field2") && field.getValue().equals("val23"))
             .findFirst()
             .get()
@@ -393,7 +388,7 @@ public class ManifestReaderJsonTest {
 
     // field3
     Assert.assertTrue(
-        readerResult.getFields().stream()
+        fieldGroup.stream()
             .filter(field -> field.getName().equals("field3") && field.getValue().equals("val3"))
             .findFirst()
             .isPresent());

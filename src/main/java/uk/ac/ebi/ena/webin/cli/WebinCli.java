@@ -18,6 +18,7 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.util.Duration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.vandermeer.asciitable.AT_Renderer;
 import de.vandermeer.asciitable.AsciiTable;
 import de.vandermeer.asciitable.CWC_FixedWidth;
@@ -35,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -73,17 +75,16 @@ public class WebinCli {
 
   private static final String LOG_FILE_NAME = "webin-cli.report";
   private static final Logger log = LoggerFactory.getLogger(WebinCli.class);
-
   private static final String SIFTING_APPENDER_NAME = "DEFAULT_SIFTING_APPENDER";
   private static final String SIFTING_APPENDER_DISCRIMINATOR_KEY = "uniqueKey";
   private static final String SIFTING_APPENDER_DISCRIMINATOR_DEFAULT_VALUE = "unknown";
   private static final AtomicBoolean SIFTING_APPENDER_CREATED = new AtomicBoolean(false);
   private static final String MDC_LOG_FILE_KEY = "logFile";
 
+  private final String fileAppenderName = "FILE_APPENDER_" + UUID.randomUUID().toString();
+
   private final WebinCliParameters parameters;
   private final WebinCliExecutor<?, ?> executor;
-
-  private final String fileAppenderName = "FILE_APPENDER_" + UUID.randomUUID().toString();
 
   public static void main(String... args) {
     System.exit(__main(args));
@@ -94,7 +95,7 @@ public class WebinCli {
     try {
       WebinCli webinCli;
 
-      // This try block is necessary to log exceptions thrown before WebinCli.execute().
+      /** This try block is necessary to log exceptions thrown before {@link WebinCli#execute()}. */
       try {
         WebinCliCommand cmd = parseCmd(args);
         if (null == cmd) {
@@ -109,8 +110,10 @@ public class WebinCli {
 
         webinCli = new WebinCli(cmd);
 
-        // Any exception logging needed before WebinCli.execute() should be done in this try's catch
-        // blocks.
+        /**
+         * Any exception logging needed before {@link WebinCli#execute()} should be done in this
+         * try's catch blocks.
+         */
       } catch (Throwable thr) {
         log.error(thr.getMessage(), thr);
         throw thr;
@@ -120,9 +123,11 @@ public class WebinCli {
 
       return SUCCESS;
 
-      // Avoid logging exceptions thrown by WebinCli.execute() in the following catch blocks as the
-      // method does that already.
-      // Any logging done for exceptions thrown by that method here will produce duplicate output.
+      /**
+       * Avoid logging exceptions thrown by {@link WebinCli#execute()} in the following catch blocks
+       * as the method does that already. Any logging done for exceptions thrown by that method here
+       * will produce duplicate output.
+       */
     } catch (WebinCliException ex) {
       switch (ex.getErrorType()) {
         case USER_ERROR:
@@ -181,7 +186,8 @@ public class WebinCli {
 
   /**
    * As webin-cli is also usable as a library, it is important that logging is separately setup for
-   * every instance of WebinCli class. This way logs from different instances will not get mixed up.
+   * every instance of {@link WebinCli}. This way logs from different instances will not get mixed
+   * up.
    */
   private void initFileLogging(File outputDir) {
     if (!SIFTING_APPENDER_CREATED.get()) {
@@ -276,12 +282,14 @@ public class WebinCli {
     try {
       executor.readManifest();
 
-      if (parameters.isValidate() || executor.getSubmissionBundle() == null) {
-        validate(executor);
+      if (parameters.isValidate() || executor.getSubmissionBundles() == null) {
+        validate(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
+      } else if (executor.isManifestFileUpdated()) {
+        validate(ManifestValidationPolicy.VALIDATE_UPDATED_MANIFESTS);
       }
 
       if (parameters.isSubmit()) {
-        submit(executor);
+        submit();
       }
 
       // It is important that following catch blocks log errors so they get written to the report
@@ -304,11 +312,9 @@ public class WebinCli {
     }
   }
 
-  private void validate(WebinCliExecutor<?, ?> executor) {
+  private void validate(ManifestValidationPolicy validationPolicy) {
     try {
-      executor.validateSubmission();
-
-      executor.prepareSubmissionBundle();
+      executor.validateSubmission(validationPolicy);
 
       log.info(WebinCliMessage.CLI_VALIDATE_SUCCESS.text());
 
@@ -316,73 +322,95 @@ public class WebinCli {
       switch (ex.getErrorType()) {
         case USER_ERROR:
           throw WebinCliException.userError(
-              ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+              ex, getValidationUserError(ex.getMessage(), parameters.getOutputDir().toString()));
 
         case VALIDATION_ERROR:
           throw WebinCliException.validationError(
-              ex, getUserError(ex.getMessage(), executor.getValidationDir().toString()));
+              ex, getValidationUserError(ex.getMessage(), parameters.getOutputDir().toString()));
 
         case SYSTEM_ERROR:
           throw WebinCliException.systemError(
-              ex, getSystemError(ex.getMessage(), executor.getValidationDir().toString()));
+              ex, getValidationSystemError(ex.getMessage(), parameters.getOutputDir().toString()));
       }
     } catch (Exception ex) {
       StringWriter sw = new StringWriter();
       ex.printStackTrace(new PrintWriter(sw));
       throw WebinCliException.systemError(
           ex,
-          getSystemError(
+          getValidationSystemError(
               null == ex.getMessage() ? sw.toString() : ex.getMessage(),
-              executor.getValidationDir().toString()));
+              parameters.getOutputDir().toString()));
     }
   }
 
-  private void submit(WebinCliExecutor<?, ?> executor) {
-    SubmissionBundle bundle = executor.getSubmissionBundle();
+  private void submit() throws WebinCliException {
+    Collection<SubmissionBundle> bundlesToSubmit =
+        getUnsubmittedSubmissionBundles(executor.getSubmissionBundles());
+    List<SubmissionBundle> submittedBundles = new ArrayList<>(bundlesToSubmit.size());
 
-    UploadService fileUploadService =
-        parameters.isAscp() && new ASCPService().isAvailable()
-            ? new ASCPService()
-            : new FtpService();
+    boolean submissionFailureOccurred = false;
+    for (SubmissionBundle bundle : bundlesToSubmit) {
+      try {
+        UploadService fileUploadService =
+            parameters.isAscp() && new ASCPService().isAvailable()
+                ? new ASCPService()
+                : new FtpService();
 
-    try {
-      fileUploadService.connect(
-          parameters.getFileUploadServiceUserName(), parameters.getPassword());
-      fileUploadService.upload(
-          bundle.getUploadFileList().stream()
-              .map(submissionUploadFile -> submissionUploadFile.getFile())
-              .collect(Collectors.toList()),
-          bundle.getUploadDir(),
-          executor.getParameters().getInputDir().toPath());
-      log.info(WebinCliMessage.CLI_UPLOAD_SUCCESS.text());
+        try {
+          fileUploadService.connect(
+              parameters.getFileUploadServiceUserName(), parameters.getPassword());
+          fileUploadService.upload(
+              bundle.getUploadFileList().stream()
+                  .map(submissionUploadFile -> submissionUploadFile.getFile())
+                  .collect(Collectors.toList()),
+              bundle.getUploadDir(),
+              executor.getParameters().getInputDir().toPath());
+          log.info(WebinCliMessage.CLI_UPLOAD_SUCCESS.text());
 
-    } catch (WebinCliException e) {
-      throw WebinCliException.error(
-          e, WebinCliMessage.CLI_UPLOAD_ERROR.format(e.getErrorType().text));
-    } finally {
-      fileUploadService.disconnect();
+        } catch (WebinCliException e) {
+          throw WebinCliException.error(
+              e, WebinCliMessage.CLI_UPLOAD_ERROR.format(e.getErrorType().text));
+        } finally {
+          fileUploadService.disconnect();
+        }
+
+        checkUploadedFilesModified(bundle.getUploadFileList());
+
+        try {
+          SubmitService submitService =
+              new SubmitService.Builder()
+                  .setSubmitDir(bundle.getSubmitDir().getPath())
+                  .setSaveSubmissionXmlFiles(getParameters().isSaveSubmissionXmlFiles())
+                  .setWebinRestV2Uri(RemoteServiceUrlHelper.getWebinRestV2Url(parameters.isTest()))
+                  .setUserName(parameters.getWebinServiceUserName())
+                  .setPassword(parameters.getPassword())
+                  .build();
+
+          submitService.doSubmission(bundle.getXmlFileList());
+
+          submittedBundles.add(bundle);
+        } catch (WebinCliException e) {
+          throw WebinCliException.error(
+              e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
+        }
+      } catch (Exception ex) {
+        submissionFailureOccurred = true;
+
+        // As the submission process carries on even in the case of errors, it is necessary to log
+        // the errors here
+        // since there is no other way to report them anywhere else.
+        log.error(ex.getMessage(), ex);
+      }
     }
 
-    checkUploadedFilesModified(bundle.getUploadFileList());
+    saveSubmittedSubmissionBundles(submittedBundles);
 
-    try {
-      SubmitService submitService =
-          new SubmitService.Builder()
-              .setSubmitDir(bundle.getSubmitDir().getPath())
-              .setSaveSubmissionXmlFiles(getParameters().isSaveSubmissionXmlFiles())
-              .setWebinRestV2Uri(RemoteServiceUrlHelper.getWebinRestV2Url(parameters.isTest()))
-              .setUserName(parameters.getWebinServiceUserName())
-              .setPassword(parameters.getPassword())
-              .build();
+    if (parameters.isTest()) {
+      log.info("This was a TEST submission(s).");
+    }
 
-      submitService.doSubmission(bundle.getXMLFileList());
-
-      if (parameters.isTest()) {
-        log.info("This was a TEST submission and no data was submitted.");
-      }
-    } catch (WebinCliException e) {
-      throw WebinCliException.error(
-          e, WebinCliMessage.CLI_SUBMIT_ERROR.format(e.getErrorType().text));
+    if (submissionFailureOccurred) {
+      throw WebinCliException.systemError(WebinCliMessage.CLI_MULTI_SUBMIT_ERROR.format());
     }
   }
 
@@ -552,7 +580,7 @@ public class WebinCli {
           }
           return 1;
         };
-    manifestReader.getFields().stream()
+    manifestReader.getFieldDefinitions().stream()
         .filter(field -> field.getRecommendedMaxCount() > 0)
         .sorted(comparator)
         .forEach(field -> printManifestFieldHelp(table, field));
@@ -617,7 +645,7 @@ public class WebinCli {
   private static void printManifestFileGroupHelp(
       ManifestReader<?> manifestReader, PrintStream out) {
     List<ManifestFieldDefinition> fields =
-        manifestReader.getFields().stream()
+        manifestReader.getFieldDefinitions().stream()
             .filter(field -> field.getType() == ManifestFieldType.FILE)
             .collect(Collectors.toList());
 
@@ -804,6 +832,71 @@ public class WebinCli {
     return Arrays.stream(dirs).map(dir -> getSafeOutputDir(dir)).toArray(String[]::new);
   }
 
+  /**
+   * Checks which of the given submission bundles were submitted previously and only returns those
+   * that were not.
+   */
+  private Collection<SubmissionBundle> getUnsubmittedSubmissionBundles(
+      Collection<SubmissionBundle> submissionBundles) {
+    List<String> checksumsToExclude = loadSubmittedSubmissionBundlesChecksums();
+    if (checksumsToExclude == null || checksumsToExclude.isEmpty()) {
+      return submissionBundles;
+    }
+
+    return submissionBundles.stream()
+        .filter(sb -> !checksumsToExclude.contains(sb.getManifestFieldsMd5()))
+        .collect(Collectors.toList());
+  }
+
+  private void saveSubmittedSubmissionBundles(
+      Collection<SubmissionBundle> submittedSubmissionBundles) {
+    List<String> submittedChecksums =
+        submittedSubmissionBundles.stream()
+            .map(sb -> sb.getManifestFieldsMd5())
+            .collect(Collectors.toList());
+    if (submittedChecksums.isEmpty()) {
+      return;
+    }
+
+    List<String> checksumsToSave = loadSubmittedSubmissionBundlesChecksums();
+    if (checksumsToSave == null) {
+      checksumsToSave = submittedChecksums;
+    } else {
+      // Add new checksums into the list of previously saved checksums.
+      checksumsToSave.addAll(submittedChecksums);
+    }
+
+    saveSubmittedSubmissionBundlesChecksums(checksumsToSave);
+  }
+
+  private List<String> loadSubmittedSubmissionBundlesChecksums() {
+    Path filePath =
+        parameters.getOutputDir().toPath().resolve(WebinCliConfig.SUBMISSION_STATUS_FILE_NAME);
+    if (!filePath.toFile().exists()) {
+      return null;
+    }
+
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+
+      return objectMapper.readValue(filePath.toFile(), List.class);
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  private void saveSubmittedSubmissionBundlesChecksums(
+      List<String> submittedSubmissionBundlesChecksums) {
+    Path filePath =
+        parameters.getOutputDir().toPath().resolve(WebinCliConfig.SUBMISSION_STATUS_FILE_NAME);
+
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.writeValue(filePath.toFile(), submittedSubmissionBundlesChecksums);
+    } catch (IOException e) {
+    }
+  }
+
   private void checkUploadedFilesModified(
       List<SubmissionBundle.SubmissionUploadFile> uploadFileList) throws WebinCliException {
     try {
@@ -827,27 +920,28 @@ public class WebinCli {
     }
   }
 
-  private String getUserOrSystemError(String message, String validationDir, String errorType) {
+  private String getValidationUserError(String message, String outputDir) {
+    return getValidationUserOrSystemError(message, outputDir, "user");
+  }
+
+  private String getValidationSystemError(String message, String outputDir) {
+    return getValidationUserOrSystemError(message, outputDir, "system");
+  }
+
+  private String getValidationUserOrSystemError(
+      String message, String outputDir, String errorType) {
     String str = WebinCliMessage.CLI_VALIDATE_USER_OR_SYSTEM_ERROR.format(errorType);
 
     if (!StringUtils.isBlank(message)) {
-      str += " : " + message;
+      str += ". " + message;
     }
 
     str += ".";
 
     if (getParameters().getWebinSubmissionTool() == WebinSubmissionTool.WEBIN_CLI) {
-      str += " Please check validation reports for further information: " + validationDir;
+      str += " All information is available in the output directory : " + outputDir;
     }
 
     return str;
-  }
-
-  private String getUserError(String message, String validationDir) {
-    return getUserOrSystemError(message, validationDir, "user");
-  }
-
-  private String getSystemError(String message, String validationDir) {
-    return getUserOrSystemError(message, validationDir, "system");
   }
 }

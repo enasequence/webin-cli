@@ -15,8 +15,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.ManifestValidationPolicy;
 import uk.ac.ebi.ena.webin.cli.ReportTester;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
@@ -56,16 +59,18 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
 
-    assertThatThrownBy(() -> executor.validateSubmission())
-        .isInstanceOf(WebinCliException.class)
-        .hasMessage("");
+    assertThatThrownBy(
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
+        .isInstanceOf(WebinCliException.class);
 
     new ReportTester(executor)
-        .textInFileReport("webin-cli", "Submitted files must contain a minimum of 1 sequence read");
+        .textInFileReport(
+            NAME, "webin-cli", "Submitted files must contain a minimum of 1 sequence read");
   }
 
   @Test
@@ -75,28 +80,32 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
+    assertGeneratedFiles(executor);
   }
 
   @Test
-  public void invaliFastq() {
+  public void invalidFastq() {
     File manifestFile = manifestBuilder().file(FileType.FASTQ, "invalid.fastq.gz").build();
 
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
 
-    assertThatThrownBy(() -> executor.validateSubmission())
-        .isInstanceOf(WebinCliException.class)
-        .hasMessage("");
+    assertThatThrownBy(
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
+        .isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).textInFileReport("webin-cli", "Sequence header must start with @");
+    new ReportTester(executor)
+        .textInFileReport(NAME, "webin-cli", "Sequence header must start with @");
   }
 
   @Test
@@ -106,10 +115,12 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
+    assertGeneratedFiles(executor);
   }
 
   @Test
@@ -123,11 +134,13 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
-    executor.validateSubmission();
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertThat(executor.getValidationResponse().isPaired());
+    assertGeneratedFiles(executor);
   }
 
   @Test
@@ -138,11 +151,13 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertThat(executor.getValidationResponse().isPaired());
+    assertGeneratedFiles(executor);
   }
 
   @Test
@@ -156,17 +171,18 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
 
-    assertThatThrownBy(() -> executor.validateSubmission())
-        .isInstanceOf(WebinCliException.class)
-        .hasMessage("");
+    assertThatThrownBy(
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
+        .isInstanceOf(WebinCliException.class);
 
     new ReportTester(executor)
         .textInSubmissionReport(
-            "Detected paired fastq submission with less than 20% of paired reads");
+            NAME, "Detected paired fastq submission with less than 20% of paired reads");
   }
 
   @Test
@@ -176,11 +192,13 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
 
-    executor.validateSubmission();
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
+    assertGeneratedFiles(executor);
   }
 
   @Test
@@ -190,16 +208,18 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
 
-    assertThatThrownBy(() -> executor.validateSubmission())
-        .isInstanceOf(WebinCliException.class)
-        .hasMessage("");
+    assertThatThrownBy(
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
+        .isInstanceOf(WebinCliException.class);
 
     new ReportTester(executor)
-        .textInFileReport("webin-cli", "Submitted files must contain a minimum of 1 sequence read");
+        .textInFileReport(
+            NAME, "webin-cli", "Submitted files must contain a minimum of 1 sequence read");
   }
 
   @Test
@@ -209,9 +229,31 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
+    assertGeneratedFiles(executor);
+  }
+
+  private void assertGeneratedFiles(WebinCliExecutor executor) {
+    Path submissionDir =
+        executor
+            .getParameters()
+            .getOutputDir()
+            .toPath()
+            .resolve(executor.getContext().toString())
+            .resolve(NAME);
+
+    File bundle = submissionDir.resolve("validate.json").toFile();
+    assertThat(bundle.exists()).isTrue();
+    assertThat(bundle.length()).isGreaterThan(0);
+
+    for (String xmlFileName : Arrays.asList("experiment", "run", "submission")) {
+      File xmlFile = submissionDir.resolve("submit").resolve(xmlFileName + ".xml").toFile();
+      assertThat(xmlFile.exists()).isTrue();
+      assertThat(xmlFile.length()).isGreaterThan(0);
+    }
   }
 }

@@ -32,7 +32,7 @@ public class RunProcessorTest {
     RunProcessor processor =
         new RunProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(1, e.size());
               Assert.assertEquals("ERR2836765", e.get(0).getRunId());
             });
@@ -53,7 +53,7 @@ public class RunProcessorTest {
     RunProcessor processor =
         new RunProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(3, e.size());
               Assert.assertEquals("ERR2836765", e.get(0).getRunId());
               Assert.assertEquals("ERR2836764", e.get(1).getRunId());
@@ -73,7 +73,8 @@ public class RunProcessorTest {
 
   @Test
   public void testIncorrect() {
-    RunProcessor processor = new RunProcessor(parameters, Assert::assertNull);
+    RunProcessor processor =
+        new RunProcessor(parameters, (fieldGroup, run) -> Assert.assertNull(run));
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "RUN_REF", "INVALID");
     ValidationResult result = new ValidationResult();
     MessageCounter counter =
@@ -87,7 +88,8 @@ public class RunProcessorTest {
 
   @Test
   public void testIncorrectList() {
-    RunProcessor processor = new RunProcessor(parameters, Assert::assertNull);
+    RunProcessor processor =
+        new RunProcessor(parameters, (fieldGroup, run) -> Assert.assertNull(run));
 
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "RUN_REF", "INVALID1, ERR2836765, INVALID2");

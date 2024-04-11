@@ -41,27 +41,19 @@ public class GenomeManifestReaderTest {
   @Test
   public void testValidManifestWithoutAssemblyType() {
     GenomeManifestReader manifestReader = createManifestReader();
-    GenomeManifest manifest = manifestReader.getManifest();
-
-    Assert.assertNull(manifest.getStudy());
-    Assert.assertNull(manifest.getSample());
-    Assert.assertNull(manifest.getPlatform());
-    Assert.assertNull(manifest.getName());
-    assertThat(manifest.files().files()).size().isZero();
-    Assert.assertNull(manifest.getDescription());
-    Assert.assertNull(manifest.getSubmissionTool());
-    Assert.assertNull(manifest.getSubmissionToolVersion());
 
     manifestReader.readManifest(
         Paths.get("."),
         new ManifestBuilder()
             .field(Field.PLATFORM, " illumina")
-            .field(Field.NAME, " SOME-FANCY-NAME")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
             .field(Field.DESCRIPTION, " description")
             .file("FASTA", TempFileBuilder.empty("fasta"))
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
             .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
             .build());
+
+    GenomeManifest manifest = manifestReader.getManifests().stream().findFirst().get();
 
     Assert.assertEquals("illumina", manifest.getPlatform());
     Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());
@@ -75,28 +67,20 @@ public class GenomeManifestReaderTest {
   @Test
   public void testValidManifestWithAssemblyType() {
     GenomeManifestReader manifestReader = createManifestReader();
-    GenomeManifest manifest = manifestReader.getManifest();
-
-    Assert.assertNull(manifest.getStudy());
-    Assert.assertNull(manifest.getSample());
-    Assert.assertNull(manifest.getPlatform());
-    Assert.assertNull(manifest.getName());
-    assertThat(manifest.files().files()).size().isZero();
-    Assert.assertNull(manifest.getDescription());
-    Assert.assertNull(manifest.getSubmissionTool());
-    Assert.assertNull(manifest.getSubmissionToolVersion());
 
     manifestReader.readManifest(
         Paths.get("."),
         new ManifestBuilder()
             .field(Field.PLATFORM, " illumina")
-            .field(Field.NAME, " SOME-FANCY-NAME")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
             .field(Field.DESCRIPTION, " description")
             .field(Field.ASSEMBLY_TYPE, ASSEMBLY_TYPE_PRIMARY_METAGENOME)
             .file("FASTA", TempFileBuilder.empty("fasta"))
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
             .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
             .build());
+
+    GenomeManifest manifest = manifestReader.getManifests().stream().findFirst().get();
 
     Assert.assertEquals("illumina", manifest.getPlatform());
     Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());

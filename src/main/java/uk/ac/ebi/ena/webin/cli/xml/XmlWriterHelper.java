@@ -12,10 +12,10 @@ package uk.ac.ebi.ena.webin.cli.xml;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFileAttribute;
 
 public class XmlWriterHelper {
 
@@ -30,7 +30,7 @@ public class XmlWriterHelper {
       String fileType,
       String digest,
       String checksum,
-      List<Map.Entry<String, String>> attributes) {
+      List<SubmissionFileAttribute> attributes) {
     if (checksum == null) {
       throw new IllegalArgumentException("File checksum cannot be null.");
     }
@@ -43,7 +43,7 @@ public class XmlWriterHelper {
 
     if (attributes != null && !attributes.isEmpty()) {
       attributes.stream()
-          .map(att -> createAttributeElement(att.getKey(), att.getValue()))
+          .map(att -> createAttributeElement(att.getName(), att.getValue()))
           .filter(Objects::nonNull)
           .forEach(attElement -> e.addContent(attElement));
     }
@@ -62,7 +62,7 @@ public class XmlWriterHelper {
       Path file,
       String fileMd5,
       String fileType,
-      List<Map.Entry<String, String>> attributes) {
+      List<SubmissionFileAttribute> attributes) {
     String fileName = file.toFile().getName();
 
     return createFileElement(

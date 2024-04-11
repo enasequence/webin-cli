@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
@@ -57,37 +58,43 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
       this.runProcessor = mock(RunProcessor.class);
       this.analysisProcessor = mock(AnalysisProcessor.class);
 
-      doNothing().when(this.sampleProcessor).process(any(), any());
-      doNothing().when(this.studyProcessor).process(any(), any());
-      doNothing().when(this.sampleXmlProcessor).process(any(), any());
-      doNothing().when(this.runProcessor).process(any(), any());
-      doNothing().when(this.analysisProcessor).process(any(), any());
+      doNothing().when(this.sampleProcessor).process(any(), any(), any());
+      doNothing().when(this.studyProcessor).process(any(), any(), any());
+      doNothing().when(this.sampleXmlProcessor).process(any(), any(), any());
+      doNothing().when(this.runProcessor).process(any(), any(), any());
+      doNothing().when(this.analysisProcessor).process(any(), any(), any());
     }
   }
 
-  public WebinCliExecutorBuilder study(Study study) {
+  public WebinCliExecutorBuilder study(String submissionName, Study study) {
     this.studyProcessor = spy(new StudyProcessor(null));
     doAnswer(
             (InvocationOnMock invocation) -> {
+              ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+              when(fieldGroup.getValue("NAME")).thenReturn(submissionName);
+
               StudyProcessor processor = (StudyProcessor) invocation.getMock();
-              processor.getCallback().notify(study);
+              processor.getCallback().notify(fieldGroup, study);
               return null;
             })
         .when(this.studyProcessor)
-        .process(any(), any());
+        .process(any(), any(), any());
     return this;
   }
 
-  public WebinCliExecutorBuilder sample(Sample sample) {
+  public WebinCliExecutorBuilder sample(String submissionName, Sample sample) {
     this.sampleProcessor = spy(new SampleProcessor(null));
     doAnswer(
             (InvocationOnMock invocation) -> {
+              ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+              when(fieldGroup.getValue("NAME")).thenReturn(submissionName);
+
               SampleProcessor processor = (SampleProcessor) invocation.getMock();
-              processor.getCallback().notify(sample);
+              processor.getCallback().notify(fieldGroup, sample);
               return null;
             })
         .when(this.sampleProcessor)
-        .process(any(), any());
+        .process(any(), any(), any());
     return this;
   }
 

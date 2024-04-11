@@ -18,6 +18,7 @@ import java.util.List;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
@@ -57,7 +58,8 @@ public class SampleProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(
+      ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
     String sampleValue = fieldValue.getValue();
     try {
       if (isJsonValue(sampleValue)) {
@@ -78,7 +80,7 @@ public class SampleProcessor implements ManifestFieldProcessor {
 
       Sample sample = getSample(sampleValue);
       fieldValue.setValue(sample.getBioSampleId());
-      callback.notify(sample);
+      callback.notify(fieldGroup, sample);
 
     } catch (WebinCliException | JsonProcessingException e) {
       result.add(ValidationMessage.error(e));

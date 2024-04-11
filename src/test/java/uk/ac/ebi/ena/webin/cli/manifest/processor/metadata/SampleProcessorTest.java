@@ -44,7 +44,7 @@ public class SampleProcessorTest {
     SampleProcessor processor =
         new SampleProcessor(
             parameters,
-            (Sample sample) -> Assert.assertEquals("SAMEA749881", sample.getBioSampleId()));
+            (fieldGroup, sample) -> Assert.assertEquals("SAMEA749881", sample.getBioSampleId()));
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "ERS000002");
     ValidationResult result = new ValidationResult();
@@ -55,7 +55,8 @@ public class SampleProcessorTest {
 
   @Test
   public void testIncorrect() {
-    SampleProcessor processor = new SampleProcessor(parameters, Assert::assertNull);
+    SampleProcessor processor =
+        new SampleProcessor(parameters, (fieldGroup, sample) -> Assert.assertNull(sample));
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "SRP000392");
     ValidationResult result = new ValidationResult();
     processor.process(result, fieldValue);
@@ -78,7 +79,7 @@ public class SampleProcessorTest {
     SampleProcessor processor =
         new SampleProcessor(
             parameters,
-            (Sample sample) -> {
+            (fieldGroup, sample) -> {
               Assert.assertNotNull(sample.getBioSampleId());
               Assert.assertEquals(getSampleCollectionDate(sample), "2010-01-20");
             });
@@ -105,7 +106,7 @@ public class SampleProcessorTest {
     processor =
         new SampleProcessor(
             parameters,
-            (Sample sampleObj) -> {
+            (fieldGroup, sampleObj) -> {
               // Updated collection date
               Assert.assertEquals(getSampleCollectionDate(sampleObj), modifiedCollectionDate);
             });
@@ -136,7 +137,7 @@ public class SampleProcessorTest {
     SampleProcessor processor =
         new SampleProcessor(
             parameters,
-            (Sample sample) -> {
+            (fieldGroup, sample) -> {
               Assert.assertNotNull(sample.getBioSampleId());
               Assert.assertEquals(getSampleCollectionDate(sample), "2010-01-20");
             });
@@ -163,7 +164,7 @@ public class SampleProcessorTest {
     processor =
         new SampleProcessor(
             parameters,
-            (Sample sampleObj) -> {
+            (fieldGroup, sampleObj) -> {
               // not updated
               Assert.assertNotEquals(getSampleCollectionDate(sampleObj), modifiedCollectionDate);
             });

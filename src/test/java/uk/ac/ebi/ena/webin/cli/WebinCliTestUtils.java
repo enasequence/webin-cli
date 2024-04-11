@@ -10,13 +10,18 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 import org.junit.Assert;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class WebinCliTestUtils {
 
@@ -60,6 +65,13 @@ public class WebinCliTestUtils {
     }
   }
 
+  public static Study getDefaultStudy() {
+    Study study = new Study();
+    study.setStudyId("");
+    study.setBioProjectId("");
+    return study;
+  }
+
   public static Sample getDefaultSample() {
     Sample sample = new Sample();
     sample.setOrganism("Quercus robur");
@@ -75,5 +87,30 @@ public class WebinCliTestUtils {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static String generateUniqueManifestName() {
+    return String.format("TEST-%X", System.nanoTime());
+  }
+
+  /** @return A sample JSON with random alias. */
+  public static ObjectNode createSampleJson() {
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    ObjectNode sampleJson = objectMapper.createObjectNode();
+    sampleJson
+        .put("alias", UUID.randomUUID().toString())
+        .put("title", "human gastric microbiota, mucosal");
+
+    sampleJson.putObject("organism").put("taxonId", "1284369");
+
+    ArrayNode attributes = sampleJson.putArray("attributes");
+    attributes
+        .addObject()
+        .put("tag", "Geographic location (country and/or sea)")
+        .put("value", "France");
+    attributes.addObject().put("tag", "collection date").put("value", "2010-01-20");
+
+    return sampleJson;
   }
 }

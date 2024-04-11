@@ -27,8 +27,8 @@ public class SubmissionBundleTest {
 
   @Test
   public void test() throws IOException {
-    File submitDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toFile();
-    String uploadDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toString();
+    File submitDirectory = Files.createTempDirectory("TEST-SUBMISSION-BUNDLE").toFile();
+    String uploadDirectory = Files.createTempDirectory("TEST-SUBMISSION-BUNDLE").toString();
 
     SubmissionBundle.SubmissionXMLFile xmlFile =
         new SubmissionXMLFile(
@@ -38,20 +38,17 @@ public class SubmissionBundleTest {
     xmlFile.setMd5(
         FileUtils.calculateDigest("MD5", xmlFile.getXmlContent().getBytes(StandardCharsets.UTF_8)));
 
-    File manifestFile = File.createTempFile("TEST-SB", "MANIFEST");
-    String manifestMd5 = FileUtils.calculateDigest("MD5", manifestFile);
-
     SubmissionBundle expectedSb =
         new SubmissionBundle(
             submitDirectory,
             uploadDirectory,
             new ArrayList<>(),
             Arrays.asList(xmlFile),
-            manifestMd5);
+            "abcd1234");
 
     SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
-    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifestMd5, submitDirectory);
+    SubmissionBundle actualSb = SubmissionBundleHelper.read("abcd1234", submitDirectory);
 
     Assert.assertEquals(expectedSb, actualSb);
     Assert.assertEquals(
@@ -75,23 +72,20 @@ public class SubmissionBundleTest {
             FileUtils.getLastModifiedTime(dataFile.toFile()),
             FileUtils.calculateDigest("MD5", dataFile.toFile()));
 
-    File manifestFile = File.createTempFile("TEST-SB", "MANIFEST");
-    String manifestMd5 = FileUtils.calculateDigest("MD5", manifestFile);
-
     SubmissionBundle expectedSb =
         new SubmissionBundle(
             submitDirectory,
             uploadDirectory,
             Arrays.asList(uploadFile),
             new ArrayList<>(),
-            manifestMd5);
+            "abcd1234");
 
     SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
     // Change the content of the file so the checksum comes out to be different.
     Files.write(dataFile, "xyz".getBytes(StandardCharsets.UTF_8));
 
-    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifestMd5, submitDirectory);
+    SubmissionBundle actualSb = SubmissionBundleHelper.read("abcd1234", submitDirectory);
 
     // Not the best way to check expected output. The method that returns submission bundle above
     // does not give

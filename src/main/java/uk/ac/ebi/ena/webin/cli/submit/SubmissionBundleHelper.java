@@ -10,12 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -34,12 +31,22 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 public class SubmissionBundleHelper {
   private static final Logger log = LoggerFactory.getLogger(SubmissionBundleHelper.class);
 
-  public static SubmissionBundle read(String manifestMd5, File submitDir) {
-    File submissionBundleFile = new File(submitDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
-    try (ObjectInputStream os = new ObjectInputStream(new FileInputStream(submissionBundleFile))) {
-      SubmissionBundle sb = (SubmissionBundle) os.readObject();
+  /**
+   * @return The submission bundle loaded from the given directory. If any error occurs during
+   *     loading then 'null' is returned. 'null' is also returned if it is found that the submission
+   *     bundle is different from what is in the manifest (by matching given checksum). This means
+   *     the previously saved submission bundle is no longer valid.
+   */
+  public static SubmissionBundle read(String manifestFieldsMd5, File submissionBundleDir) {
+    File submissionBundleFile =
+        new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_NAME);
 
-      if (null != manifestMd5 && !manifestMd5.equals(sb.getManifestMd5())) {
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+
+      SubmissionBundle sb = objectMapper.readValue(submissionBundleFile, SubmissionBundle.class);
+
+      if (null != manifestFieldsMd5 && !manifestFieldsMd5.equals(sb.getManifestFieldsMd5())) {
         log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
         return null;
       }
@@ -59,21 +66,22 @@ public class SubmissionBundleHelper {
 
       return sb;
 
-    } catch (ClassNotFoundException | IOException e) {
+    } catch (IOException e) {
       // Submission bundle could not be read.
       log.info(WebinCliMessage.SUBMISSION_BUNDLE_VALIDATE_SUBMISSION.text());
       return null;
     }
   }
 
-  public static void write(SubmissionBundle sb, File submitDir) {
-    File submissionBundleFile = new File(submitDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
-    try (ObjectOutputStream os =
-        new ObjectOutputStream(new FileOutputStream(submissionBundleFile))) {
+  public static void write(SubmissionBundle sb, File submissionBundleDir) {
+    File submissionBundleFile =
+        new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_NAME);
+
+    try {
       computeXmlFilesChecksums(sb);
 
-      os.writeObject(sb);
-      os.flush();
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.writeValue(submissionBundleFile, sb);
 
       writeXmls(sb);
     } catch (IOException ex) {
@@ -88,7 +96,7 @@ public class SubmissionBundleHelper {
       result.add(ValidationMessage.info("Program version has changed"));
     }
 
-    for (SubmissionBundle.SubmissionXMLFile file : sb.getXMLFileList()) {
+    for (SubmissionBundle.SubmissionXMLFile file : sb.getXmlFileList()) {
       if (!file.getFile().exists()) {
         result.add(ValidationMessage.info("Generated xml file not found: " + file.getFile()));
         continue;
@@ -155,7 +163,7 @@ public class SubmissionBundleHelper {
   }
 
   private static void computeXmlFilesChecksums(SubmissionBundle sb) {
-    sb.getXMLFileList()
+    sb.getXmlFileList()
         .forEach(
             xmlFile -> {
               String md5 =
@@ -167,7 +175,7 @@ public class SubmissionBundleHelper {
   }
 
   private static void readXmls(SubmissionBundle sb) {
-    sb.getXMLFileList()
+    sb.getXmlFileList()
         .forEach(
             xmlFile -> {
               try {
@@ -181,7 +189,7 @@ public class SubmissionBundleHelper {
   }
 
   private static void writeXmls(SubmissionBundle sb) {
-    sb.getXMLFileList()
+    sb.getXmlFileList()
         .forEach(
             xmlFile -> {
               try {

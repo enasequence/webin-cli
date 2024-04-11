@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
@@ -43,7 +44,8 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(
+      ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
 
     try {
@@ -60,7 +62,7 @@ public class SampleXmlProcessor implements ManifestFieldProcessor {
               WebinCliMessage.SAMPLE_SERVICE_VALIDATION_ERROR.format(value),
               WebinCliMessage.SAMPLE_SERVICE_SYSTEM_ERROR.format(value));
 
-      callback.notify(source);
+      callback.notify(fieldGroup, source);
 
     } catch (WebinCliException | ServiceException e) {
       result.add(ValidationMessage.error(e));

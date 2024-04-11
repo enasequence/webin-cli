@@ -10,6 +10,8 @@
  */
 package uk.ac.ebi.ena.webin.cli.submit;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.File;
 import java.io.Serializable;
 import java.util.List;
@@ -29,7 +31,7 @@ public class SubmissionBundle implements Serializable {
 
   private final List<SubmissionUploadFile> uploadFileList;
 
-  private final String manifestMd5;
+  private final String manifestFieldsMd5;
 
   public enum SubmissionXMLFileType {
     SUBMISSION,
@@ -55,7 +57,11 @@ public class SubmissionBundle implements Serializable {
     /** XML cached in memory. No need to serialize as it gets written in an xml file separately. */
     private transient String xmlContent;
 
-    public SubmissionXMLFile(SubmissionXMLFileType type, File file, String xmlContent) {
+    @JsonCreator
+    public SubmissionXMLFile(
+        @JsonProperty("type") SubmissionXMLFileType type,
+        @JsonProperty("file") File file,
+        @JsonProperty("xmlContent") String xmlContent) {
       this.type = type;
       this.file = file;
       this.xmlContent = xmlContent;
@@ -109,8 +115,12 @@ public class SubmissionBundle implements Serializable {
 
     private final String cachedMd5;
 
+    @JsonCreator
     public SubmissionUploadFile(
-        File file, Long cachedLength, Long cachedLastModifiedTime, String cachedMd5) {
+        @JsonProperty("file") File file,
+        @JsonProperty("cachedLength") Long cachedLength,
+        @JsonProperty("cachedLastModifiedTime") Long cachedLastModifiedTime,
+        @JsonProperty("cachedMd5") String cachedMd5) {
       this.file = file;
       this.cachedLength = cachedLength;
       this.cachedLastModifiedTime = cachedLastModifiedTime;
@@ -149,18 +159,19 @@ public class SubmissionBundle implements Serializable {
     }
   }
 
+  @JsonCreator
   public SubmissionBundle(
-      File submitDir,
-      String uploadDir,
-      List<SubmissionUploadFile> uploadFileList,
-      List<SubmissionXMLFile> xmlFileList,
-      String manifestMd5) {
+      @JsonProperty("submitDir") File submitDir,
+      @JsonProperty("uploadDir") String uploadDir,
+      @JsonProperty("uploadFileList") List<SubmissionUploadFile> uploadFileList,
+      @JsonProperty("xmlFileList") List<SubmissionXMLFile> xmlFileList,
+      @JsonProperty("manifestFieldsMd5") String manifestFieldsMd5) {
     this.version = WebinCli.getVersion();
     this.submitDir = submitDir;
     this.uploadDir = uploadDir;
     this.uploadFileList = uploadFileList;
     this.xmlFileList = xmlFileList;
-    this.manifestMd5 = manifestMd5;
+    this.manifestFieldsMd5 = manifestFieldsMd5;
   }
 
   public boolean equals(Object other) {
@@ -170,7 +181,7 @@ public class SubmissionBundle implements Serializable {
           && this.submitDir.equals(sb.submitDir)
           && this.uploadDir.equals(sb.uploadDir)
           && this.uploadFileList.equals(sb.uploadFileList)
-          && this.manifestMd5.equals(sb.manifestMd5);
+          && this.manifestFieldsMd5.equals(sb.manifestFieldsMd5);
     }
     return false;
   }
@@ -179,8 +190,8 @@ public class SubmissionBundle implements Serializable {
     return version;
   }
 
-  public String getManifestMd5() {
-    return this.manifestMd5;
+  public String getManifestFieldsMd5() {
+    return this.manifestFieldsMd5;
   }
 
   public File getSubmitDir() {
@@ -195,7 +206,7 @@ public class SubmissionBundle implements Serializable {
     return uploadFileList;
   }
 
-  public List<SubmissionXMLFile> getXMLFileList() {
+  public List<SubmissionXMLFile> getXmlFileList() {
     return xmlFileList;
   }
 

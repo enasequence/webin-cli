@@ -33,7 +33,7 @@ public class AnalysisProcessorTest {
     AnalysisProcessor processor =
         new AnalysisProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(1, e.size());
               Assert.assertEquals(analysis_id, e.get(0).getAnalysisId());
             });
@@ -51,7 +51,7 @@ public class AnalysisProcessorTest {
     AnalysisProcessor processor =
         new AnalysisProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(3, e.size());
               Assert.assertEquals("ERZ690501", e.get(0).getAnalysisId());
               Assert.assertEquals("ERZ690500", e.get(1).getAnalysisId());
@@ -69,7 +69,8 @@ public class AnalysisProcessorTest {
 
   @Test
   public void testIncorrect() {
-    AnalysisProcessor processor = new AnalysisProcessor(parameters, Assert::assertNull);
+    AnalysisProcessor processor =
+        new AnalysisProcessor(parameters, (fieldGroup, analyses) -> Assert.assertNull(analyses));
 
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "ANALYSIS_REF", "INVALID");
@@ -86,7 +87,8 @@ public class AnalysisProcessorTest {
 
   @Test
   public void testIncorrectList() {
-    AnalysisProcessor processor = new AnalysisProcessor(parameters, Assert::assertNull);
+    AnalysisProcessor processor =
+        new AnalysisProcessor(parameters, (fieldGroup, analyses) -> Assert.assertNull(analyses));
 
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "ANALYSIS_REF", "INVALID1, ERZ690500, INVALID2");

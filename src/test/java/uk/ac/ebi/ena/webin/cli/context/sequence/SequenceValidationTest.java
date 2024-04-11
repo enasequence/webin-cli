@@ -12,13 +12,18 @@ package uk.ac.ebi.ena.webin.cli.context.sequence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultStudy;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Locale;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.ManifestValidationPolicy;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -29,15 +34,18 @@ public class SequenceValidationTest {
 
   private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/valid");
 
+  private static final String NAME = "test";
+
   private static ManifestBuilder manifestBuilder() {
-    return new ManifestBuilder().field("STUDY", "test").field("NAME", "test");
+    return new ManifestBuilder().field("STUDY", "test").field("NAME", NAME);
   }
 
   private static final WebinCliExecutorBuilder<SequenceManifest, ValidationResponse>
       executorBuilder =
           new WebinCliExecutorBuilder(
                   SequenceManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-              .sample(getDefaultSample());
+              .sample(NAME, getDefaultSample())
+              .study(NAME, getDefaultStudy());
 
   @Before
   public void before() {
@@ -58,10 +66,36 @@ public class SequenceValidationTest {
           executorBuilder.build(manifestFile, VALID_DIR);
 
       executor.readManifest();
-      executor.validateSubmission();
-      assertThat(executor.getManifestReader().getManifest().files().get(FileType.TAB))
+      executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
+      assertThat(
+              executor.getManifestReader().getManifests().stream()
+                  .findFirst()
+                  .get()
+                  .files()
+                  .get(FileType.TAB))
           .size()
           .isOne();
+      assertGeneratedFiles(executor);
+    }
+  }
+
+  private void assertGeneratedFiles(WebinCliExecutor executor) {
+    Path submissionDir =
+        executor
+            .getParameters()
+            .getOutputDir()
+            .toPath()
+            .resolve(executor.getContext().toString())
+            .resolve(NAME);
+
+    File bundle = submissionDir.resolve("validate.json").toFile();
+    AssertionsForClassTypes.assertThat(bundle.exists()).isTrue();
+    AssertionsForClassTypes.assertThat(bundle.length()).isGreaterThan(0);
+
+    for (String xmlFileName : Arrays.asList("analysis", "submission")) {
+      File xmlFile = submissionDir.resolve("submit").resolve(xmlFileName + ".xml").toFile();
+      AssertionsForClassTypes.assertThat(xmlFile.exists()).isTrue();
+      AssertionsForClassTypes.assertThat(xmlFile.length()).isGreaterThan(0);
     }
   }
 }
