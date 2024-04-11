@@ -35,20 +35,20 @@ public class ReportTester {
   // Submission report
   //
 
-  public void textInSubmissionReport(String message) {
-    textInReport(executor.getSubmissionReportFile(), message);
+  public void textInSubmissionReport(String submissionName, String message) {
+    textInReport(getSubmissionReport(submissionName), message);
   }
 
-  public void textNotInSubmissionReport(String message) {
-    textNotInReport(executor.getSubmissionReportFile(), message);
+  public void textNotInSubmissionReport(String submissionName, String message) {
+    textNotInReport(getSubmissionReport(submissionName), message);
   }
 
-  public void regexInSubmissionReport(String message) {
-    regexInReport(executor.getSubmissionReportFile(), message);
+  public void regexInSubmissionReport(String submissionName, String message) {
+    regexInReport(getSubmissionReport(submissionName), message);
   }
 
-  public void regexNotInSubmissionReport(String message) {
-    regexNotInReport(executor.getSubmissionReportFile(), message);
+  public void regexNotInSubmissionReport(String submissionName, String message) {
+    regexNotInReport(getSubmissionReport(submissionName), message);
   }
 
   // Manifest report
@@ -73,28 +73,41 @@ public class ReportTester {
   // Data file report
   //
 
-  private File getFileReport(Path dataFile) {
-    return executor
-        .getValidationDir()
-        .toPath()
-        .resolve(dataFile.getFileName().toString() + ".report")
+  public void textInFileReport(String submissionName, String dataFile, String message) {
+    textInReport(getFileReport(submissionName, Paths.get(dataFile)), message);
+  }
+
+  public void textNotInFileReport(String submissionName, String dataFile, String message) {
+    textNotInReport(getFileReport(submissionName, Paths.get(dataFile)), message);
+  }
+
+  public void regexInFileReport(String submissionName, String dataFile, String message) {
+    regexInReport(getFileReport(submissionName, Paths.get(dataFile)), message);
+  }
+
+  public void regexNotInFileReport(String submissionName, String dataFile, String message) {
+    regexNotInReport(getFileReport(submissionName, Paths.get(dataFile)), message);
+  }
+
+  private File getSubmissionReport(String submissionName) {
+    return getSubmissionValidationDirectory(submissionName)
+        .resolve("webin-cli.report")
         .toFile();
   }
 
-  public void textInFileReport(String dataFile, String message) {
-    textInReport(getFileReport(Paths.get(dataFile)), message);
+  private File getFileReport(String submissionName, Path dataFile) {
+    return getSubmissionValidationDirectory(submissionName)
+        .resolve(dataFile.getFileName() + ".report")
+        .toFile();
   }
 
-  public void textNotInFileReport(String dataFile, String message) {
-    textNotInReport(getFileReport(Paths.get(dataFile)), message);
-  }
-
-  public void regexInFileReport(String dataFile, String message) {
-    regexInReport(getFileReport(Paths.get(dataFile)), message);
-  }
-
-  public void regexNotInFileReport(String dataFile, String message) {
-    regexNotInReport(getFileReport(Paths.get(dataFile)), message);
+  private Path getSubmissionValidationDirectory(String submissionName) {
+    return executor
+        .getParameters().getOutputDir()
+        .toPath()
+        .resolve(executor.getContext().name())
+        .resolve(submissionName)
+        .resolve("validate");
   }
 
   // Generic report

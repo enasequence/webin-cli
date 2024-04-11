@@ -36,30 +36,30 @@ public class AuthorProcessorTest {
             .get(0);
     ManifestFieldValue manifestField =
         new ManifestFieldValue(fieldDef, "Senthil .V", new ArrayList<>(), null);
-    new AuthorProcessor().process(result, manifestField);
+    new AuthorProcessor().process(result, null, manifestField);
     assertEquals("Senthil .V", manifestField.getValue());
 
     manifestField =
         new ManifestFieldValue(fieldDef, "Senthil .V,   nathan vijay.", new ArrayList<>(), null);
-    new AuthorProcessor().process(result, manifestField);
+    new AuthorProcessor().process(result, null, manifestField);
     assertEquals("Senthil .V, nathan vijay.", manifestField.getValue());
 
     manifestField =
         new ManifestFieldValue(fieldDef, "Senthil .V...,nathan", new ArrayList<>(), null);
-    new AuthorProcessor().process(result, manifestField);
+    new AuthorProcessor().process(result, null, manifestField);
     assertEquals("Senthil .V.,nathan", manifestField.getValue());
 
     manifestField = new ManifestFieldValue(fieldDef, "Senthil .V.", new ArrayList<>(), null);
-    new AuthorProcessor().process(result, manifestField);
+    new AuthorProcessor().process(result, null, manifestField);
     assertEquals("Senthil .V.", manifestField.getValue());
 
     manifestField =
         new ManifestFieldValue(fieldDef, "..Senthil Vija.  vija; nathan", new ArrayList<>(), null);
-    new AuthorProcessor().process(result, manifestField);
+    new AuthorProcessor().process(result, null, manifestField);
     assertEquals(".Senthil Vija. vija nathan", manifestField.getValue());
 
     manifestField = new ManifestFieldValue(fieldDef, "", new ArrayList<>(), null);
-    new AuthorProcessor().process(result, manifestField);
+    new AuthorProcessor().process(result, null, manifestField);
     assertEquals("", manifestField.getValue());
   }
 }

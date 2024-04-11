@@ -22,13 +22,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle.SubmissionXMLFile;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 
 public class SubmissionBundleTest {
 
   @Test
   public void test() throws IOException {
-    File submitDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toFile();
-    String uploadDirectory = Files.createTempDirectory("TEST-SUBMITION-BUNDLE").toString();
+    File submitDirectory = Files.createTempDirectory("TEST-SUBMISSION-BUNDLE").toFile();
+    String uploadDirectory = Files.createTempDirectory("TEST-SUBMISSION-BUNDLE").toString();
 
     SubmissionBundle.SubmissionXMLFile xmlFile =
         new SubmissionXMLFile(
@@ -38,8 +40,9 @@ public class SubmissionBundleTest {
     xmlFile.setMd5(
         FileUtils.calculateDigest("MD5", xmlFile.getXmlContent().getBytes(StandardCharsets.UTF_8)));
 
-    File manifestFile = File.createTempFile("TEST-SB", "MANIFEST");
-    String manifestMd5 = FileUtils.calculateDigest("MD5", manifestFile);
+    ReadsManifest manifest = new ReadsManifest();
+    manifest.setName("name-1");
+    manifest.setRun(Arrays.asList(new Run("run-id-1", "run-name-1")));
 
     SubmissionBundle expectedSb =
         new SubmissionBundle(
@@ -47,11 +50,11 @@ public class SubmissionBundleTest {
             uploadDirectory,
             new ArrayList<>(),
             Arrays.asList(xmlFile),
-            manifestMd5);
+            manifest);
 
     SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
-    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifestMd5, submitDirectory);
+    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifest, submitDirectory);
 
     Assert.assertEquals(expectedSb, actualSb);
     Assert.assertEquals(
@@ -75,8 +78,9 @@ public class SubmissionBundleTest {
             FileUtils.getLastModifiedTime(dataFile.toFile()),
             FileUtils.calculateDigest("MD5", dataFile.toFile()));
 
-    File manifestFile = File.createTempFile("TEST-SB", "MANIFEST");
-    String manifestMd5 = FileUtils.calculateDigest("MD5", manifestFile);
+    ReadsManifest manifest = new ReadsManifest();
+    manifest.setName("name-1");
+    manifest.setRun(Arrays.asList(new Run("run-id-1", "run-name-1")));
 
     SubmissionBundle expectedSb =
         new SubmissionBundle(
@@ -84,14 +88,14 @@ public class SubmissionBundleTest {
             uploadDirectory,
             Arrays.asList(uploadFile),
             new ArrayList<>(),
-            manifestMd5);
+            manifest);
 
     SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
     // Change the content of the file so the checksum comes out to be different.
     Files.write(dataFile, "xyz".getBytes(StandardCharsets.UTF_8));
 
-    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifestMd5, submitDirectory);
+    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifest, submitDirectory);
 
     // Not the best way to check expected output. The method that returns submission bundle above
     // does not give

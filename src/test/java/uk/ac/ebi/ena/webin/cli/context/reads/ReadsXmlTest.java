@@ -15,10 +15,13 @@ import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +34,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.XmlTester;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFileAttribute;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 import uk.ac.ebi.ena.webin.cli.validator.response.ReadsValidationResponse;
@@ -54,9 +58,9 @@ public class ReadsXmlTest {
     return manifest;
   }
 
-  private static SubmissionBundle prepareSubmissionBundle(ReadsManifest manifest) {
+  private static Collection<SubmissionBundle> prepareSubmissionBundle(ReadsManifest manifest) {
     ReadsManifestReader manifestReader = mock(ReadsManifestReader.class);
-    when(manifestReader.getManifest()).thenReturn(manifest);
+    when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -67,8 +71,8 @@ public class ReadsXmlTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> mockedExecutor = Mockito.spy(executor);
     ReadsValidationResponse rvr = new ReadsValidationResponse();
     Mockito.when(mockedExecutor.getValidationResponse()).thenReturn(rvr);
-    mockedExecutor.prepareSubmissionBundle();
-    return mockedExecutor.getSubmissionBundle();
+    mockedExecutor.prepareSubmissionBundles();
+    return mockedExecutor.getSubmissionBundles();
   }
 
   @Test
@@ -84,7 +88,7 @@ public class ReadsXmlTest {
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String experimentXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.EXPERIMENT).getXmlContent();
@@ -136,7 +140,7 @@ public class ReadsXmlTest {
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
@@ -175,7 +179,7 @@ public class ReadsXmlTest {
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
@@ -189,7 +193,7 @@ public class ReadsXmlTest {
     Path file = TempFileBuilder.empty("cram");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.CRAM, file.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
@@ -220,7 +224,7 @@ public class ReadsXmlTest {
     Path file = TempFileBuilder.empty("bam");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.BAM, file.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
@@ -251,7 +255,7 @@ public class ReadsXmlTest {
     Path file = TempFileBuilder.empty("fastq");
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
@@ -284,7 +288,7 @@ public class ReadsXmlTest {
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file1.toFile()));
     manifest.files().add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file2.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
@@ -340,7 +344,7 @@ public class ReadsXmlTest {
                 file.toFile(),
                 createReadTypeAttributes("paired", "cell_barcode")));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String runXml = sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.RUN).getXmlContent();
 
@@ -381,18 +385,9 @@ public class ReadsXmlTest {
             + "</RUN_SET>");
   }
 
-  private List<Map.Entry<String, String>> createReadTypeAttributes(String... atts) {
-    List<Map.Entry<String, String>> readTypeAttributes = new ArrayList<>();
-
-    Stream.of(atts)
-        .forEach(
-            readType -> {
-              Map<String, String> map = new HashMap<>();
-              map.put("READ_TYPE", readType);
-
-              readTypeAttributes.add(map.entrySet().stream().findFirst().get());
-            });
-
-    return readTypeAttributes;
+  private List<SubmissionFileAttribute> createReadTypeAttributes(String... atts) {
+    return Stream.of(atts)
+        .map(readType -> new SubmissionFileAttribute("READ_TYPE", readType))
+        .collect(Collectors.toList());
   }
 }

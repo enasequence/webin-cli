@@ -62,7 +62,7 @@ public class TranscriptomeValidationTest {
     assertThat(
             executor
                 .getManifestReader()
-                .getManifest()
+                .getManifests().stream().findFirst().get()
                 .files()
                 .get(TranscriptomeManifest.FileType.FASTA))
         .size()

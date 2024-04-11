@@ -48,7 +48,6 @@ public class WebinCliSubmissionTest {
       Consumer<ManifestBuilder> filesManifestConfig,
       Consumer<WebinCliBuilder> webinCliConfig) {
     ManifestBuilder manifestBuilder = new ManifestBuilder();
-    manifestBuilder.name();
     metaManifestConfig.accept(manifestBuilder);
     filesManifestConfig.accept(manifestBuilder);
     webinCliConfig.accept(webinCliBuilder);
@@ -63,7 +62,6 @@ public class WebinCliSubmissionTest {
       Consumer<ManifestBuilder> filesManifestConfig,
       Consumer<WebinCliBuilder> webinCliConfig) {
     ManifestBuilder manifestBuilder = new ManifestBuilder();
-    manifestBuilder.name();
     metaManifestConfig.accept(manifestBuilder);
     filesManifestConfig.accept(manifestBuilder);
     webinCliConfig.accept(webinCliBuilder);
@@ -79,7 +77,6 @@ public class WebinCliSubmissionTest {
       Consumer<ManifestBuilder> filesManifestConfig,
       Consumer<WebinCliBuilder> webinCliConfig) {
     ManifestBuilder manifestBuilder = new ManifestBuilder();
-    manifestBuilder.name();
     metaManifestConfig.accept(manifestBuilder);
     filesManifestConfig.accept(manifestBuilder);
     webinCliConfig.accept(webinCliBuilder);
@@ -345,7 +342,12 @@ public class WebinCliSubmissionTest {
   //
 
   private void readsMetaManifest(ManifestBuilder manifestBuilder) {
+    readsMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  }
+
+  private void readsMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
     manifestBuilder
+        .field("NAME", nameFieldValue)
         .field("STUDY", "SRP052303")
         .field("SAMPLE", "ERS2554688")
         .field("PLATFORM", "ILLUMINA")
@@ -360,7 +362,12 @@ public class WebinCliSubmissionTest {
   }
 
   private void genomeMetaManifest(ManifestBuilder manifestBuilder) {
+    genomeMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  }
+
+  private void genomeMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
     manifestBuilder
+        .field("NAME", nameFieldValue)
         .field("ASSEMBLY_TYPE", "clone or isolate")
         .field("COVERAGE", "45")
         .field("PROGRAM", "assembly")
@@ -376,6 +383,7 @@ public class WebinCliSubmissionTest {
 
   private void covid19GenomeMetaManifest(ManifestBuilder manifestBuilder) {
     manifestBuilder
+        .field("NAME", WebinCliTestUtils.generateUniqueManifestName())
         .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
         .field("STUDY", "ERP121228")
         .field("SAMPLE", "ERS5249578")
@@ -385,7 +393,12 @@ public class WebinCliSubmissionTest {
   }
 
   private void transcriptomeMetaManifest(ManifestBuilder manifestBuilder) {
+    transcriptomeMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  }
+
+  private void transcriptomeMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
     manifestBuilder
+        .field("NAME", nameFieldValue)
         .field("PROGRAM", "assembly")
         .field("PLATFORM", "fghgf")
         .field("SAMPLE", "SAMN04526268")
@@ -397,7 +410,12 @@ public class WebinCliSubmissionTest {
   }
 
   private void sequenceMetaManifest(ManifestBuilder manifestBuilder) {
+    sequenceMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  }
+
+  private void sequenceMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
     manifestBuilder
+        .field("NAME", nameFieldValue)
         .field("STUDY", "PRJEB20083")
         .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
         .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
@@ -444,7 +462,6 @@ public class WebinCliSubmissionTest {
   public void testReadsMultipleFastq() throws Throwable {
     ManifestBuilder manifestBuilder = new ManifestBuilder();
     manifestBuilder.jsonFormat();
-    manifestBuilder.name();
     readsMetaManifest(manifestBuilder);
     manifestBuilder.file("FASTQ", "10x/4fastq/I1.fastq.gz").attribute("READ_TYPE", "cell_barcode");
     manifestBuilder.file("FASTQ", "10x/4fastq/R1.fastq.gz").attribute("READ_TYPE", "umi_barcode");
@@ -495,10 +512,14 @@ public class WebinCliSubmissionTest {
 
   @Test
   public void testGenomeFlatFileWithFormatError() {
+    String name = String.format("TEST%X", System.nanoTime());
+
     testGenomeError(
-        m -> genomeMetaManifest(m),
+        m -> {
+          genomeMetaManifest(m, name);
+        },
         m -> m.file("FLATFILE", "invalid.flatfile.gz"),
-        r -> r.textInFileReport("invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
+        r -> r.textInFileReport(name, "invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
         WebinCliException.ErrorType.VALIDATION_ERROR);
   }
 
@@ -516,21 +537,29 @@ public class WebinCliSubmissionTest {
 
   @Test
   public void testSequenceTabWithInvalidSample() {
+    String name = String.format("TEST%X", System.nanoTime());
+
     testSequenceError(
-        m -> sequenceMetaManifest(m),
+        m -> {
+          sequenceMetaManifest(m, name);
+        },
         m -> m.file("TAB", "invalid-sample.tsv.gz"),
         r ->
             r.textInFileReport(
-                "invalid-sample.tsv.gz", "Organism name \"ERS000000\" is not submittable"),
+                name, "invalid-sample.tsv.gz", "Organism name \"ERS000000\" is not submittable"),
         WebinCliException.ErrorType.VALIDATION_ERROR);
   }
 
   @Test
   public void testSequenceFlatFileWithFormatError() {
+    String name = String.format("TEST%X", System.nanoTime());
+
     testSequenceError(
-        m -> sequenceMetaManifest(m),
+        m -> {
+          sequenceMetaManifest(m, name);
+        },
         m -> m.file("FLATFILE", "invalid.flatfile.gz"),
-        r -> r.textInFileReport("invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
+        r -> r.textInFileReport(name, "invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
         WebinCliException.ErrorType.VALIDATION_ERROR);
   }
 
@@ -550,10 +579,14 @@ public class WebinCliSubmissionTest {
 
   @Test
   public void testTranscriptomeFlatFileWithFormatError() {
+    String name = String.format("TEST%X", System.nanoTime());
+
     testTranscriptomeError(
-        m -> transcriptomeMetaManifest(m),
+        m -> {
+          transcriptomeMetaManifest(m, name);
+        },
         m -> m.file("FLATFILE", "invalid.flatfile.gz"),
-        r -> r.textInFileReport("invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
+        r -> r.textInFileReport(name, "invalid.flatfile.gz", "ERROR: Invalid ID line format [ line: 1]"),
         WebinCliException.ErrorType.VALIDATION_ERROR);
   }
 }

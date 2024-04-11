@@ -30,6 +30,8 @@ public class GenomeValidationTest {
 
   private static final File RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/genome");
 
+  private static final String NAME = "test";
+
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
         .field("STUDY", "test")
@@ -38,7 +40,7 @@ public class GenomeValidationTest {
         .field("COVERAGE", "1")
         .field("PROGRAM", "test")
         .field("PLATFORM", "test")
-        .field("NAME", "test");
+        .field("NAME", NAME);
   }
 
   private static final WebinCliExecutorBuilder<GenomeManifest, ValidationResponse> executorBuilder =
@@ -58,7 +60,7 @@ public class GenomeValidationTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
     executor.validateSubmission();
@@ -79,7 +81,7 @@ public class GenomeValidationTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
     executor.validateSubmission();
@@ -92,7 +94,7 @@ public class GenomeValidationTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
     executor.validateSubmission();
@@ -109,7 +111,7 @@ public class GenomeValidationTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
@@ -127,7 +129,7 @@ public class GenomeValidationTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
@@ -146,7 +148,7 @@ public class GenomeValidationTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(3);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
@@ -166,7 +168,7 @@ public class GenomeValidationTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(3);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
     assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
@@ -183,7 +185,7 @@ public class GenomeValidationTest {
     executor.readManifest();
     assertThatThrownBy(executor::validateSubmission).isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).textInSubmissionReport("fasta file validation failed");
+    new ReportTester(executor).textInSubmissionReport(NAME, "fasta file validation failed");
   }
 
   @Test
@@ -195,7 +197,7 @@ public class GenomeValidationTest {
     executor.readManifest();
     assertThatThrownBy(executor::validateSubmission).isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).textInSubmissionReport("flatfile file validation failed");
+    new ReportTester(executor).textInSubmissionReport(NAME, "flatfile file validation failed");
   }
 
   @Test
@@ -211,7 +213,7 @@ public class GenomeValidationTest {
     executor.readManifest();
     assertThatThrownBy(executor::validateSubmission).isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).textInSubmissionReport("Invalid number of columns");
+    new ReportTester(executor).textInSubmissionReport(NAME, "Invalid number of columns");
   }
 
   @Test
@@ -229,6 +231,6 @@ public class GenomeValidationTest {
     assertThatThrownBy(executor::validateSubmission).isInstanceOf(WebinCliException.class);
 
     new ReportTester(executor)
-        .textInSubmissionReport("Sequenceless chromosomes are not allowed in assembly");
+        .textInSubmissionReport(NAME, "Sequenceless chromosomes are not allowed in assembly");
   }
 }

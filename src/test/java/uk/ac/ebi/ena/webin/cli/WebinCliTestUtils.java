@@ -76,4 +76,8 @@ public class WebinCliTestUtils {
       throw new RuntimeException(e);
     }
   }
+
+  public static String generateUniqueManifestName() {
+    return String.format("TEST-%X", System.nanoTime());
+  }
 }

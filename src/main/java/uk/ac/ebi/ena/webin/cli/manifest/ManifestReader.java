@@ -28,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +42,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
+import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
@@ -50,7 +53,9 @@ public abstract class ManifestReader<M extends Manifest> {
 
   public static final String KEY_VALUE_COMMENT_REGEX = "^[\\s]*(#|;|\\/\\/).*$";
 
-  public abstract M getManifest();
+  public abstract Collection<M> getManifests();
+
+  protected abstract M createManifest();
 
   public interface Fields {
     String INFO = "INFO";
@@ -92,25 +97,34 @@ public abstract class ManifestReader<M extends Manifest> {
   }
 
   private final WebinCliParameters webinCliParameters;
-  private final List<ManifestFieldDefinition> fields;
+  private final List<ManifestFieldDefinition> fieldDefinitions;
   private final List<ManifestFileGroup> fileGroups;
-  private List<MessageListener> listener = new ArrayList<>();
+  private final List<MessageListener> listener = new ArrayList<>();
+
+  /**
+   * The value of manifest field 'NAME' is used as a key in this map. As 'NAME' is mandatory, every field group in
+   * the manifest file is going to have this field.
+   */
+  protected final Map<String, M> nameFieldToManifestMap = new HashMap<>();
+
+  /** Keeps a list of all fields read from the manifest file. */
   private ManifestReaderResult manifestReaderResult;
+
   private ManifestReaderState state;
 
   public ManifestReader(
-      WebinCliParameters webinCliParameters, List<ManifestFieldDefinition> fields) {
+      WebinCliParameters webinCliParameters, List<ManifestFieldDefinition> fieldDefinitions) {
     this.webinCliParameters = webinCliParameters;
-    this.fields = fields;
+    this.fieldDefinitions = fieldDefinitions;
     this.fileGroups = null;
   }
 
   public ManifestReader(
       WebinCliParameters webinCliParameters,
-      List<ManifestFieldDefinition> fields,
+      List<ManifestFieldDefinition> fieldDefinitions,
       List<ManifestFileGroup> fileGroups) {
     this.webinCliParameters = webinCliParameters;
-    this.fields = fields;
+    this.fieldDefinitions = fieldDefinitions;
     this.fileGroups = fileGroups;
   }
 
@@ -118,8 +132,8 @@ public abstract class ManifestReader<M extends Manifest> {
     return state.inputDir;
   }
 
-  public List<ManifestFieldDefinition> getFields() {
-    return fields;
+  public List<ManifestFieldDefinition> getFieldDefinitions() {
+    return fieldDefinitions;
   }
 
   public List<ManifestFileGroup> getFileGroups() {
@@ -161,61 +175,27 @@ public abstract class ManifestReader<M extends Manifest> {
       return;
     }
 
-    // Parse.
+    // A manifest file is essentially a list of field groups. Parsing step reads all such field groups from the
+    // file and puts them inside a collection.
+    Collection<ManifestFieldGroup> parsedFieldGroups = parseManifest(inputDir, manifestLines);
 
-    parseManifest(inputDir, manifestLines);
+    manifestReaderResult.getManifestFieldGroups().addAll(parsedFieldGroups);
 
-    // Expand info fields.
+    expandInfoFields(inputDir);
 
-    List<ManifestFieldValue> infoFields =
-        manifestReaderResult.getFields().stream()
-            .filter(field -> field.getName().equalsIgnoreCase(INFO))
-            .collect(Collectors.toList());
-
-    for (ManifestFieldValue infoField : infoFields) {
-
-      List<String> infoLines;
-      File infoFile = new File(infoField.getValue());
-      try {
-        infoLines = readAllLines(infoFile);
-      } catch (IOException ex) {
-        error(WebinCliMessage.MANIFEST_READER_INFO_FILE_READ_ERROR, infoFile.getPath());
-        return;
-      }
-
-      String savedManifestFileName = state.fileName;
-      int savedManifestLineNo = state.lineNo;
-
-      try {
-        state.fileName = infoFile.getPath();
-        state.lineNo = 0;
-
-        parseManifest(inputDir, infoLines);
-      } finally {
-        state.fileName = savedManifestFileName;
-        state.lineNo = savedManifestLineNo;
-      }
-    }
-
-    // Remove info fields.
-
-    manifestReaderResult.setFields(
-        manifestReaderResult.getFields().stream()
-            .filter(field -> !field.getName().equalsIgnoreCase(INFO))
-            .collect(Collectors.toList()));
-
-    // Validate.
     validateManifest();
 
-    // Process
+    // Objects that override this method take the all the field groups that were parsed and validated above
+    // and create manifest objects using them. As one field group maps to a single manifest object, there should be
+    // as many manifest objects as there are number of field groups.
     processManifest();
   }
 
-  private void parseManifest(Path inputDir, List<String> lines) {
+  private Collection<ManifestFieldGroup> parseManifest(Path inputDir, List<String> lines) {
     if (isJsonBasedFormat(lines)) {
-      parseJsonManifest(inputDir, lines);
+      return parseJsonManifest(inputDir, lines);
     } else {
-      parseKeyValueManifest(inputDir, lines);
+      return Arrays.asList(parseKeyValueManifest(inputDir, lines));
     }
   }
 
@@ -224,16 +204,26 @@ public abstract class ManifestReader<M extends Manifest> {
       return false;
     }
 
-    return lines.get(0).trim().startsWith("{");
+    return lines.get(0).trim().startsWith("{") || lines.get(0).trim().startsWith("[");
   }
 
-  private void parseKeyValueManifest(Path inputDir, List<String> lines) {
+  /**
+   * Key/Value manifest file does not support multiple field groups. This format only contains field names and their
+   * values. Therefore, it will be assumed that all these fields belong to a single field group.
+   */
+  private ManifestFieldGroup parseKeyValueManifest(Path inputDir, List<String> lines) {
     state.state = PARSE;
+
+    ManifestFieldGroup fieldGroup = new ManifestFieldGroup();
 
     for (String line : lines) {
       ManifestFieldValue field = parseManifestLine(inputDir, line);
-      if (null != field) manifestReaderResult.getFields().add(field);
+      if (null != field) {
+        fieldGroup.add(field);
+      }
     }
+
+    return fieldGroup;
   }
 
   private ManifestFieldValue parseManifestLine(Path inputDir, String line) {
@@ -256,7 +246,7 @@ public abstract class ManifestReader<M extends Manifest> {
 
     try {
       ManifestFieldDefinition fieldDefinition =
-          Stream.concat(infoFields.stream(), fields.stream())
+          Stream.concat(infoFields.stream(), fieldDefinitions.stream())
               .filter(
                   field ->
                       matchNameCaseAndPunctuationInsensitively(field.getName(), fieldName)
@@ -289,103 +279,142 @@ public abstract class ManifestReader<M extends Manifest> {
     return null;
   }
 
-  private void parseJsonManifest(Path inputDir, List<String> lines) {
+  private Collection<ManifestFieldGroup> parseJsonManifest(Path inputDir, List<String> lines) {
     state.state = PARSE;
+
+    List<ManifestFieldGroup> result = new ArrayList<>();
 
     try {
       ObjectMapper objectMapper = new ObjectMapper();
 
-      JsonNode jsonNode = objectMapper.readTree(lines.stream().collect(Collectors.joining("\n")));
+      JsonNode manifestJson = objectMapper.readTree(lines.stream().collect(Collectors.joining("\n")));
 
-      jsonNode
-          .fields()
-          .forEachRemaining(
-              fieldEntry -> {
-                String fieldName = fieldEntry.getKey();
+      if (manifestJson.isArray()) {
+        manifestJson.elements().forEachRemaining(fieldGroupJson -> {
+          ManifestFieldGroup fieldGroup = new ManifestFieldGroup();
+          loadManifestFields(inputDir, fieldGroupJson, fieldGroup);
 
-                // find field definition
-                ManifestFieldDefinition fieldDefinition =
-                    Stream.concat(infoFields.stream(), fields.stream())
-                        .filter(
-                            fieldDef ->
-                                matchNameCaseAndPunctuationInsensitively(
-                                        fieldDef.getName(), fieldName)
-                                    || fieldDef.matchSynonym(fieldName))
-                        .findFirst()
-                        .orElse(null);
-                if (fieldDefinition == null) {
-                  error(WebinCliMessage.MANIFEST_READER_UNKNOWN_FIELD_ERROR, fieldName);
-                  return;
-                }
+          result.add(fieldGroup);
+        });
+      } else {
+        ManifestFieldGroup fieldGroup = new ManifestFieldGroup();
+        loadManifestFields(inputDir, manifestJson, fieldGroup);
 
-                JsonNode field = fieldEntry.getValue();
-                if (field.isValueNode()) {
-                  addManifestField(inputDir, fieldDefinition, field.asText(), new ArrayList<>());
-                } else if (field.isArray()) {
-                  field
-                      .elements()
-                      .forEachRemaining(
-                          subField -> {
-                            if (subField.isValueNode()) {
-                              addManifestField(
-                                  inputDir, fieldDefinition, subField.asText(), new ArrayList<>());
-                            } else {
-                              handleFieldWithAttributes(inputDir, fieldDefinition, subField);
-                            }
-                          });
-                } else {
-                  if (fieldName.equalsIgnoreCase("sample")) {
-                    addManifestField(
-                        inputDir, fieldDefinition, field.toString(), new ArrayList<>());
-                  } else {
-                    handleFieldWithAttributes(inputDir, fieldDefinition, field);
-                  }
-                }
-              });
+        result.add(fieldGroup);
+      }
     } catch (IOException e) {
       error(WebinCliMessage.MANIFEST_READER_MANIFEST_FILE_MALFORMED);
     }
+
+    return result;
+  }
+
+  /**
+   * @param inputDir
+   * @param manifestJson - The JSON object the fields will be read from.
+   * @param fieldGroup - The collection all the fields will be loaded into.
+   */
+  private void loadManifestFields(Path inputDir, JsonNode manifestJson, ManifestFieldGroup fieldGroup) {
+    manifestJson
+        .fields()
+        .forEachRemaining(
+            manifestField -> {
+              String fieldName = manifestField.getKey();
+
+              // find field's definition
+              ManifestFieldDefinition fieldDefinition = getFieldDefinition(fieldName);
+              if (fieldDefinition == null) {
+                error(WebinCliMessage.MANIFEST_READER_UNKNOWN_FIELD_ERROR, fieldName);
+                return;
+              }
+
+              JsonNode fieldValue = manifestField.getValue();
+              if (fieldValue.isValueNode()) {
+                addManifestField(inputDir, fieldDefinition, fieldValue.asText(), new ArrayList<>(), fieldGroup);
+              } else if (fieldValue.isArray()) {
+                // This case means the field itself contains more fields i.e. sub-fields.
+                fieldValue
+                    .elements()
+                    .forEachRemaining(
+                        subField -> {
+                          if (subField.isValueNode()) {
+                            addManifestField(
+                                inputDir, fieldDefinition, subField.asText(), new ArrayList<>(), fieldGroup);
+                          } else {
+                            // If the sub-field is not a simple value field then it must be an object field
+                            // that may have attributes too.
+                            handleFieldWithAttributes(inputDir, fieldDefinition, subField, fieldGroup);
+                          }
+                        });
+              } else {
+                // This is an exceptional case to handle sample JSONs. It is not ideal to handle fields this way.
+                // This is discouraged and an alternative method should be used in future for such fields.
+                if (fieldName.equalsIgnoreCase("sample")) {
+                  addManifestField(
+                      inputDir, fieldDefinition, fieldValue.toString(), new ArrayList<>(), fieldGroup);
+                } else {
+                  // If the field is neither a simple value field nor an array then it must be an object field
+                  // that may have attributes too.
+                  handleFieldWithAttributes(inputDir, fieldDefinition, fieldValue, fieldGroup);
+                }
+              }
+            });
+  }
+
+  private ManifestFieldDefinition getFieldDefinition(String fieldName) {
+    return Stream.concat(infoFields.stream(), fieldDefinitions.stream())
+        .filter(
+            fieldDef ->
+                matchNameCaseAndPunctuationInsensitively(
+                    fieldDef.getName(), fieldName)
+                    || fieldDef.matchSynonym(fieldName))
+        .findFirst()
+        .orElse(null);
   }
 
   private void addManifestField(
       Path inputDir,
       ManifestFieldDefinition fieldDefinition,
       String fieldValue,
-      List<ManifestFieldValue> fieldAttributes) {
+      List<ManifestFieldValue> fieldAttributes,
+      ManifestFieldGroup fieldGroup) {
 
-    if (fieldValue != null) {
-      ManifestFieldValue manifestField =
-          new ManifestFieldValue(
-              fieldDefinition,
-              fieldValue,
-              fieldAttributes,
-              new ValidationOrigin("file name", state.fileName));
-
-      getValidationResult().create(manifestField.getOrigin());
-
-      if (manifestField.getDefinition().getType() == ManifestFieldType.FILE) {
-        validateFileExists(inputDir, manifestField);
-      }
-
-      manifestReaderResult.getFields().add(manifestField);
+    if (fieldValue == null) {
+      return;
     }
+
+    ManifestFieldValue manifestField =
+        new ManifestFieldValue(
+            fieldDefinition,
+            fieldValue,
+            fieldAttributes,
+            new ValidationOrigin("file name", state.fileName));
+
+    getValidationResult().create(manifestField.getOrigin());
+
+    if (manifestField.getDefinition().getType() == ManifestFieldType.FILE) {
+      validateFileExists(inputDir, manifestField);
+    }
+
+    fieldGroup.add(manifestField);
   }
 
   private void handleFieldWithAttributes(
-      Path inputDir, ManifestFieldDefinition fieldDefinition, JsonNode field) {
+      Path inputDir, ManifestFieldDefinition fieldDefinition, JsonNode field, ManifestFieldGroup fieldGroup) {
     List<ManifestFieldValue> fieldAttributes = new ArrayList<>();
 
-    // Presence of attributes for a field in the JSON is not enough to load them.
-    // The field must have provided the expected attributes in the definition first.
+    // Check that the field has any attributes and handle them first if it does.
+    // Just having attributes is not enough to load them. Fields must have listed down all the supported attributes
+    // in their definitions beforehand.
     if (field.has("attributes") && !fieldDefinition.getFieldAttributes().isEmpty()) {
       field
           .get("attributes")
           .fields()
           .forEachRemaining(
-              attEntry -> {
-                String attName = attEntry.getKey();
+              fieldAttribute -> {
+                String attName = fieldAttribute.getKey();
 
-                // find attribute definition in field's attributes definitions.
+                // find attribute's definition.
                 ManifestFieldDefinition attDef =
                     fieldDefinition.getFieldAttributes().stream()
                         .filter(
@@ -400,7 +429,7 @@ public abstract class ManifestReader<M extends Manifest> {
                   return;
                 }
 
-                JsonNode att = attEntry.getValue();
+                JsonNode att = fieldAttribute.getValue();
 
                 if (att.isArray()) {
                   att.elements()
@@ -424,20 +453,65 @@ public abstract class ManifestReader<M extends Manifest> {
               });
     }
 
-    addManifestField(inputDir, fieldDefinition, field.get("value").asText(), fieldAttributes);
+    // Finally, tend to the actual value of the field.
+    addManifestField(inputDir, fieldDefinition, field.get("value").asText(), fieldAttributes, fieldGroup);
+  }
+
+  private void expandInfoFields(Path inputDir) {
+    manifestReaderResult.getManifestFieldGroups().stream().forEach(fieldGroup -> {
+      // Find all the info fields.
+      List<ManifestFieldValue> infoFields =
+          fieldGroup.stream()
+              .filter(field -> field.getName().equalsIgnoreCase(INFO))
+              .collect(Collectors.toList());
+
+      // Parse the manifest files the info fields point to.
+      for (ManifestFieldValue infoField : infoFields) {
+        List<String> infoLines;
+        File infoFile = new File(infoField.getValue());
+        try {
+          infoLines = readAllLines(infoFile);
+        } catch (IOException ex) {
+          error(WebinCliMessage.MANIFEST_READER_INFO_FILE_READ_ERROR, infoFile.getPath());
+          return;
+        }
+
+        String savedManifestFileName = state.fileName;
+        int savedManifestLineNo = state.lineNo;
+
+        try {
+          state.fileName = infoFile.getPath();
+          state.lineNo = 0;
+
+          // An info manifest file only contains one field group.
+          ManifestFieldGroup parsedFieldGroup = parseManifest(inputDir, infoLines).stream().findFirst().get();
+
+          fieldGroup.addAll(parsedFieldGroup);
+        } finally {
+          state.fileName = savedManifestFileName;
+          state.lineNo = savedManifestLineNo;
+        }
+      }
+
+      // As the info fields have been processed, they are no longer needed.
+      List<ManifestFieldValue> withoutInfo = fieldGroup.stream()
+          .filter(field -> !field.getName().equalsIgnoreCase(INFO))
+          .collect(Collectors.toList());
+
+      fieldGroup.clear();
+      fieldGroup.addAll(withoutInfo);
+    });
   }
 
   private void validateManifest() {
-
     state.state = VALIDATE;
 
     // Validate min count.
-
-    fields.stream()
+    fieldDefinitions.stream()
         .filter(field -> field.getMinCount() > 0)
         .forEach(
             minCountField -> {
-              if (manifestReaderResult.getFields().stream()
+              if (manifestReaderResult.getManifestFieldGroups().stream().flatMap(fieldGroup -> fieldGroup.stream())
                       .filter(field -> field.getName().equals(minCountField.getName()))
                       .count()
                   < 1) {
@@ -448,13 +522,12 @@ public abstract class ManifestReader<M extends Manifest> {
             });
 
     // Validate max count.
-
-    fields.stream()
+    fieldDefinitions.stream()
         .filter(field -> field.getMaxCount() > 0)
         .forEach(
             maxCountField -> {
               List<ManifestFieldValue> matchingFields =
-                  manifestReaderResult.getFields().stream()
+                  manifestReaderResult.getManifestFieldGroups().stream().flatMap(fieldGroup -> fieldGroup.stream())
                       .filter(field -> field.getName().equals(maxCountField.getName()))
                       .collect(Collectors.toList());
 
@@ -466,28 +539,29 @@ public abstract class ManifestReader<M extends Manifest> {
               }
             });
 
-    // Validate and fix fields.
+    // Validate and fix fields through their processors.
+    manifestReaderResult.getManifestFieldGroups().forEach(fieldGroup -> {
+      for (ManifestFieldValue fieldValue : fieldGroup) {
+        ManifestFieldDefinition fieldDefinition = fieldValue.getDefinition();
 
-    for (ManifestFieldValue fieldValue : manifestReaderResult.getFields()) {
-      ManifestFieldDefinition field = fieldValue.getDefinition();
+        for (ManifestFieldProcessor processor : fieldDefinition.getFieldProcessors()) {
+          ValidationResult result = getValidationResult().create(fieldValue.getOrigin());
+          processor.process(result, fieldGroup, fieldValue);
+          fieldValue.setValidFieldValueOrFileSuffix(result.isValid());
+        }
 
-      for (ManifestFieldProcessor processor : field.getFieldProcessors()) {
-        ValidationResult result = getValidationResult().create(fieldValue.getOrigin());
-        processor.process(result, fieldValue);
-        fieldValue.setValidFieldValueOrFileSuffix(result.isValid());
-      }
+        // iterate over field attributes and run their processors.
+        for (ManifestFieldValue att : fieldValue.getAttributes()) {
+          ManifestFieldDefinition attDef = att.getDefinition();
 
-      // iterate over field attributes and run their processors.
-      for (ManifestFieldValue att : fieldValue.getAttributes()) {
-        ManifestFieldDefinition attDef = att.getDefinition();
-
-        for (ManifestFieldProcessor attProcessor : attDef.getFieldProcessors()) {
-          ValidationResult result = getValidationResult().create(att.getOrigin());
-          attProcessor.process(result, att);
-          att.setValidFieldValueOrFileSuffix(result.isValid());
+          for (ManifestFieldProcessor attProcessor : attDef.getFieldProcessors()) {
+            ValidationResult result = getValidationResult().create(att.getOrigin());
+            attProcessor.process(result, fieldGroup, att);
+            att.setValidFieldValueOrFileSuffix(result.isValid());
+          }
         }
       }
-    }
+    });
 
     // Validate file count.
     validateFileCount();
@@ -524,46 +598,69 @@ public abstract class ManifestReader<M extends Manifest> {
   private void validateFileCount() {
     if (fileGroups == null || fileGroups.isEmpty()) return;
 
-    Map<String, Long> fileCountMap =
-        manifestReaderResult.getFields().stream()
+    for (ManifestFieldGroup fieldGroup : manifestReaderResult.getManifestFieldGroups()) {
+      if(!validateFileCountFor(fieldGroup)) {
+        break;
+      }
+    }
+  }
+
+  /**
+   * @return 'true' if validation was successfull. 'false' if it was not.
+   */
+  private boolean validateFileCountFor(ManifestFieldGroup fieldGroup) {
+    // E.g. FASTQ -> 2, BAM -> 1 etc
+    Map<String, Long> fileTypeToCountMap =
+        fieldGroup.stream()
             .filter(field -> field.getDefinition().getType().equals(ManifestFieldType.FILE))
             .collect(Collectors.groupingBy(ManifestFieldValue::getName, Collectors.counting()));
 
-    if (fileCountMap == null || fileCountMap.isEmpty()) {
+    if (fileTypeToCountMap == null || fileTypeToCountMap.isEmpty()) {
       error(WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR, getFileGroupText(fileGroups));
-      return;
+      return false;
     }
 
     next:
     for (ManifestFileGroup fileGroup : fileGroups) {
-      for (ManifestFileCount fileCount : fileGroup.getFileCounts()) {
-        if (fileCountMap.get(fileCount.getFileType()) == null) {
-          if (fileCount.getMinCount() > 0) {
+      for (ManifestFileCount fileCountInfo : fileGroup.getFileCounts()) {
+        Integer expectedMinCount = fileCountInfo.getMinCount();
+        Integer expectedMaxCount = fileCountInfo.getMaxCount();
+
+        Long actualFileCount = fileTypeToCountMap.get(fileCountInfo.getFileType());
+        if (actualFileCount == null) {
+          if (expectedMinCount > 0) {
             continue next; // Invalid because min is > 0.
           }
         } else {
-          long manifestFileCount = fileCountMap.get(fileCount.getFileType());
-          if ((fileCount.getMaxCount() != null && fileCount.getMaxCount() < manifestFileCount)
-              || (fileCount.getMinCount() > manifestFileCount)) {
+          if (actualFileCount < expectedMinCount
+              || (expectedMaxCount != null && actualFileCount > expectedMaxCount)) {
             continue next; // Invalid because larger than max or smaller than min.
           }
         }
       }
 
-      for (String manifestFileType : fileCountMap.keySet()) {
-        if (fileGroup.getFileCounts().stream()
-                .filter(fileCount -> fileCount.getFileType().equals(manifestFileType))
-                .count()
-            < 1) {
+      for (String actualFileType : fileTypeToCountMap.keySet()) {
+        List<ManifestFileCount> fileCountInfoList = fileGroup.getFileCounts();
+
+        boolean fileTypeMatchFound = fileCountInfoList.stream()
+            .filter(fileCountInfo -> {
+              String expectedFileType = fileCountInfo.getFileType();
+
+              return expectedFileType.equals(actualFileType);
+            }).findFirst().isPresent();
+
+        if (!fileTypeMatchFound) {
           continue next; // Invalid because unmatched file type.
         }
       }
 
-      return; // Valid
+      return true; // valid.
     }
 
     error(
         WebinCliMessage.MANIFEST_READER_INVALID_FILE_GROUP_ERROR, getFileGroupText(fileGroups), "");
+
+    return false;
   }
 
   private void validateUniqueFileNames() {
@@ -571,17 +668,19 @@ public abstract class ManifestReader<M extends Manifest> {
       return;
     }
 
-    List<ManifestFieldValue> fileFields =
-        manifestReaderResult.getFields().stream()
-            .filter(field -> field.getDefinition().getType().equals(ManifestFieldType.FILE))
-            .collect(Collectors.toList());
+    for (ManifestFieldGroup fieldGroup : manifestReaderResult.getManifestFieldGroups()) {
+      List<ManifestFieldValue> fileFields =
+          fieldGroup.stream()
+              .filter(field -> field.getDefinition().getType().equals(ManifestFieldType.FILE))
+              .collect(Collectors.toList());
 
-    HashSet<String> fileNameSet = new HashSet<>(fileFields.size());
+      HashSet<String> fileNameSet = new HashSet<>(fileFields.size());
 
-    for (ManifestFieldValue fileField : fileFields) {
-      if (!fileNameSet.add(Paths.get(fileField.getValue()).getFileName().toString())) {
-        error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_NON_UNIQUE_NAMES);
-        break;
+      for (ManifestFieldValue fileField : fileFields) {
+        if (!fileNameSet.add(Paths.get(fileField.getValue()).getFileName().toString())) {
+          error(WebinCliMessage.MANIFEST_READER_INVALID_FILE_NON_UNIQUE_NAMES);
+          return;
+        }
       }
     }
   }
@@ -735,8 +834,8 @@ public abstract class ManifestReader<M extends Manifest> {
   }
 
   protected static List<File> getFiles(
-      Path inputDir, ManifestReaderResult result, String fieldName) {
-    return result.getFields().stream()
+      Path inputDir, ManifestFieldGroup fieldGroup, String fieldName) {
+    return fieldGroup.stream()
         .filter(
             field ->
                 field.getDefinition().getType() == ManifestFieldType.FILE
@@ -770,6 +869,20 @@ public abstract class ManifestReader<M extends Manifest> {
               return map.entrySet().stream().findFirst().get();
             })
         .collect(Collectors.toList());
+  }
+
+  protected M getManifest(ManifestFieldGroup fieldGroup) {
+    // TODO might be better to use sanitized names as keys. look at WebinCliExecutor.getSubmissionName()
+    String nameField = fieldGroup.getValue(ReadsManifestReader.Field.NAME);
+
+    return nameFieldToManifestMap.computeIfAbsent(
+        nameField, key -> {
+          if (key == null) {
+            throw new IllegalArgumentException("The manifest field group does not have a NAME field.");
+          }
+
+          return createManifest();
+        });
   }
 
   /** Adds an error to the validation result. */

@@ -57,11 +57,11 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
       this.runProcessor = mock(RunProcessor.class);
       this.analysisProcessor = mock(AnalysisProcessor.class);
 
-      doNothing().when(this.sampleProcessor).process(any(), any());
-      doNothing().when(this.studyProcessor).process(any(), any());
-      doNothing().when(this.sampleXmlProcessor).process(any(), any());
-      doNothing().when(this.runProcessor).process(any(), any());
-      doNothing().when(this.analysisProcessor).process(any(), any());
+      doNothing().when(this.sampleProcessor).process(any(), any(), any());
+      doNothing().when(this.studyProcessor).process(any(), any(), any());
+      doNothing().when(this.sampleXmlProcessor).process(any(), any(), any());
+      doNothing().when(this.runProcessor).process(any(), any(), any());
+      doNothing().when(this.analysisProcessor).process(any(), any(), any());
     }
   }
 
@@ -70,11 +70,10 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
     doAnswer(
             (InvocationOnMock invocation) -> {
               StudyProcessor processor = (StudyProcessor) invocation.getMock();
-              processor.getCallback().notify(study);
               return null;
             })
         .when(this.studyProcessor)
-        .process(any(), any());
+        .process(any(), any(), any());
     return this;
   }
 
@@ -83,11 +82,10 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
     doAnswer(
             (InvocationOnMock invocation) -> {
               SampleProcessor processor = (SampleProcessor) invocation.getMock();
-              processor.getCallback().notify(sample);
               return null;
             })
         .when(this.sampleProcessor)
-        .process(any(), any());
+        .process(any(), any(), any());
     return this;
   }
 

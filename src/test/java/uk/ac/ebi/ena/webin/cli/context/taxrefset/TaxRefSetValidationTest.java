@@ -72,18 +72,18 @@ public class TaxRefSetValidationTest {
     executor.readManifest();
     executor.validateSubmission();
     assertThat(
-            executor.getManifestReader().getManifest().files().get(TaxRefSetManifest.FileType.TAB))
+            executor.getManifestReader().getManifests().stream().findFirst().get().files().get(TaxRefSetManifest.FileType.TAB))
         .size()
         .isOne();
     assertThat(
             executor
                 .getManifestReader()
-                .getManifest()
+                .getManifests().stream().findFirst().get()
                 .files()
                 .get(TaxRefSetManifest.FileType.FASTA))
         .size()
         .isOne();
-    Map<String, String> customFields = executor.getManifestReader().getManifest().getCustomFields();
+    Map<String, String> customFields = executor.getManifestReader().getManifests().stream().findFirst().get().getCustomFields();
     Assert.assertEquals(2, customFields.size());
     Assert.assertEquals("Source of annotation", customFields.get("Annotation"));
     Assert.assertEquals("URL within ITSoneDB", customFields.get("ITSoneDB URL"));

@@ -11,6 +11,7 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
@@ -18,7 +19,7 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 public class AssemblyTypeProcessor implements ManifestFieldProcessor {
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
     if (value == null) {
       return;

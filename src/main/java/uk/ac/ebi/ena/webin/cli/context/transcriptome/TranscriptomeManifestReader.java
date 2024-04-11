@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
+import java.util.Collection;
 import java.util.Map;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -67,8 +68,6 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
 
   private static final ManifestCVList CV_ASSEMBLY_TYPE =
       new ManifestCVList("isolate", "metatranscriptome");
-
-  private final TranscriptomeManifest manifest = new TranscriptomeManifest();
 
   public TranscriptomeManifestReader(
       WebinCliParameters parameters, MetadataProcessorFactory factory) {
@@ -176,29 +175,28 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
             .build());
 
     if (factory.getStudyProcessor() != null) {
-      factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
+      factory.getStudyProcessor().setCallback(
+          (fieldGroup, study) -> getManifest(fieldGroup).setStudy(study));
     }
     if (factory.getSampleProcessor() != null) {
-      factory.getSampleProcessor().setCallback(sample -> manifest.setSample(sample));
+      factory.getSampleProcessor().setCallback(
+          (fieldGroup, sample) -> getManifest(fieldGroup).setSample(sample));
     }
     if (factory.getRunProcessor() != null) {
-      factory.getRunProcessor().setCallback(run -> manifest.setRun(run));
+      factory.getRunProcessor().setCallback(
+          (fieldGroup, runs) -> getManifest(fieldGroup).setRun(runs));
     }
     if (factory.getAnalysisProcessor() != null) {
-      factory.getAnalysisProcessor().setCallback(analysis -> manifest.setAnalysis(analysis));
+      factory.getAnalysisProcessor().setCallback(
+          (fieldGroup, analyses) -> getManifest(fieldGroup).setAnalysis(analyses));
     }
     if (factory.getSampleXmlProcessor() != null) {
-      factory
-          .getSampleXmlProcessor()
-          .setCallback(
-              sample -> {
-                manifest.getSample().setName(sample.getName());
-                manifest.getSample().setAttributes(sample.getAttributes());
-              });
-    }
+      factory.getSampleXmlProcessor().setCallback((fieldGroup, sample) -> {
+        TranscriptomeManifest manifest = getManifest(fieldGroup);
 
-    if (parameters != null) {
-      manifest.setQuick(parameters.isQuick());
+        manifest.getSample().setName(sample.getName());
+        manifest.getSample().setAttributes(sample.getAttributes());
+      });
     }
   }
 
@@ -217,50 +215,63 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
 
   @Override
   public void processManifest() {
-    manifest.setName(getManifestReaderResult().getValue(Field.NAME));
-    manifest.setDescription(getManifestReaderResult().getValue(Field.DESCRIPTION));
+    getManifestReaderResult().getManifestFieldGroups().forEach(fieldGroup -> {
+      TranscriptomeManifest manifest = getManifest(fieldGroup);
 
-    Map<String, String> authorAndAddress =
-        getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
-    if (!authorAndAddress.isEmpty()) {
-      if (authorAndAddress.size() == 2) {
-        manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
-        manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
-      } else {
-        error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
+      if (getWebinCliParameters() != null) {
+        manifest.setQuick(getWebinCliParameters().isQuick());
       }
-    }
 
-    manifest.setProgram(getManifestReaderResult().getValue(Field.PROGRAM));
-    manifest.setPlatform(getManifestReaderResult().getValue(Field.PLATFORM));
-    manifest.setAssemblyType(getManifestReaderResult().getValue(Field.ASSEMBLY_TYPE));
+      manifest.setName(fieldGroup.getValue(Field.NAME));
+      manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
 
-    if (getManifestReaderResult().getCount(Field.TPA) > 0) {
-      manifest.setTpa(getAndValidateBoolean(getManifestReaderResult().getField(Field.TPA)));
-    }
+      Map<String, String> authorAndAddress =
+          fieldGroup.getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+      if (!authorAndAddress.isEmpty()) {
+        if (authorAndAddress.size() == 2) {
+          manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
+          manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
+        } else {
+          error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
+        }
+      }
 
-    manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
-    manifest.setSubmissionToolVersion(
-        getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
+      manifest.setProgram(fieldGroup.getValue(Field.PROGRAM));
+      manifest.setPlatform(fieldGroup.getValue(Field.PLATFORM));
+      manifest.setAssemblyType(fieldGroup.getValue(Field.ASSEMBLY_TYPE));
 
-    manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+      if (fieldGroup.getCount(Field.TPA) > 0) {
+        manifest.setTpa(getAndValidateBoolean(fieldGroup.getField(Field.TPA)));
+      }
 
-    SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
+      manifest.setSubmissionTool(fieldGroup.getValue(Fields.SUBMISSION_TOOL));
+      manifest.setSubmissionToolVersion(
+          fieldGroup.getValue(Fields.SUBMISSION_TOOL_VERSION));
 
-    getFiles(getInputDir(), getManifestReaderResult(), Field.FASTA)
-        .forEach(
-            file ->
-                submissionFiles.add(
-                    new SubmissionFile(TranscriptomeManifest.FileType.FASTA, file)));
-    getFiles(getInputDir(), getManifestReaderResult(), Field.FLATFILE)
-        .forEach(
-            file ->
-                submissionFiles.add(
-                    new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, file)));
+      manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+
+      SubmissionFiles<TranscriptomeManifest.FileType> submissionFiles = manifest.files();
+
+      getFiles(getInputDir(), fieldGroup, Field.FASTA)
+          .forEach(
+              file ->
+                  submissionFiles.add(
+                      new SubmissionFile(TranscriptomeManifest.FileType.FASTA, file)));
+      getFiles(getInputDir(), fieldGroup, Field.FLATFILE)
+          .forEach(
+              file ->
+                  submissionFiles.add(
+                      new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, file)));
+    });
   }
 
   @Override
-  public TranscriptomeManifest getManifest() {
-    return manifest;
+  public Collection<TranscriptomeManifest> getManifests() {
+    return nameFieldToManifestMap.values();
+  }
+
+  @Override
+  protected TranscriptomeManifest createManifest() {
+    return new TranscriptomeManifest();
   }
 }

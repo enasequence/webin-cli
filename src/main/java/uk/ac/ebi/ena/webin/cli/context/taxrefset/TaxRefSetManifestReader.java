@@ -24,9 +24,10 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 
+import java.util.Collection;
+
 public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
 
-  private final TaxRefSetManifest manifest = new TaxRefSetManifest();
   private static CustomFieldProcessor customFieldProcessor;
 
   public interface Field {
@@ -111,15 +112,12 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
             .build());
 
     if (factory.getStudyProcessor() != null) {
-      factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
+      factory.getStudyProcessor().setCallback(
+          (fieldGroup, study) -> getManifest(fieldGroup).setStudy(study));
     }
 
     getCustomFieldProcessor()
-        .setCallback(keyVal -> manifest.addCustomField(keyVal.left, keyVal.right));
-
-    if (parameters != null) {
-      manifest.setQuick(parameters.isQuick());
-    }
+        .setCallback((fieldGroup, keyVal) -> getManifest(fieldGroup).addCustomField(keyVal.left, keyVal.right));
   }
 
   private static CustomFieldProcessor getCustomFieldProcessor() {
@@ -140,28 +138,41 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
   }
 
   @Override
-  public TaxRefSetManifest getManifest() {
-    return manifest;
+  public Collection<TaxRefSetManifest> getManifests() {
+    return nameFieldToManifestMap.values();
+  }
+
+  @Override
+  protected TaxRefSetManifest createManifest() {
+    return new TaxRefSetManifest();
   }
 
   @Override
   protected void processManifest() {
-    manifest.setName(getManifestReaderResult().getValue(Field.NAME));
-    manifest.setDescription(getManifestReaderResult().getValue(Field.DESCRIPTION));
-    manifest.setTaxonomySystem(getManifestReaderResult().getValue(Field.TAXONOMY_SYSTEM));
-    manifest.setTaxonomySystemVersion(
-        getManifestReaderResult().getValue(Field.TAXONOMY_SYSTEM_VERSION));
+    getManifestReaderResult().getManifestFieldGroups().forEach(fieldGroup -> {
+      TaxRefSetManifest manifest = getManifest(fieldGroup);
 
-    SubmissionFiles<TaxRefSetManifest.FileType> submissionFiles = manifest.files();
+      if (getWebinCliParameters() != null) {
+        manifest.setQuick(getWebinCliParameters().isQuick());
 
-    getFiles(getInputDir(), getManifestReaderResult(), Field.FASTA)
-        .forEach(
-            fastaFile ->
-                submissionFiles.add(
-                    new SubmissionFile(TaxRefSetManifest.FileType.FASTA, fastaFile)));
-    getFiles(getInputDir(), getManifestReaderResult(), Field.TAB)
-        .forEach(
-            tsvFile ->
-                submissionFiles.add(new SubmissionFile(TaxRefSetManifest.FileType.TAB, tsvFile)));
+        manifest.setName(fieldGroup.getValue(Field.NAME));
+        manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
+        manifest.setTaxonomySystem(fieldGroup.getValue(Field.TAXONOMY_SYSTEM));
+        manifest.setTaxonomySystemVersion(
+            fieldGroup.getValue(Field.TAXONOMY_SYSTEM_VERSION));
+
+        SubmissionFiles<TaxRefSetManifest.FileType> submissionFiles = manifest.files();
+
+        getFiles(getInputDir(), fieldGroup, Field.FASTA)
+            .forEach(
+                fastaFile ->
+                    submissionFiles.add(
+                        new SubmissionFile(TaxRefSetManifest.FileType.FASTA, fastaFile)));
+        getFiles(getInputDir(), fieldGroup, Field.TAB)
+            .forEach(
+                tsvFile ->
+                    submissionFiles.add(new SubmissionFile(TaxRefSetManifest.FileType.TAB, tsvFile)));
+      }
+    });
   }
 }

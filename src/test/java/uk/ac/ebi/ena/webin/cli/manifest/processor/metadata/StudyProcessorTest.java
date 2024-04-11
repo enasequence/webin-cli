@@ -29,22 +29,22 @@ public class StudyProcessorTest {
     StudyProcessor processor =
         new StudyProcessor(
             parameters,
-            (Study study) -> Assert.assertEquals("PRJNA28545", study.getBioProjectId()));
+            (fieldGroup, study) -> Assert.assertEquals("PRJNA28545", study.getBioProjectId()));
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "STUDY", "SRP000392");
     ValidationResult result = new ValidationResult();
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("PRJNA28545", fieldValue.getValue());
   }
 
   @Test
   public void testIncorrect() {
-    StudyProcessor processor = new StudyProcessor(parameters, Assert::assertNull);
+    StudyProcessor processor = new StudyProcessor(parameters, (fieldGroup, study) -> Assert.assertNull(study));
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "STUDY", "ERS000002");
     ValidationResult result = new ValidationResult();
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertFalse(result.isValid());
     Assert.assertEquals("ERS000002", fieldValue.getValue());
   }

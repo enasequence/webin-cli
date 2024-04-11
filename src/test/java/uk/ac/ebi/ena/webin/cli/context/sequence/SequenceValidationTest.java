@@ -59,7 +59,7 @@ public class SequenceValidationTest {
 
       executor.readManifest();
       executor.validateSubmission();
-      assertThat(executor.getManifestReader().getManifest().files().get(FileType.TAB))
+      assertThat(executor.getManifestReader().getManifests().stream().findFirst().get().files().get(FileType.TAB))
           .size()
           .isOne();
     }

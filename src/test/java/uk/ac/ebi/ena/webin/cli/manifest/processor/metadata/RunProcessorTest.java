@@ -32,7 +32,7 @@ public class RunProcessorTest {
     RunProcessor processor =
         new RunProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(1, e.size());
               Assert.assertEquals("ERR2836765", e.get(0).getRunId());
             });
@@ -43,7 +43,7 @@ public class RunProcessorTest {
             "RUN_REF",
             "ERR2836765" /*"ena-RUN-UNIVERSITY OF MINNESOTA-11-10-2018-17:17:11:460-400"*/);
     ValidationResult result = new ValidationResult();
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("ERR2836765", fieldValue.getValue());
   }
@@ -53,7 +53,7 @@ public class RunProcessorTest {
     RunProcessor processor =
         new RunProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(3, e.size());
               Assert.assertEquals("ERR2836765", e.get(0).getRunId());
               Assert.assertEquals("ERR2836764", e.get(1).getRunId());
@@ -66,20 +66,20 @@ public class RunProcessorTest {
             "RUN_REF",
             "ERR2836765, ERR2836764, ERR2836763,ERR2836763" /*"ena-RUN-UNIVERSITY OF MINNESOTA-11-10-2018-17:17:11:460-400"*/);
     ValidationResult result = new ValidationResult();
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("ERR2836765, ERR2836764, ERR2836763", fieldValue.getValue());
   }
 
   @Test
   public void testIncorrect() {
-    RunProcessor processor = new RunProcessor(parameters, Assert::assertNull);
+    RunProcessor processor = new RunProcessor(parameters, (fieldGroup, run) -> Assert.assertNull(run));
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "RUN_REF", "INVALID");
     ValidationResult result = new ValidationResult();
     MessageCounter counter =
         MessageCounter.regex(Severity.ERROR, WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.regex());
     result.add(counter);
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertFalse(result.isValid());
     assertThat(result.count(Severity.ERROR)).isOne();
     assertThat(counter.getCount()).isOne();
@@ -87,7 +87,7 @@ public class RunProcessorTest {
 
   @Test
   public void testIncorrectList() {
-    RunProcessor processor = new RunProcessor(parameters, Assert::assertNull);
+    RunProcessor processor = new RunProcessor(parameters, (fieldGroup, run) -> Assert.assertNull(run));
 
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "RUN_REF", "INVALID1, ERR2836765, INVALID2");
@@ -95,7 +95,7 @@ public class RunProcessorTest {
     MessageCounter counter =
         MessageCounter.regex(Severity.ERROR, WebinCliMessage.RUN_SERVICE_VALIDATION_ERROR.regex());
     result.add(counter);
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertFalse(result.isValid());
     assertThat(result.count(Severity.ERROR)).isEqualTo(2);
     assertThat(counter.getCount()).isEqualTo(2);

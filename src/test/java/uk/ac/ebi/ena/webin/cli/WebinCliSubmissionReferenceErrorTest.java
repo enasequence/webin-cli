@@ -22,7 +22,7 @@ public class WebinCliSubmissionReferenceErrorTest {
     String sample = "INVALID";
     testGenomeError(
         m ->
-            m.name()
+            m.field("NAME", WebinCliTestUtils.generateUniqueManifestName())
                 .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
                 .field("STUDY", "ERP011959")
                 .field("SAMPLE", sample)
@@ -33,7 +33,7 @@ public class WebinCliSubmissionReferenceErrorTest {
             m.file("FASTA", "valid-covid19.fasta.gz")
                 .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz"),
         r ->
-            r.textInSubmissionReport(
+            r.textInManifestReport(
                 "Unknown sample "
                     + sample
                     + " or the sample cannot be referenced by your submission account."),
@@ -45,7 +45,7 @@ public class WebinCliSubmissionReferenceErrorTest {
     String study = "INVALID";
     testGenomeError(
         m ->
-            m.name()
+            m.field("NAME", WebinCliTestUtils.generateUniqueManifestName())
                 .field("ASSEMBLY_TYPE", "COVID-19 outbreak")
                 .field("STUDY", study)
                 .field("SAMPLE", "ERS829308")
@@ -56,7 +56,7 @@ public class WebinCliSubmissionReferenceErrorTest {
             m.file("FASTA", "valid-covid19.fasta.gz")
                 .file("CHROMOSOME_LIST", "valid-covid19-chromosome.list.gz"),
         r ->
-            r.textInSubmissionReport(
+            r.textInManifestReport(
                 "Unknown study "
                     + study
                     + " or the study cannot be referenced by your submission account."),
@@ -68,15 +68,15 @@ public class WebinCliSubmissionReferenceErrorTest {
     String run = "INVALID";
     testSequenceError(
         m ->
-            m.name()
-                .field("STUDY", "PRJEB20083")
+            m.field("NAME", WebinCliTestUtils.generateUniqueManifestName())
+            .field("STUDY", "PRJEB20083")
                 .field("RUN_REF", run)
                 .field("ANALYSIS_REF", "ERZ690501, ERZ690500"),
         m ->
             m.field("DESCRIPTION", "Some sequence assembly description")
                 .file("TAB", "valid/ERT000003-EST.tsv.gz"),
         r ->
-            r.textInSubmissionReport(
+            r.textInManifestReport(
                 "Unknown run "
                     + run
                     + " or the run cannot be referenced by your submission account. Runs must be submitted before they can be referenced in the submission."),
@@ -88,7 +88,7 @@ public class WebinCliSubmissionReferenceErrorTest {
     String analysis = "INVALID";
     testSequenceError(
         m ->
-            m.name()
+            m.field("NAME", WebinCliTestUtils.generateUniqueManifestName())
                 .field("STUDY", "PRJEB20083")
                 .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
                 .field("ANALYSIS_REF", analysis),
@@ -96,7 +96,7 @@ public class WebinCliSubmissionReferenceErrorTest {
             m.field("DESCRIPTION", "Some sequence assembly description")
                 .file("TAB", "valid/ERT000003-EST.tsv.gz"),
         r ->
-            r.textInSubmissionReport(
+            r.textInManifestReport(
                 "Unknown analysis "
                     + analysis
                     + " or the analysis cannot be referenced by your submission account."),

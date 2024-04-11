@@ -41,15 +41,6 @@ public class SequenceManifestReaderTest {
   @Test
   public void testValidManifest() {
     SequenceManifestReader manifestReader = createManifestReader();
-    SequenceManifest manifest = manifestReader.getManifest();
-
-    Assert.assertNull(manifest.getStudy());
-    Assert.assertNull(manifest.getSample());
-    Assert.assertNull(manifest.getName());
-    assertThat(manifest.files().files()).size().isZero();
-    Assert.assertNull(manifest.getDescription());
-    Assert.assertNull(manifest.getSubmissionTool());
-    Assert.assertNull(manifest.getSubmissionToolVersion());
 
     manifestReader.readManifest(
         Paths.get("."),
@@ -60,6 +51,8 @@ public class SequenceManifestReaderTest {
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
             .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
             .build());
+
+    SequenceManifest manifest = manifestReader.getManifests().stream().findFirst().get();
 
     Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());
     assertThat(manifest.files().files()).size().isOne();

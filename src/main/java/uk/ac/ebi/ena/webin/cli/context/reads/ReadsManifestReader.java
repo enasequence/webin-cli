@@ -11,6 +11,9 @@
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
@@ -27,6 +30,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFileAttribute;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.QualityScore;
@@ -101,8 +105,6 @@ public class ReadsManifestReader extends ManifestReader<ReadsManifest> {
           "feature_barcode",
           "sample_barcode",
           "spatial_barcode");
-
-  private final ReadsManifest manifest = new ReadsManifest();
 
   /** Meta fields are optional and ignored during validation if -validateFiles option is given. */
   private static boolean isValidateFiles(WebinCliParameters parameters) {
@@ -244,14 +246,12 @@ public class ReadsManifestReader extends ManifestReader<ReadsManifest> {
             .build());
 
     if (factory.getStudyProcessor() != null) {
-      factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
+      factory.getStudyProcessor().setCallback(
+          (fieldGroup, study) -> getManifest(fieldGroup).setStudy(study));
     }
     if (factory.getSampleProcessor() != null) {
-      factory.getSampleProcessor().setCallback(sample -> manifest.setSample(sample));
-    }
-
-    if (parameters != null) {
-      manifest.setQuick(parameters.isQuick());
+      factory.getSampleProcessor().setCallback(
+          (fieldGroup, sample) -> getManifest(fieldGroup).setSample(sample));
     }
   }
 
@@ -276,87 +276,94 @@ public class ReadsManifestReader extends ManifestReader<ReadsManifest> {
 
   @Override
   public void processManifest() {
-    manifest.setName(getManifestReaderResult().getValue(Field.NAME));
-    manifest.setDescription(getManifestReaderResult().getValue(Field.DESCRIPTION));
+    getManifestReaderResult().getManifestFieldGroups().forEach(fieldGroup -> {
+      ReadsManifest manifest = getManifest(fieldGroup);
 
-    if (getManifestReaderResult().getCount(Field.INSTRUMENT) > 0
-        && getManifestReaderResult().getField(Field.INSTRUMENT).isValidFieldValueOrFileSuffix())
-      manifest.setInstrument(getManifestReaderResult().getValue(Field.INSTRUMENT));
-
-    if (getManifestReaderResult().getCount(Field.PLATFORM) > 0
-        && getManifestReaderResult().getField(Field.PLATFORM).isValidFieldValueOrFileSuffix())
-      manifest.setPlatform(getManifestReaderResult().getValue(Field.PLATFORM));
-
-    manifest.setInsertSize(
-        getAndValidatePositiveInteger(getManifestReaderResult().getField(Field.INSERT_SIZE)));
-
-    if (getManifestReaderResult().getCount(Field.LIBRARY_SOURCE) > 0
-        && getManifestReaderResult().getField(Field.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
-      manifest.setLibrarySource(getManifestReaderResult().getValue(Field.LIBRARY_SOURCE));
-
-    if (getManifestReaderResult().getCount(Field.LIBRARY_SELECTION) > 0
-        && getManifestReaderResult()
-            .getField(Field.LIBRARY_SELECTION)
-            .isValidFieldValueOrFileSuffix())
-      manifest.setLibrarySelection(getManifestReaderResult().getValue(Field.LIBRARY_SELECTION));
-
-    if (getManifestReaderResult().getCount(Field.LIBRARY_STRATEGY) > 0
-        && getManifestReaderResult()
-            .getField(Field.LIBRARY_STRATEGY)
-            .isValidFieldValueOrFileSuffix())
-      manifest.setLibraryStrategy(getManifestReaderResult().getValue(Field.LIBRARY_STRATEGY));
-
-    manifest.setLibraryConstructionProtocol(
-        getManifestReaderResult().getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL));
-    manifest.setLibraryName(getManifestReaderResult().getValue(Field.LIBRARY_NAME));
-
-    if (getManifestReaderResult().getCount(Field.QUALITY_SCORE) > 0) {
-      String qsStr = getManifestReaderResult().getValue(Field.QUALITY_SCORE);
-      try {
-        QualityScore qs = QualityScore.valueOf(qsStr);
-        manifest.setQualityScore(qs);
-      } catch (Exception ex) {
-        error(
-            WebinCliMessage.READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR,
-            getManifestReaderResult().getValue(Field.QUALITY_SCORE));
+      if (getWebinCliParameters() != null) {
+        manifest.setQuick(getWebinCliParameters().isQuick());
       }
-    }
 
-    if (getManifestReaderResult().getCount(Field.__HORIZON) > 0)
-      manifest.setPairingHorizon(
-          getAndValidatePositiveInteger(getManifestReaderResult().getField(Field.__HORIZON)));
+      manifest.setName(fieldGroup.getValue(Field.NAME));
+      manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
 
-    manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
-    manifest.setSubmissionToolVersion(
-        getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
+      if (fieldGroup.getCount(Field.INSTRUMENT) > 0
+          && fieldGroup.getField(Field.INSTRUMENT).isValidFieldValueOrFileSuffix())
+        manifest.setInstrument(fieldGroup.getValue(Field.INSTRUMENT));
 
-    manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+      if (fieldGroup.getCount(Field.PLATFORM) > 0
+          && fieldGroup.getField(Field.PLATFORM).isValidFieldValueOrFileSuffix())
+        manifest.setPlatform(fieldGroup.getValue(Field.PLATFORM));
 
-    processInstrumentAndPlatform();
+      manifest.setInsertSize(
+          getAndValidatePositiveInteger(fieldGroup.getField(Field.INSERT_SIZE)));
 
-    SubmissionFiles<ReadsManifest.FileType> submissionFiles = manifest.files();
+      if (fieldGroup.getCount(Field.LIBRARY_SOURCE) > 0
+          && fieldGroup.getField(Field.LIBRARY_SOURCE).isValidFieldValueOrFileSuffix())
+        manifest.setLibrarySource(fieldGroup.getValue(Field.LIBRARY_SOURCE));
 
-    getFiles(getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.BAM)
-        .forEach(file -> submissionFiles.add(new SubmissionFile(ReadsManifest.FileType.BAM, file)));
-    getFiles(getInputDir(), getManifestReaderResult(), ReadsManifestReader.Field.CRAM)
-        .forEach(
-            file -> submissionFiles.add(new SubmissionFile(ReadsManifest.FileType.CRAM, file)));
+      if (fieldGroup.getCount(Field.LIBRARY_SELECTION) > 0
+          && fieldGroup
+          .getField(Field.LIBRARY_SELECTION)
+          .isValidFieldValueOrFileSuffix())
+        manifest.setLibrarySelection(fieldGroup.getValue(Field.LIBRARY_SELECTION));
 
-    getManifestReaderResult().getFields().stream()
-        .filter(
-            field ->
-                field.getDefinition().getType() == ManifestFieldType.FILE
-                    && field.getName().equals(ReadsManifestReader.Field.FASTQ))
-        .forEach(
-            field -> {
-              File file = getFile(getInputDir(), field).toPath().normalize().toFile();
+      if (fieldGroup.getCount(Field.LIBRARY_STRATEGY) > 0
+          && fieldGroup
+          .getField(Field.LIBRARY_STRATEGY)
+          .isValidFieldValueOrFileSuffix())
+        manifest.setLibraryStrategy(fieldGroup.getValue(Field.LIBRARY_STRATEGY));
 
-              submissionFiles.add(
-                  new SubmissionFile(ReadsManifest.FileType.FASTQ, file, getAttributes(field)));
-            });
+      manifest.setLibraryConstructionProtocol(
+          fieldGroup.getValue(Field.LIBRARY_CONSTRUCTION_PROTOCOL));
+      manifest.setLibraryName(fieldGroup.getValue(Field.LIBRARY_NAME));
+
+      if (fieldGroup.getCount(Field.QUALITY_SCORE) > 0) {
+        String qsStr = fieldGroup.getValue(Field.QUALITY_SCORE);
+        try {
+          QualityScore qs = QualityScore.valueOf(qsStr);
+          manifest.setQualityScore(qs);
+        } catch (Exception ex) {
+          error(
+              WebinCliMessage.READS_MANIFEST_READER_INVALID_QUALITY_SCORE_ERROR,
+              qsStr);
+        }
+      }
+
+      if (fieldGroup.getCount(Field.__HORIZON) > 0)
+        manifest.setPairingHorizon(
+            getAndValidatePositiveInteger(fieldGroup.getField(Field.__HORIZON)));
+
+      manifest.setSubmissionTool(fieldGroup.getValue(Fields.SUBMISSION_TOOL));
+      manifest.setSubmissionToolVersion(
+          fieldGroup.getValue(Fields.SUBMISSION_TOOL_VERSION));
+
+      manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+
+      processInstrumentAndPlatform(manifest);
+
+      SubmissionFiles<ReadsManifest.FileType> submissionFiles = manifest.files();
+
+      getFiles(getInputDir(), fieldGroup, ReadsManifestReader.Field.BAM)
+          .forEach(file -> submissionFiles.add(new SubmissionFile(ReadsManifest.FileType.BAM, file)));
+      getFiles(getInputDir(), fieldGroup, ReadsManifestReader.Field.CRAM)
+          .forEach(file -> submissionFiles.add(new SubmissionFile(ReadsManifest.FileType.CRAM, file)));
+
+      fieldGroup.stream()
+          .filter(field -> field.getDefinition().getType() == ManifestFieldType.FILE
+              && field.getName().equals(ReadsManifestReader.Field.FASTQ))
+          .forEach(field -> {
+                File file = getFile(getInputDir(), field).toPath().normalize().toFile();
+
+                List<SubmissionFileAttribute> fileAttributes = getAttributes(field).stream()
+                    .map(entry -> new SubmissionFileAttribute(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
+
+                submissionFiles.add(new SubmissionFile(ReadsManifest.FileType.FASTQ, file, fileAttributes));
+              });
+    });
   }
 
-  private void processInstrumentAndPlatform() {
+  private void processInstrumentAndPlatform(ReadsManifest manifest) {
     if (null == manifest.getPlatform()
         && (null == manifest.getInstrument()
             || manifest.getInstrument().equals(INSTRUMENT_UNSPECIFIED))) {
@@ -395,7 +402,12 @@ public class ReadsManifestReader extends ManifestReader<ReadsManifest> {
   }
 
   @Override
-  public ReadsManifest getManifest() {
-    return manifest;
+  public Collection<ReadsManifest> getManifests() {
+    return nameFieldToManifestMap.values();
+  }
+
+  @Override
+  protected ReadsManifest createManifest() {
+    return new ReadsManifest();
   }
 }

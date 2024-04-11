@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
@@ -45,7 +46,7 @@ public class AnalysisProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
     String[] ids = value.split(", *");
     Set<String> idsSet = new HashSet<>();
@@ -71,7 +72,7 @@ public class AnalysisProcessor implements ManifestFieldProcessor {
     if (result.isValid()) {
       fieldValue.setValue(
           analysis_list.stream().map(e -> e.getAnalysisId()).collect(Collectors.joining(", ")));
-      callback.notify(analysis_list);
+      callback.notify(fieldGroup, analysis_list);
     }
   }
 }

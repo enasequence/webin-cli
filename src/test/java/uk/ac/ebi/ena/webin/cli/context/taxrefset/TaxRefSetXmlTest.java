@@ -14,6 +14,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -50,9 +52,9 @@ public class TaxRefSetXmlTest {
     return manifest;
   }
 
-  private static SubmissionBundle prepareSubmissionBundle(TaxRefSetManifest manifest) {
+  private static Collection<SubmissionBundle> prepareSubmissionBundle(TaxRefSetManifest manifest) {
     TaxRefSetManifestReader manifestReader = mock(TaxRefSetManifestReader.class);
-    when(manifestReader.getManifest()).thenReturn(manifest);
+    when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -60,8 +62,8 @@ public class TaxRefSetXmlTest {
     WebinCliExecutor<TaxRefSetManifest, ValidationResponse> executor =
         (WebinCliExecutor<TaxRefSetManifest, ValidationResponse>)
             WebinCliContext.taxrefset.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundle();
-    return executor.getSubmissionBundle();
+    executor.prepareSubmissionBundles();
+    return executor.getSubmissionBundles();
   }
 
   @Test
@@ -73,7 +75,7 @@ public class TaxRefSetXmlTest {
     manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.FASTA, fastaFile.toFile()));
     manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.TAB, tsvFile.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -126,7 +128,7 @@ public class TaxRefSetXmlTest {
     manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.FASTA, fastaFile.toFile()));
     manifest.files().add(new SubmissionFile(TaxRefSetManifest.FileType.TAB, tsvFile.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());

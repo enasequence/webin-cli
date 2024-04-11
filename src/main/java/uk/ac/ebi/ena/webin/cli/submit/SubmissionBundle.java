@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 public class SubmissionBundle implements Serializable {
   protected static final long serialVersionUID = 1L;
@@ -29,7 +30,7 @@ public class SubmissionBundle implements Serializable {
 
   private final List<SubmissionUploadFile> uploadFileList;
 
-  private final String manifestMd5;
+  private final Manifest manifest;
 
   public enum SubmissionXMLFileType {
     SUBMISSION,
@@ -154,13 +155,13 @@ public class SubmissionBundle implements Serializable {
       String uploadDir,
       List<SubmissionUploadFile> uploadFileList,
       List<SubmissionXMLFile> xmlFileList,
-      String manifestMd5) {
+      Manifest manifest) {
     this.version = WebinCli.getVersion();
     this.submitDir = submitDir;
     this.uploadDir = uploadDir;
     this.uploadFileList = uploadFileList;
     this.xmlFileList = xmlFileList;
-    this.manifestMd5 = manifestMd5;
+    this.manifest = manifest;
   }
 
   public boolean equals(Object other) {
@@ -170,7 +171,7 @@ public class SubmissionBundle implements Serializable {
           && this.submitDir.equals(sb.submitDir)
           && this.uploadDir.equals(sb.uploadDir)
           && this.uploadFileList.equals(sb.uploadFileList)
-          && this.manifestMd5.equals(sb.manifestMd5);
+          && this.manifest.equals(sb.manifest);
     }
     return false;
   }
@@ -179,8 +180,8 @@ public class SubmissionBundle implements Serializable {
     return version;
   }
 
-  public String getManifestMd5() {
-    return this.manifestMd5;
+  public Manifest getManifest() {
+    return this.manifest;
   }
 
   public File getSubmitDir() {

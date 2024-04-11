@@ -27,6 +27,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
@@ -34,12 +35,12 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 public class SubmissionBundleHelper {
   private static final Logger log = LoggerFactory.getLogger(SubmissionBundleHelper.class);
 
-  public static SubmissionBundle read(String manifestMd5, File submitDir) {
-    File submissionBundleFile = new File(submitDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
+  public static SubmissionBundle read(Manifest manifest, File submissionBundleDir) {
+    File submissionBundleFile = new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
     try (ObjectInputStream os = new ObjectInputStream(new FileInputStream(submissionBundleFile))) {
       SubmissionBundle sb = (SubmissionBundle) os.readObject();
 
-      if (null != manifestMd5 && !manifestMd5.equals(sb.getManifestMd5())) {
+      if (null != manifest && !manifest.equals(sb.getManifest())) {
         log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
         return null;
       }
@@ -66,8 +67,8 @@ public class SubmissionBundleHelper {
     }
   }
 
-  public static void write(SubmissionBundle sb, File submitDir) {
-    File submissionBundleFile = new File(submitDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
+  public static void write(SubmissionBundle sb, File submissionBundleDir) {
+    File submissionBundleFile = new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
     try (ObjectOutputStream os =
         new ObjectOutputStream(new FileOutputStream(submissionBundleFile))) {
       computeXmlFilesChecksums(sb);

@@ -55,10 +55,6 @@ public class ManifestBuilder {
     return this;
   }
 
-  public ManifestBuilder name() {
-    return field("NAME", String.format("TEST %X", System.nanoTime()));
-  }
-
   public ManifestBuilder field(String fieldName, String value) {
     if (manifestFormat == ManifestFormat.KEY_VALUE) {
       if (fieldName != null && value != null) {

@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.sequence;
 
+import java.util.Collection;
 import java.util.Map;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
@@ -50,8 +51,6 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
-
-  private final SequenceManifest manifest = new SequenceManifest();
 
   public SequenceManifestReader(WebinCliParameters parameters, MetadataProcessorFactory factory) {
     super(
@@ -129,17 +128,16 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .build());
 
     if (factory.getStudyProcessor() != null) {
-      factory.getStudyProcessor().setCallback(study -> manifest.setStudy(study));
+      factory.getStudyProcessor().setCallback(
+          (fieldGroup, study) -> getManifest(fieldGroup).setStudy(study));
     }
     if (factory.getRunProcessor() != null) {
-      factory.getRunProcessor().setCallback(run -> manifest.setRun(run));
+      factory.getRunProcessor().setCallback(
+          (fieldGroup, run) -> getManifest(fieldGroup).setRun(run));
     }
     if (factory.getAnalysisProcessor() != null) {
-      factory.getAnalysisProcessor().setCallback(analysis -> manifest.setAnalysis(analysis));
-    }
-
-    if (parameters != null) {
-      manifest.setQuick(parameters.isQuick());
+      factory.getAnalysisProcessor().setCallback(
+          (fieldGroup, analyses) -> getManifest(fieldGroup).setAnalysis(analyses));
     }
   }
 
@@ -158,40 +156,47 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
 
   @Override
   public void processManifest() {
-    Map<String, String> authorAndAddress =
-        getManifestReaderResult().getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
-    if (!authorAndAddress.isEmpty()) {
-      if (authorAndAddress.size() == 2) {
-        manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
-        manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
-      } else {
-        error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
+    getManifestReaderResult().getManifestFieldGroups().forEach(fieldGroup -> {
+      SequenceManifest manifest = getManifest(fieldGroup);
+
+      if (getWebinCliParameters() != null) {
+        manifest.setQuick(getWebinCliParameters().isQuick());
       }
-    }
-    manifest.setName(getManifestReaderResult().getValue(Field.NAME));
-    manifest.setDescription(getManifestReaderResult().getValue(Field.DESCRIPTION));
 
-    manifest.setSubmissionTool(getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL));
-    manifest.setSubmissionToolVersion(
-        getManifestReaderResult().getValue(Fields.SUBMISSION_TOOL_VERSION));
+      Map<String, String> authorAndAddress =
+          fieldGroup.getNonEmptyValues(Field.AUTHORS, Field.ADDRESS);
+      if (!authorAndAddress.isEmpty()) {
+        if (authorAndAddress.size() == 2) {
+          manifest.setAddress(authorAndAddress.get(Field.ADDRESS));
+          manifest.setAuthors(authorAndAddress.get(Field.AUTHORS));
+        } else {
+          error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
+        }
+      }
+      manifest.setName(fieldGroup.getValue(Field.NAME));
+      manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
 
-    manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
+      manifest.setSubmissionTool(fieldGroup.getValue(Fields.SUBMISSION_TOOL));
+      manifest.setSubmissionToolVersion(fieldGroup.getValue(Fields.SUBMISSION_TOOL_VERSION));
 
-    SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
+      manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
 
-    getFiles(getInputDir(), getManifestReaderResult(), Field.TAB)
-        .forEach(
-            fastaFile ->
-                submissionFiles.add(new SubmissionFile(SequenceManifest.FileType.TAB, fastaFile)));
-    getFiles(getInputDir(), getManifestReaderResult(), Field.FLATFILE)
-        .forEach(
-            flatFile ->
-                submissionFiles.add(
-                    new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile)));
+      SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
+
+      getFiles(getInputDir(), fieldGroup, Field.TAB)
+          .forEach(fastaFile -> submissionFiles.add(new SubmissionFile(SequenceManifest.FileType.TAB, fastaFile)));
+      getFiles(getInputDir(), fieldGroup, Field.FLATFILE)
+          .forEach(flatFile -> submissionFiles.add(new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile)));
+    });
   }
 
   @Override
-  public SequenceManifest getManifest() {
-    return manifest;
+  public Collection<SequenceManifest> getManifests() {
+    return nameFieldToManifestMap.values();
+  }
+
+  @Override
+  protected SequenceManifest createManifest() {
+    return new SequenceManifest();
   }
 }

@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.manifest;
 
+import java.util.Collection;
 import java.util.List;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
@@ -28,7 +29,12 @@ public class TestManifestReader extends ManifestReader {
   protected void processManifest() {}
 
   @Override
-  public Manifest getManifest() {
+  public Collection<Manifest> getManifests() {
+    return null;
+  }
+
+  @Override
+  protected Manifest createManifest() {
     return null;
   }
 }

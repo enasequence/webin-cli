@@ -33,7 +33,7 @@ public class AnalysisProcessorTest {
     AnalysisProcessor processor =
         new AnalysisProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(1, e.size());
               Assert.assertEquals(analysis_id, e.get(0).getAnalysisId());
             });
@@ -41,7 +41,7 @@ public class AnalysisProcessorTest {
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "ANALYSIS_REF", analysis_id);
     ValidationResult result = new ValidationResult();
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals(analysis_id, fieldValue.getValue());
   }
@@ -51,7 +51,7 @@ public class AnalysisProcessorTest {
     AnalysisProcessor processor =
         new AnalysisProcessor(
             parameters,
-            (e) -> {
+            (fieldGroup, e) -> {
               Assert.assertEquals(3, e.size());
               Assert.assertEquals("ERZ690501", e.get(0).getAnalysisId());
               Assert.assertEquals("ERZ690500", e.get(1).getAnalysisId());
@@ -62,14 +62,14 @@ public class AnalysisProcessorTest {
         createFieldValue(
             ManifestFieldType.META, "ANALYSIS_REF", "ERZ690501, ERZ690500, ERZ690500, ERZ690502");
     ValidationResult result = new ValidationResult();
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("ERZ690501, ERZ690500, ERZ690502", fieldValue.getValue());
   }
 
   @Test
   public void testIncorrect() {
-    AnalysisProcessor processor = new AnalysisProcessor(parameters, Assert::assertNull);
+    AnalysisProcessor processor = new AnalysisProcessor(parameters, (fieldGroup, analyses) -> Assert.assertNull(analyses));
 
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "ANALYSIS_REF", "INVALID");
@@ -78,7 +78,7 @@ public class AnalysisProcessorTest {
         MessageCounter.regex(
             Severity.ERROR, WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.regex());
     result.add(counter);
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertFalse(result.isValid());
     assertThat(result.count(Severity.ERROR)).isOne();
     assertThat(counter.getCount()).isOne();
@@ -86,7 +86,7 @@ public class AnalysisProcessorTest {
 
   @Test
   public void testIncorrectList() {
-    AnalysisProcessor processor = new AnalysisProcessor(parameters, Assert::assertNull);
+    AnalysisProcessor processor = new AnalysisProcessor(parameters, (fieldGroup, analyses) -> Assert.assertNull(analyses));
 
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "ANALYSIS_REF", "INVALID1, ERZ690500, INVALID2");
@@ -95,7 +95,7 @@ public class AnalysisProcessorTest {
         MessageCounter.regex(
             Severity.ERROR, WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.regex());
     result.add(counter);
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertFalse(result.isValid());
     assertThat(result.count(Severity.ERROR)).isEqualTo(2);
     assertThat(counter.getCount()).isEqualTo(2);

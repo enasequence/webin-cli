@@ -230,7 +230,7 @@ public class ManifestReaderTest {
     reader.addListener(counter);
     File manifest = createManifest("FILE_FIELD_1 MISSING_FILE");
     reader.readManifest(inputDir, manifest);
-    Assert.assertEquals(counter.getCount(), 0);
+    Assert.assertEquals(0, counter.getCount());
   }
 
   @Test
@@ -242,7 +242,7 @@ public class ManifestReaderTest {
     reader.addListener(counter);
     File manifest = createManifest("FILE_FIELD_2 MISSING_FILE\nFILE_FIELD_2 MISSING_FILE");
     reader.readManifest(inputDir, manifest);
-    Assert.assertEquals(counter.getCount(), 0);
+    Assert.assertEquals(0, counter.getCount());
   }
 
   @Test
@@ -256,7 +256,7 @@ public class ManifestReaderTest {
         createManifest(
             "FILE_FIELD_3 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE\nFILE_FIELD_4 MISSING_FILE");
     reader.readManifest(inputDir, manifest);
-    Assert.assertEquals(counter.getCount(), 0);
+    Assert.assertEquals(0, counter.getCount());
   }
 
   @Test
@@ -346,12 +346,14 @@ public class ManifestReaderTest {
             .field("field-name-3", "val3")
             .build());
 
+    ManifestFieldGroup fieldGroup = manifestReader.getManifestReaderResult().getManifestFieldGroups().stream().findFirst().get();
+
     Assert.assertEquals(
-        manifestReader.getManifestReaderResult().getField("FIELD_NAME_1").getValue(), "val1");
+        fieldGroup.getField("FIELD_NAME_1").getValue(), "val1");
     Assert.assertEquals(
-        manifestReader.getManifestReaderResult().getField("FIELD_NAME_2").getValue(), "val2");
+        fieldGroup.getField("FIELD_NAME_2").getValue(), "val2");
     Assert.assertEquals(
-        manifestReader.getManifestReaderResult().getField("FIELD_NAME_3").getValue(), "val3");
+        fieldGroup.getField("FIELD_NAME_3").getValue(), "val3");
   }
 
   private static File createManifest(String contents) {

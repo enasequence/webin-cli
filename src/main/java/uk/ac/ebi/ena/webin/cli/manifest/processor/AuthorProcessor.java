@@ -11,6 +11,8 @@
 package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import java.util.regex.Pattern;
+
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
@@ -18,7 +20,7 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 public class AuthorProcessor implements ManifestFieldProcessor {
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
     if (null != fieldValue.getValue()) {
       fieldValue.setValue(
           replaceMultiplePeriods(replaceMultipleSpaces(fieldValue.getValue().replaceAll(";", ""))));

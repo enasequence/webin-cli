@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
@@ -26,7 +27,7 @@ public class CustomFieldProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
 
     if (value == null || value.trim().isEmpty()) {
@@ -41,7 +42,7 @@ public class CustomFieldProcessor implements ManifestFieldProcessor {
     String keyVal[] = value.split(":");
     if (keyVal.length == 2) {
       ImmutablePair<String, String> pair = new ImmutablePair<>(keyVal[0], keyVal[1]);
-      callback.notify(pair);
+      callback.notify(fieldGroup, pair);
     } else {
       result.add(
           ValidationMessage.error(

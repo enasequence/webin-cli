@@ -14,6 +14,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +50,9 @@ public class TranscriptomeXmlTest {
     return manifest;
   }
 
-  private static SubmissionBundle prepareSubmissionBundle(TranscriptomeManifest manifest) {
+  private static Collection<SubmissionBundle> prepareSubmissionBundle(TranscriptomeManifest manifest) {
     TranscriptomeManifestReader manifestReader = mock(TranscriptomeManifestReader.class);
-    when(manifestReader.getManifest()).thenReturn(manifest);
+    when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -58,8 +60,8 @@ public class TranscriptomeXmlTest {
     WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
         (WebinCliExecutor<TranscriptomeManifest, ValidationResponse>)
             WebinCliContext.transcriptome.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundle();
-    return executor.getSubmissionBundle();
+    executor.prepareSubmissionBundles();
+    return executor.getSubmissionBundles();
   }
 
   @Test
@@ -72,7 +74,7 @@ public class TranscriptomeXmlTest {
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -121,7 +123,7 @@ public class TranscriptomeXmlTest {
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
@@ -131,7 +133,7 @@ public class TranscriptomeXmlTest {
   public void testTpa() {
     TranscriptomeManifest manifest = getDefaultManifest();
     manifest.setTpa(true);
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -165,7 +167,7 @@ public class TranscriptomeXmlTest {
         .files()
         .add(new SubmissionFile(TranscriptomeManifest.FileType.FASTA, fastaFile.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -205,7 +207,7 @@ public class TranscriptomeXmlTest {
         .files()
         .add(new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, fastaFile.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();

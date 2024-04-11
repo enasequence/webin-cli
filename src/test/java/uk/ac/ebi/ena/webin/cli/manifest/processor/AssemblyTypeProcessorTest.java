@@ -28,7 +28,7 @@ public class AssemblyTypeProcessorTest {
       ManifestFieldValue fieldValue =
           createFieldValue(ManifestFieldType.META, GenomeManifestReader.Field.ASSEMBLY_TYPE, value);
       ValidationResult result = new ValidationResult();
-      processor.process(result, fieldValue);
+      processor.process(result, null, fieldValue);
       Assert.assertEquals(0, result.count());
       Assert.assertEquals(
           GenomeManifestReader.ASSEMBLY_TYPE_PRIMARY_CLONE_OR_ISOLATE, fieldValue.getValue());
@@ -36,7 +36,7 @@ public class AssemblyTypeProcessorTest {
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, GenomeManifestReader.Field.ASSEMBLY_TYPE, "test");
     ValidationResult result = new ValidationResult();
-    processor.process(result, fieldValue);
+    processor.process(result, null, fieldValue);
     Assert.assertEquals(0, result.count());
     Assert.assertEquals("test", fieldValue.getValue());
   }

@@ -14,6 +14,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,9 +45,9 @@ public class SequenceXmlTest {
     return manifest;
   }
 
-  private static SubmissionBundle prepareSubmissionBundle(SequenceManifest manifest) {
+  private static Collection<SubmissionBundle> prepareSubmissionBundle(SequenceManifest manifest) {
     SequenceManifestReader manifestReader = mock(SequenceManifestReader.class);
-    when(manifestReader.getManifest()).thenReturn(manifest);
+    when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -53,8 +55,8 @@ public class SequenceXmlTest {
     WebinCliExecutor<SequenceManifest, ValidationResponse> executor =
         (WebinCliExecutor<SequenceManifest, ValidationResponse>)
             WebinCliContext.sequence.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundle();
-    return executor.getSubmissionBundle();
+    executor.prepareSubmissionBundles();
+    return executor.getSubmissionBundles();
   }
 
   @Test
@@ -67,7 +69,7 @@ public class SequenceXmlTest {
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -111,7 +113,7 @@ public class SequenceXmlTest {
     manifest.setSubmissionTool("ST-001");
     manifest.setSubmissionToolVersion("STV-001");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
@@ -124,7 +126,7 @@ public class SequenceXmlTest {
     Path flatFile = TempFileBuilder.gzip("flatfile.dat.gz", "ID   ;");
     manifest.files().add(new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -157,7 +159,7 @@ public class SequenceXmlTest {
     manifest.setAuthors("test_author1,test_author2.");
     manifest.setAddress("ena,ebi,embl,UK");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();

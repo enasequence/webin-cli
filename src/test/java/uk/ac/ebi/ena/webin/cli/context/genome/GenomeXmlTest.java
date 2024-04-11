@@ -14,6 +14,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,9 +49,9 @@ public class GenomeXmlTest {
     return manifest;
   }
 
-  private static SubmissionBundle prepareSubmissionBundle(GenomeManifest manifest) {
+  private static Collection<SubmissionBundle> prepareSubmissionBundle(GenomeManifest manifest) {
     GenomeManifestReader manifestReader = mock(GenomeManifestReader.class);
-    when(manifestReader.getManifest()).thenReturn(manifest);
+    when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -57,8 +59,8 @@ public class GenomeXmlTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         (WebinCliExecutor<GenomeManifest, ValidationResponse>)
             WebinCliContext.genome.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundle();
-    return executor.getSubmissionBundle();
+    executor.prepareSubmissionBundles();
+    return executor.getSubmissionBundles();
   }
 
   @Test
@@ -72,7 +74,7 @@ public class GenomeXmlTest {
         new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
     manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -123,7 +125,7 @@ public class GenomeXmlTest {
         new Analysis("ANALYSIS_ID2", "ANALYSIS_ID2_ALIAS"));
     manifest.addRun(new Run("RUN_ID1", "RUN_ID1_ALIAS"), new Run("RUN_ID2", "RUN_ID2_ALIAS"));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     XmlTester.assertSubmissionXmlWithEmptyManifestFile(
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.SUBMISSION).getXmlContent());
@@ -134,7 +136,7 @@ public class GenomeXmlTest {
     GenomeManifest manifest = getDefaultManifest();
     manifest.setDescription("test_description");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -166,7 +168,7 @@ public class GenomeXmlTest {
     GenomeManifest manifest = getDefaultManifest();
     manifest.setMoleculeType("test_moltype");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -198,7 +200,7 @@ public class GenomeXmlTest {
     GenomeManifest manifest = getDefaultManifest();
     manifest.setTpa(true);
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -230,7 +232,7 @@ public class GenomeXmlTest {
     GenomeManifest manifest = getDefaultManifest();
     manifest.setAssemblyType("test_assembly_type");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -263,7 +265,7 @@ public class GenomeXmlTest {
     Path fastaFile = TempFileBuilder.gzip("flatfile.fasta.gz", ">123\nACGT");
     manifest.files().add(new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -303,7 +305,7 @@ public class GenomeXmlTest {
     manifest.files().add(new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile.toFile()));
     manifest.files().add(new SubmissionFile(GenomeManifest.FileType.AGP, agpFile.toFile()));
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();
@@ -346,7 +348,7 @@ public class GenomeXmlTest {
     manifest.setAuthors("test_author1,test_author2.");
     manifest.setAddress("ena,ebi,embl,UK");
 
-    SubmissionBundle sb = prepareSubmissionBundle(manifest);
+    SubmissionBundle sb = prepareSubmissionBundle(manifest).stream().findFirst().get();
 
     String analysisXml =
         sb.getXMLFile(SubmissionBundle.SubmissionXMLFileType.ANALYSIS).getXmlContent();

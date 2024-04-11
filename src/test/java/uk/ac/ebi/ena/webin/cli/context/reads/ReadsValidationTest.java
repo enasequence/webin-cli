@@ -21,6 +21,7 @@ import uk.ac.ebi.ena.webin.cli.ReportTester;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
+import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.FileType;
@@ -56,7 +57,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
 
@@ -65,7 +66,7 @@ public class ReadsValidationTest {
         .hasMessage("");
 
     new ReportTester(executor)
-        .textInFileReport("webin-cli", "Submitted files must contain a minimum of 1 sequence read");
+        .textInFileReport( NAME, "webin-cli", "Submitted files must contain a minimum of 1 sequence read");
   }
 
   @Test
@@ -75,7 +76,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
     executor.validateSubmission();
@@ -88,7 +89,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
 
@@ -96,7 +97,7 @@ public class ReadsValidationTest {
         .isInstanceOf(WebinCliException.class)
         .hasMessage("");
 
-    new ReportTester(executor).textInFileReport("webin-cli", "Sequence header must start with @");
+    new ReportTester(executor).textInFileReport(NAME, "webin-cli", "Sequence header must start with @");
   }
 
   @Test
@@ -106,7 +107,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
     executor.validateSubmission();
@@ -123,7 +124,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
     executor.validateSubmission();
@@ -138,7 +139,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
     executor.validateSubmission();
@@ -156,7 +157,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
 
@@ -165,7 +166,7 @@ public class ReadsValidationTest {
         .hasMessage("");
 
     new ReportTester(executor)
-        .textInSubmissionReport(
+        .textInSubmissionReport(NAME,
             "Detected paired fastq submission with less than 20% of paired reads");
   }
 
@@ -176,7 +177,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
 
@@ -190,7 +191,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
 
@@ -199,7 +200,7 @@ public class ReadsValidationTest {
         .hasMessage("");
 
     new ReportTester(executor)
-        .textInFileReport("webin-cli", "Submitted files must contain a minimum of 1 sequence read");
+        .textInFileReport(NAME, "webin-cli", "Submitted files must contain a minimum of 1 sequence read");
   }
 
   @Test
@@ -209,7 +210,7 @@ public class ReadsValidationTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    SubmissionFiles submissionFiles = executor.getManifestReader().getManifest().files();
+    SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
     executor.validateSubmission();

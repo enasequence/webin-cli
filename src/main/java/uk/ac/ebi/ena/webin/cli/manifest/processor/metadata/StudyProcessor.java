@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.manifest.processor.metadata;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorParameters;
 import uk.ac.ebi.ena.webin.cli.service.StudyService;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
@@ -44,7 +45,7 @@ public class StudyProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
 
     try {
@@ -55,7 +56,7 @@ public class StudyProcessor implements ManifestFieldProcessor {
               .build();
       Study study = studyService.getStudy(value);
       fieldValue.setValue(study.getBioProjectId());
-      callback.notify(study);
+      callback.notify(fieldGroup, study);
 
     } catch (WebinCliException e) {
       result.add(ValidationMessage.error(e));
