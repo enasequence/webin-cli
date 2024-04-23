@@ -377,7 +377,7 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
 
   /**
    * @param manifest
-   * @return Name of the given manifest after removing all the characters that may cause problems with file system from it.
+   * @return Name of the given manifest after removing all the sensitive characters that may cause problems with file system from it.
    */
   private String getFileSystemSafeSubmissionName(M manifest) {
     if (manifest.getName() != null) {
@@ -395,7 +395,7 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
       safeManifestNameToOriginalManifestNameMap.put(safeName, manifest.getName());
     } else if (!originalManifestName.equals(manifest.getName())) {
       throw WebinCliException.userError(
-          WebinCliMessage.EXECUTOR_FILE_SYSTEM_SAFE_MANIFEST_NAME_CONFLICT_ERROR.format(
+          WebinCliMessage.EXECUTOR_SENSITIVE_CHARACTERS_MANIFEST_NAME_CONFLICT_ERROR.format(
               originalManifestName, manifest.getName()));
     }
   }

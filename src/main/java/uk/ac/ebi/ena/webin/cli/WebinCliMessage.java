@@ -40,8 +40,8 @@ public enum WebinCliMessage implements MessageFormatSource {
 
   EXECUTOR_INIT_ERROR("Failed to initialise validator. {0}"),
   EXECUTOR_EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}"),
-  EXECUTOR_FILE_SYSTEM_SAFE_MANIFEST_NAME_CONFLICT_ERROR(
-      "A manifest name {0} conflicts with another manifest name {1} after removing file system sensitive characters. Try adjusting the names to resolve conflict"),
+  EXECUTOR_SENSITIVE_CHARACTERS_MANIFEST_NAME_CONFLICT_ERROR(
+      "A manifest name {0} conflicts with another manifest name {1} after removing sensitive characters. Try adjusting the names to resolve conflict"),
 
   SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION("Submission requires re-validation."),
   SUBMISSION_BUNDLE_FILE_ERROR("Unable to create submission bundle file: {0}"),

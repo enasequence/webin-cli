@@ -899,6 +899,6 @@ public class WebinCliSubmissionTest {
 
     expectError(() -> webinCli.execute(), WebinCliException.ErrorType.USER_ERROR);
     new ReportTester(webinCli)
-        .textInWebinCliReport("A manifest name TEST;1 conflicts with another manifest name TEST:1 after removing file system sensitive characters");
+        .textInWebinCliReport("A manifest name TEST;1 conflicts with another manifest name TEST:1 after removing sensitive characters");
   }
 }
