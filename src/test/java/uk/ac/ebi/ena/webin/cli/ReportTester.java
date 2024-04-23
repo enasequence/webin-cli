@@ -70,6 +70,13 @@ public class ReportTester {
     regexNotInReport(executor.getManifestReportFile(), regex);
   }
 
+  // Webin-Cli report
+  //
+
+  public void textInWebinCliReport(String message) {
+    textInReport(executor.getParameters().getOutputDir().toPath().resolve("webin-cli.report").toFile(), message);
+  }
+
   // Data file report
   //
 

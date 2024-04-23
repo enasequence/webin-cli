@@ -31,7 +31,6 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
   private static CustomFieldProcessor customFieldProcessor;
 
   public interface Field {
-    String NAME = "NAME";
     String STUDY = "STUDY";
     String DESCRIPTION = "DESCRIPTION";
     String TAXONOMY_SYSTEM = "TAXONOMY_SYSTEM";
@@ -62,7 +61,7 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
         new ManifestFieldDefinition.Builder()
             .meta()
             .required()
-            .name(Field.NAME)
+            .name(Fields.NAME)
             .desc(Description.NAME)
             .and()
             .meta()
@@ -155,7 +154,7 @@ public class TaxRefSetManifestReader extends ManifestReader<TaxRefSetManifest> {
       if (getWebinCliParameters() != null) {
         manifest.setQuick(getWebinCliParameters().isQuick());
 
-        manifest.setName(fieldGroup.getValue(Field.NAME));
+        manifest.setName(fieldGroup.getValue(Fields.NAME));
         manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
         manifest.setTaxonomySystem(fieldGroup.getValue(Field.TAXONOMY_SYSTEM));
         manifest.setTaxonomySystemVersion(

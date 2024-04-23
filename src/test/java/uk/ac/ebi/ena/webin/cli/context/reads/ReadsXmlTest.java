@@ -32,6 +32,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.XmlTester;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFileAttribute;
@@ -59,8 +60,11 @@ public class ReadsXmlTest {
   }
 
   private static Collection<SubmissionBundle> prepareSubmissionBundle(ReadsManifest manifest) {
+    ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+
     ReadsManifestReader manifestReader = mock(ReadsManifestReader.class);
     when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
+    when(manifestReader.getManifestFieldGroup(manifest)).thenReturn(fieldGroup);
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -71,7 +75,7 @@ public class ReadsXmlTest {
     WebinCliExecutor<ReadsManifest, ReadsValidationResponse> mockedExecutor = Mockito.spy(executor);
     ReadsValidationResponse rvr = new ReadsValidationResponse();
     Mockito.when(mockedExecutor.getValidationResponse()).thenReturn(rvr);
-    mockedExecutor.prepareSubmissionBundles();
+    mockedExecutor.prepareSubmissionBundles(false);
     return mockedExecutor.getSubmissionBundles();
   }
 

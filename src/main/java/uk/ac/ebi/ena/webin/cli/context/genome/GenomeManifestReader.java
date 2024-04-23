@@ -35,7 +35,6 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
 
   public interface Field {
-    String NAME = "NAME";
     String ASSEMBLYNAME = "ASSEMBLYNAME";
     String STUDY = "STUDY";
     String SAMPLE = "SAMPLE";
@@ -114,7 +113,7 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
         new ManifestFieldDefinition.Builder()
             .meta()
             .required()
-            .name(Field.NAME)
+            .name(Fields.NAME)
             .desc(Description.NAME)
             .synonym(Field.ASSEMBLYNAME)
             .and()
@@ -343,7 +342,7 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
         }
       }
 
-      manifest.setName(fieldGroup.getValue(Field.NAME));
+      manifest.setName(fieldGroup.getValue(Fields.NAME));
       manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
       manifest.setPlatform(fieldGroup.getValue(Field.PLATFORM));
       manifest.setProgram(fieldGroup.getValue(Field.PROGRAM));

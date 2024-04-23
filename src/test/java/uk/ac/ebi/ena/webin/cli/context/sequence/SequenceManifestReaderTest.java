@@ -45,7 +45,7 @@ public class SequenceManifestReaderTest {
     manifestReader.readManifest(
         Paths.get("."),
         new ManifestBuilder()
-            .field(Field.NAME, " SOME-FANCY-NAME")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
             .field(Field.DESCRIPTION, " description")
             .file("FLATFILE", TempFileBuilder.empty("csv"))
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")

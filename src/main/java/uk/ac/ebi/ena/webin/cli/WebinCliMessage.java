@@ -20,7 +20,7 @@ public enum WebinCliMessage implements MessageFormatSource {
       "Your application version is no longer supported. The minimum supported version is {0}. Please download the latest version {1} from https://github.com/enasequence/webin-cli/releases"),
   CLI_EXPIRYING_VERSION(
       "Your application version will not be supported after {0}. The minimum supported version will be {1}. Please download the latest version {2} from https://github.com/enasequence/webin-cli/releases"),
-  CLI_VALIDATE_SUCCESS("The submission has been validated successfully."),
+  CLI_VALIDATE_SUCCESS("Submission(s) validated successfully."),
   CLI_UPLOAD_SUCCESS("Files have been uploaded to webin2.ebi.ac.uk. "),
   CLI_INPUT_PATH_NOT_DIR("Input dir path does not represent folder: \"{0}\"."),
   CLI_OUTPUT_PATH_NOT_DIR("Output dir path does not represent folder: \"{0}\"."),
@@ -30,6 +30,7 @@ public enum WebinCliMessage implements MessageFormatSource {
   CLI_CREATE_DIR_ERROR("Unable to create directory: {0}"),
   CLI_UPLOAD_ERROR("Failed to upload files to server because of a {0}. "),
   CLI_SUBMIT_ERROR("The submission has failed because of a {0}. "),
+  CLI_MULTI_SUBMIT_ERROR("Some or all submissions failed. Please see logs for details."),
   CLI_AUTHENTICATION_ERROR(
       "Invalid submission account user name or password. Please try enclosing your password in single quotes."),
   CLI_GENOME_RATELIMIT_ERROR(
@@ -39,6 +40,8 @@ public enum WebinCliMessage implements MessageFormatSource {
 
   EXECUTOR_INIT_ERROR("Failed to initialise validator. {0}"),
   EXECUTOR_EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}"),
+  EXECUTOR_FILE_SYSTEM_SAFE_MANIFEST_NAME_CONFLICT_ERROR(
+      "A manifest name {0} conflicts with another manifest name {1} after removing file system sensitive characters. Try adjusting the names to resolve conflict"),
 
   SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION("Submission requires re-validation."),
   SUBMISSION_BUNDLE_FILE_ERROR("Unable to create submission bundle file: {0}"),
@@ -102,6 +105,7 @@ public enum WebinCliMessage implements MessageFormatSource {
   MANIFEST_READER_UNKNOWN_ATTRIBUTE_FIELD_ERROR("Unknown attribute field: {0}."),
   MANIFEST_READER_MISSING_SAMPLE_ALIAS(
       "Missing sample alias. Sample alias is mandatory for sample json format"),
+  MANIFEST_READER_INVALID_NON_UNIQUE_FIELD_GROUP_NAME("Invalid field group name. The name field is not unique across all field groups : {0}"),
 
   FILE_SUFFIX_PROCESSOR_ERROR("Invalid {0} file suffix: \"{1}\". Valid file suffixes are: {2}."),
   CV_FIELD_PROCESSOR_ERROR("Invalid {0} field value: \"{1}\". Valid values are: {2}."),

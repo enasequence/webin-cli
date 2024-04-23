@@ -42,7 +42,6 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.lang.StringUtils;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
@@ -58,6 +57,7 @@ public abstract class ManifestReader<M extends Manifest> {
   protected abstract M createManifest();
 
   public interface Fields {
+    String NAME = "NAME";
     String INFO = "INFO";
     String SUBMISSION_TOOL = "SUBMISSION_TOOL";
     String SUBMISSION_TOOL_VERSION = "SUBMISSION_TOOL_VERSION";
@@ -102,12 +102,10 @@ public abstract class ManifestReader<M extends Manifest> {
   private final List<MessageListener> listener = new ArrayList<>();
 
   /**
-   * The value of manifest field 'NAME' is used as a key in this map. As 'NAME' is mandatory, every field group in
-   * the manifest file is going to have this field.
+   * The value of manifest field 'NAME' is used as a key in this map. This field is mandatory
    */
   protected final Map<String, M> nameFieldToManifestMap = new HashMap<>();
 
-  /** Keeps a list of all fields read from the manifest file. */
   private ManifestReaderResult manifestReaderResult;
 
   private ManifestReaderState state;
@@ -183,12 +181,25 @@ public abstract class ManifestReader<M extends Manifest> {
 
     expandInfoFields(inputDir);
 
-    validateManifest();
+    validateFields();
 
-    // Objects that override this method take the all the field groups that were parsed and validated above
-    // and create manifest objects using them. As one field group maps to a single manifest object, there should be
-    // as many manifest objects as there are number of field groups.
     processManifest();
+  }
+
+  public WebinCliParameters getWebinCliParameters() {
+    return webinCliParameters;
+  }
+
+  /**
+   * Get the original group of manifest file fields that were used to create the given manifest object.
+   */
+  public ManifestFieldGroup getManifestFieldGroup(Manifest manifest) {
+    String name = manifest.getName();
+
+    return manifestReaderResult.getManifestFieldGroups().stream()
+        .filter(fieldGroup -> fieldGroup.getField(Fields.NAME).getValue().equals(name))
+        .findFirst()
+        .orElse(null);
   }
 
   private Collection<ManifestFieldGroup> parseManifest(Path inputDir, List<String> lines) {
@@ -503,21 +514,26 @@ public abstract class ManifestReader<M extends Manifest> {
     });
   }
 
-  private void validateManifest() {
+  private void validateFields() {
     state.state = VALIDATE;
+
+    // Ensure NAME fields in all the field groups are unique.
+    validateUniqueFieldGroupsNames();
 
     // Validate min count.
     fieldDefinitions.stream()
         .filter(field -> field.getMinCount() > 0)
         .forEach(
             minCountField -> {
-              if (manifestReaderResult.getManifestFieldGroups().stream().flatMap(fieldGroup -> fieldGroup.stream())
-                      .filter(field -> field.getName().equals(minCountField.getName()))
-                      .count()
-                  < 1) {
-                error(
-                    WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR,
-                    minCountField.getName());
+              for (ManifestFieldGroup fieldGroup : manifestReaderResult.getManifestFieldGroups()) {
+                if (fieldGroup.stream()
+                    .filter(field -> field.getName().equals(minCountField.getName()))
+                    .count()
+                    < 1) {
+                  error(
+                      WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR,
+                      minCountField.getName());
+                }
               }
             });
 
@@ -526,20 +542,21 @@ public abstract class ManifestReader<M extends Manifest> {
         .filter(field -> field.getMaxCount() > 0)
         .forEach(
             maxCountField -> {
-              List<ManifestFieldValue> matchingFields =
-                  manifestReaderResult.getManifestFieldGroups().stream().flatMap(fieldGroup -> fieldGroup.stream())
-                      .filter(field -> field.getName().equals(maxCountField.getName()))
-                      .collect(Collectors.toList());
+              for (ManifestFieldGroup fieldGroup : manifestReaderResult.getManifestFieldGroups()) {
+                List<ManifestFieldValue> matchingFields = fieldGroup.stream()
+                        .filter(field -> field.getName().equals(maxCountField.getName()))
+                        .collect(Collectors.toList());
 
-              if (matchingFields.size() > maxCountField.getMaxCount()) {
-                error(
-                    WebinCliMessage.MANIFEST_READER_TOO_MANY_FIELDS_ERROR,
-                    maxCountField.getName(),
-                    String.valueOf(maxCountField.getMaxCount()));
+                if (matchingFields.size() > maxCountField.getMaxCount()) {
+                  error(
+                      WebinCliMessage.MANIFEST_READER_TOO_MANY_FIELDS_ERROR,
+                      maxCountField.getName(),
+                      String.valueOf(maxCountField.getMaxCount()));
+                }
               }
             });
 
-    // Validate and fix fields through their processors.
+    // Validate/fix fields and run their processors.
     manifestReaderResult.getManifestFieldGroups().forEach(fieldGroup -> {
       for (ManifestFieldValue fieldValue : fieldGroup) {
         ManifestFieldDefinition fieldDefinition = fieldValue.getDefinition();
@@ -570,6 +587,11 @@ public abstract class ManifestReader<M extends Manifest> {
     validateUniqueFileNames();
   }
 
+  /**
+   * Objects that override this method take all the parsed and validated field groups and create manifest objects
+   * using them. As one field group maps to a single manifest object, there should be
+   * as many manifest objects as there are number of field groups.
+   */
   protected abstract void processManifest();
 
   private void validateFileExists(Path inputDir, ManifestFieldValue field) {
@@ -592,6 +614,24 @@ public abstract class ManifestReader<M extends Manifest> {
       validateFileCompression(result, field.getValue());
     } catch (Throwable ex) {
       error(result, WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR, fieldValue);
+    }
+  }
+
+  private void validateUniqueFieldGroupsNames() {
+    // No need to validate if there is only one field group.
+    if (manifestReaderResult.getManifestFieldGroups().size() == 1) {
+      return;
+    }
+
+    Map<String, Long> nameFieldOccurrence = manifestReaderResult.getManifestFieldGroups().stream()
+        .map(fieldGroup -> fieldGroup.getField(Fields.NAME).getValue())
+        .collect(Collectors.groupingBy(name -> name, Collectors.counting()));
+
+    for (Map.Entry<String, Long> entry : nameFieldOccurrence.entrySet()) {
+      if (entry.getValue() > 1) {
+        error(WebinCliMessage.MANIFEST_READER_INVALID_NON_UNIQUE_FIELD_GROUP_NAME, entry.getKey());
+        return;
+      }
     }
   }
 
@@ -871,9 +911,12 @@ public abstract class ManifestReader<M extends Manifest> {
         .collect(Collectors.toList());
   }
 
+  /**
+   * Gets the manifest object against the given field group. If an existing manifest is not found then a new one is
+   * first created and then returned.
+   */
   protected M getManifest(ManifestFieldGroup fieldGroup) {
-    // TODO might be better to use sanitized names as keys. look at WebinCliExecutor.getSubmissionName()
-    String nameField = fieldGroup.getValue(ReadsManifestReader.Field.NAME);
+    String nameField = fieldGroup.getValue(Fields.NAME);
 
     return nameFieldToManifestMap.computeIfAbsent(
         nameField, key -> {
@@ -894,10 +937,6 @@ public abstract class ManifestReader<M extends Manifest> {
   /** Adds an error to the manifest level validation result. */
   protected final void error(WebinCliMessage message, Object... arguments) {
     getValidationResult().add(ValidationMessage.error(message, arguments));
-  }
-
-  public WebinCliParameters getWebinCliParameters() {
-    return webinCliParameters;
   }
 
   private boolean matchNameCaseAndPunctuationInsensitively(String name1, String name2) {

@@ -28,20 +28,22 @@ public class TranscriptomeValidationTest {
   private static final File RESOURCE_DIR =
       WebinCliTestUtils.getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome");
 
+  public static final String NAME = "test";
+
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
         .field("STUDY", "test")
         .field("SAMPLE", "test")
         .field("PROGRAM", "test")
         .field("PLATFORM", "test")
-        .field("NAME", "test");
+        .field("NAME", NAME);
   }
 
   private static final WebinCliExecutorBuilder<TranscriptomeManifest, ValidationResponse>
       executorBuilder =
           new WebinCliExecutorBuilder(
                   TranscriptomeManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-              .sample(WebinCliTestUtils.getDefaultSample());
+              .sample(NAME, WebinCliTestUtils.getDefaultSample());
 
   @Before
   public void before() {
@@ -58,7 +60,7 @@ public class TranscriptomeValidationTest {
     WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    executor.validateSubmission();
+    executor.validateSubmission(false);
     assertThat(
             executor
                 .getManifestReader()

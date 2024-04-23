@@ -11,15 +11,13 @@
 package uk.ac.ebi.ena.webin.cli.submit;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.webin.cli.WebinCli;
@@ -27,7 +25,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliConfig;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationMessage;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationOrigin;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
@@ -35,12 +32,20 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 public class SubmissionBundleHelper {
   private static final Logger log = LoggerFactory.getLogger(SubmissionBundleHelper.class);
 
-  public static SubmissionBundle read(Manifest manifest, File submissionBundleDir) {
-    File submissionBundleFile = new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
-    try (ObjectInputStream os = new ObjectInputStream(new FileInputStream(submissionBundleFile))) {
-      SubmissionBundle sb = (SubmissionBundle) os.readObject();
+    /**
+     * @return The submission bundle loaded from the given directory. If any error occurs during loading then 'null' is
+     * returned back. 'null' is also returned if it is found that the loaded submission bundle is different from what is
+     * in the read manifest. Meaning the previously saved submission bundle is no longer valid.
+     */
+  public static SubmissionBundle read(String manifestFieldsMd5, File submissionBundleDir) {
+    File submissionBundleFile = new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_NAME);
 
-      if (null != manifest && !manifest.equals(sb.getManifest())) {
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+
+      SubmissionBundle sb = objectMapper.readValue(submissionBundleFile, SubmissionBundle.class);
+
+      if (null != manifestFieldsMd5 && !manifestFieldsMd5.equals(sb.getManifestFieldsMd5())) {
         log.info(WebinCliMessage.SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION.text());
         return null;
       }
@@ -60,7 +65,7 @@ public class SubmissionBundleHelper {
 
       return sb;
 
-    } catch (ClassNotFoundException | IOException e) {
+    } catch (IOException e) {
       // Submission bundle could not be read.
       log.info(WebinCliMessage.SUBMISSION_BUNDLE_VALIDATE_SUBMISSION.text());
       return null;
@@ -68,13 +73,13 @@ public class SubmissionBundleHelper {
   }
 
   public static void write(SubmissionBundle sb, File submissionBundleDir) {
-    File submissionBundleFile = new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_SUFFIX);
-    try (ObjectOutputStream os =
-        new ObjectOutputStream(new FileOutputStream(submissionBundleFile))) {
+    File submissionBundleFile = new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_NAME);
+
+    try {
       computeXmlFilesChecksums(sb);
 
-      os.writeObject(sb);
-      os.flush();
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.writeValue(submissionBundleFile, sb);
 
       writeXmls(sb);
     } catch (IOException ex) {
@@ -89,7 +94,7 @@ public class SubmissionBundleHelper {
       result.add(ValidationMessage.info("Program version has changed"));
     }
 
-    for (SubmissionBundle.SubmissionXMLFile file : sb.getXMLFileList()) {
+    for (SubmissionBundle.SubmissionXMLFile file : sb.getXmlFileList()) {
       if (!file.getFile().exists()) {
         result.add(ValidationMessage.info("Generated xml file not found: " + file.getFile()));
         continue;
@@ -156,7 +161,7 @@ public class SubmissionBundleHelper {
   }
 
   private static void computeXmlFilesChecksums(SubmissionBundle sb) {
-    sb.getXMLFileList()
+    sb.getXmlFileList()
         .forEach(
             xmlFile -> {
               String md5 =
@@ -168,7 +173,7 @@ public class SubmissionBundleHelper {
   }
 
   private static void readXmls(SubmissionBundle sb) {
-    sb.getXMLFileList()
+    sb.getXmlFileList()
         .forEach(
             xmlFile -> {
               try {
@@ -182,7 +187,7 @@ public class SubmissionBundleHelper {
   }
 
   private static void writeXmls(SubmissionBundle sb) {
-    sb.getXMLFileList()
+    sb.getXmlFileList()
         .forEach(
             xmlFile -> {
               try {

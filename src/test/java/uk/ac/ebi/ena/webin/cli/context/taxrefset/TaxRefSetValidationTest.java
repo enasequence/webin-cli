@@ -29,15 +29,17 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TaxRefSetManifest;
 public class TaxRefSetValidationTest {
 
   private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/taxxrefset/valid");
+
+  private static final String NAME = "test";
   private static final WebinCliExecutorBuilder<TaxRefSetManifest, ValidationResponse>
       executorBuilder =
           new WebinCliExecutorBuilder(
                   TaxRefSetManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-              .sample(getDefaultSample());
+              .sample(NAME, getDefaultSample());
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
-        .field("NAME", "test")
+        .field("NAME", NAME)
         .field("DESCRIPTION", "test_desc")
         .field("STUDY", "ERP115786")
         .field("TAXONOMY_SYSTEM", "NCBI")
@@ -70,7 +72,7 @@ public class TaxRefSetValidationTest {
     WebinCliExecutor<TaxRefSetManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, VALID_DIR);
     executor.readManifest();
-    executor.validateSubmission();
+    executor.validateSubmission(false);
     assertThat(
             executor.getManifestReader().getManifests().stream().findFirst().get().files().get(TaxRefSetManifest.FileType.TAB))
         .size()

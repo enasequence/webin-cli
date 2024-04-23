@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -51,8 +52,11 @@ public class TranscriptomeXmlTest {
   }
 
   private static Collection<SubmissionBundle> prepareSubmissionBundle(TranscriptomeManifest manifest) {
+    ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+
     TranscriptomeManifestReader manifestReader = mock(TranscriptomeManifestReader.class);
     when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
+    when(manifestReader.getManifestFieldGroup(manifest)).thenReturn(fieldGroup);
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -60,7 +64,7 @@ public class TranscriptomeXmlTest {
     WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
         (WebinCliExecutor<TranscriptomeManifest, ValidationResponse>)
             WebinCliContext.transcriptome.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundles();
+    executor.prepareSubmissionBundles(false);
     return executor.getSubmissionBundles();
   }
 

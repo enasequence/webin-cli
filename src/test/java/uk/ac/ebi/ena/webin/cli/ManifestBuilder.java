@@ -29,10 +29,10 @@ public class ManifestBuilder {
 
   private String manifest = "";
 
-  private ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-  private ObjectNode jsonManifest;
-
+  private ArrayNode jsonManifest;
+  private ObjectNode lastModifiedFieldGroup;
   private String lastModifiedFieldName;
   private JsonNode lastModifiedField;
 
@@ -41,17 +41,47 @@ public class ManifestBuilder {
     return this;
   }
 
+  /**
+   * Do not use this for JSON manifest building.
+   */
   public ManifestBuilder manifest(String manifest) {
+    if (manifestFormat == ManifestFormat.JSON) {
+      throw new UnsupportedOperationException();
+    }
+
     if (manifest != null) {
       this.manifest += manifest;
     }
     return this;
   }
 
+  /**
+   * Do not use this for JSON manifest building.
+   */
   public ManifestBuilder manifest(ManifestBuilder manifest) {
+    if (manifestFormat == ManifestFormat.JSON) {
+      throw new UnsupportedOperationException();
+    }
+
     if (manifest != null) {
       this.manifest += manifest;
     }
+    return this;
+  }
+
+  public ManifestBuilder fieldGroup() {
+    if (manifestFormat == ManifestFormat.KEY_VALUE) {
+      throw new UnsupportedOperationException("Field groups are only supported in JSON format.");
+    }
+
+    if (jsonManifest == null) {
+      jsonManifest = objectMapper.createArrayNode();
+    }
+
+    lastModifiedFieldGroup = jsonManifest.addObject();
+    lastModifiedField = null;
+    lastModifiedFieldName = null;
+
     return this;
   }
 
@@ -62,10 +92,10 @@ public class ManifestBuilder {
       }
     } else {
       if (jsonManifest == null) {
-        jsonManifest = objectMapper.createObjectNode();
+        fieldGroup();
       }
 
-      JsonNode existingField = jsonManifest.get(fieldName);
+      JsonNode existingField = lastModifiedFieldGroup.get(fieldName);
       if (existingField != null) {
         if (existingField.isArray()) {
           ObjectNode newField = objectMapper.createObjectNode();
@@ -75,12 +105,12 @@ public class ManifestBuilder {
           lastModifiedFieldName = fieldName;
           lastModifiedField = newField;
         } else {
-          // convert this field into array
-          ArrayNode convertedArrayNode = jsonManifest.putArray(fieldName);
+          // convert this field into an array
+          ArrayNode convertedArrayNode = lastModifiedFieldGroup.putArray(fieldName);
 
-          // add existing object into the array
+          // add existing object into the new array
           if (existingField.isValueNode()) {
-            // convert it into object
+            // convert it into an object
             ObjectNode newField = objectMapper.createObjectNode();
             newField.put("value", existingField.asText());
 
@@ -98,9 +128,9 @@ public class ManifestBuilder {
           lastModifiedField = newField;
         }
       } else {
-        jsonManifest.put(fieldName, value);
+        lastModifiedFieldGroup.put(fieldName, value);
         lastModifiedFieldName = fieldName;
-        lastModifiedField = jsonManifest.get(fieldName);
+        lastModifiedField = lastModifiedFieldGroup.get(fieldName);
       }
     }
 
@@ -108,8 +138,12 @@ public class ManifestBuilder {
   }
 
   public ManifestBuilder attribute(String attributeKey, String attributeValue) {
-    if (manifestFormat != ManifestFormat.JSON || lastModifiedField == null) {
+    if (manifestFormat != ManifestFormat.JSON) {
       throw new IllegalArgumentException("Attributes are only supported in JSON manifest.");
+    }
+
+    if (lastModifiedField == null) {
+      throw new IllegalArgumentException("Attribute can only be added to an existing field. Create a field first.");
     }
 
     if (lastModifiedField.isValueNode()) {
@@ -117,7 +151,7 @@ public class ManifestBuilder {
 
       String currentValue = lastModifiedField.asText();
 
-      ObjectNode newField = jsonManifest.putObject(lastModifiedFieldName);
+      ObjectNode newField = lastModifiedFieldGroup.putObject(lastModifiedFieldName);
       newField.put("value", currentValue);
       newField.putObject("attributes").put(attributeKey, attributeValue);
 

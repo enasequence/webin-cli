@@ -29,15 +29,17 @@ public class SequenceValidationTest {
 
   private static final File VALID_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/valid");
 
+  private static final String NAME = "test";
+
   private static ManifestBuilder manifestBuilder() {
-    return new ManifestBuilder().field("STUDY", "test").field("NAME", "test");
+    return new ManifestBuilder().field("STUDY", "test").field("NAME", NAME);
   }
 
   private static final WebinCliExecutorBuilder<SequenceManifest, ValidationResponse>
       executorBuilder =
           new WebinCliExecutorBuilder(
                   SequenceManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-              .sample(getDefaultSample());
+              .sample(NAME, getDefaultSample());
 
   @Before
   public void before() {
@@ -58,7 +60,7 @@ public class SequenceValidationTest {
           executorBuilder.build(manifestFile, VALID_DIR);
 
       executor.readManifest();
-      executor.validateSubmission();
+      executor.validateSubmission(false);
       assertThat(executor.getManifestReader().getManifests().stream().findFirst().get().files().get(FileType.TAB))
           .size()
           .isOne();

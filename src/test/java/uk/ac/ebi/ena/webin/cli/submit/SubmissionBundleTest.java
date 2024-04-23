@@ -40,21 +40,17 @@ public class SubmissionBundleTest {
     xmlFile.setMd5(
         FileUtils.calculateDigest("MD5", xmlFile.getXmlContent().getBytes(StandardCharsets.UTF_8)));
 
-    ReadsManifest manifest = new ReadsManifest();
-    manifest.setName("name-1");
-    manifest.setRun(Arrays.asList(new Run("run-id-1", "run-name-1")));
-
     SubmissionBundle expectedSb =
         new SubmissionBundle(
             submitDirectory,
             uploadDirectory,
             new ArrayList<>(),
             Arrays.asList(xmlFile),
-            manifest);
+            "abcd1234");
 
     SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
-    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifest, submitDirectory);
+    SubmissionBundle actualSb = SubmissionBundleHelper.read("abcd1234", submitDirectory);
 
     Assert.assertEquals(expectedSb, actualSb);
     Assert.assertEquals(
@@ -78,24 +74,20 @@ public class SubmissionBundleTest {
             FileUtils.getLastModifiedTime(dataFile.toFile()),
             FileUtils.calculateDigest("MD5", dataFile.toFile()));
 
-    ReadsManifest manifest = new ReadsManifest();
-    manifest.setName("name-1");
-    manifest.setRun(Arrays.asList(new Run("run-id-1", "run-name-1")));
-
     SubmissionBundle expectedSb =
         new SubmissionBundle(
             submitDirectory,
             uploadDirectory,
             Arrays.asList(uploadFile),
             new ArrayList<>(),
-            manifest);
+            "abcd1234");
 
     SubmissionBundleHelper.write(expectedSb, submitDirectory);
 
     // Change the content of the file so the checksum comes out to be different.
     Files.write(dataFile, "xyz".getBytes(StandardCharsets.UTF_8));
 
-    SubmissionBundle actualSb = SubmissionBundleHelper.read(manifest, submitDirectory);
+    SubmissionBundle actualSb = SubmissionBundleHelper.read("abcd1234", submitDirectory);
 
     // Not the best way to check expected output. The method that returns submission bundle above
     // does not give

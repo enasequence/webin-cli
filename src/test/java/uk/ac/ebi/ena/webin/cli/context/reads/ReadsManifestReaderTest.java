@@ -100,7 +100,7 @@ public class ReadsManifestReaderTest {
             .field(Field.LIBRARY_NAME, " Name library")
             .field(Field.LIBRARY_CONSTRUCTION_PROTOCOL, " library construction protocol")
             .field(Field.INSERT_SIZE, " 100500")
-            .field(Field.NAME, " SOME-FANCY-NAME")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
             .field(Field.DESCRIPTION, " description")
             .file("BAM", TempFileBuilder.empty("bam"))
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
@@ -129,7 +129,7 @@ public class ReadsManifestReaderTest {
     ReadsManifestReader manifestReader = createManifestReader();
 
     manifestReader.readManifest(
-        Paths.get("."), new ManifestBuilder().field(Field.NAME, "TEST").field(Field.PLATFORM, "illumina").build());
+        Paths.get("."), new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").field(Field.PLATFORM, "illumina").build());
 
     ReadsManifest manifest = manifestReader.getManifests().stream().findFirst().get();
 
@@ -144,7 +144,7 @@ public class ReadsManifestReaderTest {
     manifestReader.readManifest(
         Paths.get("."),
         new ManifestBuilder()
-            .field(Field.NAME, "TEST")
+            .field(ManifestReader.Fields.NAME, "TEST")
             .field(Field.PLATFORM, "ILLUMINA")
             .field(Field.INSTRUMENT, "unspecifieD")
             .build());
@@ -162,7 +162,7 @@ public class ReadsManifestReaderTest {
     manifestReader.readManifest(
         Paths.get("."),
         new ManifestBuilder()
-            .field(Field.NAME, "TEST")
+            .field(ManifestReader.Fields.NAME, "TEST")
             .field(Field.PLATFORM, "ILLUMINA")
             .field(Field.INSTRUMENT, "454 GS FLX Titanium")
             .build());
@@ -176,35 +176,35 @@ public class ReadsManifestReaderTest {
   @Test
   public void missingPlatformAndInstrument() {
     assertErrorRegexInManifestReport(
-        new ManifestBuilder().field(Field.NAME, "TEST").build(),
+        new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").build(),
         WebinCliMessage.READS_MANIFEST_READER_MISSING_PLATFORM_AND_INSTRUMENT_ERROR.regex());
   }
 
   @Test
   public void unspecifiedInstrumentMissingPlatform() {
     assertErrorRegexInManifestReport(
-        new ManifestBuilder().field(Field.NAME, "TEST").field(Field.INSTRUMENT, "unspecified").build(),
+        new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").field(Field.INSTRUMENT, "unspecified").build(),
         WebinCliMessage.READS_MANIFEST_READER_MISSING_PLATFORM_AND_INSTRUMENT_ERROR.regex());
   }
 
   @Test
   public void negativeInsertSize() {
     assertErrorRegexInManifestReport(
-        new ManifestBuilder().field(Field.NAME, "TEST").field(Field.INSERT_SIZE, "-1").build(),
+        new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").field(Field.INSERT_SIZE, "-1").build(),
         WebinCliMessage.MANIFEST_READER_INVALID_POSITIVE_INTEGER_ERROR.regex());
   }
 
   @Test
   public void invalidQualityScore() {
     assertErrorTextInManifestReport(
-        new ManifestBuilder().field(Field.NAME, "TEST").field(Field.QUALITY_SCORE, "PHRED_34").build(),
+        new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").field(Field.QUALITY_SCORE, "PHRED_34").build(),
         "ERROR: Invalid QUALITY_SCORE field value");
   }
 
   @Test
   public void validQualityScore() {
     assertErrorTextNotInManifestError(
-        new ManifestBuilder().field(Field.NAME, "TEST").field(Field.QUALITY_SCORE, "PHRED_33").build(),
+        new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").field(Field.QUALITY_SCORE, "PHRED_33").build(),
         "ERROR: Invalid QUALITY_SCORE field value");
   }
 
@@ -212,7 +212,7 @@ public class ReadsManifestReaderTest {
   public void dataFileIsMissing() {
     for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
       assertErrorRegexInManifestReport(
-          new ManifestBuilder().field(Field.NAME, "TEST").file(fileType, "missing").build(),
+          new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").file(fileType, "missing").build(),
           WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR.regex());
     }
   }
@@ -222,7 +222,7 @@ public class ReadsManifestReaderTest {
     File dir = WebinCliTestUtils.createTempDir();
     for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
       assertErrorRegexInManifestReport(
-          new ManifestBuilder().field(Field.NAME, "TEST").file(fileType, dir).build(),
+          new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").file(fileType, dir).build(),
           WebinCliMessage.MANIFEST_READER_INVALID_FILE_FIELD_ERROR.regex());
     }
   }
@@ -231,7 +231,7 @@ public class ReadsManifestReaderTest {
   public void dataFileNoPath() {
     for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
       assertErrorTextInManifestReport(
-          new ManifestBuilder().field(Field.NAME, "TEST").file(fileType, "").build(),
+          new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").file(fileType, "").build(),
           "ERROR: No data files have been specified");
     }
   }
@@ -240,7 +240,7 @@ public class ReadsManifestReaderTest {
   public void dataFileNonASCIIPath() {
     for (ReadsManifest.FileType fileType : ReadsManifest.FileType.values()) {
       assertErrorTextInManifestReport(
-          new ManifestBuilder().field(Field.NAME, "TEST").file(fileType, TempFileBuilder.empty("Š")).build(),
+          new ManifestBuilder().field(ManifestReader.Fields.NAME, "TEST").file(fileType, TempFileBuilder.empty("Š")).build(),
           "File name should conform following regular expression");
     }
   }
@@ -260,7 +260,7 @@ public class ReadsManifestReaderTest {
             .field(Field.LIBRARY_NAME, "Name library")
             .field(Field.LIBRARY_CONSTRUCTION_PROTOCOL, "library construction protocol")
             .field(Field.INSERT_SIZE, "100500")
-            .field(Field.NAME, "SOME-FANCY-NAME")
+            .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
             .field(Field.DESCRIPTION, "description")
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
             .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")

@@ -46,7 +46,7 @@ public class TranscriptomeManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(Field.PLATFORM, " illumina")
-            .field(Field.NAME, " SOME-FANCY-NAME")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
             .field(Field.DESCRIPTION, " description")
             .file("FASTA", TempFileBuilder.empty("fasta"))
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")

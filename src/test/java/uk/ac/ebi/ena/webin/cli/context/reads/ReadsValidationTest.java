@@ -61,7 +61,7 @@ public class ReadsValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
 
-    assertThatThrownBy(() -> executor.validateSubmission())
+    assertThatThrownBy(() -> executor.validateSubmission(false))
         .isInstanceOf(WebinCliException.class)
         .hasMessage("");
 
@@ -79,7 +79,7 @@ public class ReadsValidationTest {
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.BAM).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(false);
   }
 
   @Test
@@ -93,7 +93,7 @@ public class ReadsValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
 
-    assertThatThrownBy(() -> executor.validateSubmission())
+    assertThatThrownBy(() -> executor.validateSubmission(false))
         .isInstanceOf(WebinCliException.class)
         .hasMessage("");
 
@@ -110,7 +110,7 @@ public class ReadsValidationTest {
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(false);
   }
 
   @Test
@@ -127,7 +127,7 @@ public class ReadsValidationTest {
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
-    executor.validateSubmission();
+    executor.validateSubmission(false);
     assertThat(executor.getValidationResponse().isPaired());
   }
 
@@ -142,7 +142,7 @@ public class ReadsValidationTest {
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(false);
     assertThat(executor.getValidationResponse().isPaired());
   }
 
@@ -161,7 +161,7 @@ public class ReadsValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
 
-    assertThatThrownBy(() -> executor.validateSubmission())
+    assertThatThrownBy(() -> executor.validateSubmission(false))
         .isInstanceOf(WebinCliException.class)
         .hasMessage("");
 
@@ -181,7 +181,7 @@ public class ReadsValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
 
-    executor.validateSubmission();
+    executor.validateSubmission(false);
   }
 
   @Test
@@ -195,7 +195,7 @@ public class ReadsValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
 
-    assertThatThrownBy(() -> executor.validateSubmission())
+    assertThatThrownBy(() -> executor.validateSubmission(false))
         .isInstanceOf(WebinCliException.class)
         .hasMessage("");
 
@@ -213,6 +213,6 @@ public class ReadsValidationTest {
     SubmissionFiles submissionFiles = executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.CRAM).size()).isOne();
-    executor.validateSubmission();
+    executor.validateSubmission(false);
   }
 }

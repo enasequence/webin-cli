@@ -29,7 +29,6 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 
 public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
   public interface Field {
-    String NAME = "NAME";
     String STUDY = "STUDY";
     String RUN_REF = "RUN_REF";
     String ANALYSIS_REF = "ANALYSIS_REF";
@@ -59,7 +58,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
         new ManifestFieldDefinition.Builder()
             .meta()
             .required()
-            .name(Field.NAME)
+            .name(Fields.NAME)
             .desc(Description.NAME)
             .and()
             .meta()
@@ -173,7 +172,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
           error(WebinCliMessage.MANIFEST_READER_MISSING_ADDRESS_OR_AUTHOR_ERROR);
         }
       }
-      manifest.setName(fieldGroup.getValue(Field.NAME));
+      manifest.setName(fieldGroup.getValue(Fields.NAME));
       manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
 
       manifest.setSubmissionTool(fieldGroup.getValue(Fields.SUBMISSION_TOOL));

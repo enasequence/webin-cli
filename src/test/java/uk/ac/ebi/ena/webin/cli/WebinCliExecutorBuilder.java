@@ -15,10 +15,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.util.ArrayList;
+
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.metadata.*;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
@@ -65,11 +69,15 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
     }
   }
 
-  public WebinCliExecutorBuilder study(Study study) {
+  public WebinCliExecutorBuilder study(String submissionName, Study study) {
     this.studyProcessor = spy(new StudyProcessor(null));
     doAnswer(
             (InvocationOnMock invocation) -> {
+              ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+              when(fieldGroup.getValue("NAME")).thenReturn(submissionName);
+
               StudyProcessor processor = (StudyProcessor) invocation.getMock();
+              processor.getCallback().notify(fieldGroup, study);
               return null;
             })
         .when(this.studyProcessor)
@@ -77,11 +85,15 @@ public class WebinCliExecutorBuilder<M extends Manifest, R extends ValidationRes
     return this;
   }
 
-  public WebinCliExecutorBuilder sample(Sample sample) {
+  public WebinCliExecutorBuilder sample(String submissionName, Sample sample) {
     this.sampleProcessor = spy(new SampleProcessor(null));
     doAnswer(
             (InvocationOnMock invocation) -> {
+              ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+              when(fieldGroup.getValue("NAME")).thenReturn(submissionName);
+
               SampleProcessor processor = (SampleProcessor) invocation.getMock();
+              processor.getCallback().notify(fieldGroup, sample);
               return null;
             })
         .when(this.sampleProcessor)

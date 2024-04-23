@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -46,8 +47,11 @@ public class SequenceXmlTest {
   }
 
   private static Collection<SubmissionBundle> prepareSubmissionBundle(SequenceManifest manifest) {
+    ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+
     SequenceManifestReader manifestReader = mock(SequenceManifestReader.class);
     when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
+    when(manifestReader.getManifestFieldGroup(manifest)).thenReturn(fieldGroup);
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -55,7 +59,7 @@ public class SequenceXmlTest {
     WebinCliExecutor<SequenceManifest, ValidationResponse> executor =
         (WebinCliExecutor<SequenceManifest, ValidationResponse>)
             WebinCliContext.sequence.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundles();
+    executor.prepareSubmissionBundles(false);
     return executor.getSubmissionBundles();
   }
 

@@ -38,7 +38,6 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.ReadsManifest.QualityScore;
 public class ReadsManifestReader extends ManifestReader<ReadsManifest> {
 
   public interface Field {
-    String NAME = "NAME";
     String STUDY = "STUDY";
     String SAMPLE = "SAMPLE";
     String PLATFORM = "PLATFORM";
@@ -118,7 +117,7 @@ public class ReadsManifestReader extends ManifestReader<ReadsManifest> {
         new ManifestFieldDefinition.Builder()
             .meta()
             .optionalIf(isValidateFiles(parameters))
-            .name(Field.NAME)
+            .name(Fields.NAME)
             .desc(Description.NAME)
             .and()
             .meta()
@@ -283,7 +282,7 @@ public class ReadsManifestReader extends ManifestReader<ReadsManifest> {
         manifest.setQuick(getWebinCliParameters().isQuick());
       }
 
-      manifest.setName(fieldGroup.getValue(Field.NAME));
+      manifest.setName(fieldGroup.getValue(Fields.NAME));
       manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
 
       if (fieldGroup.getCount(Field.INSTRUMENT) > 0

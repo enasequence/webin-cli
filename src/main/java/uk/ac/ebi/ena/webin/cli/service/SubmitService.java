@@ -92,7 +92,7 @@ public class SubmitService extends WebinService {
     this.saveSubmissionXmlFiles = builder.saveSubmissionXmlFiles;
   }
 
-  public void doSubmission(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
+  public void doSubmission(List<SubmissionBundle.SubmissionXMLFile> xmlFileList) throws WebinCliException {
     String submissionXml = createSubmissionXml(xmlFileList);
     if (saveSubmissionXmlFiles) {
       saveToFile(Paths.get(submitDir, SUBMISSION_XML_NAME), submissionXml);
@@ -167,7 +167,7 @@ public class SubmitService extends WebinService {
   }
 
   private void processReceipt(
-      String receiptXml, List<SubmissionBundle.SubmissionXMLFile> xmlFileList) {
+      String receiptXml, List<SubmissionBundle.SubmissionXMLFile> xmlFileList) throws WebinCliException {
     StringBuilder errorsSb = new StringBuilder();
     try {
       SAXBuilder builder = new SAXBuilder();
@@ -241,8 +241,8 @@ public class SubmitService extends WebinService {
         log.info(msg);
 
       } else {
-        WebinCliMessage.SERVICE_JSON_SUBMISSION_ERROR.format(
-            receipt.getMessages().getErrorMessages());
+        throw WebinCliException.systemError(WebinCliMessage.SERVICE_JSON_SUBMISSION_ERROR.format(
+            receipt.getMessages().getErrorMessages()));
       }
     } catch (JsonProcessingException e) {
       throw WebinCliException.systemError(e);

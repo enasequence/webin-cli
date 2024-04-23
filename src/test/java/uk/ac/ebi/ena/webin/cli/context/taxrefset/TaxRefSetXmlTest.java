@@ -22,6 +22,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -53,8 +54,11 @@ public class TaxRefSetXmlTest {
   }
 
   private static Collection<SubmissionBundle> prepareSubmissionBundle(TaxRefSetManifest manifest) {
+    ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+
     TaxRefSetManifestReader manifestReader = mock(TaxRefSetManifestReader.class);
     when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
+    when(manifestReader.getManifestFieldGroup(manifest)).thenReturn(fieldGroup);
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -62,7 +66,7 @@ public class TaxRefSetXmlTest {
     WebinCliExecutor<TaxRefSetManifest, ValidationResponse> executor =
         (WebinCliExecutor<TaxRefSetManifest, ValidationResponse>)
             WebinCliContext.taxrefset.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundles();
+    executor.prepareSubmissionBundles(false);
     return executor.getSubmissionBundles();
   }
 

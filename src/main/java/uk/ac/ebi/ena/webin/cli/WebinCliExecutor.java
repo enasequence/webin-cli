@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.ena.webin.cli.context.SubmissionXmlWriter;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.service.IgnoreErrorsService;
 import uk.ac.ebi.ena.webin.cli.service.RatelimitService;
@@ -46,6 +48,8 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
 
   private static final Logger log = LoggerFactory.getLogger(WebinCliExecutor.class);
 
+  private final Map<String, String> safeManifestNameToOriginalManifestNameMap = new HashMap<>();
+
   private final WebinCliContext context;
   private final WebinCliParameters parameters;
   private final ManifestReader<M> manifestReader;
@@ -53,6 +57,11 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
   private final XmlWriter<M, R> xmlWriter;
 
   private Collection<SubmissionBundle> submissionBundles;
+
+  /**
+   * Holds manifests whose submission bundles were not loaded because they were changed since last validation.
+   */
+  private Collection<M> missingSubmissionBundleManifests;
 
   protected R validationResponse;
 
@@ -69,6 +78,9 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
     this.validator = validator;
   }
 
+  /**
+   * @param excludedManifestsNames Names of the manifests that are to be excluded from the list of read manifests.
+   */
   public final void readManifest() {
     File manifestReportFile = getManifestReportFile();
     manifestReportFile.delete();
@@ -93,8 +105,17 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
     }
   }
 
-  public final void validateSubmission() {
-    for (M manifest : manifestReader.getManifests()) {
+  /**
+   * @param validateUpdatedManifestsOnly 'true' will validate only those manifests that have changed since last
+   *                                     validation. All manifests will be validated when 'false' is passed.
+   */
+  public final void validateSubmission(boolean validateUpdatedManifestsOnly) {
+    Collection<M> manifestsToValidate = manifestReader.getManifests();
+    if (validateUpdatedManifestsOnly) {
+      manifestsToValidate = missingSubmissionBundleManifests;
+    }
+
+    for (M manifest : manifestsToValidate) {
       File validationDir = createSubmissionDir(manifest, WebinCliConfig.VALIDATE_DIR);
       File processDir = createSubmissionDir(manifest, WebinCliConfig.PROCESS_DIR);
 
@@ -145,7 +166,7 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
               .build();
 
       manifest.setIgnoreErrors(
-          ignoreErrorsService.getIgnoreErrors(getContext().name(), getSubmissionName(manifest)));
+          ignoreErrorsService.getIgnoreErrors(getContext().name(), manifest.getName()));
     } catch (RuntimeException ex) {
       log.warn(WebinCliMessage.IGNORE_ERRORS_SERVICE_SYSTEM_ERROR.text());
     }
@@ -184,16 +205,26 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
     }
   }
 
-  public final void prepareSubmissionBundles() {
-    submissionBundles = new ArrayList<>(manifestReader.getManifests().size());
+  /**
+   * @param prepareForUpdatedManifestsOnly 'true' will prepare submission bundles for only those manifests that have
+   *                                       been updated since last validation. Unchanged submission bundles are left
+   *                                       untouched. 'false' will prepare submission bundles for all manifests.
+   */
+  public final void prepareSubmissionBundles(boolean prepareForUpdatedManifestsOnly) {
+    Collection<M> manifestsToPrepare = manifestReader.getManifests();
+    if (prepareForUpdatedManifestsOnly) {
+      manifestsToPrepare = missingSubmissionBundleManifests;
+    } else {
+      submissionBundles = new ArrayList<>(manifestReader.getManifests().size());
+    }
 
-    for (M manifest : manifestReader.getManifests()) {
+    for (M manifest : manifestsToPrepare) {
       File submitDir = createSubmissionDir(manifest, WebinCliConfig.SUBMIT_DIR);
 
       Path uploadDir =
           Paths.get(this.parameters.isTest() ? "webin-cli-test" : "webin-cli")
               .resolve(String.valueOf(this.context))
-              .resolve(WebinCli.getSafeOutputDir(getSubmissionName(manifest)));
+              .resolve(WebinCli.getSafeOutputDir(getFileSystemSafeSubmissionName(manifest)));
 
       Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
 
@@ -243,7 +274,8 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
                       FileUtils.getLastModifiedTime(file.getFile()),
                       file.getMd5())));
 
-      SubmissionBundle sb = new SubmissionBundle(submitDir, uploadDir.toString(), uploadFileList, xmlFileList, manifest);
+      SubmissionBundle sb = new SubmissionBundle(submitDir, uploadDir.toString(), uploadFileList, xmlFileList,
+          calculateManifestFieldsMd5(manifestReader.getManifestFieldGroup(manifest)));
       if (getParameters().isSaveSubmissionBundleFile()) {
         SubmissionBundleHelper.write(sb, getSubmissionBundleFileDir(manifest));
 
@@ -254,15 +286,43 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
 
   public Collection<SubmissionBundle> getSubmissionBundles() {
     if (submissionBundles == null && getParameters().isSaveSubmissionBundleFile()) {
-      submissionBundles = manifestReader.getManifests().stream()
-          .map(manifest -> SubmissionBundleHelper.read(manifest, getSubmissionBundleFileDir(manifest)))
-          .collect(Collectors.toList());
+      Collection<SubmissionBundle> res = new ArrayList<>(manifestReader.getManifests().size());
+      missingSubmissionBundleManifests = new ArrayList<>(manifestReader.getManifests().size());
+
+      manifestReader.getManifests().stream()
+          .forEach(manifest -> {
+            SubmissionBundle sb = SubmissionBundleHelper.read(
+              calculateManifestFieldsMd5(manifestReader.getManifestFieldGroup(manifest)),
+              getSubmissionBundleFileDir(manifest));
+            if (sb == null) {
+              // No bundle means the manifest has changed since last validation.
+              missingSubmissionBundleManifests.add(manifest);
+            } else {
+              res.add(sb);
+            }
+          });
+
+      if (!res.isEmpty()) {
+        submissionBundles = res;
+      } else {
+        // If all manifests are found to have been updated then it will essentially be a full re-validation.
+        missingSubmissionBundleManifests.clear();
+      }
     }
 
     return submissionBundles;
   }
 
-  // TODO: remove
+  /**
+   * @return 'true' if some manifests were found to have been changed since last validation.
+   */
+  public boolean partialManifestsUpdatesDetected() {
+    // Submission bundle loading is ignored if it is found that the manifest it was originally created against has been
+    // changed. So if the total loaded submission count bundle is less than total read manifest count then it means
+    // that some manifests were updated and therefore, their bundles were not loaded.
+    return submissionBundles.size() < manifestReader.getManifests().size();
+  }
+
   public WebinCliContext getContext() {
     return context;
   }
@@ -277,20 +337,6 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
 
   public XmlWriter<M, R> getXmlWriter() {
     return xmlWriter;
-  }
-
-  private File getSubmissionBundleFileDir(M manifest) {
-    if (StringUtils.isBlank(getSubmissionName(manifest))) {
-      throw WebinCliException.systemError(
-          WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
-    }
-
-    return WebinCli.createOutputDir(
-        parameters.getOutputDir(), String.valueOf(context), getSubmissionName(manifest));
-  }
-
-  private File getSubmissionReportFile(File manifestValidationDir) {
-    return Paths.get(manifestValidationDir.getPath()).resolve(REPORT_FILE).toFile();
   }
 
   public File getManifestReportFile() {
@@ -311,26 +357,57 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
     return this.parameters;
   }
 
-  private String getSubmissionName(M manifest) {
-    String name = manifest.getName();
-    if (name != null) {
-      return name.trim().replaceAll("\\s+", "_");
+  public R getValidationResponse() {
+    return validationResponse;
+  }
+
+  private File getSubmissionBundleFileDir(M manifest) {
+    if (StringUtils.isBlank(getFileSystemSafeSubmissionName(manifest))) {
+      throw WebinCliException.systemError(
+          WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
     }
-    return name;
+
+    return WebinCli.createOutputDir(
+        parameters.getOutputDir(), String.valueOf(context), getFileSystemSafeSubmissionName(manifest));
+  }
+
+  private File getSubmissionReportFile(File manifestValidationDir) {
+    return Paths.get(manifestValidationDir.getPath()).resolve(REPORT_FILE).toFile();
+  }
+
+  /**
+   * @param manifest
+   * @return Name of the given manifest after removing all the characters that may cause problems with file system from it.
+   */
+  private String getFileSystemSafeSubmissionName(M manifest) {
+    if (manifest.getName() != null) {
+      String safeName = WebinCli.getSafeOutputDir(manifest.getName().trim().replaceAll("\\s+", "_"));
+
+      validateSafeManifestName(manifest, safeName);
+    }
+
+    return manifest.getName();
+  }
+
+  private void validateSafeManifestName(M manifest, String safeName) {
+    String originalManifestName = safeManifestNameToOriginalManifestNameMap.get(safeName);
+    if (originalManifestName == null) {
+      safeManifestNameToOriginalManifestNameMap.put(safeName, manifest.getName());
+    } else if (!originalManifestName.equals(manifest.getName())) {
+      throw WebinCliException.userError(
+          WebinCliMessage.EXECUTOR_FILE_SYSTEM_SAFE_MANIFEST_NAME_CONFLICT_ERROR.format(
+              originalManifestName, manifest.getName()));
+    }
   }
 
   private String getSubmissionAlias(M manifest) {
-    String alias = "webin-" + context.name() + "-" + getSubmissionName(manifest);
+    String alias = "webin-" + context.name() + "-" + manifest.getName();
     return alias;
   }
 
   private String getSubmissionTitle(M manifest) {
-    String title = context.getTitlePrefix() + ": " + getSubmissionName(manifest);
+    String title = context.getTitlePrefix() + ": " + manifest.getName();
     return title;
-  }
-
-  public R getValidationResponse() {
-    return validationResponse;
   }
 
   private String getAuthTokenFromParam() {
@@ -342,13 +419,13 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
   }
 
   private File createSubmissionDir(M manifest, String dir) {
-    if (StringUtils.isBlank(getSubmissionName(manifest))) {
+    if (StringUtils.isBlank(getFileSystemSafeSubmissionName(manifest))) {
       throw WebinCliException.systemError(
           WebinCliMessage.EXECUTOR_INIT_ERROR.format("Missing submission name."));
     }
     File newDir =
         WebinCli.createOutputDir(
-            parameters.getOutputDir(), String.valueOf(context), getSubmissionName(manifest), dir);
+            parameters.getOutputDir(), String.valueOf(context), getFileSystemSafeSubmissionName(manifest), dir);
     if (!FileUtils.emptyDirectory(newDir)) {
       throw WebinCliException.systemError(
           WebinCliMessage.EXECUTOR_EMPTY_DIRECTORY_ERROR.format(newDir));
@@ -367,5 +444,13 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
 
   private String calculateManifestFileMd5() {
     return FileUtils.calculateDigest("MD5", parameters.getManifestFile());
+  }
+
+  private String calculateManifestFieldsMd5(ManifestFieldGroup fieldGroup) {
+    StringBuilder stringBuilder = new StringBuilder(8192);
+
+    fieldGroup.forEach(field -> stringBuilder.append(field.getValue()));
+
+    return FileUtils.calculateDigest("MD5", stringBuilder.toString().getBytes(StandardCharsets.UTF_8));
   }
 }

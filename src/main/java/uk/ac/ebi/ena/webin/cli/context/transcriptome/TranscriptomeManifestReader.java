@@ -31,7 +31,6 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeManifest> {
   public interface Field {
-    String NAME = "NAME";
     String ASSEMBLYNAME = "ASSEMBLYNAME";
     String STUDY = "STUDY";
     String SAMPLE = "SAMPLE";
@@ -77,7 +76,7 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
         new ManifestFieldDefinition.Builder()
             .meta()
             .required()
-            .name(Field.NAME)
+            .name(Fields.NAME)
             .desc(Description.NAME)
             .synonym(Field.ASSEMBLYNAME)
             .and()
@@ -222,7 +221,7 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
         manifest.setQuick(getWebinCliParameters().isQuick());
       }
 
-      manifest.setName(fieldGroup.getValue(Field.NAME));
+      manifest.setName(fieldGroup.getValue(Fields.NAME));
       manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
 
       Map<String, String> authorAndAddress =

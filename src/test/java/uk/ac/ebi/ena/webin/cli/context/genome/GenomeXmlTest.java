@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.*;
+import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldGroup;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
@@ -50,8 +51,11 @@ public class GenomeXmlTest {
   }
 
   private static Collection<SubmissionBundle> prepareSubmissionBundle(GenomeManifest manifest) {
+    ManifestFieldGroup fieldGroup = mock(ManifestFieldGroup.class);
+
     GenomeManifestReader manifestReader = mock(GenomeManifestReader.class);
     when(manifestReader.getManifests()).thenReturn(Arrays.asList(manifest));
+    when(manifestReader.getManifestFieldGroup(manifest)).thenReturn(fieldGroup);
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
     parameters.setOutputDir(WebinCliTestUtils.createTempDir());
     parameters.setManifestFile(TempFileBuilder.empty().toFile());
@@ -59,7 +63,7 @@ public class GenomeXmlTest {
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         (WebinCliExecutor<GenomeManifest, ValidationResponse>)
             WebinCliContext.genome.createExecutor(parameters, manifestReader);
-    executor.prepareSubmissionBundles();
+    executor.prepareSubmissionBundles(false);
     return executor.getSubmissionBundles();
   }
 

@@ -90,12 +90,12 @@ public class WebinCliBuilder {
     return this;
   }
 
-  private WebinCliCommand cmd(Path inputDir, ManifestBuilder manifestBuilder) {
+  private WebinCliCommand cmd(Path inputDir, File manifest) {
     WebinCliCommand cmd = new WebinCliCommand();
     cmd.context = context;
     cmd.inputDir = inputDir.toFile();
     cmd.outputDir = outputDir.toFile();
-    cmd.manifest = manifestBuilder.build(inputDir);
+    cmd.manifest = manifest;
     cmd.userName = WebinCliTestUtils.getTestWebinUsername();
     cmd.password = WebinCliTestUtils.getTestWebinPassword();
     cmd.test = true;
@@ -111,7 +111,11 @@ public class WebinCliBuilder {
   }
 
   public WebinCli build(Path inputDir, ManifestBuilder manifestBuilder) {
-    WebinCliCommand cmd = cmd(inputDir, manifestBuilder);
+    return build(inputDir, manifestBuilder.build(inputDir));
+  }
+
+  public WebinCli build(Path inputDir, File manifest) {
+    WebinCliCommand cmd = cmd(inputDir, manifest);
     if (submissionAccount == null) {
       submissionAccount = WebinCli.getSubmissionAccount(cmd);
     }
