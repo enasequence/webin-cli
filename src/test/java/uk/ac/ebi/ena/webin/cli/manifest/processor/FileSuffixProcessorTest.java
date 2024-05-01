@@ -27,12 +27,12 @@ public class FileSuffixProcessorTest {
     FileSuffixProcessor processor = new FileSuffixProcessor(ManifestFileSuffix.BAM_FILE_SUFFIX);
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a.bam");
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("a.bam", fieldValue.getValue());
 
     fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a.cram");
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
     Assert.assertEquals("a.cram", fieldValue.getValue());
   }

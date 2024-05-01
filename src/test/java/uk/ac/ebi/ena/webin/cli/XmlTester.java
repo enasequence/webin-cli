@@ -26,7 +26,7 @@ public class XmlTester {
             .collect(Collectors.joining("\n"));
     xml = xml.replaceAll("<\\s+", "<");
     xml = xml.replaceAll("\\s+/>", "/>");
-    xml = xml.replaceAll("\\s*alias=\"[^\"]+\"", "");
+    xml = xml.replaceAll("\\s*alias=\"[^\"]+\"", ""); // TODO ask why alias attribute is being stripped off.
     expectedXml = expectedXml.replaceAll("<\\?xml.*", "");
     expectedXml = expectedXml.replaceAll("\\r\\n?", "\n");
     expectedXml =
@@ -41,34 +41,5 @@ public class XmlTester {
     Assert.assertFalse(xml.isEmpty());
     Assert.assertFalse(expectedXml.isEmpty());
     Assert.assertEquals(expectedXml, xml);
-  }
-
-  public static void assertSubmissionXmlWithEmptyManifestFile(String actualSubmissionXml) {
-    String expected =
-        "<SUBMISSION_SET>\n"
-            + "  <SUBMISSION>\n"
-            + "    <ACTIONS>\n"
-            + "        <ACTION>\n"
-            + "               <ADD />\n"
-            + "        </ACTION>\n"
-            + "    </ACTIONS>\n"
-            + "    <SUBMISSION_ATTRIBUTES>\n"
-            + "        <SUBMISSION_ATTRIBUTE>\n"
-            + "            <TAG>ENA-SUBMISSION-TOOL</TAG>\n"
-            + "            <VALUE>WebinCli</VALUE>\n"
-            + "        </SUBMISSION_ATTRIBUTE>\n"
-            + "        <SUBMISSION_ATTRIBUTE>\n"
-            + "            <TAG>ENA-MANIFEST-FILE</TAG>\n"
-            + "            <VALUE />\n"
-            + "        </SUBMISSION_ATTRIBUTE>\n"
-            + "        <SUBMISSION_ATTRIBUTE>\n"
-            + "            <TAG>ENA-MANIFEST-FILE-MD5</TAG>\n"
-            + "            <VALUE>d41d8cd98f00b204e9800998ecf8427e</VALUE>\n"
-            + "        </SUBMISSION_ATTRIBUTE>\n"
-            + "    </SUBMISSION_ATTRIBUTES>\n"
-            + "  </SUBMISSION>\n"
-            + "</SUBMISSION_SET>";
-
-    XmlTester.assertXml(actualSubmissionXml, expected);
   }
 }

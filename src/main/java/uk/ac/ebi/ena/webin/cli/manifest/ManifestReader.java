@@ -629,7 +629,7 @@ public abstract class ManifestReader<M extends Manifest> {
 
     for (Map.Entry<String, Long> entry : nameFieldOccurrence.entrySet()) {
       if (entry.getValue() > 1) {
-        error(WebinCliMessage.MANIFEST_READER_INVALID_NON_UNIQUE_FIELD_GROUP_NAME, entry.getKey());
+        error(WebinCliMessage.MANIFEST_READER_NON_UNIQUE_FIELD_GROUP_NAME, entry.getKey());
         return;
       }
     }

@@ -46,6 +46,8 @@ public class WebinCliSubmissionTest {
       getResourceDir("uk/ac/ebi/ena/webin/cli/transcriptome/");
   private static final File SEQUENCE_RESOURCE_DIR =
       getResourceDir("uk/ac/ebi/ena/webin/cli/sequence/");
+  private static final File TAX_REF_SET_RESOURCE_DIR =
+      getResourceDir("uk/ac/ebi/ena/webin/cli/taxxrefset/");
 
   private static void expectError(
       ThrowableAssert.ThrowingCallable shouldThrow, WebinCliException.ErrorType errorType) {
@@ -875,7 +877,7 @@ public class WebinCliSubmissionTest {
 
     expectError(() -> webinCli.execute(), WebinCliException.ErrorType.USER_ERROR);
     new ReportTester(webinCli)
-        .textInManifestReport("ERROR: Invalid field group name. The name field is not unique across all field groups : TEST-1");
+        .textInManifestReport("ERROR: Invalid name: TEST-1. The name field must be unique within the manifest file.");
   }
 
   @Test
@@ -899,6 +901,6 @@ public class WebinCliSubmissionTest {
 
     expectError(() -> webinCli.execute(), WebinCliException.ErrorType.USER_ERROR);
     new ReportTester(webinCli)
-        .textInWebinCliReport("A manifest name TEST;1 conflicts with another manifest name TEST:1 after removing sensitive characters");
+        .textInWebinCliReport("A manifest name TEST;1 conflicts with another manifest name TEST:1 after adjusting the names when creating submission directories");
   }
 }

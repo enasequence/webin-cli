@@ -20,7 +20,7 @@ import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 public class AuthorProcessor implements ManifestFieldProcessor {
 
   @Override
-  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
     if (null != fieldValue.getValue()) {
       fieldValue.setValue(
           replaceMultiplePeriods(replaceMultipleSpaces(fieldValue.getValue().replaceAll(";", ""))));

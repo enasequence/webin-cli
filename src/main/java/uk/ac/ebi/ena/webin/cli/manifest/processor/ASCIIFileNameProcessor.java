@@ -24,7 +24,7 @@ public class ASCIIFileNameProcessor implements ManifestFieldProcessor {
           "^([\\p{Alnum}]|\\\\|\\]|\\[|#|-|_|\\.|,|\\/|:|@|\\+| |\\(|\\)|'|~|<|%|\\?)+$");
 
   @Override
-  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
     if (!pattern.matcher(fieldValue.getValue()).matches())
       result.add(
           ValidationMessage.error(

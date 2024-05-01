@@ -16,5 +16,5 @@ public interface WebinCliConfig {
   String SUBMIT_DIR = "submit";
   String REPORT_FILE_SUFFIX = ".report";
   String SUBMISSION_BUNDLE_FILE_NAME = "validate.json";
-  String SUBMITTED_SUBMISSION_BUNDLES_CHECKSUMS_FILE_NAME = "submit.json";
+  String SUBMISSION_STATUS_FILE_NAME = "submit.json";
 }

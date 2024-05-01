@@ -33,7 +33,7 @@ public class StudyProcessorTest {
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "STUDY", "SRP000392");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("PRJNA28545", fieldValue.getValue());
   }
@@ -44,7 +44,7 @@ public class StudyProcessorTest {
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "STUDY", "ERS000002");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
     Assert.assertEquals("ERS000002", fieldValue.getValue());
   }

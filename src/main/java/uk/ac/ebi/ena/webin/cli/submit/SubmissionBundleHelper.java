@@ -34,8 +34,8 @@ public class SubmissionBundleHelper {
 
     /**
      * @return The submission bundle loaded from the given directory. If any error occurs during loading then 'null' is
-     * returned back. 'null' is also returned if it is found that the loaded submission bundle is different from what is
-     * in the read manifest. Meaning the previously saved submission bundle is no longer valid.
+     * returned. 'null' is also returned if it is found that the submission bundle is different from what is
+     * in the manifest (by matching given checksum). This means the previously saved submission bundle is no longer valid.
      */
   public static SubmissionBundle read(String manifestFieldsMd5, File submissionBundleDir) {
     File submissionBundleFile = new File(submissionBundleDir, WebinCliConfig.SUBMISSION_BUNDLE_FILE_NAME);

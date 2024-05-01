@@ -48,7 +48,7 @@ public class SampleProcessorTest {
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "ERS000002");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("SAMEA749881", fieldValue.getValue());
   }
@@ -58,7 +58,7 @@ public class SampleProcessorTest {
     SampleProcessor processor = new SampleProcessor(parameters, (fieldGroup, sample) -> Assert.assertNull(sample));
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "SRP000392");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
     Assert.assertEquals("SRP000392", fieldValue.getValue());
   }
@@ -85,7 +85,7 @@ public class SampleProcessorTest {
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "SAMPLE", getSampleJson(sampleTestAlias));
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertNotNull(fieldValue.getValue().startsWith("SAMEA"));
     String biosampleId = fieldValue.getValue();
@@ -117,7 +117,7 @@ public class SampleProcessorTest {
         createFieldValue(
             ManifestFieldType.META, "SAMPLE", new ObjectMapper().writeValueAsString(sample));
     result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals(biosampleId, fieldValue.getValue());
   }
@@ -143,7 +143,7 @@ public class SampleProcessorTest {
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "SAMPLE", getSampleJson(sampleTestAlias));
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertNotNull(fieldValue.getValue().startsWith("SAMEA"));
     String biosampleId = fieldValue.getValue();
@@ -174,7 +174,7 @@ public class SampleProcessorTest {
         createFieldValue(
             ManifestFieldType.META, "SAMPLE", new ObjectMapper().writeValueAsString(sample));
     result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals(biosampleId, fieldValue.getValue());
   }

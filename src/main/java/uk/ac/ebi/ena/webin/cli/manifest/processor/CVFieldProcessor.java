@@ -34,7 +34,7 @@ public class CVFieldProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
     String value = fieldValue.getValue();
 
     if (!cvList.contains(value)) {

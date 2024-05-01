@@ -25,28 +25,28 @@ public class ASCIIFileNameProcessorTest {
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a.bam");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertEquals(0, result.count());
     Assert.assertEquals("a.bam", fieldValue.getValue());
 
     fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "/a/b/c.bam");
     result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertEquals(0, result.count());
 
     fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a:\\B\\c.bam");
     result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertEquals(0, result.count());
 
     fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a|b.cram");
     result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertEquals(false, result.isValid());
 
     fieldValue = createFieldValue(ManifestFieldType.META, "FIELD1", "a&b.cram");
     result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertEquals(false, result.isValid());
     Assert.assertEquals("a&b.cram", fieldValue.getValue());
   }

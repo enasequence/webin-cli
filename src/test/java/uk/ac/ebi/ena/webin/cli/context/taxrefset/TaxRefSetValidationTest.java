@@ -12,15 +12,21 @@ package uk.ac.ebi.ena.webin.cli.context.taxrefset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultStudy;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.ManifestValidationPolicy;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
@@ -35,7 +41,8 @@ public class TaxRefSetValidationTest {
       executorBuilder =
           new WebinCliExecutorBuilder(
                   TaxRefSetManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-              .sample(NAME, getDefaultSample());
+              .sample(NAME, getDefaultSample())
+              .study(NAME, getDefaultStudy());
 
   private static ManifestBuilder manifestBuilder() {
     return new ManifestBuilder()
@@ -72,7 +79,7 @@ public class TaxRefSetValidationTest {
     WebinCliExecutor<TaxRefSetManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, VALID_DIR);
     executor.readManifest();
-    executor.validateSubmission(false);
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertThat(
             executor.getManifestReader().getManifests().stream().findFirst().get().files().get(TaxRefSetManifest.FileType.TAB))
         .size()
@@ -89,5 +96,22 @@ public class TaxRefSetValidationTest {
     Assert.assertEquals(2, customFields.size());
     Assert.assertEquals("Source of annotation", customFields.get("Annotation"));
     Assert.assertEquals("URL within ITSoneDB", customFields.get("ITSoneDB URL"));
+    assertGeneratedFiles(executor);
+  }
+
+  private void assertGeneratedFiles(WebinCliExecutor executor) {
+    Path submissionDir = executor.getParameters().getOutputDir().toPath()
+        .resolve(executor.getContext().toString())
+        .resolve(NAME);
+
+    File bundle = submissionDir.resolve("validate.json").toFile();
+    AssertionsForClassTypes.assertThat(bundle.exists()).isTrue();
+    AssertionsForClassTypes.assertThat(bundle.length()).isGreaterThan(0);
+
+    for (String xmlFileName : Arrays.asList("analysis", "submission")) {
+      File xmlFile = submissionDir.resolve("submit").resolve(xmlFileName + ".xml").toFile();
+      AssertionsForClassTypes.assertThat(xmlFile.exists()).isTrue();
+      AssertionsForClassTypes.assertThat(xmlFile.length()).isGreaterThan(0);
+    }
   }
 }

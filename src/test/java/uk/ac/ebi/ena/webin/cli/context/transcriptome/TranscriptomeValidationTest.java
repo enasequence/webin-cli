@@ -11,12 +11,18 @@
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultStudy;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Locale;
+
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.ManifestBuilder;
+import uk.ac.ebi.ena.webin.cli.ManifestValidationPolicy;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutor;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
@@ -43,7 +49,8 @@ public class TranscriptomeValidationTest {
       executorBuilder =
           new WebinCliExecutorBuilder(
                   TranscriptomeManifest.class, WebinCliExecutorBuilder.MetadataProcessorType.MOCK)
-              .sample(NAME, WebinCliTestUtils.getDefaultSample());
+              .sample(NAME, WebinCliTestUtils.getDefaultSample())
+              .study(NAME, getDefaultStudy());
 
   @Before
   public void before() {
@@ -60,7 +67,7 @@ public class TranscriptomeValidationTest {
     WebinCliExecutor<TranscriptomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
-    executor.validateSubmission(false);
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertThat(
             executor
                 .getManifestReader()
@@ -69,5 +76,22 @@ public class TranscriptomeValidationTest {
                 .get(TranscriptomeManifest.FileType.FASTA))
         .size()
         .isOne();
+    assertGeneratedFiles(executor);
+  }
+
+  private void assertGeneratedFiles(WebinCliExecutor executor) {
+    Path submissionDir = executor.getParameters().getOutputDir().toPath()
+        .resolve(executor.getContext().toString())
+        .resolve(NAME);
+
+    File bundle = submissionDir.resolve("validate.json").toFile();
+    AssertionsForClassTypes.assertThat(bundle.exists()).isTrue();
+    AssertionsForClassTypes.assertThat(bundle.length()).isGreaterThan(0);
+
+    for (String xmlFileName : Arrays.asList("analysis", "submission")) {
+      File xmlFile = submissionDir.resolve("submit").resolve(xmlFileName + ".xml").toFile();
+      AssertionsForClassTypes.assertThat(xmlFile.exists()).isTrue();
+      AssertionsForClassTypes.assertThat(xmlFile.length()).isGreaterThan(0);
+    }
   }
 }

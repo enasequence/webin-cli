@@ -41,7 +41,7 @@ public class AnalysisProcessorTest {
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "ANALYSIS_REF", analysis_id);
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals(analysis_id, fieldValue.getValue());
   }
@@ -62,7 +62,7 @@ public class AnalysisProcessorTest {
         createFieldValue(
             ManifestFieldType.META, "ANALYSIS_REF", "ERZ690501, ERZ690500, ERZ690500, ERZ690502");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("ERZ690501, ERZ690500, ERZ690502", fieldValue.getValue());
   }
@@ -78,7 +78,7 @@ public class AnalysisProcessorTest {
         MessageCounter.regex(
             Severity.ERROR, WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.regex());
     result.add(counter);
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
     assertThat(result.count(Severity.ERROR)).isOne();
     assertThat(counter.getCount()).isOne();
@@ -95,7 +95,7 @@ public class AnalysisProcessorTest {
         MessageCounter.regex(
             Severity.ERROR, WebinCliMessage.ANALYSIS_SERVICE_VALIDATION_ERROR.regex());
     result.add(counter);
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
     assertThat(result.count(Severity.ERROR)).isEqualTo(2);
     assertThat(counter.getCount()).isEqualTo(2);

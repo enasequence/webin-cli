@@ -26,7 +26,7 @@ public class FileSuffixProcessor implements ManifestFieldProcessor {
   }
 
   @Override
-  public void process(ValidationResult result, ManifestFieldGroup fieldGroup, ManifestFieldValue fieldValue) {
+  public void process(ValidationResult result, ManifestFieldValue fieldValue) {
     if (null == suffixes || suffixes.isEmpty()) {
       return;
     }

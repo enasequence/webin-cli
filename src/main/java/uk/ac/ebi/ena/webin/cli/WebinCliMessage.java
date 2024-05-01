@@ -40,8 +40,8 @@ public enum WebinCliMessage implements MessageFormatSource {
 
   EXECUTOR_INIT_ERROR("Failed to initialise validator. {0}"),
   EXECUTOR_EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}"),
-  EXECUTOR_SENSITIVE_CHARACTERS_MANIFEST_NAME_CONFLICT_ERROR(
-      "A manifest name {0} conflicts with another manifest name {1} after removing sensitive characters. Try adjusting the names to resolve conflict"),
+  EXECUTOR_DIRECTORY_MANIFEST_NAME_CONFLICT_ERROR(
+      "A manifest name {0} conflicts with another manifest name {1} after adjusting the names when creating submission directories. Try changing the names to resolve the conflict."),
 
   SUBMISSION_BUNDLE_REVALIDATE_SUBMISSION("Submission requires re-validation."),
   SUBMISSION_BUNDLE_FILE_ERROR("Unable to create submission bundle file: {0}"),
@@ -105,7 +105,7 @@ public enum WebinCliMessage implements MessageFormatSource {
   MANIFEST_READER_UNKNOWN_ATTRIBUTE_FIELD_ERROR("Unknown attribute field: {0}."),
   MANIFEST_READER_MISSING_SAMPLE_ALIAS(
       "Missing sample alias. Sample alias is mandatory for sample json format"),
-  MANIFEST_READER_INVALID_NON_UNIQUE_FIELD_GROUP_NAME("Invalid field group name. The name field is not unique across all field groups : {0}"),
+  MANIFEST_READER_NON_UNIQUE_FIELD_GROUP_NAME("Invalid name: {0}. The name field must be unique within the manifest file."),
 
   FILE_SUFFIX_PROCESSOR_ERROR("Invalid {0} file suffix: \"{1}\". Valid file suffixes are: {2}."),
   CV_FIELD_PROCESSOR_ERROR("Invalid {0} field value: \"{1}\". Valid values are: {2}."),

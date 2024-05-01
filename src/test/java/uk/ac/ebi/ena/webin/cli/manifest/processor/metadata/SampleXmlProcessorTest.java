@@ -48,7 +48,7 @@ public class SampleXmlProcessorTest {
 
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "ERS000002");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
   }
 
@@ -57,7 +57,7 @@ public class SampleXmlProcessorTest {
     SampleXmlProcessor processor = new SampleXmlProcessor(parameters, (fieldGroup, sample) -> Assert.assertNull(sample));
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "SAMPLE", "SRP000392");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
     Assert.assertEquals("SRP000392", fieldValue.getValue());
   }

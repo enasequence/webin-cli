@@ -24,6 +24,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class WebinCliTestUtils {
 
@@ -65,6 +66,13 @@ public class WebinCliTestUtils {
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
+  }
+
+  public static Study getDefaultStudy() {
+    Study study = new Study();
+    study.setStudyId("");
+    study.setBioProjectId("");
+    return study;
   }
 
   public static Sample getDefaultSample() {

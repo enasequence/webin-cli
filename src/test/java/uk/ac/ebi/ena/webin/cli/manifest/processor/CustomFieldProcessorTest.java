@@ -35,7 +35,7 @@ public class CustomFieldProcessorTest {
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "CUSTOM_FIELD", "TEST_KEY:TEST_VAL");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertTrue(result.isValid());
     Assert.assertEquals("TEST_KEY", parsedValue.left);
     Assert.assertEquals("TEST_VAL", parsedValue.right);
@@ -46,7 +46,7 @@ public class CustomFieldProcessorTest {
     ManifestFieldValue fieldValue =
         createFieldValue(ManifestFieldType.META, "CUSTOM_FIELD", "TEST_KEYTEST_VAL");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
   }
 
@@ -54,7 +54,7 @@ public class CustomFieldProcessorTest {
   public void testInValidEmptyValue() {
     ManifestFieldValue fieldValue = createFieldValue(ManifestFieldType.META, "CUSTOM_FIELD", "  ");
     ValidationResult result = new ValidationResult();
-    processor.process(result, null, fieldValue);
+    processor.process(result, fieldValue);
     Assert.assertFalse(result.isValid());
   }
 
