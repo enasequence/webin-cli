@@ -30,7 +30,7 @@ public enum WebinCliMessage implements MessageFormatSource {
   CLI_CREATE_DIR_ERROR("Unable to create directory: {0}"),
   CLI_UPLOAD_ERROR("Failed to upload files to server because of a {0}. "),
   CLI_SUBMIT_ERROR("The submission has failed because of a {0}. "),
-  CLI_MULTI_SUBMIT_ERROR("Some or all submissions failed. Please see logs for details."),
+  CLI_MULTI_SUBMIT_ERROR("Some or all submissions failed. Please see application logs."),
   CLI_AUTHENTICATION_ERROR(
       "Invalid submission account user name or password. Please try enclosing your password in single quotes."),
   CLI_GENOME_RATELIMIT_ERROR(

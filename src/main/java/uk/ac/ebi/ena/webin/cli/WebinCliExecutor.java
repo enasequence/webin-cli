@@ -79,10 +79,6 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
     this.validator = validator;
   }
 
-  /**
-   * @param excludedManifestsNames Names of the manifests that are to be excluded from the list of
-   *     read manifests.
-   */
   public final void readManifest() {
     File manifestReportFile = getManifestReportFile();
     manifestReportFile.delete();
@@ -153,7 +149,7 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
           && validationResponse.getStatus() == ValidationResponse.status.VALIDATION_ERROR) {
         // It is important to notify the directory of validation reports as every manifest's
         // validation reports will be
-        // written in it's separate directory. Not doing this will require going through every
+        // written in it's own directory. Not doing this will require searching through every
         // manifest's validation
         // directory to find the one that's relevant.
         throw WebinCliException.validationError(
@@ -237,7 +233,7 @@ public class WebinCliExecutor<M extends Manifest, R extends ValidationResponse> 
                 getManifestFileContent(),
                 calculateManifestFileMd5()));
 
-    // Calculate MD5 checksum of data files so it can be written into the XML.
+    // Calculate MD5 checksum of data files so it can be written into the generated XML later.
     List<SubmissionFile> submissionFiles = manifest.files().get();
     submissionFiles.forEach(file -> file.setMd5(FileUtils.calculateDigest("MD5", file.getFile())));
 
