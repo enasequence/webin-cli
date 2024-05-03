@@ -43,9 +43,10 @@ repositories {
 
 dependencies {
     // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library.
-    api( 'uk.ac.ebi.ena.sequence:sequencetools:2.19.9' )
-    api( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.0.3' )
-    api( 'uk.ac.ebi.ena:readtools:2.5.0' )
+    api( 'uk.ac.ebi.ena.sequence:sequencetools:2.+' )
+    api( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.+' )
+    api( 'uk.ac.ebi.ena:readtools:2.+' )
+    implementation( 'uk.ac.ebi.ena.sra:webin-xml:2.+' )
 
     implementation( 'ch.qos.logback:logback-classic:1.2.3' )
 
@@ -65,9 +66,6 @@ dependencies {
 
     implementation( 'org.apache.poi:poi:4.0.1' )
     implementation( 'org.apache.poi:poi-ooxml:4.0.1' )
-    
-    implementation( 'uk.ac.ebi.ena.sra:webin-xml:2.4.1' )
-    
 
     testImplementation( 'junit:junit:4.13' )
     testImplementation( 'org.assertj:assertj-core:3.11.1' )
