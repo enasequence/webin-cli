@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '7.2.0'
+version = '7.2.1'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
