@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '7.3.0'
+version = '7.3.1'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -45,7 +45,7 @@ dependencies {
     // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library.
     api( 'uk.ac.ebi.ena.sequence:sequencetools:2.+' )
     api( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.+' )
-    api( 'uk.ac.ebi.ena:readtools:2.+' )
+    api( 'uk.ac.ebi.ena:readtools:2.7.0' )
     implementation( 'uk.ac.ebi.ena.sra:webin-xml:2.+' )
 
     implementation( 'ch.qos.logback:logback-classic:1.2.3' )
