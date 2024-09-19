@@ -110,51 +110,40 @@ public class GenomeValidationTest {
   }
 
   @Test
-  public void testValidFastaAndAgp() {
-    File manifestFile =
-        manifestBuilder()
-            .file(FileType.FASTA, "valid.fasta.gz")
-            .file(FileType.AGP, "valid.agp.gz")
-            .build();
+  public void testValidFasta2() {
+    File manifestFile = manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
     SubmissionFiles submissionFiles =
         executor.getManifestReader().getManifests().stream().findFirst().get().files();
-    assertThat(submissionFiles.get().size()).isEqualTo(2);
+    assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
-    assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertGeneratedFiles(executor);
   }
 
   @Test
-  public void testValidFlatFileAndAgp() {
-    File manifestFile =
-        manifestBuilder()
-            .file(FileType.FLATFILE, "valid.flatfile.gz")
-            .file(FileType.AGP, "valid.agp.gz")
-            .build();
+  public void testValidFlatFile2() {
+    File manifestFile = manifestBuilder().file(FileType.FLATFILE, "valid.flatfile.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
     executor.readManifest();
     SubmissionFiles submissionFiles =
         executor.getManifestReader().getManifests().stream().findFirst().get().files();
-    assertThat(submissionFiles.get().size()).isEqualTo(2);
+    assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
-    assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertGeneratedFiles(executor);
   }
 
   @Test
-  public void testValidFastaAndAgpAndChromosomeList() {
+  public void testValidFastaAndChromosomeList() {
     File manifestFile =
         manifestBuilder()
             .file(FileType.FASTA, "valid.fasta.gz")
-            .file(FileType.AGP, "valid.agp.gz")
             .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
 
@@ -163,20 +152,18 @@ public class GenomeValidationTest {
     executor.readManifest();
     SubmissionFiles submissionFiles =
         executor.getManifestReader().getManifests().stream().findFirst().get().files();
-    assertThat(submissionFiles.get().size()).isEqualTo(3);
+    assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
-    assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
     assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertGeneratedFiles(executor);
   }
 
   @Test
-  public void testValidFlatFileAndAgpAndChromosomeList() {
+  public void testValidFlatFileAndChromosomeList() {
     File manifestFile =
         manifestBuilder()
             .file(FileType.FLATFILE, "valid.flatfile.gz")
-            .file(FileType.AGP, "valid.agp.gz")
             .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
 
@@ -185,9 +172,8 @@ public class GenomeValidationTest {
     executor.readManifest();
     SubmissionFiles submissionFiles =
         executor.getManifestReader().getManifests().stream().findFirst().get().files();
-    assertThat(submissionFiles.get().size()).isEqualTo(3);
+    assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
-    assertThat(submissionFiles.get(FileType.AGP).size()).isOne();
     assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertGeneratedFiles(executor);
@@ -223,11 +209,7 @@ public class GenomeValidationTest {
 
   @Test
   public void testInvalidAgp() {
-    File manifestFile =
-        manifestBuilder()
-            .file(FileType.FASTA, "valid.fasta.gz")
-            .file(FileType.AGP, "invalid.agp.gz")
-            .build();
+    File manifestFile = manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);

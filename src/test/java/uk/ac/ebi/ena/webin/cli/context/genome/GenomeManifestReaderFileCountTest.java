@@ -24,12 +24,13 @@ public class GenomeManifestReaderFileCountTest {
         .files(GenomeManifest.FileType.FASTA)
         .files(GenomeManifest.FileType.FLATFILE)
         .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.FLATFILE)
-        .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.AGP)
-        .files(GenomeManifest.FileType.FLATFILE, GenomeManifest.FileType.AGP)
+        .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.FLATFILE)
+        .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.CHROMOSOME_LIST)
+        .files(GenomeManifest.FileType.FLATFILE, GenomeManifest.FileType.CHROMOSOME_LIST)
         .files(
             GenomeManifest.FileType.FASTA,
             GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.AGP)
+            GenomeManifest.FileType.CHROMOSOME_LIST)
         .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.CHROMOSOME_LIST)
         .files(GenomeManifest.FileType.FLATFILE, GenomeManifest.FileType.CHROMOSOME_LIST)
         .files(
@@ -38,19 +39,6 @@ public class GenomeManifestReaderFileCountTest {
             GenomeManifest.FileType.CHROMOSOME_LIST)
         .files(
             GenomeManifest.FileType.FASTA,
-            GenomeManifest.FileType.AGP,
-            GenomeManifest.FileType.CHROMOSOME_LIST)
-        .files(
-            GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.AGP,
-            GenomeManifest.FileType.CHROMOSOME_LIST)
-        .files(
-            GenomeManifest.FileType.FASTA,
-            GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.AGP,
-            GenomeManifest.FileType.CHROMOSOME_LIST)
-        .files(
-            GenomeManifest.FileType.FASTA,
             GenomeManifest.FileType.CHROMOSOME_LIST,
             GenomeManifest.FileType.UNLOCALISED_LIST)
         .files(
@@ -64,18 +52,15 @@ public class GenomeManifestReaderFileCountTest {
             GenomeManifest.FileType.UNLOCALISED_LIST)
         .files(
             GenomeManifest.FileType.FASTA,
-            GenomeManifest.FileType.AGP,
             GenomeManifest.FileType.CHROMOSOME_LIST,
             GenomeManifest.FileType.UNLOCALISED_LIST)
         .files(
             GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.AGP,
             GenomeManifest.FileType.CHROMOSOME_LIST,
             GenomeManifest.FileType.UNLOCALISED_LIST)
         .files(
             GenomeManifest.FileType.FASTA,
             GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.AGP,
             GenomeManifest.FileType.CHROMOSOME_LIST,
             GenomeManifest.FileType.UNLOCALISED_LIST)
         .test();

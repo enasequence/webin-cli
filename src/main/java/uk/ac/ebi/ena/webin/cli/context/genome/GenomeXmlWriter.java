@@ -106,17 +106,6 @@ public class GenomeXmlWriter extends SequenceToolsXmlWriter<GenomeManifest, Vali
                         file,
                         FileUtils.calculateDigest("MD5", file.toFile()),
                         "flatfile")));
-    manifest.files(FileType.AGP).stream()
-        .map(file -> file.getFile().toPath())
-        .forEach(
-            file ->
-                list.add(
-                    createFileElement(
-                        inputDir,
-                        uploadDir,
-                        file,
-                        FileUtils.calculateDigest("MD5", file.toFile()),
-                        "agp")));
 
     return list;
   }

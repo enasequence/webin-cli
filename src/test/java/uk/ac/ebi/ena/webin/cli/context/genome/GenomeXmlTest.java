@@ -43,8 +43,7 @@ public class GenomeXmlTest {
             .field("ADDRESS", "ena,ebi,embl,UK")
             .field("SUBMISSION_TOOL", "ST-001")
             .field("SUBMISSION_TOOL_VERSION", "STV-001")
-            .file("FLATFILE", "valid.flatfile.gz")
-            .file("AGP", "valid.agp.gz");
+            .file("FLATFILE", "valid.flatfile.gz");
 
     String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
 
@@ -124,11 +123,9 @@ public class GenomeXmlTest {
   }
 
   @Test
-  public void testFastaFileAndAgpFile() throws Throwable {
+  public void testFastaFile2() throws Throwable {
     ManifestBuilder manifestBuilder =
-        addDefaultFields(new ManifestBuilder())
-            .file("FASTA", "valid.fasta.gz")
-            .file("AGP", "valid.agp.gz");
+        addDefaultFields(new ManifestBuilder()).file("FASTA", "valid.fasta.gz");
 
     String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
 
