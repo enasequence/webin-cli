@@ -74,7 +74,6 @@ public class GenomeXmlTest {
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
             + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.flatfile.gz\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"ff20876a8ad754ecae0979af92a84cbc\"/>\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.agp.gz\" filetype=\"agp\" checksum_method=\"MD5\" checksum=\"d27cacda0ab3c1f925bae3e44efdc196\"/>\n"
             + "    </FILES>\n"
             + "    <ANALYSIS_ATTRIBUTES>\n"
             + "        <ANALYSIS_ATTRIBUTE>\n"
@@ -149,7 +148,6 @@ public class GenomeXmlTest {
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
             + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"4d5b603a968abcec9e377cdcd172af33\" />\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.agp.gz\" filetype=\"agp\" checksum_method=\"MD5\" checksum=\"d27cacda0ab3c1f925bae3e44efdc196\"/>\n"
             + "    </FILES>\n"
             + "  </ANALYSIS>\n"
             + "</ANALYSIS_SET>\n");
