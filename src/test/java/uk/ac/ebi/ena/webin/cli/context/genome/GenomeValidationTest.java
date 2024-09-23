@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.context.genome;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.Assert.assertThrows;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultSample;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getDefaultStudy;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
@@ -110,8 +111,11 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
+  /*
+  AGP is deprecated
+   */
   @Test
-  public void testValidFasta2() {
+  public void testValidFastaWithoutAgp() {
     File manifestFile = manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
@@ -125,8 +129,11 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
+  /*
+  AGP is deprecated
+   */
   @Test
-  public void testValidFlatFile2() {
+  public void testValidFlatFileAithoutAgp() {
     File manifestFile = manifestBuilder().file(FileType.FLATFILE, "valid.flatfile.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
@@ -140,13 +147,12 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
+  /*
+  AGP is deprecated
+   */
   @Test
-  public void testValidFastaAndChromosomeList() {
-    File manifestFile =
-        manifestBuilder()
-            .file(FileType.FASTA, "valid.fasta.gz")
-            /*.file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")*/
-            .build();
+  public void testValidFastaWithoutAgpAndChromosomeList() {
+    File manifestFile = manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -155,18 +161,45 @@ public class GenomeValidationTest {
         executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
-    // assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertGeneratedFiles(executor);
   }
 
+  /*
+  AGP is deprecated
+   */
   @Test
-  public void testValidFlatFileAndChromosomeList() {
+  public void testValidFastaWithoutAgpAndWithChromosomeList() {
     File manifestFile =
         manifestBuilder()
-            .file(FileType.FLATFILE, "valid.flatfile.gz")
-            /*.file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")*/
+            .file(FileType.FASTA, "valid.fasta.gz")
+            .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
             .build();
+
+    WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
+    assertThat(submissionFiles.get().size()).isEqualTo(2);
+    assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
+    assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
+
+    // Expect WebinCliException when executing submission
+    WebinCliException exception =
+        assertThrows(
+            WebinCliException.class,
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS));
+
+    assertThat(exception).hasMessageContaining("Manifest name : test. See reports for details");
+  }
+
+  /*
+  AGP is deprecated
+   */
+  @Test
+  public void testValidFlatFileWithoutAgpAndChromosomeList() {
+    File manifestFile = manifestBuilder().file(FileType.FLATFILE, "valid.flatfile.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
         executorBuilder.build(manifestFile, RESOURCE_DIR);
@@ -175,9 +208,36 @@ public class GenomeValidationTest {
         executor.getManifestReader().getManifests().stream().findFirst().get().files();
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
-    // assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
     assertGeneratedFiles(executor);
+  }
+
+  /*
+  AGP is deprecated
+   */
+  @Test
+  public void testValidFlatFileWithoutAgpAndWithChromosomeList() {
+    File manifestFile =
+        manifestBuilder()
+            .file(FileType.FLATFILE, "valid.flatfile.gz")
+            .file(FileType.CHROMOSOME_LIST, "valid_chromosome_list.txt.gz")
+            .build();
+
+    WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
+    assertThat(submissionFiles.get().size()).isEqualTo(2);
+    assertThat(submissionFiles.get(FileType.FLATFILE).size()).isOne();
+    assertThat(submissionFiles.get(FileType.CHROMOSOME_LIST).size()).isOne();
+
+    WebinCliException exception =
+        assertThrows(
+            WebinCliException.class,
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS));
+
+    assertThat(exception).hasMessageContaining("Manifest name : test. See reports for details");
   }
 
   @Test
@@ -208,6 +268,9 @@ public class GenomeValidationTest {
     new ReportTester(executor).textInSubmissionReport(NAME, "flatfile file validation failed");
   }
 
+  /*
+  AGP support has been deprecated - ignore this test
+   */
   @Test
   @Ignore
   public void testInvalidAgp() {

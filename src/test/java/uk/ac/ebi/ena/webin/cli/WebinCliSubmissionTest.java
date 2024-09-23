@@ -629,12 +629,12 @@ public class WebinCliSubmissionTest {
   //
 
   @Test
-  public void testGenomeFlatFileAgp() throws Throwable {
+  public void testGenomeFlatFile() throws Throwable {
     testGenome(m -> genomeMetaManifest(m), m -> m.file("FLATFILE", "valid.flatfile.gz"));
   }
 
   @Test
-  public void testGenomeFlatFileAgpWithInfo() throws Throwable {
+  public void testGenomeFlatFileWithInfo() throws Throwable {
     ManifestBuilder infoManifestBuilder = new ManifestBuilder();
     genomeMetaManifest(infoManifestBuilder);
     File infoFile = infoManifestBuilder.build();

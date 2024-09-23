@@ -232,6 +232,9 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .group("Sequences in a fasta file. No chromosomes. An optional annotated flat file.")
             .required(Field.FASTA)
             .optional(Field.FLATFILE)
+            /*
+            Without an AGP file, mapping sequences to chromosomes might fail, we continue to support it till we have all AGP files processed, and we can remove dependencies from sequencetools
+             */
             .and()
             .group(
                 "Sequences in a fasta file. A list of chromosomes. An optional optional annotated flat file and an optional list of unlocalised sequences.")
@@ -243,6 +246,9 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .group("Sequences in an annotated flat file.")
             .required(Field.FLATFILE)
             .and()
+            /*
+            Without an AGP file, mapping sequences to chromosomes might fail, we continue to support it till we have all AGP files processed, and we can remove dependencies from sequencetools
+             */
             .group(
                 "Sequences in an annotated flat file. A list of chromosomes. An optional list of unlocalised sequences.")
             .required(Field.FLATFILE)
