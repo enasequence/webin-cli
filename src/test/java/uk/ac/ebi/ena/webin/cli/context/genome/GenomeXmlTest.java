@@ -43,8 +43,7 @@ public class GenomeXmlTest {
             .field("ADDRESS", "ena,ebi,embl,UK")
             .field("SUBMISSION_TOOL", "ST-001")
             .field("SUBMISSION_TOOL_VERSION", "STV-001")
-            .file("FLATFILE", "valid.flatfile.gz")
-            .file("AGP", "valid.agp.gz");
+            .file("FLATFILE", "valid.flatfile.gz");
 
     String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
 
@@ -75,7 +74,6 @@ public class GenomeXmlTest {
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
             + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.flatfile.gz\" filetype=\"flatfile\" checksum_method=\"MD5\" checksum=\"ff20876a8ad754ecae0979af92a84cbc\"/>\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.agp.gz\" filetype=\"agp\" checksum_method=\"MD5\" checksum=\"d27cacda0ab3c1f925bae3e44efdc196\"/>\n"
             + "    </FILES>\n"
             + "    <ANALYSIS_ATTRIBUTES>\n"
             + "        <ANALYSIS_ATTRIBUTE>\n"
@@ -118,41 +116,6 @@ public class GenomeXmlTest {
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
             + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"4d5b603a968abcec9e377cdcd172af33\" />\n"
-            + "    </FILES>\n"
-            + "  </ANALYSIS>\n"
-            + "</ANALYSIS_SET>\n");
-  }
-
-  @Test
-  public void testFastaFileAndAgpFile() throws Throwable {
-    ManifestBuilder manifestBuilder =
-        addDefaultFields(new ManifestBuilder())
-            .file("FASTA", "valid.fasta.gz")
-            .file("AGP", "valid.agp.gz");
-
-    String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
-
-    XmlTester.assertXml(
-        analysisXml,
-        "<ANALYSIS_SET>\n"
-            + "  <ANALYSIS>\n"
-            + "    <TITLE>Genome assembly: test_genome</TITLE>\n"
-            + "    <STUDY_REF accession=\"PRJNA272616\" />\n"
-            + "    <SAMPLE_REF accession=\"SAMEA4734564\" />\n"
-            + "    <ANALYSIS_TYPE>\n"
-            + "      <SEQUENCE_ASSEMBLY>\n"
-            + "        <NAME>test_genome</NAME>\n"
-            + "        <TYPE>clone or isolate</TYPE>\n"
-            + "        <PARTIAL>false</PARTIAL>\n"
-            + "        <COVERAGE>1</COVERAGE>\n"
-            + "        <PROGRAM>test_program</PROGRAM>\n"
-            + "        <PLATFORM>test_platform</PLATFORM>\n"
-            + "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n"
-            + "      </SEQUENCE_ASSEMBLY>\n"
-            + "    </ANALYSIS_TYPE>\n"
-            + "    <FILES>\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"4d5b603a968abcec9e377cdcd172af33\" />\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.agp.gz\" filetype=\"agp\" checksum_method=\"MD5\" checksum=\"d27cacda0ab3c1f925bae3e44efdc196\"/>\n"
             + "    </FILES>\n"
             + "  </ANALYSIS>\n"
             + "</ANALYSIS_SET>\n");

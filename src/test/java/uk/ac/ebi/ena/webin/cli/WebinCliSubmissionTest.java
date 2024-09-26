@@ -629,23 +629,18 @@ public class WebinCliSubmissionTest {
   //
 
   @Test
-  public void testGenomeFlatFileAgp() throws Throwable {
-    testGenome(
-        m -> genomeMetaManifest(m),
-        m -> m.file("FLATFILE", "valid.flatfile.gz").file("AGP", "valid.agp.gz"));
+  public void testGenomeFlatFile() throws Throwable {
+    testGenome(m -> genomeMetaManifest(m), m -> m.file("FLATFILE", "valid.flatfile.gz"));
   }
 
   @Test
-  public void testGenomeFlatFileAgpWithInfo() throws Throwable {
+  public void testGenomeFlatFileWithInfo() throws Throwable {
     ManifestBuilder infoManifestBuilder = new ManifestBuilder();
     genomeMetaManifest(infoManifestBuilder);
     File infoFile = infoManifestBuilder.build();
     testGenome(
         m -> {},
-        m ->
-            m.file("FLATFILE", "valid.flatfile.gz")
-                .file("AGP", "valid.agp.gz")
-                .field("INFO", infoFile.getAbsolutePath()));
+        m -> m.file("FLATFILE", "valid.flatfile.gz").field("INFO", infoFile.getAbsolutePath()));
   }
 
   @Test
@@ -682,7 +677,7 @@ public class WebinCliSubmissionTest {
             GENOME_RESOURCE_DIR,
             WebinCliBuilder.createForGenome(),
             m -> genomeMetaManifest(m, name),
-            m -> m.file("FLATFILE", "valid.flatfile.gz").file("AGP", "valid.agp.gz"),
+            m -> m.file("FLATFILE", "valid.flatfile.gz"),
             c -> {});
 
     lookupAndAssertGeneratedAlias(webinCli, name, "analysis", "webin-genome-" + name);
@@ -695,17 +690,17 @@ public class WebinCliSubmissionTest {
 
     // First submission
     genomeMetaManifest(manifestBuilder);
-    manifestBuilder.file("FLATFILE", "valid.flatfile.gz").file("AGP", "valid.agp.gz");
+    manifestBuilder.file("FLATFILE", "valid.flatfile.gz");
 
     // Second submission
     manifestBuilder.fieldGroup();
     genomeMetaManifest(manifestBuilder);
-    manifestBuilder.file("FLATFILE", "valid.flatfile.gz").file("AGP", "valid.agp.gz");
+    manifestBuilder.file("FLATFILE", "valid.flatfile.gz");
 
     // Third submission
     manifestBuilder.fieldGroup();
     genomeMetaManifest(manifestBuilder);
-    manifestBuilder.file("FLATFILE", "valid.flatfile.gz").file("AGP", "valid.agp.gz");
+    manifestBuilder.file("FLATFILE", "valid.flatfile.gz");
 
     WebinCliBuilder webinCliBuilder = WebinCliBuilder.createForGenome();
     webinCliBuilder.submit(true);

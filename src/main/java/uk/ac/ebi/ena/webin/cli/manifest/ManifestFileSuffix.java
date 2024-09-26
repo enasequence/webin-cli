@@ -20,9 +20,6 @@ public interface ManifestFileSuffix {
 
   List<String> GZIP_OR_BZIP_FILE_SUFFIX = Arrays.asList(GZIP_FILE_SUFFIX, BZIP2_FILE_SUFFIX);
 
-  List<String> AGP_FILE_SUFFIX =
-      Arrays.asList(".agp" + GZIP_FILE_SUFFIX, ".agp" + BZIP2_FILE_SUFFIX);
-
   List<String> BAM_FILE_SUFFIX = Arrays.asList(".bam");
 
   List<String> CRAM_FILE_SUFFIX = Arrays.asList(".cram");

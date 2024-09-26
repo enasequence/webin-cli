@@ -52,7 +52,6 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
     String UNLOCALISED_LIST = "UNLOCALISED_LIST";
     String FASTA = "FASTA";
     String FLATFILE = "FLATFILE";
-    String AGP = "AGP";
     String AUTHORS = "AUTHORS";
     String ADDRESS = "ADDRESS";
   }
@@ -75,7 +74,6 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
     String UNLOCALISED_LIST = "Unlocalised sequence list file";
     String FASTA = "Fasta file";
     String FLATFILE = "Flat file";
-    String AGP = "AGP file";
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
@@ -192,12 +190,6 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .and()
             .file()
             .optional()
-            .name(Field.AGP)
-            .desc(Description.AGP)
-            .processor(getAgpProcessors())
-            .and()
-            .file()
-            .optional()
             .name(Field.CHROMOSOME_LIST)
             .desc(Description.CHROMOSOME_LIST)
             .processor(getChromosomeListProcessors())
@@ -237,30 +229,31 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .build(),
         // File groups.
         new ManifestFileCount.Builder()
-            .group(
-                "Sequences in a fasta file. No chromosomes. An optional AGP file and an optional annotated flat file.")
+            .group("Sequences in a fasta file. No chromosomes. An optional annotated flat file.")
             .required(Field.FASTA)
-            .optional(Field.AGP)
             .optional(Field.FLATFILE)
+            /*
+            Without an AGP file, mapping sequences to chromosomes might fail, we continue to support it till we have all AGP files processed, and we can remove dependencies from sequencetools
+             */
             .and()
             .group(
-                "Sequences in a fasta file. A list of chromosomes. An optional AGP file, an optional annotated flat file and an optional list of unlocalised sequences.")
+                "Sequences in a fasta file. A list of chromosomes. An optional optional annotated flat file and an optional list of unlocalised sequences.")
             .required(Field.FASTA)
             .required(Field.CHROMOSOME_LIST)
             .optional(Field.UNLOCALISED_LIST)
-            .optional(Field.AGP)
             .optional(Field.FLATFILE)
             .and()
-            .group("Sequences in an annotated flat file. An optional AGP file.")
+            .group("Sequences in an annotated flat file.")
             .required(Field.FLATFILE)
-            .optional(Field.AGP)
             .and()
+            /*
+            Without an AGP file, mapping sequences to chromosomes might fail, we continue to support it till we have all AGP files processed, and we can remove dependencies from sequencetools
+             */
             .group(
-                "Sequences in an annotated flat file. A list of chromosomes. An optional AGP file and an optional list of unlocalised sequences.")
+                "Sequences in an annotated flat file. A list of chromosomes. An optional list of unlocalised sequences.")
             .required(Field.FLATFILE)
             .required(Field.CHROMOSOME_LIST)
             .optional(Field.UNLOCALISED_LIST)
-            .optional(Field.AGP)
             .build());
 
     if (factory.getStudyProcessor() != null) {
@@ -323,12 +316,6 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
     };
   }
 
-  private static ManifestFieldProcessor[] getAgpProcessors() {
-    return new ManifestFieldProcessor[] {
-      new ASCIIFileNameProcessor(), new FileSuffixProcessor(ManifestFileSuffix.AGP_FILE_SUFFIX)
-    };
-  }
-
   @Override
   public void processManifest() {
     getManifestReaderResult()
@@ -387,11 +374,6 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
                       fastaFile ->
                           submissionFiles.add(
                               new SubmissionFile(GenomeManifest.FileType.FASTA, fastaFile)));
-              getFiles(getInputDir(), fieldGroup, Field.AGP)
-                  .forEach(
-                      agpFile ->
-                          submissionFiles.add(
-                              new SubmissionFile(GenomeManifest.FileType.AGP, agpFile)));
               getFiles(getInputDir(), fieldGroup, Field.FLATFILE)
                   .forEach(
                       flatFile ->
