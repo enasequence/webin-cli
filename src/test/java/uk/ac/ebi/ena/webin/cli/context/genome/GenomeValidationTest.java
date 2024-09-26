@@ -110,9 +110,6 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
-  /*
-  AGP is deprecated
-   */
   @Test
   public void testValidFastaWithoutAgp() {
     File manifestFile = manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
@@ -128,9 +125,6 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
-  /*
-  AGP is deprecated
-   */
   @Test
   public void testValidFlatFileAithoutAgp() {
     File manifestFile = manifestBuilder().file(FileType.FLATFILE, "valid.flatfile.gz").build();
@@ -146,9 +140,6 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
-  /*
-  AGP is deprecated
-   */
   @Test
   public void testValidFastaWithoutAgpAndChromosomeList() {
     File manifestFile = manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
@@ -164,9 +155,6 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
-  /*
-  AGP is deprecated
-   */
   @Test
   public void testValidFastaWithoutAgpAndWithChromosomeList() {
     File manifestFile =
@@ -193,9 +181,6 @@ public class GenomeValidationTest {
     assertThat(exception).hasMessageContaining("Manifest name : test. See reports for details");
   }
 
-  /*
-  AGP is deprecated
-   */
   @Test
   public void testValidFlatFileWithoutAgpAndChromosomeList() {
     File manifestFile = manifestBuilder().file(FileType.FLATFILE, "valid.flatfile.gz").build();
@@ -211,9 +196,6 @@ public class GenomeValidationTest {
     assertGeneratedFiles(executor);
   }
 
-  /*
-  AGP is deprecated
-   */
   @Test
   public void testValidFlatFileWithoutAgpAndWithChromosomeList() {
     File manifestFile =
