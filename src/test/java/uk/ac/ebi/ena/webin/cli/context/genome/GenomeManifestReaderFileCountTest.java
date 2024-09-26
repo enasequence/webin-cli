@@ -23,10 +23,7 @@ public class GenomeManifestReaderFileCountTest {
     /* We are keeping webin-cli-validator and sequencetools unchanged,
     and hence we get AGP file type from GenomeManifest.FileType,
     we exclude it upfront */
-    final List<GenomeManifest.FileType> fileTypeList =
-        Arrays.stream(GenomeManifest.FileType.values())
-            .filter(fileType -> !fileType.name().equals("AGP"))
-            .toList();
+    final List<GenomeManifest.FileType> fileTypeList = getFileTypes();
 
     new ManifestReaderFileCountTester<>(
             GenomeManifestReader.class, fileTypeList.toArray(new GenomeManifest.FileType[0]))
@@ -81,10 +78,7 @@ public class GenomeManifestReaderFileCountTest {
     /* We are keeping webin-cli-validator and sequencetools unchanged,
     and hence we get AGP file type from GenomeManifest.FileType,
     we exclude it upfront */
-    final List<GenomeManifest.FileType> fileTypeList =
-        Arrays.stream(GenomeManifest.FileType.values())
-            .filter(fileType -> !fileType.name().equals("AGP"))
-            .toList();
+    final List<GenomeManifest.FileType> fileTypeList = getFileTypes();
 
     new ManifestReaderFileCountTester<>(
             GenomeManifestReader.class, fileTypeList.toArray(new GenomeManifest.FileType[0]))
@@ -97,10 +91,7 @@ public class GenomeManifestReaderFileCountTest {
   @Test
   public void testPrimaryMetagenomeFileCount() {
     /* We are keeping webin-cli-validator and sequencetools unchanged, and hence we get AGP file type from GenomeManifest.FileType, we exclude it upfront */
-    final List<GenomeManifest.FileType> fileTypeList =
-        Arrays.stream(GenomeManifest.FileType.values())
-            .filter(fileType -> !fileType.name().equals("AGP"))
-            .toList();
+    final List<GenomeManifest.FileType> fileTypeList = getFileTypes();
     new ManifestReaderFileCountTester<>(
             GenomeManifestReader.class, fileTypeList.toArray(new GenomeManifest.FileType[0]))
         // Supported file groups
@@ -111,13 +102,7 @@ public class GenomeManifestReaderFileCountTest {
 
   @Test
   public void testClinicalIsolateAssemblyFileCount() {
-    /* We are keeping webin-cli-validator and sequencetools unchanged,
-    and hence we get AGP file type from GenomeManifest.FileType,
-    we exclude it upfront */
-    final List<GenomeManifest.FileType> fileTypeList =
-        Arrays.stream(GenomeManifest.FileType.values())
-            .filter(fileType -> !fileType.name().equals("AGP"))
-            .toList();
+    final List<GenomeManifest.FileType> fileTypeList = getFileTypes();
 
     new ManifestReaderFileCountTester<>(
             GenomeManifestReader.class, fileTypeList.toArray(new GenomeManifest.FileType[0]))
@@ -125,5 +110,16 @@ public class GenomeManifestReaderFileCountTest {
         .files(GenomeManifest.FileType.FASTA)
         .field("ASSEMBLY_TYPE", "clinical isolate assembly")
         .test();
+  }
+
+  private static List<GenomeManifest.FileType> getFileTypes() {
+    /* We are keeping webin-cli-validator and sequencetools unchanged,
+    and hence we get AGP file type from GenomeManifest.FileType,
+    we exclude it upfront */
+    final List<GenomeManifest.FileType> fileTypeList =
+        Arrays.stream(GenomeManifest.FileType.values())
+            .filter(fileType -> !fileType.name().equals("AGP"))
+            .toList();
+    return fileTypeList;
   }
 }

@@ -21,7 +21,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.*;
 import uk.ac.ebi.ena.webin.cli.WebinCliExecutorBuilder;
@@ -266,24 +265,6 @@ public class GenomeValidationTest {
         .isInstanceOf(WebinCliException.class);
 
     new ReportTester(executor).textInSubmissionReport(NAME, "flatfile file validation failed");
-  }
-
-  /*
-  AGP support has been deprecated - ignore this test
-   */
-  @Test
-  @Ignore
-  public void testInvalidAgp() {
-    File manifestFile = manifestBuilder().file(FileType.FASTA, "valid.fasta.gz").build();
-
-    WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
-        executorBuilder.build(manifestFile, RESOURCE_DIR);
-    executor.readManifest();
-    assertThatThrownBy(
-            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
-        .isInstanceOf(WebinCliException.class);
-
-    new ReportTester(executor).textInSubmissionReport(NAME, "Invalid number of columns");
   }
 
   @Test
