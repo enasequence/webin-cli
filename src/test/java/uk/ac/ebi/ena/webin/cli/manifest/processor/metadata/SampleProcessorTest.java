@@ -20,8 +20,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
@@ -30,7 +28,6 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldValue;
 import uk.ac.ebi.ena.webin.cli.service.SampleService;
 import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
 import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
-import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Sample;
 
@@ -222,18 +219,14 @@ public class SampleProcessorTest {
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName(WebinCliTestUtils.getTestWebinUsername())
             .setPassword(WebinCliTestUtils.getTestWebinPassword())
+            .setWebinAuthUri(RemoteServiceUrlHelper.getWebinAuthUrl(TEST))
             .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(TEST))
             .setBiosamplesWebinUserName(WebinCliTestUtils.getTestWebinUsername())
             .setBiosamplesWebinPassword(WebinCliTestUtils.getTestWebinPassword())
             .build();
 
     return ExceptionUtils.executeWithRestExceptionHandling(
-        () ->
-            RetryUtils.executeWithRetry(
-                context -> sampleService.getSample(id),
-                context -> log.warn("Retrying sending submission to server."),
-                HttpServerErrorException.class,
-                ResourceAccessException.class),
+        () -> sampleService.getSample(id),
         WebinCliMessage.SERVICE_AUTHENTICATION_ERROR.format("Submit"),
         null,
         WebinCliMessage.SUBMIT_SAMPLE_SERVICE_SYSTEM_ERROR.text());

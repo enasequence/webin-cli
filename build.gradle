@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '8.0.1'
+version = '8.1.0'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -26,31 +26,22 @@ repositories {
             header( HttpHeaderAuthentication )
         }
     }
-    // For BioSamples client
-    maven {
-        url 'https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven'
-
-        credentials(HttpHeaderCredentials) {
-            name = "Private-Token"
-            value = biosamples_gitlab_private_token
-        }
-        authentication {
-            header(HttpHeaderAuthentication)
-        }
-    }
     mavenCentral()
 }
 
 dependencies {
     // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library.
     api( 'uk.ac.ebi.ena.sequence:sequencetools:2.+' )
-    api( 'uk.ac.ebi.ena.txmbtools:txmbtools:1.+' )
-    api( 'uk.ac.ebi.ena:readtools:2.+' )
+    api( 'uk.ac.ebi.ena.txmbtools:txmbtools:2.+' )
+    api( 'uk.ac.ebi.ena:readtools:2.+' ) {
+        exclude module: "commons-logging"
+    }
     implementation( 'uk.ac.ebi.ena.sra:webin-xml:2.+' )
 
-    implementation( 'ch.qos.logback:logback-classic:1.2.3' )
+    implementation( 'ch.qos.logback:logback-classic:1.3.14' )
 
-    implementation( 'org.springframework.retry:spring-retry:1.3.0' )
+    implementation( 'org.springframework:spring-web:6.1.13' )
+    implementation( 'org.springframework.retry:spring-retry:1.3.4' )
 
     implementation( 'info.picocli:picocli:4.6.3' )
 
@@ -60,16 +51,20 @@ dependencies {
 
     implementation( "org.jdom:jdom:2.0.2" )
 
+    implementation 'commons-lang:commons-lang:2.6'
     implementation( "commons-net:commons-net:3.10.0" )
-
     implementation( 'org.apache.commons:commons-compress:1.25.0')
 
     implementation( 'org.apache.poi:poi:4.0.1' )
     implementation( 'org.apache.poi:poi-ooxml:4.0.1' )
 
+    implementation( 'com.fasterxml.jackson.core:jackson-databind:2.17.2' )
+    runtimeOnly( 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2' )
+
     testImplementation( 'junit:junit:4.13' )
     testImplementation( 'org.assertj:assertj-core:3.11.1' )
     testImplementation( 'org.mockito:mockito-core:2.23.4' )
+    testImplementation( 'com.google.guava:guava:33.3.1-jre' )
 }
 
 tasks.withType(JavaCompile) {
