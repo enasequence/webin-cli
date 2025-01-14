@@ -414,6 +414,7 @@ public class WebinCliTest {
                 + "│                    │           │* DNBSEQ-G400                                │\n"
                 + "│                    │           │* DNBSEQ-G50                                 │\n"
                 + "│                    │           │* DNBSEQ-G400 FAST                           │\n"
+                + "│                    │           │* DNBSEQ-T10x4RS                             │\n"
                 + "│                    │           │* Element AVITI                              │\n"
                 + "│                    │           │* UG 100                                     │\n"
                 + "│                    │           │* Sentosa SQ301                              │\n"
