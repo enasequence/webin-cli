@@ -425,12 +425,24 @@ public class WebinCliSubmissionTest {
     sequenceMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
   }
 
+  private void sequenceSetMetaManifest(ManifestBuilder manifestBuilder) {
+    sequenceSetMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  }
+
   private void sequenceMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
     manifestBuilder
         .field("NAME", nameFieldValue)
         .field("STUDY", "PRJEB20083")
         .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
         .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+        .field("DESCRIPTION", "Some sequence assembly description");
+  }
+
+  private void sequenceSetMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
+    manifestBuilder
+        .field("NAME", nameFieldValue)
+        .field("STUDY", "PRJEB20083")
+        .field("ANALYSIS_TYPE", "SEQUENCE_SET")
         .field("DESCRIPTION", "Some sequence assembly description");
   }
 
@@ -721,6 +733,16 @@ public class WebinCliSubmissionTest {
     testSequence(
         m -> sequenceMetaManifest(m),
         m -> m.file("TAB", "valid/ERT000002_rRNA-with-sample-field.tsv.gz"));
+  }
+
+  @Test
+  public void testSequenceSet() throws Throwable {
+    testSequence(
+        m -> sequenceSetMetaManifest(m),
+        m -> {
+          m.file("FASTA", "valid/valid.fasta.gz");
+          m.file("TAB", "valid/valid.tsv.gz");
+        });
   }
 
   @Test

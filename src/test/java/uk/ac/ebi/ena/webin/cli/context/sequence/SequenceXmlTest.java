@@ -106,6 +106,34 @@ public class SequenceXmlTest {
   }
 
   @Test
+  public void testSequenceSet() throws Throwable {
+    ManifestBuilder manifestBuilder =
+        addDefaultFields(new ManifestBuilder())
+            .field("ANALYSIS_TYPE", "SEQUENCE_SET")
+            .file("TAB", "valid/valid.tsv.gz")
+            .file("FASTA", "valid/valid.fasta.gz");
+
+    String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
+
+    XmlTester.assertXml(
+        analysisXml,
+        "<ANALYSIS_SET>\n"
+            + "<ANALYSIS>\n"
+            + "<TITLE>Sequence assembly: test_sequence</TITLE>\n"
+            + "<DESCRIPTION>test_description</DESCRIPTION>\n"
+            + "<STUDY_REF accession=\"PRJNA272616\"/>\n"
+            + "<ANALYSIS_TYPE>\n"
+            + "<ENVIRONMENTAL_SEQUENCE_SET/>\n"
+            + "</ANALYSIS_TYPE>\n"
+            + "<FILES>\n"
+            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"ff20876a8ad754ecae0979af92a84cbc\"/>\n"
+            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid.tsv.gz\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"9fbc7f93b0915e2161d00695af2e6ad3\"/>\n"
+            + "</FILES>\n"
+            + "</ANALYSIS>\n"
+            + "</ANALYSIS_SET>");
+  }
+
+  @Test
   public void testSubmissionXml() throws Throwable {
     ManifestBuilder manifestBuilder =
         addDefaultFields(new ManifestBuilder())

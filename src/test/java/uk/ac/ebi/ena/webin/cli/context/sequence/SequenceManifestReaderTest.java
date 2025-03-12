@@ -39,7 +39,7 @@ public class SequenceManifestReaderTest {
   }
 
   @Test
-  public void testValidManifest() {
+  public void testValidSequenceFlatFileManifest() {
     SequenceManifestReader manifestReader = createManifestReader();
 
     manifestReader.readManifest(
@@ -50,6 +50,30 @@ public class SequenceManifestReaderTest {
             .file("FLATFILE", TempFileBuilder.empty("csv"))
             .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
             .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
+            .build());
+
+    SequenceManifest manifest = manifestReader.getManifests().stream().findFirst().get();
+
+    Assert.assertEquals("SOME-FANCY-NAME", manifest.getName());
+    assertThat(manifest.files().files()).size().isOne();
+    Assert.assertEquals("description", manifest.getDescription());
+    Assert.assertEquals("ST-001", manifest.getSubmissionTool());
+    Assert.assertEquals("STV-001", manifest.getSubmissionToolVersion());
+  }
+
+  @Test
+  public void testValidSequenceSetManifest() {
+    SequenceManifestReader manifestReader = createManifestReader();
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
+            .field(Field.DESCRIPTION, " description")
+            .file("FASTA", TempFileBuilder.empty("csv"))
+            .field(ManifestReader.Fields.SUBMISSION_TOOL, "ST-001")
+            .field(ManifestReader.Fields.SUBMISSION_TOOL_VERSION, "STV-001")
+            .field("ANALYSIS_TYPE", "SEQUENCE_SET")
             .build());
 
     SequenceManifest manifest = manifestReader.getManifests().stream().findFirst().get();
