@@ -30,7 +30,7 @@ public class SequenceXmlWriter
   protected Element createXmlAnalysisTypeElement(SequenceManifest manifest) {
     String analysisType = "SEQUENCE_FLATFILE";
 
-    if (!manifest.files(FileType.FASTA).isEmpty()) {
+    if (!manifest.files(FileType.FASTA).isEmpty() && !manifest.files(FileType.TAB).isEmpty()) {
       analysisType = "ENVIRONMENTAL_SEQUENCE_SET";
     }
 
