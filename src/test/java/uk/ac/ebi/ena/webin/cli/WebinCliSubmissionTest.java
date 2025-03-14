@@ -746,6 +746,17 @@ public class WebinCliSubmissionTest {
   }
 
   @Test
+  public void testSequenceSetInvalidFileGroup() throws Throwable {
+    testSequenceError(
+        m -> sequenceSetMetaManifest(m),
+        m -> m.file("FASTA", "valid/valid.fasta.gz"),
+        r ->
+            r.textInManifestReport(
+                "An invalid set of files has been specified. Expected data files are: [1 TAB] or [1 FLATFILE] or [1 FASTA, 1 TAB]"),
+        WebinCliException.ErrorType.SYSTEM_ERROR);
+  }
+
+  @Test
   public void testSequenceTabWithInvalidSample() {
     String name = String.format("TEST%X", System.nanoTime());
 
