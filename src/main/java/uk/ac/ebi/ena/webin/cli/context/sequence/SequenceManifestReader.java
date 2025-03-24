@@ -226,34 +226,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
                       fastaFile ->
                           submissionFiles.add(
                               new SubmissionFile(SequenceManifest.FileType.FASTA, fastaFile)));
-
-              validateSubmissionFiles(fieldGroup, submissionFiles);
             });
-  }
-
-  private static void validateSubmissionFiles(
-      final ManifestFieldGroup fieldGroup,
-      final SubmissionFiles<SequenceManifest.FileType> submissionFiles) {
-    final String analysisType = fieldGroup.getValue("ANALYSIS_TYPE");
-    final boolean isSequenceSet = "SEQUENCE_SET".equals(analysisType);
-
-    if (isSequenceSet) {
-      if (submissionFiles.get(SequenceManifest.FileType.FASTA).isEmpty()
-          || submissionFiles.get(SequenceManifest.FileType.TAB).isEmpty()) {
-        throw new RuntimeException(
-            "SEQUENCE_SET analysis type submission must have a TAB and a FASTA file");
-      }
-
-      if (!submissionFiles.get(SequenceManifest.FileType.FLATFILE).isEmpty()) {
-        throw new RuntimeException(
-            "SEQUENCE_SET analysis type submission must NOT have a FLATFILE");
-      }
-    } else {
-      if (!submissionFiles.get(SequenceManifest.FileType.FASTA).isEmpty()) {
-        throw new RuntimeException(
-            "Non-SEQUENCE_SET analysis type submission must NOT have a FASTA file");
-      }
-    }
   }
 
   @Override

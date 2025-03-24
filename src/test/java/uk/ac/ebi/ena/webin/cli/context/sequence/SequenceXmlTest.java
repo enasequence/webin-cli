@@ -10,8 +10,7 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.sequence;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
@@ -133,22 +132,6 @@ public class SequenceXmlTest {
   }
 
   @Test
-  public void testSequenceSetMissingFastaFile() {
-    ManifestBuilder manifestBuilder =
-        addDefaultFields(new ManifestBuilder())
-            .field("ANALYSIS_TYPE", "SEQUENCE_SET")
-            .file("TAB", "valid/valid.tsv.gz");
-
-    Throwable t =
-        assertThrows(
-            WebinCliException.class, () -> getGeneratedXml(manifestBuilder, "analysis.xml"));
-
-    assertEquals(
-        "Failed to initialise validator. SEQUENCE_SET analysis type submission must have a TAB and a FASTA file",
-        t.getMessage());
-  }
-
-  @Test
   public void testSequenceSetMissingTabFile() {
     ManifestBuilder manifestBuilder =
         addDefaultFields(new ManifestBuilder())
@@ -159,9 +142,7 @@ public class SequenceXmlTest {
         assertThrows(
             WebinCliException.class, () -> getGeneratedXml(manifestBuilder, "analysis.xml"));
 
-    assertEquals(
-        "Failed to initialise validator. SEQUENCE_SET analysis type submission must have a TAB and a FASTA file",
-        t.getMessage());
+    assertTrue(t.getMessage().contains("Invalid manifest file"));
   }
 
   @Test

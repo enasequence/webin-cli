@@ -442,6 +442,7 @@ public class WebinCliSubmissionTest {
     manifestBuilder
         .field("NAME", nameFieldValue)
         .field("STUDY", "PRJEB20083")
+        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
         .field("ANALYSIS_TYPE", "SEQUENCE_SET")
         .field("DESCRIPTION", "Some sequence assembly description");
   }
@@ -753,7 +754,7 @@ public class WebinCliSubmissionTest {
         r ->
             r.textInManifestReport(
                 "An invalid set of files has been specified. Expected data files are: [1 TAB] or [1 FLATFILE] or [1 FASTA, 1 TAB]"),
-        WebinCliException.ErrorType.SYSTEM_ERROR);
+        WebinCliException.ErrorType.USER_ERROR);
   }
 
   @Test
