@@ -107,7 +107,7 @@ public class WebinCliTestUtils {
     ArrayNode attributes = sampleJson.putArray("attributes");
     attributes
         .addObject()
-        .put("tag", "Geographic location (country and/or sea)")
+        .put("tag", "geographic location (country and/or sea)")
         .put("value", "France");
     attributes.addObject().put("tag", "collection date").put("value", "2010-01-20");
 
