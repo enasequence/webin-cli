@@ -18,8 +18,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * A manifest field group is a collection of fields read from a manifest file. A single manifest file can
- * have multiple groups of fields. Each group is considered as an independent submission manifest.
+ * A manifest field group is a collection of fields read from a manifest file. A single manifest
+ * file can have multiple groups of fields. Each group is considered as an independent submission
+ * manifest.
  */
 public class ManifestFieldGroup extends ArrayList<ManifestFieldValue> {
 

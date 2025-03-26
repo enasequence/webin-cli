@@ -680,7 +680,8 @@ public abstract class ManifestReader<M extends Manifest> {
 
   /** @return 'true' if validation was successful. 'false' if it was not. */
   private boolean validateFileCountFor(ManifestFieldGroup fieldGroup) {
-    // Look at all the fields in the given manifest group, consider just the ones whose type is FILE and group them.
+    // Look at all the fields in the given manifest group, consider just the ones whose type is FILE
+    // and group them.
     // E.g. FASTQ -> 2, BAM -> 1 etc
     Map<String, Long> actualFileTypeToCountMap =
         fieldGroup.stream()
