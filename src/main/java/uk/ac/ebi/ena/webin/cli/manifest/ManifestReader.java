@@ -680,24 +680,25 @@ public abstract class ManifestReader<M extends Manifest> {
 
   /** @return 'true' if validation was successfull. 'false' if it was not. */
   private boolean validateFileCountFor(ManifestFieldGroup fieldGroup) {
+    // Look at all the fields in the given manifest group, consider just the ones whose type is FILE and group them.
     // E.g. FASTQ -> 2, BAM -> 1 etc
-    Map<String, Long> fileTypeToCountMap =
+    Map<String, Long> actualFileTypeToCountMap =
         fieldGroup.stream()
             .filter(field -> field.getDefinition().getType().equals(ManifestFieldType.FILE))
             .collect(Collectors.groupingBy(ManifestFieldValue::getName, Collectors.counting()));
 
-    if (fileTypeToCountMap == null || fileTypeToCountMap.isEmpty()) {
+    if (actualFileTypeToCountMap == null || actualFileTypeToCountMap.isEmpty()) {
       error(WebinCliMessage.MANIFEST_READER_NO_DATA_FILES_ERROR, getFileGroupText(fileGroups));
       return false;
     }
 
     next:
-    for (ManifestFileGroup fileGroup : fileGroups) {
-      for (ManifestFileCount fileCountInfo : fileGroup.getFileCounts()) {
-        Integer expectedMinCount = fileCountInfo.getMinCount();
-        Integer expectedMaxCount = fileCountInfo.getMaxCount();
+    for (ManifestFileGroup fileGroupDefinition : fileGroups) {
+      for (ManifestFileCount expectedFileCountInfo : fileGroupDefinition.getFileCounts()) {
+        Integer expectedMinCount = expectedFileCountInfo.getMinCount();
+        Integer expectedMaxCount = expectedFileCountInfo.getMaxCount();
 
-        Long actualFileCount = fileTypeToCountMap.get(fileCountInfo.getFileType());
+        Long actualFileCount = actualFileTypeToCountMap.get(expectedFileCountInfo.getFileType());
         if (actualFileCount == null) {
           if (expectedMinCount > 0) {
             continue next; // Invalid because min is > 0.
@@ -710,14 +711,14 @@ public abstract class ManifestReader<M extends Manifest> {
         }
       }
 
-      for (String actualFileType : fileTypeToCountMap.keySet()) {
-        List<ManifestFileCount> fileCountInfoList = fileGroup.getFileCounts();
+      for (String actualFileType : actualFileTypeToCountMap.keySet()) {
+        List<ManifestFileCount> expectedFileCountInfoList = fileGroupDefinition.getFileCounts();
 
         boolean fileTypeMatchFound =
-            fileCountInfoList.stream()
+            expectedFileCountInfoList.stream()
                 .filter(
-                    fileCountInfo -> {
-                      String expectedFileType = fileCountInfo.getFileType();
+                    expectedFileCountInfo -> {
+                      String expectedFileType = expectedFileCountInfo.getFileType();
 
                       return expectedFileType.equals(actualFileType);
                     })
