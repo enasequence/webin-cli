@@ -14,11 +14,7 @@ import java.util.Collection;
 import java.util.Map;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldDefinition;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFieldProcessor;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileCount;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestFileSuffix;
-import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
+import uk.ac.ebi.ena.webin.cli.manifest.*;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.ASCIIFileNameProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.AuthorProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
@@ -35,6 +31,8 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String DESCRIPTION = "DESCRIPTION";
     String TAB = "TAB";
     String FLATFILE = "FLATFILE";
+    String FASTA = "FASTA";
+    String ANALYSIS_TYPE = "ANALYSIS_TYPE";
     String AUTHORS = "AUTHORS";
     String ADDRESS = "ADDRESS";
   }
@@ -47,6 +45,9 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String DESCRIPTION = "Sequence submission description";
     String TAB = "Tabulated file";
     String FLATFILE = "Flat file";
+    String FASTA = "FASTA file";
+    String ANALYSIS_TYPE =
+        "Type of analysis (SEQUENCE_FLATFILE or SEQUENCE_SET). Default: SEQUENCE_FLATFILE";
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
@@ -84,6 +85,11 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .name(Field.DESCRIPTION)
             .desc(Description.DESCRIPTION)
             .and()
+            .meta()
+            .optional()
+            .name(Field.ANALYSIS_TYPE)
+            .desc(Description.ANALYSIS_TYPE)
+            .and()
             .file()
             .optional()
             .name(Field.TAB)
@@ -95,6 +101,12 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .name(Field.FLATFILE)
             .desc(Description.FLATFILE)
             .processor(getFlatfileProcessors())
+            .and()
+            .file()
+            .optional()
+            .name(Field.FASTA)
+            .desc(Description.FASTA)
+            .processor(getFastaProcessors())
             .and()
             .meta()
             .optional()
@@ -124,6 +136,10 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .and()
             .group("Annotated sequences in a flat file.")
             .required(Field.FLATFILE)
+            .and()
+            .group("Both fasta and tab(tsv) files are mandatory for SEQUENCE_SET analysis.")
+            .required(Field.FASTA)
+            .required(Field.TAB)
             .build());
 
     if (factory.getStudyProcessor() != null) {
@@ -153,6 +169,12 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     return new ManifestFieldProcessor[] {
       new ASCIIFileNameProcessor(),
       new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)
+    };
+  }
+
+  private static ManifestFieldProcessor[] getFastaProcessors() {
+    return new ManifestFieldProcessor[] {
+      new ASCIIFileNameProcessor(), new FileSuffixProcessor(ManifestFileSuffix.FASTA_FILE_SUFFIX)
     };
   }
 
@@ -191,14 +213,19 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
 
               getFiles(getInputDir(), fieldGroup, Field.TAB)
                   .forEach(
-                      fastaFile ->
+                      tabFile ->
                           submissionFiles.add(
-                              new SubmissionFile(SequenceManifest.FileType.TAB, fastaFile)));
+                              new SubmissionFile(SequenceManifest.FileType.TAB, tabFile)));
               getFiles(getInputDir(), fieldGroup, Field.FLATFILE)
                   .forEach(
                       flatFile ->
                           submissionFiles.add(
                               new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile)));
+              getFiles(getInputDir(), fieldGroup, Field.FASTA)
+                  .forEach(
+                      fastaFile ->
+                          submissionFiles.add(
+                              new SubmissionFile(SequenceManifest.FileType.FASTA, fastaFile)));
             });
   }
 

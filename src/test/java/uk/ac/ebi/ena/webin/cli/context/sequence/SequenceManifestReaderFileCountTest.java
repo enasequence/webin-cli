@@ -23,6 +23,7 @@ public class SequenceManifestReaderFileCountTest {
         // Supported file groups
         .files(SequenceManifest.FileType.TAB)
         .files(SequenceManifest.FileType.FLATFILE)
+        .files(SequenceManifest.FileType.TAB, SequenceManifest.FileType.FASTA)
         .test();
   }
 }

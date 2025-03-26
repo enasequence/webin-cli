@@ -28,9 +28,16 @@ public class SequenceXmlWriter
 
   @Override
   protected Element createXmlAnalysisTypeElement(SequenceManifest manifest) {
+    String analysisType = "SEQUENCE_FLATFILE";
 
-    Element element = new Element("SEQUENCE_FLATFILE");
-    if (null != manifest.getAuthors() && null != manifest.getAddress()) {
+    if (!manifest.files(FileType.FASTA).isEmpty() && !manifest.files(FileType.TAB).isEmpty()) {
+      analysisType = "ENVIRONMENTAL_SEQUENCE_SET";
+    }
+
+    Element element = new Element(analysisType);
+    if (null != manifest.getAuthors()
+        && null != manifest.getAddress()
+        && !analysisType.equals("ENVIRONMENTAL_SEQUENCE_SET")) {
       element.addContent(createTextElement("AUTHORS", manifest.getAuthors()));
       element.addContent(createTextElement("ADDRESS", manifest.getAddress()));
       return element;
@@ -41,7 +48,6 @@ public class SequenceXmlWriter
   @Override
   protected List<Element> createXmlFileElements(
       SequenceManifest manifest, Path inputDir, Path uploadDir) {
-
     List<Element> list = new ArrayList<>();
 
     manifest.files(FileType.FLATFILE).stream()
@@ -55,7 +61,17 @@ public class SequenceXmlWriter
                         file,
                         FileUtils.calculateDigest("MD5", file.toFile()),
                         "flatfile")));
-
+    manifest.files(FileType.FASTA).stream()
+        .map(file -> file.getFile().toPath())
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "fasta")));
     manifest.files(FileType.TAB).stream()
         .map(file -> file.getFile().toPath())
         .forEach(
