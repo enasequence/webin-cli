@@ -158,7 +158,7 @@ public abstract class ManifestReader<M extends Manifest> {
     ValidationOrigin origin = new ValidationOrigin("manifest file", state.fileName);
     ValidationResult result = new ValidationResult(reportFile, origin);
 
-    // used for testing purpose
+    // used for testing purposes
     listener.forEach(l -> result.add(l));
 
     manifestReaderResult = new ManifestReaderResult(result);
@@ -678,7 +678,7 @@ public abstract class ManifestReader<M extends Manifest> {
     }
   }
 
-  /** @return 'true' if validation was successfull. 'false' if it was not. */
+  /** @return 'true' if validation was successful. 'false' if it was not. */
   private boolean validateFileCountFor(ManifestFieldGroup fieldGroup) {
     // E.g. FASTQ -> 2, BAM -> 1 etc
     Map<String, Long> fileTypeToCountMap =

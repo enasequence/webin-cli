@@ -188,7 +188,7 @@ public class SampleProcessorTest {
             + "            },"
             + "            \"attributes\": ["
             + "                {"
-            + "                    \"tag\": \"Geographic location (country and/or sea)\","
+            + "                    \"tag\": \"geographic location (country and/or sea)\","
             + "                    \"value\": \"France\""
             + "                },"
             + "                {"
