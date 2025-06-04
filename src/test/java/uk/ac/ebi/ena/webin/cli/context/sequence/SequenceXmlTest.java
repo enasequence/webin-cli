@@ -108,7 +108,9 @@ public class SequenceXmlTest {
     ManifestBuilder manifestBuilder =
         addDefaultFields(new ManifestBuilder())
             .field("ANALYSIS_TYPE", "SEQUENCE_SET")
-            .file("TAB", "valid/valid.tsv.gz")
+            .field("ANALYSIS_PROTOCOL", "TEST")
+            .file("SAMPLE_TSV", "valid/valid.tsv.gz")
+            .file("TAX_TSV", "valid/valid_tax.tsv.gz")
             .file("FASTA", "valid/valid.fasta.gz");
 
     String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
@@ -125,7 +127,8 @@ public class SequenceXmlTest {
             + "</ANALYSIS_TYPE>\n"
             + "<FILES>\n"
             + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"ff20876a8ad754ecae0979af92a84cbc\"/>\n"
-            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid.tsv.gz\" filetype=\"tab\" checksum_method=\"MD5\" checksum=\"9fbc7f93b0915e2161d00695af2e6ad3\"/>\n"
+            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid_sample_tsv.tsv.gz\" filetype=\"sample_tsv\" checksum_method=\"MD5\" checksum=\"9fbc7f93b0915e2161d00695af2e6ad3\"/>\n"
+            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid_tax_tsv.tsv.gz\" filetype=\"tax_tsv\" checksum_method=\"MD5\" checksum=\"9fbc7f93b0915e2161d00695af2e6ad3\"/>\n"
             + "</FILES>\n"
             + "</ANALYSIS>\n"
             + "</ANALYSIS_SET>");

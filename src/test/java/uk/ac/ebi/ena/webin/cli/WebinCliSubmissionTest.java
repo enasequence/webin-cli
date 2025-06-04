@@ -444,6 +444,7 @@ public class WebinCliSubmissionTest {
         .field("STUDY", "PRJEB20083")
         .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
         .field("ANALYSIS_TYPE", "SEQUENCE_SET")
+        .field("ANALYSIS_PROTOCOL", "TEST")
         .field("DESCRIPTION", "Some sequence assembly description");
   }
 
@@ -742,7 +743,8 @@ public class WebinCliSubmissionTest {
         m -> sequenceSetMetaManifest(m),
         m -> {
           m.file("FASTA", "valid/valid.fasta.gz");
-          m.file("TAB", "valid/valid.tsv.gz");
+          m.file("SAMPLE_TSV", "valid/valid.tsv.gz");
+          m.file("TAX_TSV", "valid/valid_tax.tsv.gz");
         });
   }
 

@@ -30,7 +30,9 @@ public class SequenceXmlWriter
   protected Element createXmlAnalysisTypeElement(SequenceManifest manifest) {
     String analysisType = "SEQUENCE_FLATFILE";
 
-    if (!manifest.files(FileType.FASTA).isEmpty() && !manifest.files(FileType.TAB).isEmpty()) {
+    if (!manifest.files(FileType.FASTA).isEmpty()
+        && !manifest.files(FileType.SAMPLE_TSV).isEmpty()
+        && !manifest.files(FileType.TAX_TSV).isEmpty()) {
       analysisType = "ENVIRONMENTAL_SEQUENCE_SET";
     }
 
@@ -83,6 +85,28 @@ public class SequenceXmlWriter
                         file,
                         FileUtils.calculateDigest("MD5", file.toFile()),
                         "tab")));
+    manifest.files(FileType.SAMPLE_TSV).stream()
+        .map(file -> file.getFile().toPath())
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "sample_tsv")));
+    manifest.files(FileType.TAX_TSV).stream()
+        .map(file -> file.getFile().toPath())
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "tax_tsv")));
 
     return list;
   }

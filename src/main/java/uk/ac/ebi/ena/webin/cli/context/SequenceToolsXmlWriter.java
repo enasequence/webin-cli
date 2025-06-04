@@ -23,6 +23,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
@@ -125,6 +126,24 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
           submissionToolVersionAnalysisAttributeValueE);
 
       analysisAttributesE.addContent(submissionToolVersionAnalysisAttributeE);
+    }
+
+    if (manifest instanceof SequenceManifest) {
+      final SequenceManifest sequenceManifest = (SequenceManifest) manifest;
+
+      if (sequenceManifest.getAnalysisProtocol() != null
+          && !sequenceManifest.getAnalysisProtocol().isEmpty()) {
+        Element analysisProtocolAnalysisAttributeTagE =
+            new Element("TAG").setText("ANALYSIS_PROTOCOL");
+        Element analysisProtocolAnalysisAttributeValueE =
+            new Element("VALUE").setText(sequenceManifest.getAnalysisProtocol());
+
+        Element analysisProtocolAnalysisAttributeE = new Element("ANALYSIS_ATTRIBUTE");
+        analysisProtocolAnalysisAttributeE.addContent(analysisProtocolAnalysisAttributeTagE);
+        analysisProtocolAnalysisAttributeE.addContent(analysisProtocolAnalysisAttributeValueE);
+
+        analysisAttributesE.addContent(analysisProtocolAnalysisAttributeE);
+      }
     }
 
     if (analysisAttributesE.getContentSize() > 0) {
