@@ -8,9 +8,9 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.context.sequence;
+package uk.ac.ebi.ena.webin.cli.context.polysample;
 
-import static uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest.FileType;
+import static uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest.FileType;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
@@ -21,17 +21,25 @@ import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest;
 
-public class SequenceXmlWriter
-    extends SequenceToolsXmlWriter<SequenceManifest, ValidationResponse> {
+public class PolysampleXmlWriter
+    extends SequenceToolsXmlWriter<PolySampleManifest, ValidationResponse> {
 
   @Override
-  protected Element createXmlAnalysisTypeElement(SequenceManifest manifest) {
-    String analysisType = "SEQUENCE_FLATFILE";
-    Element element = new Element(analysisType);
+  protected Element createXmlAnalysisTypeElement(PolySampleManifest manifest) {
+    String analysisType = "ENVIRONMENTAL_SEQUENCE_SET";
 
-    if (null != manifest.getAuthors() && null != manifest.getAddress()) {
+    if (!manifest.files(FileType.FASTA).isEmpty()
+        && !manifest.files(FileType.SAMPLE_TSV).isEmpty()
+        && !manifest.files(FileType.TAX_TSV).isEmpty()) {
+      analysisType = "ENVIRONMENTAL_SEQUENCE_SET";
+    }
+
+    Element element = new Element(analysisType);
+    if (null != manifest.getAuthors()
+        && null != manifest.getAddress()
+        && !analysisType.equals("ENVIRONMENTAL_SEQUENCE_SET")) {
       element.addContent(createTextElement("AUTHORS", manifest.getAuthors()));
       element.addContent(createTextElement("ADDRESS", manifest.getAddress()));
       return element;
@@ -41,10 +49,10 @@ public class SequenceXmlWriter
 
   @Override
   protected List<Element> createXmlFileElements(
-      SequenceManifest manifest, Path inputDir, Path uploadDir) {
+      PolySampleManifest manifest, Path inputDir, Path uploadDir) {
     List<Element> list = new ArrayList<>();
 
-    manifest.files(FileType.FLATFILE).stream()
+    manifest.files(FileType.FASTA).stream()
         .map(file -> file.getFile().toPath())
         .forEach(
             file ->
@@ -54,8 +62,8 @@ public class SequenceXmlWriter
                         uploadDir,
                         file,
                         FileUtils.calculateDigest("MD5", file.toFile()),
-                        "flatfile")));
-    manifest.files(FileType.TAB).stream()
+                        "fasta")));
+    manifest.files(FileType.SAMPLE_TSV).stream()
         .map(file -> file.getFile().toPath())
         .forEach(
             file ->
@@ -65,7 +73,18 @@ public class SequenceXmlWriter
                         uploadDir,
                         file,
                         FileUtils.calculateDigest("MD5", file.toFile()),
-                        "tab")));
+                        "sample_tsv")));
+    manifest.files(FileType.TAX_TSV).stream()
+        .map(file -> file.getFile().toPath())
+        .forEach(
+            file ->
+                list.add(
+                    createFileElement(
+                        inputDir,
+                        uploadDir,
+                        file,
+                        FileUtils.calculateDigest("MD5", file.toFile()),
+                        "tax_tsv")));
 
     return list;
   }

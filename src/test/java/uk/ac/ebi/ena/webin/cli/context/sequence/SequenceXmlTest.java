@@ -109,8 +109,18 @@ public class SequenceXmlTest {
         addDefaultFields(new ManifestBuilder())
             .field("ANALYSIS_TYPE", "SEQUENCE_SET")
             .field("ANALYSIS_PROTOCOL", "TEST")
-            .file("SAMPLE_TSV", "valid/valid.tsv.gz")
-            .file("TAX_TSV", "valid/valid_tax.tsv.gz")
+            .field("ANALYSIS_DATE", "2021-11-12")
+            .field("TARGET_LOCUS", "12S")
+            .field("ANALYSIS_CODE", "TEST")
+            .field("ANALYSIS_VERSION", "1.0")
+            .field("ORGANELLE", "mitochondrion")
+            .field("FORWARD_PRIMER_NAME", "TEST")
+            .field("FORWARD_PRIMER_SEQUENCE", "TEST")
+            .field("REVERSE_PRIMER_NAME", "TEST")
+            .field("REVERSE_PRIMER_SEQUENCE", "TEST")
+            .field("ANALYSIS_CENTER", "TEST")
+            .file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz")
+            .file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz")
             .file("FASTA", "valid/valid.fasta.gz");
 
     String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
@@ -127,9 +137,15 @@ public class SequenceXmlTest {
             + "</ANALYSIS_TYPE>\n"
             + "<FILES>\n"
             + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"ff20876a8ad754ecae0979af92a84cbc\"/>\n"
-            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid_sample_tsv.tsv.gz\" filetype=\"sample_tsv\" checksum_method=\"MD5\" checksum=\"9fbc7f93b0915e2161d00695af2e6ad3\"/>\n"
-            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/valid_tax_tsv.tsv.gz\" filetype=\"tax_tsv\" checksum_method=\"MD5\" checksum=\"9fbc7f93b0915e2161d00695af2e6ad3\"/>\n"
+            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/ERT000061-polysample-sample_tsv.tsv.gz\" filetype=\"sample_tsv\" checksum_method=\"MD5\" checksum=\"9fbc7f93b0915e2161d00695af2e6ad3\"/>\n"
+            + "<FILE filename=\"webin-cli-test/sequence/test_sequence/ERT000061-polysample-tax_tsv.tsv.gz\" filetype=\"tax_tsv\" checksum_method=\"MD5\" checksum=\"e22f3dd325c7501dee8a9bca657eeae0\"/>\n"
             + "</FILES>\n"
+            + "<ANALYSIS_ATTRIBUTES>\n"
+            + "<ANALYSIS_ATTRIBUTE>\n"
+            + "<TAG>ANALYSIS_PROTOCOL</TAG>\n"
+            + "<VALUE>TEST</VALUE>\n"
+            + "</ANALYSIS_ATTRIBUTE>\n"
+            + "</ANALYSIS_ATTRIBUTES>\n"
             + "</ANALYSIS>\n"
             + "</ANALYSIS_SET>");
   }

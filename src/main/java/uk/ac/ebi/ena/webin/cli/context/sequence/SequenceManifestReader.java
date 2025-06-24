@@ -30,12 +30,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String ANALYSIS_REF = "ANALYSIS_REF";
     String DESCRIPTION = "DESCRIPTION";
     String TAB = "TAB";
-    String SAMPLE_TSV = "SAMPLE_TSV";
-    String TAX_TSV = "TAX_TSV";
     String FLATFILE = "FLATFILE";
-    String FASTA = "FASTA";
-    String ANALYSIS_TYPE = "ANALYSIS_TYPE";
-    String ANALYSIS_PROTOCOL = "ANALYSIS_PROTOCOL";
     String AUTHORS = "AUTHORS";
     String ADDRESS = "ADDRESS";
   }
@@ -47,13 +42,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String ANALYSIS_REF = "Analysis accession or name as a comma-separated list";
     String DESCRIPTION = "Sequence submission description";
     String TAB = "Tabulated file";
-    String SAMPLE_TSV = "Tabulated file";
-    String TAX_TSV = "Tabulated file";
     String FLATFILE = "Flat file";
-    String FASTA = "FASTA file";
-    String ANALYSIS_TYPE =
-        "Type of analysis (SEQUENCE_FLATFILE or SEQUENCE_SET). Default: SEQUENCE_FLATFILE";
-    String ANALYSIS_PROTOCOL = "";
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
@@ -91,16 +80,6 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .name(Field.DESCRIPTION)
             .desc(Description.DESCRIPTION)
             .and()
-            .meta()
-            .optional()
-            .name(Field.ANALYSIS_TYPE)
-            .desc(Description.ANALYSIS_TYPE)
-            .and()
-            .meta()
-            .optional()
-            .name(Field.ANALYSIS_PROTOCOL)
-            .desc(Description.ANALYSIS_PROTOCOL)
-            .and()
             .file()
             .optional()
             .name(Field.TAB)
@@ -109,27 +88,9 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .and()
             .file()
             .optional()
-            .name(Field.SAMPLE_TSV)
-            .desc(Description.SAMPLE_TSV)
-            .processor(getTabProcessors())
-            .and()
-            .file()
-            .optional()
-            .name(Field.TAX_TSV)
-            .desc(Description.TAX_TSV)
-            .processor(getTabProcessors())
-            .and()
-            .file()
-            .optional()
             .name(Field.FLATFILE)
             .desc(Description.FLATFILE)
             .processor(getFlatfileProcessors())
-            .and()
-            .file()
-            .optional()
-            .name(Field.FASTA)
-            .desc(Description.FASTA)
-            .processor(getFastaProcessors())
             .and()
             .meta()
             .optional()
@@ -159,13 +120,6 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .and()
             .group("Annotated sequences in a flat file.")
             .required(Field.FLATFILE)
-            .and()
-            .group(
-                "One fasta, one sample_tsv in tsv format and one tax_tsv"
-                    + "in tsv format are mandatory files for SEQUENCE_SET analysis.")
-            .required(Field.FASTA)
-            .required(Field.SAMPLE_TSV)
-            .required(Field.TAX_TSV)
             .build());
 
     if (factory.getStudyProcessor() != null) {
@@ -228,10 +182,6 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
               }
               manifest.setName(fieldGroup.getValue(Fields.NAME));
               manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
-
-              manifest.setAnalysisType(fieldGroup.getValue(Field.ANALYSIS_TYPE));
-              manifest.setAnalysisProtocol(fieldGroup.getValue(Field.ANALYSIS_PROTOCOL));
-
               manifest.setSubmissionTool(fieldGroup.getValue(Fields.SUBMISSION_TOOL));
               manifest.setSubmissionToolVersion(
                   fieldGroup.getValue(Fields.SUBMISSION_TOOL_VERSION));
@@ -245,26 +195,11 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
                       tabFile ->
                           submissionFiles.add(
                               new SubmissionFile(SequenceManifest.FileType.TAB, tabFile)));
-              getFiles(getInputDir(), fieldGroup, Field.SAMPLE_TSV)
-                  .forEach(
-                      tabFile ->
-                          submissionFiles.add(
-                              new SubmissionFile(SequenceManifest.FileType.SAMPLE_TSV, tabFile)));
-              getFiles(getInputDir(), fieldGroup, Field.TAX_TSV)
-                  .forEach(
-                      tabFile ->
-                          submissionFiles.add(
-                              new SubmissionFile(SequenceManifest.FileType.TAX_TSV, tabFile)));
               getFiles(getInputDir(), fieldGroup, Field.FLATFILE)
                   .forEach(
                       flatFile ->
                           submissionFiles.add(
                               new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile)));
-              getFiles(getInputDir(), fieldGroup, Field.FASTA)
-                  .forEach(
-                      fastaFile ->
-                          submissionFiles.add(
-                              new SubmissionFile(SequenceManifest.FileType.FASTA, fastaFile)));
             });
   }
 
