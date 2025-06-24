@@ -52,11 +52,11 @@ public enum WebinCliContext {
       SubmissionValidator.class,
       "Sequence assembly"),
   polysample(
-          PolySampleManifest.class,
-          PolysampleManifestReader.class,
-          PolysampleXmlWriter.class,
-          SubmissionValidator.class,
-          "Polysample"),
+      PolySampleManifest.class,
+      PolysampleManifestReader.class,
+      PolysampleXmlWriter.class,
+      SubmissionValidator.class,
+      "Polysample"),
   reads(
       ReadsManifest.class,
       ReadsManifestReader.class,

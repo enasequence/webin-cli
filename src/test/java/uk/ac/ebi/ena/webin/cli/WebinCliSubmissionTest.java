@@ -265,16 +265,16 @@ public class WebinCliSubmissionTest {
   }
 
   public static void testPolysample(
-          Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
-          throws Throwable {
+      Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
+      throws Throwable {
     testPolysample(metaManifestConfig, filesManifestConfig, c -> {});
   }
 
   public static void testPolysample(
-          Consumer<ManifestBuilder> metaManifestConfig,
-          Consumer<ManifestBuilder> filesManifestConfig,
-          Consumer<WebinCliBuilder> webinCliConfig)
-          throws Throwable {
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig)
+      throws Throwable {
     if (TEST_TYPE == WebinCliTestType.VALIDATE) {
       webinCliForValidate(
               SEQUENCE_RESOURCE_DIR,
@@ -282,7 +282,7 @@ public class WebinCliSubmissionTest {
               metaManifestConfig,
               filesManifestConfig,
               webinCliConfig)
-              .execute();
+          .execute();
     } else {
       webinCliForSubmit(
               SEQUENCE_RESOURCE_DIR,
@@ -290,7 +290,7 @@ public class WebinCliSubmissionTest {
               metaManifestConfig,
               filesManifestConfig,
               webinCliConfig)
-              .execute();
+          .execute();
     }
   }
 
