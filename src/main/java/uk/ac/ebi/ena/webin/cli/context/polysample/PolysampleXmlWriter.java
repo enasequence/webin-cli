@@ -30,16 +30,9 @@ public class PolysampleXmlWriter
   protected Element createXmlAnalysisTypeElement(PolySampleManifest manifest) {
     String analysisType = "ENVIRONMENTAL_SEQUENCE_SET";
 
-    if (!manifest.files(FileType.FASTA).isEmpty()
-        && !manifest.files(FileType.SAMPLE_TSV).isEmpty()
-        && !manifest.files(FileType.TAX_TSV).isEmpty()) {
-      analysisType = "ENVIRONMENTAL_SEQUENCE_SET";
-    }
-
     Element element = new Element(analysisType);
-    if (null != manifest.getAuthors()
-        && null != manifest.getAddress()
-        && !analysisType.equals("ENVIRONMENTAL_SEQUENCE_SET")) {
+
+    if (null != manifest.getAuthors() && null != manifest.getAddress()) {
       element.addContent(createTextElement("AUTHORS", manifest.getAuthors()));
       element.addContent(createTextElement("ADDRESS", manifest.getAddress()));
       return element;

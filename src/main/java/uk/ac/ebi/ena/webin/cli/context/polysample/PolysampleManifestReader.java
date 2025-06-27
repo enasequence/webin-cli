@@ -62,7 +62,7 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
     String FLATFILE = "Flat file";
     String FASTA = "FASTA file";
     String ANALYSIS_TYPE =
-        "Type of analysis (SEQUENCE_FLATFILE or SEQUENCE_SET). Default: SEQUENCE_FLATFILE";
+        "Type of SEQUENCE_SET, currently supported is ENVIRONMENTAL_SEQUENCE_SET";
     String ANALYSIS_PROTOCOL = "ANALYSIS PROTOCOL";
     String ANALYSIS_DATE = "ANALYSIS DATE";
     String TARGET_LOCUS = "TARGET LOCUS";
@@ -225,18 +225,18 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
         // File groups.
         new ManifestFileCount.Builder()
             .group(
-                "A SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
+                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
             .required(Field.FASTA)
             .required(Field.SAMPLE_TSV)
             .required(Field.TAX_TSV)
             .and()
             .group(
-                "A SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
+                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
             .required(Field.FASTA)
             .required(Field.SAMPLE_TSV)
             .and()
             .group(
-                "A SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
+                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
             .required(Field.TAX_TSV)
             .build());
 

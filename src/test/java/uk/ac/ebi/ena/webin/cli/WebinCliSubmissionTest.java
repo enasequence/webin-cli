@@ -455,8 +455,8 @@ public class WebinCliSubmissionTest {
     sequenceMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
   }
 
-  private void polysampleMetaManifest(ManifestBuilder manifestBuilder) {
-    polysampleMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  private void polySampleMetaManifest(ManifestBuilder manifestBuilder) {
+    polySampleMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
   }
 
   private void sequenceMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
@@ -468,7 +468,7 @@ public class WebinCliSubmissionTest {
         .field("DESCRIPTION", "Some sequence assembly description");
   }
 
-  private void polysampleMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
+  private void polySampleMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
     manifestBuilder
         .field("NAME", nameFieldValue)
         .field("STUDY", "PRJEB20083")
@@ -768,9 +768,9 @@ public class WebinCliSubmissionTest {
   }
 
   @Test
-  public void testPolySample() throws Throwable {
+  public void testPolySampleFull() throws Throwable {
     testPolysample(
-        m -> polysampleMetaManifest(m),
+        this::polySampleMetaManifest,
         m -> {
           m.file("FASTA", "valid/valid.fasta.gz");
           m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
@@ -779,9 +779,28 @@ public class WebinCliSubmissionTest {
   }
 
   @Test
+  public void testPolySampleTaxTsv() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
+        m -> {
+          m.file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz");
+        });
+  }
+
+  @Test
+  public void testPolySampleFastaAndSampleTsv() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
+        m -> {
+          m.file("FASTA", "valid/valid.fasta.gz");
+          m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
+        });
+  }
+
+  @Test
   public void testSequenceSetInvalidFileGroup() throws Throwable {
     testSequenceError(
-        m -> polysampleMetaManifest(m),
+        m -> polySampleMetaManifest(m),
         m -> m.file("FASTA", "valid/valid.fasta.gz"),
         r ->
             r.textInManifestReport(
