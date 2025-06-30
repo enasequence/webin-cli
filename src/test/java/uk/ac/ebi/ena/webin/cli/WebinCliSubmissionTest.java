@@ -322,6 +322,34 @@ public class WebinCliSubmissionTest {
     }
   }
 
+  public static void testPolySampleError(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<ReportTester> reportTesterConfig,
+      WebinCliException.ErrorType errorType) {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      WebinCli webinCli =
+          webinCliForValidate(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForPolySample(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    } else {
+      WebinCli webinCli =
+          webinCliForSubmit(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForPolySample(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    }
+  }
+
   public static void testTranscriptome(
       Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
       throws Throwable {
@@ -798,13 +826,13 @@ public class WebinCliSubmissionTest {
   }
 
   @Test
-  public void testSequenceSetInvalidFileGroup() throws Throwable {
-    testSequenceError(
+  public void testPolySampleInvalidFileGroup() throws Throwable {
+    testPolySampleError(
         m -> polySampleMetaManifest(m),
         m -> m.file("FASTA", "valid/valid.fasta.gz"),
         r ->
             r.textInManifestReport(
-                "An invalid set of files has been specified. Expected data files are: [1 TAB] or [1 FLATFILE] or [1 FASTA, 1 SAMPLE_TSV, 1 TAX_TSV] or [1 FASTA, 1 SAMPLE_TSV] or [1 TAX_TSV]"),
+                "An invalid set of files has been specified. Expected data files are: [1 FASTA, 1 SAMPLE_TSV, 1 TAX_TSV] or [1 FASTA, 1 SAMPLE_TSV] or [1 TAX_TSV]"),
         WebinCliException.ErrorType.USER_ERROR);
   }
 
