@@ -8,10 +8,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '8.2.0'
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+version = '8.2.1'
 
 repositories {
     mavenLocal()
@@ -53,7 +50,7 @@ dependencies {
 
     implementation 'commons-lang:commons-lang:2.6'
     implementation( "commons-net:commons-net:3.10.0" )
-    implementation( 'org.apache.commons:commons-compress:1.25.0')
+    implementation( 'org.apache.commons:commons-compress:1.27.1')
 
     implementation( 'org.apache.poi:poi:5.2.1' )
     implementation( 'org.apache.poi:poi-ooxml:5.2.1' )

@@ -29,10 +29,8 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
     String RUN_REF = "RUN_REF";
     String ANALYSIS_REF = "ANALYSIS_REF";
     String DESCRIPTION = "DESCRIPTION";
-    String TAB = "TAB";
     String SAMPLE_TSV = "SAMPLE_TSV";
     String TAX_TSV = "TAX_TSV";
-    String FLATFILE = "FLATFILE";
     String FASTA = "FASTA";
     String ANALYSIS_TYPE = "ANALYSIS_TYPE";
     String ANALYSIS_PROTOCOL = "ANALYSIS_PROTOCOL";
@@ -56,10 +54,8 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
     String RUN_REF = "Run accession or name as a comma-separated list";
     String ANALYSIS_REF = "Analysis accession or name as a comma-separated list";
     String DESCRIPTION = "Sequence submission description";
-    String TAB = "Tabulated file";
     String SAMPLE_TSV = "Tabulated file";
     String TAX_TSV = "Tabulated file";
-    String FLATFILE = "Flat file";
     String FASTA = "FASTA file";
     String ANALYSIS_TYPE =
         "Type of SEQUENCE_SET, currently supported is ENVIRONMENTAL_SEQUENCE_SET";
@@ -173,12 +169,6 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
             .and()
             .file()
             .optional()
-            .name(Field.TAB)
-            .desc(Description.TAB)
-            .processor(getTabProcessors())
-            .and()
-            .file()
-            .optional()
             .name(Field.SAMPLE_TSV)
             .desc(Description.SAMPLE_TSV)
             .processor(getTabProcessors())
@@ -188,11 +178,6 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
             .name(Field.TAX_TSV)
             .desc(Description.TAX_TSV)
             .processor(getTabProcessors())
-            .and()
-            .file()
-            .optional()
-            .name(Field.FLATFILE)
-            .desc(Description.FLATFILE)
             .processor(getFlatfileProcessors())
             .and()
             .file()
@@ -225,18 +210,18 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
         // File groups.
         new ManifestFileCount.Builder()
             .group(
-                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
+                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission with 1 FASTA "
+                    + "+ 1 SAMPLE_TSV + 1 TAX_TSV")
             .required(Field.FASTA)
             .required(Field.SAMPLE_TSV)
             .required(Field.TAX_TSV)
             .and()
             .group(
-                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
+                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission with 1 FASTA " + "+ 1 SAMPLE_TSV")
             .required(Field.FASTA)
             .required(Field.SAMPLE_TSV)
             .and()
-            .group(
-                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission must contain either (1 FASTA + 1 SAMPLE_TSV + 1 TAX_TSV) or (1 FASTA + 1 SAMPLE_TSV) or (1 TAX_TSV).")
+            .group("A ENVIRONMENTAL_SEQUENCE_SET analysis submission with 1 TAX_TSV")
             .required(Field.TAX_TSV)
             .build());
 
