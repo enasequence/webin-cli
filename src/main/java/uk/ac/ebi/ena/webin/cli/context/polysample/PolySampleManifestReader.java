@@ -23,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest;
 
-public class PolysampleManifestReader extends ManifestReader<PolySampleManifest> {
+public class PolySampleManifestReader extends ManifestReader<PolySampleManifest> {
   public interface Field {
     String STUDY = "STUDY";
     String RUN_REF = "RUN_REF";
@@ -74,7 +74,7 @@ public class PolysampleManifestReader extends ManifestReader<PolySampleManifest>
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
 
-  public PolysampleManifestReader(WebinCliParameters parameters, MetadataProcessorFactory factory) {
+  public PolySampleManifestReader(WebinCliParameters parameters, MetadataProcessorFactory factory) {
     super(
         parameters,
         // Fields.

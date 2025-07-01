@@ -23,7 +23,7 @@ import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest;
 
-public class PolysampleXmlWriter
+public class PolySampleXmlWriter
     extends SequenceToolsXmlWriter<PolySampleManifest, ValidationResponse> {
 
   @Override

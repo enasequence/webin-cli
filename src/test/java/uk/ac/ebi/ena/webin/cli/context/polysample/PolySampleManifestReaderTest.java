@@ -29,9 +29,9 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest;
 import uk.ac.ebi.ena.webin.cli.validator.message.ValidationResult;
 
 public class PolySampleManifestReaderTest {
-  private static PolysampleManifestReader createManifestReader() {
+  private static PolySampleManifestReader createManifestReader() {
     WebinCliParameters parameters = WebinCliTestUtils.getTestWebinCliParameters();
-    return new PolysampleManifestReader(parameters, new MetadataProcessorFactory(parameters));
+    return new PolySampleManifestReader(parameters, new MetadataProcessorFactory(parameters));
   }
 
   @Before
@@ -41,7 +41,7 @@ public class PolySampleManifestReaderTest {
 
   @Test
   public void testValidSequenceSetManifest() {
-    PolysampleManifestReader manifestReader = createManifestReader();
+    PolySampleManifestReader manifestReader = createManifestReader();
 
     manifestReader.readManifest(
         Paths.get("."),
