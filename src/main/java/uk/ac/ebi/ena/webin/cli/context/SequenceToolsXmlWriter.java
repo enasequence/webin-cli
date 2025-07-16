@@ -23,7 +23,6 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Run;
 import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
@@ -34,6 +33,10 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
   protected abstract Element createXmlAnalysisTypeElement(M manifest);
 
   protected abstract List<Element> createXmlFileElements(M manifest, Path inputDir, Path uploadDir);
+
+  protected <M extends Manifest> void addCustomAttributes(M manifest, Element analysisAttributesE) {
+    // No-op by default
+  }
 
   @Override
   public Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(
@@ -128,9 +131,7 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
       analysisAttributesE.addContent(submissionToolVersionAnalysisAttributeE);
     }
 
-    if (manifest instanceof PolySampleManifest) {
-      addPolySampleAttributes((PolySampleManifest) manifest, analysisAttributesE);
-    }
+    addCustomAttributes(manifest, analysisAttributesE);
 
     if (analysisAttributesE.getContentSize() > 0) {
       analysisE.addContent(analysisAttributesE);
@@ -149,37 +150,5 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
     xmls.put(SubmissionBundle.SubmissionXMLFileType.ANALYSIS, stringWriter.toString());
     return xmls;
-  }
-
-  private static <M extends PolySampleManifest> void addPolySampleAttributes(
-      M manifest, Element analysisAttributesE) {
-    final Map<String, String> attributes = new HashMap<>();
-
-    attributes.put("ANALYSIS_PROTOCOL", manifest.getAnalysisProtocol());
-    attributes.put("ANALYSIS_CENTER", manifest.getAnalysisCenter());
-    attributes.put("ANALYSIS_CODE", manifest.getAnalysisCode());
-    attributes.put("ANALYSIS_DATE", manifest.getAnalysisDate());
-    attributes.put("ANALYSIS_VERSION", manifest.getAnalysisVersion());
-    attributes.put("ANALYSIS_TYPE", manifest.getAnalysisType());
-    attributes.put("TARGET_LOCUS", manifest.getTargetLocus());
-    attributes.put("ORGANELLE", manifest.getOrganelle());
-    attributes.put("FORWARD PRIMER NAME", manifest.getForwardPrimerName());
-    attributes.put("FORWARD PRIMER SEQUENCE", manifest.getForwardPrimerSequence());
-    attributes.put("REVERSE PRIMER NAME", manifest.getReversePrimerName());
-    attributes.put("REVERSE PRIMER SEQUENCE", manifest.getReversePrimerSequence());
-
-    attributes.forEach(
-        (tag, value) -> {
-          if (value != null && !value.isEmpty()) {
-            final Element tagE = new Element("TAG").setText(tag);
-            final Element valueE = new Element("VALUE").setText(value);
-            final Element attrE = new Element("ANALYSIS_ATTRIBUTE");
-
-            attrE.addContent(tagE);
-            attrE.addContent(valueE);
-
-            analysisAttributesE.addContent(attrE);
-          }
-        });
   }
 }

@@ -16,11 +16,14 @@ import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest;
 
 public class PolySampleXmlWriter
@@ -80,5 +83,38 @@ public class PolySampleXmlWriter
                         "tax_tsv")));
 
     return list;
+  }
+
+  @Override
+  protected <M extends Manifest> void addCustomAttributes(M manifest, Element analysisAttributesE) {
+    final Map<String, String> attributes = new HashMap<>();
+    final PolySampleManifest polySampleManifest = (PolySampleManifest) manifest;
+
+    attributes.put("ANALYSIS_PROTOCOL", polySampleManifest.getAnalysisProtocol());
+    attributes.put("ANALYSIS_CENTER", polySampleManifest.getAnalysisCenter());
+    attributes.put("ANALYSIS_CODE", polySampleManifest.getAnalysisCode());
+    attributes.put("ANALYSIS_DATE", polySampleManifest.getAnalysisDate());
+    attributes.put("ANALYSIS_VERSION", polySampleManifest.getAnalysisVersion());
+    attributes.put("ANALYSIS_TYPE", polySampleManifest.getAnalysisType());
+    attributes.put("TARGET_LOCUS", polySampleManifest.getTargetLocus());
+    attributes.put("ORGANELLE", polySampleManifest.getOrganelle());
+    attributes.put("FORWARD PRIMER NAME", polySampleManifest.getForwardPrimerName());
+    attributes.put("FORWARD PRIMER SEQUENCE", polySampleManifest.getForwardPrimerSequence());
+    attributes.put("REVERSE PRIMER NAME", polySampleManifest.getReversePrimerName());
+    attributes.put("REVERSE PRIMER SEQUENCE", polySampleManifest.getReversePrimerSequence());
+
+    attributes.forEach(
+        (tag, value) -> {
+          if (value != null && !value.isEmpty()) {
+            final Element tagE = new Element("TAG").setText(tag);
+            final Element valueE = new Element("VALUE").setText(value);
+            final Element attrE = new Element("ANALYSIS_ATTRIBUTE");
+
+            attrE.addContent(tagE);
+            attrE.addContent(valueE);
+
+            analysisAttributesE.addContent(attrE);
+          }
+        });
   }
 }
