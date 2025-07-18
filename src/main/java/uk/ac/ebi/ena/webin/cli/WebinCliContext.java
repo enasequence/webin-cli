@@ -15,6 +15,8 @@ import uk.ac.ebi.ena.readtools.validator.ReadsValidator;
 import uk.ac.ebi.ena.txmbvalidator.TxmbValidator;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
+import uk.ac.ebi.ena.webin.cli.context.polysample.PolySampleManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.polysample.PolySampleXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.reads.ReadsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceManifestReader;
@@ -49,6 +51,12 @@ public enum WebinCliContext {
       SequenceXmlWriter.class,
       SubmissionValidator.class,
       "Sequence assembly"),
+  polysample(
+      PolySampleManifest.class,
+      PolySampleManifestReader.class,
+      PolySampleXmlWriter.class,
+      SubmissionValidator.class,
+      "Polysample"),
   reads(
       ReadsManifest.class,
       ReadsManifestReader.class,

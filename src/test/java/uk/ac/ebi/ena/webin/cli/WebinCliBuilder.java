@@ -50,6 +50,10 @@ public class WebinCliBuilder {
     return new WebinCliBuilder(WebinCliContext.sequence);
   }
 
+  public static final WebinCliBuilder createForPolySample() {
+    return new WebinCliBuilder(WebinCliContext.polysample);
+  }
+
   public WebinCliBuilder validate(boolean validate) {
     this.validate = validate;
     return this;

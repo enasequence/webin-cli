@@ -229,6 +229,10 @@ public class ManifestBuilder {
           case "TAB":
             file(fileType, ".tab.gz");
             break;
+          case "SAMPLE_TSV":
+          case "TAX_TSV":
+            file(fileType, ".tsv.gz");
+            break;
           case "BAM":
             file(fileType, ".bam");
             break;

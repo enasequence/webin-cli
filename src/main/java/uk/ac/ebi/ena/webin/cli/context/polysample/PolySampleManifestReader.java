@@ -8,7 +8,7 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.context.sequence;
+package uk.ac.ebi.ena.webin.cli.context.polysample;
 
 import java.util.Collection;
 import java.util.Map;
@@ -21,16 +21,29 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.PolySampleManifest;
 
-public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
+public class PolySampleManifestReader extends ManifestReader<PolySampleManifest> {
   public interface Field {
     String STUDY = "STUDY";
     String RUN_REF = "RUN_REF";
     String ANALYSIS_REF = "ANALYSIS_REF";
     String DESCRIPTION = "DESCRIPTION";
-    String TAB = "TAB";
-    String FLATFILE = "FLATFILE";
+    String SAMPLE_TSV = "SAMPLE_TSV";
+    String TAX_TSV = "TAX_TSV";
+    String FASTA = "FASTA";
+    String ANALYSIS_TYPE = "ANALYSIS_TYPE";
+    String ANALYSIS_PROTOCOL = "ANALYSIS_PROTOCOL";
+    String ANALYSIS_DATE = "ANALYSIS DATE";
+    String TARGET_LOCUS = "TARGET LOCUS";
+    String ANALYSIS_CODE = "ANALYSIS CODE";
+    String ANALYSIS_VERSION = "ANALYSIS VERSION";
+    String ORGANELLE = "ORGANELLE";
+    String FORWARD_PRIMER_NAME = "FORWARD PRIMER NAME";
+    String FORWARD_PRIMER_SEQUENCE = "FORWARD PRIMER SEQUENCE";
+    String REVERSE_PRIMER_NAME = "REVERSE PRIMER NAME";
+    String REVERSE_PRIMER_SEQUENCE = "REVERSE PRIMER SEQUENCE";
+    String ANALYSIS_CENTER = "ANALYSIS CENTER";
     String AUTHORS = "AUTHORS";
     String ADDRESS = "ADDRESS";
   }
@@ -41,13 +54,27 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String RUN_REF = "Run accession or name as a comma-separated list";
     String ANALYSIS_REF = "Analysis accession or name as a comma-separated list";
     String DESCRIPTION = "Sequence submission description";
-    String TAB = "Tabulated file";
-    String FLATFILE = "Flat file";
+    String SAMPLE_TSV = "Tabulated file";
+    String TAX_TSV = "Tabulated file";
+    String FASTA = "FASTA file";
+    String ANALYSIS_TYPE =
+        "Type of SEQUENCE_SET, currently supported is ENVIRONMENTAL_SEQUENCE_SET";
+    String ANALYSIS_PROTOCOL = "ANALYSIS PROTOCOL";
+    String ANALYSIS_DATE = "ANALYSIS DATE";
+    String TARGET_LOCUS = "TARGET LOCUS";
+    String ANALYSIS_CODE = "ANALYSIS CODE";
+    String ANALYSIS_VERSION = "ANALYSIS VERSION";
+    String ORGANELLE = "ORGANELLE";
+    String FORWARD_PRIMER_NAME = "FORWARD PRIMER NAME";
+    String FORWARD_PRIMER_SEQUENCE = "FORWARD PRIMER SEQUENCE";
+    String REVERSE_PRIMER_NAME = "REVERSE PRIMER NAME";
+    String REVERSE_PRIMER_SEQUENCE = "REVERSE PRIMER SEQUENCE";
+    String ANALYSIS_CENTER = "ANALYSIS CENTER";
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
 
-  public SequenceManifestReader(WebinCliParameters parameters, MetadataProcessorFactory factory) {
+  public PolySampleManifestReader(WebinCliParameters parameters, MetadataProcessorFactory factory) {
     super(
         parameters,
         // Fields.
@@ -80,17 +107,84 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .name(Field.DESCRIPTION)
             .desc(Description.DESCRIPTION)
             .and()
+            .meta()
+            .optional()
+            .name(Field.ANALYSIS_TYPE)
+            .desc(Description.ANALYSIS_TYPE)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.ANALYSIS_PROTOCOL)
+            .desc(Description.ANALYSIS_PROTOCOL)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.ANALYSIS_DATE)
+            .desc(Description.ANALYSIS_DATE)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.TARGET_LOCUS)
+            .desc(Description.TARGET_LOCUS)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.ANALYSIS_CODE)
+            .desc(Description.ANALYSIS_CODE)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.ANALYSIS_VERSION)
+            .desc(Description.ANALYSIS_VERSION)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.ORGANELLE)
+            .desc(Description.ORGANELLE)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.FORWARD_PRIMER_NAME)
+            .desc(Description.FORWARD_PRIMER_NAME)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.FORWARD_PRIMER_SEQUENCE)
+            .desc(Description.FORWARD_PRIMER_SEQUENCE)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.REVERSE_PRIMER_NAME)
+            .desc(Description.REVERSE_PRIMER_NAME)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.REVERSE_PRIMER_SEQUENCE)
+            .desc(Description.REVERSE_PRIMER_SEQUENCE)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.ANALYSIS_CENTER)
+            .desc(Description.ANALYSIS_CENTER)
+            .and()
             .file()
             .optional()
-            .name(Field.TAB)
-            .desc(Description.TAB)
+            .name(Field.SAMPLE_TSV)
+            .desc(Description.SAMPLE_TSV)
             .processor(getTabProcessors())
             .and()
             .file()
             .optional()
-            .name(Field.FLATFILE)
-            .desc(Description.FLATFILE)
+            .name(Field.TAX_TSV)
+            .desc(Description.TAX_TSV)
+            .processor(getTabProcessors())
             .processor(getFlatfileProcessors())
+            .and()
+            .file()
+            .optional()
+            .name(Field.FASTA)
+            .desc(Description.FASTA)
+            .processor(getFastaProcessors())
             .and()
             .meta()
             .optional()
@@ -115,11 +209,20 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .build(),
         // File groups.
         new ManifestFileCount.Builder()
-            .group("Annotated sequences in a comma separated file.")
-            .required(Field.TAB)
+            .group(
+                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission with 1 FASTA "
+                    + "+ 1 SAMPLE_TSV + 1 TAX_TSV")
+            .required(Field.FASTA)
+            .required(Field.SAMPLE_TSV)
+            .required(Field.TAX_TSV)
             .and()
-            .group("Annotated sequences in a flat file.")
-            .required(Field.FLATFILE)
+            .group(
+                "A ENVIRONMENTAL_SEQUENCE_SET analysis submission with 1 FASTA " + "+ 1 SAMPLE_TSV")
+            .required(Field.FASTA)
+            .required(Field.SAMPLE_TSV)
+            .and()
+            .group("A ENVIRONMENTAL_SEQUENCE_SET analysis submission with 1 TAX_TSV")
+            .required(Field.TAX_TSV)
             .build());
 
     if (factory.getStudyProcessor() != null) {
@@ -164,7 +267,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
         .getManifestFieldGroups()
         .forEach(
             fieldGroup -> {
-              SequenceManifest manifest = getManifest(fieldGroup);
+              PolySampleManifest manifest = getManifest(fieldGroup);
 
               if (getWebinCliParameters() != null) {
                 manifest.setQuick(getWebinCliParameters().isQuick());
@@ -182,34 +285,53 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
               }
               manifest.setName(fieldGroup.getValue(Fields.NAME));
               manifest.setDescription(fieldGroup.getValue(Field.DESCRIPTION));
+
+              manifest.setAnalysisType(fieldGroup.getValue(Field.ANALYSIS_TYPE));
+              manifest.setAnalysisProtocol(fieldGroup.getValue(Field.ANALYSIS_PROTOCOL));
+              manifest.setAnalysisDate(fieldGroup.getValue(Field.ANALYSIS_DATE));
+              manifest.setTargetLocus(fieldGroup.getValue(Field.TARGET_LOCUS));
+              manifest.setAnalysisCode(fieldGroup.getValue(Field.ANALYSIS_CODE));
+              manifest.setAnalysisVersion(fieldGroup.getValue(Field.ANALYSIS_VERSION));
+              manifest.setOrganelle(fieldGroup.getValue(Field.ORGANELLE));
+              manifest.setForwardPrimerName(fieldGroup.getValue(Field.FORWARD_PRIMER_NAME));
+              manifest.setForwardPrimerSequence(fieldGroup.getValue(Field.FORWARD_PRIMER_SEQUENCE));
+              manifest.setReversePrimerName(fieldGroup.getValue(Field.REVERSE_PRIMER_NAME));
+              manifest.setReversePrimerSequence(fieldGroup.getValue(Field.REVERSE_PRIMER_SEQUENCE));
+              manifest.setAnalysisCenter(fieldGroup.getValue(Field.ANALYSIS_CENTER));
+
               manifest.setSubmissionTool(fieldGroup.getValue(Fields.SUBMISSION_TOOL));
               manifest.setSubmissionToolVersion(
                   fieldGroup.getValue(Fields.SUBMISSION_TOOL_VERSION));
 
               manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
 
-              SubmissionFiles<SequenceManifest.FileType> submissionFiles = manifest.files();
+              SubmissionFiles<PolySampleManifest.FileType> submissionFiles = manifest.files();
 
-              getFiles(getInputDir(), fieldGroup, Field.TAB)
+              getFiles(getInputDir(), fieldGroup, Field.SAMPLE_TSV)
                   .forEach(
                       tabFile ->
                           submissionFiles.add(
-                              new SubmissionFile(SequenceManifest.FileType.TAB, tabFile)));
-              getFiles(getInputDir(), fieldGroup, Field.FLATFILE)
+                              new SubmissionFile(PolySampleManifest.FileType.SAMPLE_TSV, tabFile)));
+              getFiles(getInputDir(), fieldGroup, Field.TAX_TSV)
                   .forEach(
-                      flatFile ->
+                      tabFile ->
                           submissionFiles.add(
-                              new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile)));
+                              new SubmissionFile(PolySampleManifest.FileType.TAX_TSV, tabFile)));
+              getFiles(getInputDir(), fieldGroup, Field.FASTA)
+                  .forEach(
+                      fastaFile ->
+                          submissionFiles.add(
+                              new SubmissionFile(PolySampleManifest.FileType.FASTA, fastaFile)));
             });
   }
 
   @Override
-  public Collection<SequenceManifest> getManifests() {
+  public Collection<PolySampleManifest> getManifests() {
     return nameFieldToManifestMap.values();
   }
 
   @Override
-  protected SequenceManifest createManifest() {
-    return new SequenceManifest();
+  protected PolySampleManifest createManifest() {
+    return new PolySampleManifest();
   }
 }

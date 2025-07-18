@@ -34,6 +34,10 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
 
   protected abstract List<Element> createXmlFileElements(M manifest, Path inputDir, Path uploadDir);
 
+  protected <M extends Manifest> void addCustomAttributes(M manifest, Element analysisAttributesE) {
+    // No-op by default
+  }
+
   @Override
   public Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(
       M manifest,
@@ -126,6 +130,8 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
 
       analysisAttributesE.addContent(submissionToolVersionAnalysisAttributeE);
     }
+
+    addCustomAttributes(manifest, analysisAttributesE);
 
     if (analysisAttributesE.getContentSize() > 0) {
       analysisE.addContent(analysisAttributesE);

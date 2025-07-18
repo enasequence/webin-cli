@@ -264,6 +264,36 @@ public class WebinCliSubmissionTest {
     }
   }
 
+  public static void testPolysample(
+      Consumer<ManifestBuilder> metaManifestConfig, Consumer<ManifestBuilder> filesManifestConfig)
+      throws Throwable {
+    testPolysample(metaManifestConfig, filesManifestConfig, c -> {});
+  }
+
+  public static void testPolysample(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<WebinCliBuilder> webinCliConfig)
+      throws Throwable {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      webinCliForValidate(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForPolySample(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
+    } else {
+      webinCliForSubmit(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForPolySample(),
+              metaManifestConfig,
+              filesManifestConfig,
+              webinCliConfig)
+          .execute();
+    }
+  }
+
   public static void testSequenceError(
       Consumer<ManifestBuilder> metaManifestConfig,
       Consumer<ManifestBuilder> filesManifestConfig,
@@ -284,6 +314,34 @@ public class WebinCliSubmissionTest {
           webinCliForSubmit(
               SEQUENCE_RESOURCE_DIR,
               WebinCliBuilder.createForSequence(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    }
+  }
+
+  public static void testPolySampleError(
+      Consumer<ManifestBuilder> metaManifestConfig,
+      Consumer<ManifestBuilder> filesManifestConfig,
+      Consumer<ReportTester> reportTesterConfig,
+      WebinCliException.ErrorType errorType) {
+    if (TEST_TYPE == WebinCliTestType.VALIDATE) {
+      WebinCli webinCli =
+          webinCliForValidate(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForPolySample(),
+              metaManifestConfig,
+              filesManifestConfig,
+              c -> {});
+      expectError(() -> webinCli.execute(), errorType);
+      reportTesterConfig.accept(new ReportTester(webinCli));
+    } else {
+      WebinCli webinCli =
+          webinCliForSubmit(
+              SEQUENCE_RESOURCE_DIR,
+              WebinCliBuilder.createForPolySample(),
               metaManifestConfig,
               filesManifestConfig,
               c -> {});
@@ -425,8 +483,8 @@ public class WebinCliSubmissionTest {
     sequenceMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
   }
 
-  private void sequenceSetMetaManifest(ManifestBuilder manifestBuilder) {
-    sequenceSetMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  private void polySampleMetaManifest(ManifestBuilder manifestBuilder) {
+    polySampleMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
   }
 
   private void sequenceMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
@@ -438,12 +496,13 @@ public class WebinCliSubmissionTest {
         .field("DESCRIPTION", "Some sequence assembly description");
   }
 
-  private void sequenceSetMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
+  private void polySampleMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
     manifestBuilder
         .field("NAME", nameFieldValue)
         .field("STUDY", "PRJEB20083")
         .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
         .field("ANALYSIS_TYPE", "SEQUENCE_SET")
+        .field("ANALYSIS_PROTOCOL", "TEST")
         .field("DESCRIPTION", "Some sequence assembly description");
   }
 
@@ -737,23 +796,43 @@ public class WebinCliSubmissionTest {
   }
 
   @Test
-  public void testSequenceSet() throws Throwable {
-    testSequence(
-        m -> sequenceSetMetaManifest(m),
+  public void testPolySampleFull() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
         m -> {
           m.file("FASTA", "valid/valid.fasta.gz");
-          m.file("TAB", "valid/valid.tsv.gz");
+          m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
+          m.file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz");
         });
   }
 
   @Test
-  public void testSequenceSetInvalidFileGroup() throws Throwable {
-    testSequenceError(
-        m -> sequenceSetMetaManifest(m),
+  public void testPolySampleTaxTsv() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
+        m -> {
+          m.file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz");
+        });
+  }
+
+  @Test
+  public void testPolySampleFastaAndSampleTsv() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
+        m -> {
+          m.file("FASTA", "valid/valid.fasta.gz");
+          m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
+        });
+  }
+
+  @Test
+  public void testPolySampleInvalidFileGroup() throws Throwable {
+    testPolySampleError(
+        m -> polySampleMetaManifest(m),
         m -> m.file("FASTA", "valid/valid.fasta.gz"),
         r ->
             r.textInManifestReport(
-                "An invalid set of files has been specified. Expected data files are: [1 TAB] or [1 FLATFILE] or [1 FASTA, 1 TAB]"),
+                "An invalid set of files has been specified. Expected data files are: [1 FASTA, 1 SAMPLE_TSV, 1 TAX_TSV] or [1 FASTA, 1 SAMPLE_TSV] or [1 TAX_TSV]"),
         WebinCliException.ErrorType.USER_ERROR);
   }
 

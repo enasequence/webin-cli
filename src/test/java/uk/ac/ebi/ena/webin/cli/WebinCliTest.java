@@ -24,7 +24,6 @@ import java.util.UUID;
 import org.junit.Test;
 
 public class WebinCliTest {
-
   @Test
   public void testGetSafeOutputDir() {
     assertThat("A_aZ").isEqualTo(getSafeOutputDir("A aZ"));
@@ -106,7 +105,7 @@ public class WebinCliTest {
   public void testPrintManifestHelpGenome() {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     WebinCli.printManifestHelp(WebinCliContext.genome, new PrintStream(os));
-    System.out.println(os.toString());
+    System.out.println(os);
     assertThat(os.toString().replaceAll("\r", ""))
         .isEqualTo(
             "\nManifest fields for 'genome' context:\n"
@@ -210,7 +209,8 @@ public class WebinCliTest {
   public void testPrintManifestHelpTranscriptome() {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     WebinCli.printManifestHelp(WebinCliContext.transcriptome, new PrintStream(os));
-    System.out.println(os.toString());
+    System.out.println(os);
+
     assertThat(os.toString().replaceAll("\r", ""))
         .isEqualTo(
             "\n"
@@ -282,7 +282,8 @@ public class WebinCliTest {
   public void testPrintManifestHelpSequence() {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     WebinCli.printManifestHelp(WebinCliContext.sequence, new PrintStream(os));
-    System.out.println(os.toString());
+    System.out.println(os);
+
     assertThat(os.toString().replaceAll("\r", ""))
         .isEqualTo(
             "\n"
@@ -303,9 +304,6 @@ public class WebinCliTest {
                 + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
                 + "│DESCRIPTION         │Optional   │Sequence submission description              │\n"
                 + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
-                + "│ANALYSIS_TYPE       │Optional   │Type of analysis (SEQUENCE_FLATFILE or       │\n"
-                + "│                    │           │SEQUENCE_SET). Default: SEQUENCE_FLATFILE    │\n"
-                + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
                 + "│AUTHORS             │Optional   │For submission brokers only. Submitter's     │\n"
                 + "│                    │           │names as a comma-separated list              │\n"
                 + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
@@ -321,32 +319,26 @@ public class WebinCliTest {
                 + "│TAB                 │0-1 files  │Tabulated file                               │\n"
                 + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
                 + "│FLATFILE            │0-1 files  │Flat file                                    │\n"
-                + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
-                + "│FASTA               │0-1 files  │FASTA file                                   │\n"
                 + "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n"
                 + "\n"
                 + "Data files for 'sequence' context:\n"
                 + "\n"
-                + "┌──────────────────────────────┬───────────────┬───────────────┬───────────────┐\n"
-                + "│Data files                    │TAB            │FLATFILE       │FASTA          │\n"
-                + "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n"
-                + "│Annotated sequences in a comma│1              │               │               │\n"
-                + "│separated file.               │               │               │               │\n"
-                + "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n"
-                + "│Annotated sequences in a flat │               │1              │               │\n"
-                + "│file.                         │               │               │               │\n"
-                + "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n"
-                + "│Both fasta and tab(tsv) files │1              │               │1              │\n"
-                + "│are mandatory for SEQUENCE_SET│               │               │               │\n"
-                + "│analysis.                     │               │               │               │\n"
-                + "└──────────────────────────────┴───────────────┴───────────────┴───────────────┘\n");
+                + "┌──────────────────────────────┬───────────────────────┬───────────────────────┐\n"
+                + "│Data files                    │TAB                    │FLATFILE               │\n"
+                + "├──────────────────────────────┼───────────────────────┼───────────────────────┤\n"
+                + "│Annotated sequences in a comma│1                      │                       │\n"
+                + "│separated file.               │                       │                       │\n"
+                + "├──────────────────────────────┼───────────────────────┼───────────────────────┤\n"
+                + "│Annotated sequences in a flat │                       │1                      │\n"
+                + "│file.                         │                       │                       │\n"
+                + "└──────────────────────────────┴───────────────────────┴───────────────────────┘\n");
   }
 
   @Test
   public void testPrintManifestHelpReads() {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     WebinCli.printManifestHelp(WebinCliContext.reads, new PrintStream(os));
-    System.out.println(os.toString());
+    System.out.println(os);
     assertThat(os.toString().replaceAll("\r", ""))
         .isEqualTo(
             "\n"
@@ -582,5 +574,105 @@ public class WebinCliTest {
                 + "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n"
                 + "│Sequence reads in a BAM file. │               │1              │               │\n"
                 + "└──────────────────────────────┴───────────────┴───────────────┴───────────────┘\n");
+  }
+
+  @Test
+  public void testPrintManifestHelpPolySample() {
+    final ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+    WebinCli.printManifestHelp(WebinCliContext.polysample, new PrintStream(os));
+
+    final String output = os.toString();
+
+    System.out.println(output);
+
+    final String expected =
+        "\nManifest fields for 'polysample' context:\n"
+            + "\n"
+            + "┌────────────────────┬───────────┬─────────────────────────────────────────────┐\n"
+            + "│Field               │Cardinality│Description                                  │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│NAME                │Mandatory  │Unique sequence submission name              │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│STUDY               │Mandatory  │Study accession or name                      │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│RUN_REF             │Optional   │Run accession or name as a comma-separated   │\n"
+            + "│                    │           │list                                         │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ANALYSIS_REF        │Optional   │Analysis accession or name as a              │\n"
+            + "│                    │           │comma-separated list                         │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│DESCRIPTION         │Optional   │Sequence submission description              │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ANALYSIS_TYPE       │Optional   │Type of SEQUENCE_SET, currently supported is │\n"
+            + "│                    │           │ENVIRONMENTAL_SEQUENCE_SET                   │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ANALYSIS_PROTOCOL   │Optional   │ANALYSIS PROTOCOL                            │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ANALYSIS DATE       │Optional   │ANALYSIS DATE                                │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│TARGET LOCUS        │Optional   │TARGET LOCUS                                 │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ANALYSIS CODE       │Optional   │ANALYSIS CODE                                │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ANALYSIS VERSION    │Optional   │ANALYSIS VERSION                             │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ORGANELLE           │Optional   │ORGANELLE                                    │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│FORWARD PRIMER NAME │Optional   │FORWARD PRIMER NAME                          │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│FORWARD PRIMER      │Optional   │FORWARD PRIMER SEQUENCE                      │\n"
+            + "│SEQUENCE            │           │                                             │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│REVERSE PRIMER NAME │Optional   │REVERSE PRIMER NAME                          │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│REVERSE PRIMER      │Optional   │REVERSE PRIMER SEQUENCE                      │\n"
+            + "│SEQUENCE            │           │                                             │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ANALYSIS CENTER     │Optional   │ANALYSIS CENTER                              │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│AUTHORS             │Optional   │For submission brokers only. Submitter's     │\n"
+            + "│                    │           │names as a comma-separated list              │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│ADDRESS             │Optional   │For submission brokers only. Submitter's     │\n"
+            + "│                    │           │address                                      │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│SUBMISSION_TOOL     │Optional   │Name of third-party or developed tool used to│\n"
+            + "│                    │           │submit to ENA                                │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│SUBMISSION_TOOL_VERS│Optional   │Version number of the third-party or         │\n"
+            + "│ION                 │           │developed tool used to submit to ENA         │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│SAMPLE_TSV          │0-1 files  │Tabulated file                               │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│TAX_TSV             │0-1 files  │Tabulated file                               │\n"
+            + "├────────────────────┼───────────┼─────────────────────────────────────────────┤\n"
+            + "│FASTA               │0-1 files  │FASTA file                                   │\n"
+            + "└────────────────────┴───────────┴─────────────────────────────────────────────┘\n"
+            + "\n"
+            + "Data files for 'polysample' context:\n"
+            + "\n"
+            + "┌──────────────────────────────┬───────────────┬───────────────┬───────────────┐\n"
+            + "│Data files                    │SAMPLE_TSV     │TAX_TSV        │FASTA          │\n"
+            + "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n"
+            + "│A ENVIRONMENTAL_SEQUENCE_SET  │               │1              │               │\n"
+            + "│analysis submission with 1    │               │               │               │\n"
+            + "│TAX_TSV                       │               │               │               │\n"
+            + "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n"
+            + "│A ENVIRONMENTAL_SEQUENCE_SET  │1              │               │1              │\n"
+            + "│analysis submission with 1    │               │               │               │\n"
+            + "│FASTA + 1 SAMPLE_TSV          │               │               │               │\n"
+            + "├──────────────────────────────┼───────────────┼───────────────┼───────────────┤\n"
+            + "│A ENVIRONMENTAL_SEQUENCE_SET  │1              │1              │1              │\n"
+            + "│analysis submission with 1    │               │               │               │\n"
+            + "│FASTA + 1 SAMPLE_TSV + 1      │               │               │               │\n"
+            + "│TAX_TSV                       │               │               │               │\n"
+            + "└──────────────────────────────┴───────────────┴───────────────┴───────────────┘\n";
+
+    assertThat(normalizeLineEndings(output)).isEqualTo(normalizeLineEndings(expected));
+  }
+
+  private static String normalizeLineEndings(final String string) {
+    return string.replace("\r\n", "\n").replace("\r", "\n");
   }
 }

@@ -14,6 +14,7 @@ The following types of submissions are supported:
 - annotated sequences
 - read data submissions (Fastq, BAM, CRAM)
 - taxonomy reference sets
+- environmental sequence sets (polysample)
 
 For further information about Webin-CLI please refer to:
 
