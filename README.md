@@ -1,6 +1,5 @@
 # Webin command line submission interface (Webin-CLI)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4fa2bcf5593436da9ea27149f84ee6e)](https://app.codacy.com/app/enasequence/webin-cli?utm_source=github.com&utm_medium=referral&utm_content=enasequence/webin-cli&utm_campaign=badger)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Introduction
@@ -26,9 +25,9 @@ The latest version of the Webin-CLI can be downloaded from:
 
 <https://github.com/enasequence/webin-cli/releases>
 
-The program requires Java 1.8 or a newer which can be downloaded from:
+The program requires Java 17 or newer which can be downloaded from:
 
-<https://java.com/en/download/>
+<https://adoptium.net/>
 
 
 The program is run using the java command:
@@ -40,13 +39,13 @@ java -jar webin-cli-<version>.jar <options>
 for example:
 
 ```
-java -jar webin-cli-2.0.0.jar -help
+java -jar webin-cli-9.0.0.jar -help
 ```
 
 To increase the memory available to Webin-CLI please use the -Xms java option:
 
 ```
-java -Xms2G -jar webin-cli-2.0.0.jar -help
+java -Xms2G -jar webin-cli-9.0.0.jar -help
 ```
 
 ## Docker
