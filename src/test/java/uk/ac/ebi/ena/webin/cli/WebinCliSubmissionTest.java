@@ -409,7 +409,6 @@ public class WebinCliSubmissionTest {
   }
 
   // Manifest meta fields
-  //
 
   private void readsMetaManifest(ManifestBuilder manifestBuilder) {
     readsMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
@@ -507,7 +506,6 @@ public class WebinCliSubmissionTest {
   }
 
   //
-  //
 
   private void lookupAndAssertGeneratedAlias(
       WebinCli webinCli, String submissionName, String xmlFileName, String expectedAlias)
@@ -591,7 +589,6 @@ public class WebinCliSubmissionTest {
   }
 
   // Reads
-  //
 
   @Test
   public void testReadsCram() throws Throwable {
@@ -698,7 +695,6 @@ public class WebinCliSubmissionTest {
   }
 
   // Genome
-  //
 
   @Test
   public void testGenomeFlatFile() throws Throwable {
@@ -781,7 +777,6 @@ public class WebinCliSubmissionTest {
   }
 
   // Sequence
-  //
 
   @Test
   public void testSequenceTab() throws Throwable {
@@ -793,47 +788,6 @@ public class WebinCliSubmissionTest {
     testSequence(
         m -> sequenceMetaManifest(m),
         m -> m.file("TAB", "valid/ERT000002_rRNA-with-sample-field.tsv.gz"));
-  }
-
-  @Test
-  public void testPolySampleFull() throws Throwable {
-    testPolysample(
-        this::polySampleMetaManifest,
-        m -> {
-          m.file("FASTA", "valid/valid.fasta.gz");
-          m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
-          m.file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz");
-        });
-  }
-
-  @Test
-  public void testPolySampleTaxTsv() throws Throwable {
-    testPolysample(
-        this::polySampleMetaManifest,
-        m -> {
-          m.file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz");
-        });
-  }
-
-  @Test
-  public void testPolySampleFastaAndSampleTsv() throws Throwable {
-    testPolysample(
-        this::polySampleMetaManifest,
-        m -> {
-          m.file("FASTA", "valid/valid.fasta.gz");
-          m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
-        });
-  }
-
-  @Test
-  public void testPolySampleInvalidFileGroup() throws Throwable {
-    testPolySampleError(
-        m -> polySampleMetaManifest(m),
-        m -> m.file("FASTA", "valid/valid.fasta.gz"),
-        r ->
-            r.textInManifestReport(
-                "An invalid set of files has been specified. Expected data files are: [1 FASTA, 1 SAMPLE_TSV, 1 TAX_TSV] or [1 FASTA, 1 SAMPLE_TSV] or [1 TAX_TSV]"),
-        WebinCliException.ErrorType.USER_ERROR);
   }
 
   @Test
@@ -908,7 +862,6 @@ public class WebinCliSubmissionTest {
   }
 
   // Transcriptome
-  //
 
   @Test
   public void testTranscriptomeFasta() throws Throwable {
@@ -980,7 +933,49 @@ public class WebinCliSubmissionTest {
         webinCliBuilder.build(TRANSCRIPTOME_RESOURCE_DIR, manifestBuilder), 3);
   }
 
-  //
+  // PolySample
+
+  @Test
+  public void testPolySampleFull() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
+        m -> {
+          m.file("FASTA", "valid/valid.fasta.gz");
+          m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
+          m.file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz");
+        });
+  }
+
+  @Test
+  public void testPolySampleTaxTsv() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
+        m -> {
+          m.file("TAX_TSV", "valid/ERT000061-polysample-tax_tsv.tsv.gz");
+        });
+  }
+
+  @Test
+  public void testPolySampleFastaAndSampleTsv() throws Throwable {
+    testPolysample(
+        this::polySampleMetaManifest,
+        m -> {
+          m.file("FASTA", "valid/valid.fasta.gz");
+          m.file("SAMPLE_TSV", "valid/ERT000061-polysample-sample_tsv.tsv.gz");
+        });
+  }
+
+  @Test
+  public void testPolySampleInvalidFileGroup() throws Throwable {
+    testPolySampleError(
+        m -> polySampleMetaManifest(m),
+        m -> m.file("FASTA", "valid/valid.fasta.gz"),
+        r ->
+            r.textInManifestReport(
+                "An invalid set of files has been specified. Expected data files are: [1 FASTA, 1 SAMPLE_TSV, 1 TAX_TSV] or [1 FASTA, 1 SAMPLE_TSV] or [1 TAX_TSV]"),
+        WebinCliException.ErrorType.USER_ERROR);
+  }
+
   //
 
   @Test

@@ -27,43 +27,13 @@ public class GenomeManifestReaderFileCountTest {
         // Supported file groups
         .files(GenomeManifest.FileType.FASTA)
         .files(GenomeManifest.FileType.FLATFILE)
-        .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.FLATFILE)
-        .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.FLATFILE)
         .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.CHROMOSOME_LIST)
         .files(GenomeManifest.FileType.FLATFILE, GenomeManifest.FileType.CHROMOSOME_LIST)
         .files(
             GenomeManifest.FileType.FASTA,
-            GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.CHROMOSOME_LIST)
-        .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.CHROMOSOME_LIST)
-        .files(GenomeManifest.FileType.FLATFILE, GenomeManifest.FileType.CHROMOSOME_LIST)
-        .files(
-            GenomeManifest.FileType.FASTA,
-            GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.CHROMOSOME_LIST)
-        .files(
-            GenomeManifest.FileType.FASTA,
             GenomeManifest.FileType.CHROMOSOME_LIST,
             GenomeManifest.FileType.UNLOCALISED_LIST)
         .files(
-            GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.CHROMOSOME_LIST,
-            GenomeManifest.FileType.UNLOCALISED_LIST)
-        .files(
-            GenomeManifest.FileType.FASTA,
-            GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.CHROMOSOME_LIST,
-            GenomeManifest.FileType.UNLOCALISED_LIST)
-        .files(
-            GenomeManifest.FileType.FASTA,
-            GenomeManifest.FileType.CHROMOSOME_LIST,
-            GenomeManifest.FileType.UNLOCALISED_LIST)
-        .files(
-            GenomeManifest.FileType.FLATFILE,
-            GenomeManifest.FileType.CHROMOSOME_LIST,
-            GenomeManifest.FileType.UNLOCALISED_LIST)
-        .files(
-            GenomeManifest.FileType.FASTA,
             GenomeManifest.FileType.FLATFILE,
             GenomeManifest.FileType.CHROMOSOME_LIST,
             GenomeManifest.FileType.UNLOCALISED_LIST)
