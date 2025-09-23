@@ -219,7 +219,7 @@ public class WebinCliSubmissionTest {
               metaManifestConfig,
               filesManifestConfig,
               c -> {});
-      expectError(() -> webinCli.execute(), errorType);
+      expectError(webinCli::execute, errorType);
       reportTesterConfig.accept(new ReportTester(webinCli));
     } else {
       WebinCli webinCli =
@@ -229,7 +229,7 @@ public class WebinCliSubmissionTest {
               metaManifestConfig,
               filesManifestConfig,
               c -> {});
-      expectError(() -> webinCli.execute(), errorType);
+      expectError(webinCli::execute, errorType);
       reportTesterConfig.accept(new ReportTester(webinCli));
     }
   }
@@ -432,6 +432,26 @@ public class WebinCliSubmissionTest {
 
   private void genomeMetaManifest(ManifestBuilder manifestBuilder) {
     genomeMetaManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  }
+
+  private void genomeMAGManifest(ManifestBuilder manifestBuilder) {
+    genomeMAGManifest(manifestBuilder, WebinCliTestUtils.generateUniqueManifestName());
+  }
+
+  private void genomeMAGManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
+    manifestBuilder
+        .field("NAME", nameFieldValue)
+        .field("ASSEMBLY_TYPE", "Metagenome-Assembled Genome (MAG)")
+        .field("COVERAGE", "45")
+        .field("PROGRAM", "assembly")
+        .field("PLATFORM", "fghgf")
+        .field("MINGAPLENGTH", "34")
+        .field("MOLECULETYPE", "genomic DNA")
+        .field("SAMPLE", " SAMEA130950840")
+        .field("STUDY", "PRJEB20083")
+        .field("RUN_REF", "ERR2836762, ERR2836753, SRR8083599")
+        .field("ANALYSIS_REF", "ERZ690501, ERZ690500")
+        .field("DESCRIPTION", "Some genome assembly description");
   }
 
   private void genomeMetaManifest(ManifestBuilder manifestBuilder, String nameFieldValue) {
@@ -774,6 +794,20 @@ public class WebinCliSubmissionTest {
     webinCliBuilder.submit(true);
 
     executeAndAssertReceiptSuccess(webinCliBuilder.build(GENOME_RESOURCE_DIR, manifestBuilder), 3);
+  }
+
+  @Test
+  public void testGenomeMAGSubmission() throws Throwable {
+    String name = "test-name";
+
+    testGenomeError(
+        m -> genomeMAGManifest(m, name),
+        m -> m.file("FLATFILE", "valid.flatfile.gz"),
+        r ->
+            r.textInSubmissionReport(
+                "test-name",
+                "ERROR: Assembly type: MAG (METAGENOME-ASSEMBLED GENOME) cannot reference a sample having a metagenome taxonomy"),
+        WebinCliException.ErrorType.VALIDATION_ERROR);
   }
 
   // Sequence
