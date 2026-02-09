@@ -798,14 +798,14 @@ public class WebinCliSubmissionTest {
 
   @Test
   public void testGenomeMAGSubmission() throws Throwable {
-    String name = "test-name";
+    String name = String.format("TEST%X", System.nanoTime());
 
     testGenomeError(
         m -> genomeMAGManifest(m, name),
         m -> m.file("FLATFILE", "valid.flatfile.gz"),
         r ->
             r.textInSubmissionReport(
-                "test-name",
+                name,
                 "ERROR: Assembly type: MAG (METAGENOME-ASSEMBLED GENOME) cannot reference a sample having a metagenome taxonomy"),
         WebinCliException.ErrorType.VALIDATION_ERROR);
   }
