@@ -351,10 +351,14 @@ public class WebinCli {
     boolean submissionFailureOccurred = false;
     for (SubmissionBundle bundle : bundlesToSubmit) {
       try {
-        UploadService fileUploadService =
-            parameters.isAscp() && new ASCPService().isAvailable()
-                ? new ASCPService()
-                : new FtpService();
+        UploadService fileUploadService = new FtpService();
+        if (parameters.isAscp()) {
+          if (new ASCPService().isAvailable()) {
+            fileUploadService = new ASCPService();
+          } else {
+            log.warn("Aspera not available. Files will be uploaded via FTP.");
+          }
+        }
 
         try {
           fileUploadService.connect(
@@ -403,7 +407,11 @@ public class WebinCli {
       }
     }
 
-    saveSubmittedSubmissionBundles(submittedBundles);
+    if (!submittedBundles.isEmpty()) {
+      saveSubmittedSubmissionBundles(submittedBundles);
+    } else if (!submissionFailureOccurred) {
+      log.info("Nothing to submit. Submission(s) may have already been sent.");
+    }
 
     if (parameters.isTest()) {
       log.info("This was a TEST submission(s).");
@@ -854,9 +862,6 @@ public class WebinCli {
         submittedSubmissionBundles.stream()
             .map(sb -> sb.getManifestFieldsMd5())
             .collect(Collectors.toList());
-    if (submittedChecksums.isEmpty()) {
-      return;
-    }
 
     List<String> checksumsToSave = loadSubmittedSubmissionBundlesChecksums();
     if (checksumsToSave == null) {

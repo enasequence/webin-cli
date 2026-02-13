@@ -26,10 +26,11 @@ The latest version of the Webin-CLI can be downloaded from:
 
 <https://github.com/enasequence/webin-cli/releases>
 
-The program requires Java 1.8 or a newer which can be downloaded from:
+The program requires `Java 17` or a newer. webin-cli has been officially tested with OpenJDK and uses Eclipse Temurin
+java runtime in the official docker image. Therefore, we recommend use of OpenJDK as this will allow us to support
+the application better.
 
-<https://java.com/en/download/>
-
+<https://openjdk.org/install/>
 
 The program is run using the java command:
 
@@ -40,13 +41,13 @@ java -jar webin-cli-<version>.jar <options>
 for example:
 
 ```
-java -jar webin-cli-2.0.0.jar -help
+java -jar webin-cli-<latest-version>.jar -help
 ```
 
 To increase the memory available to Webin-CLI please use the -Xms java option:
 
 ```
-java -Xms2G -jar webin-cli-2.0.0.jar -help
+java -Xms2G -jar webin-cli-<latest-version>.jar -help
 ```
 
 ## Docker

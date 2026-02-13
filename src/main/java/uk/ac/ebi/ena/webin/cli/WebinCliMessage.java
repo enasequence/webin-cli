@@ -21,7 +21,7 @@ public enum WebinCliMessage implements MessageFormatSource {
   CLI_EXPIRYING_VERSION(
       "Your application version will not be supported after {0}. The minimum supported version will be {1}. Please download the latest version {2} from https://github.com/enasequence/webin-cli/releases"),
   CLI_VALIDATE_SUCCESS("Submission(s) validated successfully."),
-  CLI_UPLOAD_SUCCESS("Files have been uploaded to webin2.ebi.ac.uk. "),
+  CLI_UPLOAD_SUCCESS("Files have been successfully uploaded."),
   CLI_INPUT_PATH_NOT_DIR("Input dir path does not represent folder: \"{0}\"."),
   CLI_OUTPUT_PATH_NOT_DIR("Output dir path does not represent folder: \"{0}\"."),
   CLI_VALIDATE_USER_OR_SYSTEM_ERROR("Submission validation failed because of a {0} error"),
