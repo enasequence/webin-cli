@@ -1,3 +1,11 @@
+## Note:
+
+------------------------------
+
+**This repository is not monitored.  Please report bugs and other issues via the [EBI Helpdesk](https://www.ebi.ac.uk/about/contact/support/)**
+
+------------------------------
+
 # Webin command line submission interface (Webin-CLI)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4fa2bcf5593436da9ea27149f84ee6e)](https://app.codacy.com/app/enasequence/webin-cli?utm_source=github.com&utm_medium=referral&utm_content=enasequence/webin-cli&utm_campaign=badger)
