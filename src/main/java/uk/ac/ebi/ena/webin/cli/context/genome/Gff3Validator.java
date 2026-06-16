@@ -10,24 +10,27 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.embl.gff3tools.cli.SequenceFormat;
 import uk.ac.ebi.embl.gff3tools.exception.ValidationException;
 import uk.ac.ebi.embl.gff3tools.gff3.reader.GFF3FileReader;
 import uk.ac.ebi.embl.gff3tools.validation.ValidationEngine;
 import uk.ac.ebi.embl.gff3tools.validation.ValidationEngineBuilder;
 import uk.ac.ebi.embl.gff3tools.validation.provider.CompositeSequenceProvider;
-import uk.ac.ebi.embl.gff3tools.validation.provider.FileSequenceSource;
+import uk.ac.ebi.embl.gff3tools.validation.provider.SequenceSource;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
@@ -37,15 +40,9 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
  *
  * <p>For every GFF3 submission file the validator builds a {@link ValidationEngine} (with all
  * auto-discovered builtin validators) and a {@link CompositeSequenceProvider} backed by the
- * manifest's FASTA file(s) via {@link FileSequenceSource}, which handles gzip decompression
- * internally. Cross-validation rules (translation, location, gap) resolve sequences by the GFF3
- * column-1 seqId. Collected errors and parsing warnings are written to the per-file {@code .report}
- * configured by the executor.
- *
- * <p>FASTA files must use the JSON header format {@code >ID | {json}} required by the gff3tools
- * {@code JsonHeaderParser} (e.g. {@code >SEQ1 | {}}). Plain headers without a {@code |} separator
- * are rejected by the library. bzip2-compressed FASTA is not supported; use gzip ({@code .fasta.gz}
- * ).
+ * manifest's FASTA file(s) so the cross-validation rules (translation, location, ...) can resolve
+ * sequences by the GFF3 column-1 seqId. Collected errors and parsing warnings are written to the
+ * per-file {@code .report} configured by the executor.
  */
 public class Gff3Validator {
 
@@ -79,21 +76,15 @@ public class Gff3Validator {
     File gff3 = gff3File.getFile();
 
     CompositeSequenceProvider sequenceProvider = new CompositeSequenceProvider();
-    if (fastaFiles != null) {
-      for (SubmissionFile<GenomeManifest.FileType> fastaFile : fastaFiles) {
-        // FileSequenceSource handles gzip decompression internally (gff3tools >= 4.6.2)
-        // and cleans up any temporary decompressed files when engine.close() is called.
-        sequenceProvider.addSource(
-            new FileSequenceSource(fastaFile.getFile().toPath(), SequenceFormat.fasta, null));
-      }
+    if (fastaFiles != null && !fastaFiles.isEmpty()) {
+      sequenceProvider.addSource(new FastaSequenceSource(fastaFiles));
     }
 
     List<ValidationException> errors = new ArrayList<>();
     List<ValidationException> warnings = new ArrayList<>();
 
     // The ValidationEngine (try-with-resources) takes ownership of the sequenceProvider via
-    // withProvider(...) and closes it when engine.close() is called — including cleaning up
-    // any temp files created by FileSequenceSource for decompressing gzipped FASTA.
+    // withProvider(...) and closes it when engine.close() is called. No explicit close needed here.
     try (Reader reader = FileUtils.getBufferedReader(gff3);
         ValidationEngine engine =
             new ValidationEngineBuilder().failFast(false).withProvider(sequenceProvider).build();
@@ -162,5 +153,93 @@ public class Gff3Validator {
       sb.append(" [line: ").append(exception.getLine()).append("]");
     }
     return sb.toString();
+  }
+
+  /**
+   * A {@link SequenceSource} backed by the submission FASTA file(s). Sequences are keyed by the
+   * accession found in the FASTA header (the first whitespace-delimited token), which is the same
+   * identifier referenced in GFF3 column 1. Coordinates are 1-based inclusive, matching the GFF3
+   * feature coordinates passed by the gff3tools cross-validators.
+   *
+   * <p><b>Memory limitation:</b> all sequences are fully materialised as Java {@code String}s and
+   * held in a {@link HashMap} for the lifetime of validation. Individual sequences larger than ~2.1
+   * Gb (Integer.MAX_VALUE characters) are not supported and very large genomes may exhaust heap.
+   */
+  static class FastaSequenceSource implements SequenceSource {
+
+    private final List<SubmissionFile<GenomeManifest.FileType>> fastaFiles;
+    private Map<String, String> sequences;
+
+    FastaSequenceSource(List<SubmissionFile<GenomeManifest.FileType>> fastaFiles) {
+      this.fastaFiles = fastaFiles;
+    }
+
+    @Override
+    public boolean hasSequence(String seqId) {
+      return sequences().containsKey(seqId);
+    }
+
+    @Override
+    public String getSequenceSlice(String seqId, long fromBase, long toBase) {
+      String sequence = sequences().get(seqId);
+      if (sequence == null) {
+        throw new IllegalArgumentException("No sequence found for seqId: " + seqId);
+      }
+      if (fromBase < 1 || toBase > sequence.length()) {
+        throw new IllegalArgumentException(
+            "Requested range ["
+                + fromBase
+                + ", "
+                + toBase
+                + "] is out of bounds for seqId "
+                + seqId
+                + " (length "
+                + sequence.length()
+                + ")");
+      }
+      if (fromBase > toBase) {
+        return "";
+      }
+      return sequence.substring((int) (fromBase - 1), (int) toBase);
+    }
+
+    private synchronized Map<String, String> sequences() {
+      if (sequences == null) {
+        sequences = new HashMap<>();
+        for (SubmissionFile<GenomeManifest.FileType> fastaFile : fastaFiles) {
+          readFasta(fastaFile.getFile(), sequences);
+        }
+      }
+      return sequences;
+    }
+
+    private void readFasta(File file, Map<String, String> target) {
+      try (BufferedReader reader = FileUtils.getBufferedReader(file)) {
+        String accession = null;
+        StringBuilder sequence = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+          if (line.startsWith(">")) {
+            if (accession != null) {
+              if (target.put(accession, sequence.toString()) != null) {
+                throw new IllegalArgumentException("Duplicate sequence ID in FASTA: " + accession);
+              }
+            }
+            accession = line.substring(1).trim().split("\\s+")[0];
+            sequence = new StringBuilder();
+          } else {
+            sequence.append(line.trim());
+          }
+        }
+        if (accession != null) {
+          if (target.put(accession, sequence.toString()) != null) {
+            throw new IllegalArgumentException("Duplicate sequence ID in FASTA: " + accession);
+          }
+        }
+      } catch (IOException ex) {
+        throw new UncheckedIOException(
+            "Failed to read FASTA file " + file + ": " + ex.getMessage(), ex);
+      }
+    }
   }
 }
