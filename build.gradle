@@ -33,6 +33,9 @@ dependencies {
     api( 'uk.ac.ebi.ena:gff3tools:4.6.+' ) {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
+    // fastareader is only runtime in gff3tools but FileSequenceSource's class descriptor
+    // references SequenceFormatReader (its second constructor), so javac needs it on the compile classpath.
+    compileOnly( 'uk.ac.ebi.ena:fastareader:1.2.0' )
     api( 'uk.ac.ebi.ena.sequence:sequencetools:2.+' )
     api( 'uk.ac.ebi.ena.txmbtools:txmbtools:2.+' )
     api( 'uk.ac.ebi.ena:readtools:2.+' ) {
