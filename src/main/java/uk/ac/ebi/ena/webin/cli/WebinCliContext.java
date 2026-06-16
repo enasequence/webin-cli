@@ -14,6 +14,7 @@ import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.readtools.validator.ReadsValidator;
 import uk.ac.ebi.ena.txmbvalidator.TxmbValidator;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.genome.GenomeValidator;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.polysample.PolySampleManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.polysample.PolySampleXmlWriter;
@@ -37,7 +38,7 @@ public enum WebinCliContext {
       GenomeManifest.class,
       GenomeManifestReader.class,
       GenomeXmlWriter.class,
-      SubmissionValidator.class,
+      GenomeValidator.class,
       "Genome assembly"),
   transcriptome(
       TranscriptomeManifest.class,

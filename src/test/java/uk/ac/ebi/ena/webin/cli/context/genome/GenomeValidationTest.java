@@ -222,6 +222,62 @@ public class GenomeValidationTest {
   }
 
   @Test
+  public void testValidFastaWithGff3() {
+    File manifestFile =
+        manifestBuilder()
+            .file(FileType.FASTA, "valid.fasta.gz")
+            .file(FileType.GFF3, "valid-annotation.gff3.gz")
+            .build();
+
+    WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    SubmissionFiles submissionFiles =
+        executor.getManifestReader().getManifests().stream().findFirst().get().files();
+    assertThat(submissionFiles.get().size()).isEqualTo(2);
+    assertThat(submissionFiles.get(FileType.FASTA).size()).isOne();
+    assertThat(submissionFiles.get(FileType.GFF3).size()).isOne();
+    executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
+    assertGeneratedFiles(executor);
+  }
+
+  @Test
+  public void testInvalidGff3() {
+    File manifestFile =
+        manifestBuilder()
+            .file(FileType.FASTA, "valid.fasta.gz")
+            .file(FileType.GFF3, "invalid.gff3.gz")
+            .build();
+
+    WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    assertThatThrownBy(
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
+        .isInstanceOf(WebinCliException.class);
+
+    new ReportTester(executor).textInFileReport(NAME, "invalid.gff3.gz", "ERROR:");
+  }
+
+  @Test
+  public void testGff3CrossValidationFailure() {
+    File manifestFile =
+        manifestBuilder()
+            .file(FileType.FASTA, "valid.fasta.gz")
+            .file(FileType.GFF3, "inconsistent.gff3.gz")
+            .build();
+
+    WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    assertThatThrownBy(
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
+        .isInstanceOf(WebinCliException.class);
+
+    new ReportTester(executor).textInFileReport(NAME, "inconsistent.gff3.gz", "ERROR:");
+  }
+
+  @Test
   public void testInvalidFasta() {
     File manifestFile = manifestBuilder().file(FileType.FASTA, "invalid.fasta.gz").build();
 

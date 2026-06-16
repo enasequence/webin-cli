@@ -329,8 +329,7 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
 
   private static ManifestFieldProcessor[] getGff3Processors() {
     return new ManifestFieldProcessor[] {
-      new ASCIIFileNameProcessor(),
-      new FileSuffixProcessor(ManifestFileSuffix.GFF3_FILE_SUFFIX)
+      new ASCIIFileNameProcessor(), new FileSuffixProcessor(ManifestFileSuffix.GFF3_FILE_SUFFIX)
     };
   }
 
