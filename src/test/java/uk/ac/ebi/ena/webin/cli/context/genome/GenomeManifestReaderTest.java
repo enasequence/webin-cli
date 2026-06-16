@@ -27,6 +27,7 @@ import uk.ac.ebi.ena.webin.cli.WebinCliParameters;
 import uk.ac.ebi.ena.webin.cli.WebinCliTestUtils;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 public class GenomeManifestReaderTest {
@@ -99,7 +100,7 @@ public class GenomeManifestReaderTest {
   @Test
   public void testInvalidManifestWithBothFastaAndFlatfile() {
     String expectedErrorMessage =
-        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST].";
+        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3] or [1 FASTA, 1 GFF3, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST].";
 
     String[][] invalidFileTypeGroups = {
       {"FASTA", "FLATFILE"},
@@ -134,5 +135,50 @@ public class GenomeManifestReaderTest {
       Assert.assertFalse(manifestReader.getValidationResult().isValid());
       Assert.assertTrue(msgs.contains(expectedErrorMessage));
     }
+  }
+
+  @Test
+  public void testValidManifestWithFastaAndGff3() {
+    GenomeManifestReader manifestReader = createManifestReader();
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(Field.PLATFORM, " illumina")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
+            .field(Field.DESCRIPTION, " description")
+            .file("FASTA", TempFileBuilder.empty("fasta"))
+            .file("GFF3", TempFileBuilder.empty("annotation.gff3.gz"))
+            .build());
+
+    GenomeManifest manifest = manifestReader.getManifests().stream().findFirst().get();
+
+    assertThat(manifest.files().files()).hasSize(2);
+    assertThat(manifest.files().get(GenomeManifest.FileType.FASTA)).hasSize(1);
+    assertThat(manifest.files().get(GenomeManifest.FileType.GFF3)).hasSize(1);
+    SubmissionFile<GenomeManifest.FileType> gff3File =
+        manifest.files().get(GenomeManifest.FileType.GFF3).get(0);
+    Assert.assertEquals(GenomeManifest.FileType.GFF3, gff3File.getFileType());
+  }
+
+  @Test
+  public void testInvalidManifestWithGff3Alone() {
+    String expectedErrorMessage =
+        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3] or [1 FASTA, 1 GFF3, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST].";
+
+    GenomeManifestReader manifestReader = createManifestReader();
+    List<String> msgs = new ArrayList<>();
+    manifestReader.addListener(validationMessage -> msgs.add(validationMessage.getMessage()));
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(Field.PLATFORM, " illumina")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
+            .file("GFF3", "annotation.gff3.gz")
+            .build());
+
+    Assert.assertFalse(manifestReader.getValidationResult().isValid());
+    Assert.assertTrue(msgs.contains(expectedErrorMessage));
   }
 }
