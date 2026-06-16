@@ -11,20 +11,14 @@
 package uk.ac.ebi.ena.webin.cli.context.genome;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.gff3tools.cli.SequenceFormat;
@@ -43,13 +37,15 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
  *
  * <p>For every GFF3 submission file the validator builds a {@link ValidationEngine} (with all
  * auto-discovered builtin validators) and a {@link CompositeSequenceProvider} backed by the
- * manifest's FASTA file(s) so the cross-validation rules (translation, location, ...) can resolve
- * sequences by the GFF3 column-1 seqId. Collected errors and parsing warnings are written to the
- * per-file {@code .report} configured by the executor.
+ * manifest's FASTA file(s) via {@link FileSequenceSource}, which handles gzip decompression
+ * internally. Cross-validation rules (translation, location, gap) resolve sequences by the GFF3
+ * column-1 seqId. Collected errors and parsing warnings are written to the per-file {@code .report}
+ * configured by the executor.
  *
- * <p>FASTA files are expected to use the JSON header format {@code >ID | {json}} required by the
- * gff3tools {@code JsonHeaderParser} (e.g. {@code >SEQ1 | {}}). Plain headers without a {@code |}
- * separator are rejected by the library.
+ * <p>FASTA files must use the JSON header format {@code >ID | {json}} required by the gff3tools
+ * {@code JsonHeaderParser} (e.g. {@code >SEQ1 | {}}). Plain headers without a {@code |} separator
+ * are rejected by the library. bzip2-compressed FASTA is not supported; use gzip ({@code .fasta.gz}
+ * ).
  */
 public class Gff3Validator {
 
@@ -83,58 +79,38 @@ public class Gff3Validator {
     File gff3 = gff3File.getFile();
 
     CompositeSequenceProvider sequenceProvider = new CompositeSequenceProvider();
-    List<Path> tempFiles = new ArrayList<>();
+    if (fastaFiles != null) {
+      for (SubmissionFile<GenomeManifest.FileType> fastaFile : fastaFiles) {
+        // FileSequenceSource handles gzip decompression internally (gff3tools >= 4.6.2)
+        // and cleans up any temporary decompressed files when engine.close() is called.
+        sequenceProvider.addSource(
+            new FileSequenceSource(fastaFile.getFile().toPath(), SequenceFormat.fasta, null));
+      }
+    }
+
     List<ValidationException> errors = new ArrayList<>();
     List<ValidationException> warnings = new ArrayList<>();
 
-    try {
-      if (fastaFiles != null) {
-        for (SubmissionFile<GenomeManifest.FileType> fastaFile : fastaFiles) {
-          try {
-            Path tempFasta = decompressFasta(fastaFile.getFile());
-            tempFiles.add(tempFasta);
-            sequenceProvider.addSource(
-                new FileSequenceSource(tempFasta, SequenceFormat.fasta, null));
-          } catch (Exception ex) {
-            errors.add(
-                new ValidationException(
-                    "Failed to prepare FASTA file for GFF3 cross-validation: " + ex.getMessage()));
-          }
-        }
-      }
+    // The ValidationEngine (try-with-resources) takes ownership of the sequenceProvider via
+    // withProvider(...) and closes it when engine.close() is called — including cleaning up
+    // any temp files created by FileSequenceSource for decompressing gzipped FASTA.
+    try (Reader reader = FileUtils.getBufferedReader(gff3);
+        ValidationEngine engine =
+            new ValidationEngineBuilder().failFast(false).withProvider(sequenceProvider).build();
+        GFF3FileReader gff3Reader = new GFF3FileReader(engine, reader, gff3.toPath())) {
 
-      if (errors.isEmpty()) {
-        // The ValidationEngine (try-with-resources) takes ownership of the sequenceProvider via
-        // withProvider(...) and closes it when engine.close() is called. No explicit close needed.
-        try (Reader reader = FileUtils.getBufferedReader(gff3);
-            ValidationEngine engine =
-                new ValidationEngineBuilder()
-                    .failFast(false)
-                    .withProvider(sequenceProvider)
-                    .build();
-            GFF3FileReader gff3Reader = new GFF3FileReader(engine, reader, gff3.toPath())) {
+      gff3Reader.readHeader();
+      gff3Reader.read(annotation -> {});
 
-          gff3Reader.readHeader();
-          gff3Reader.read(annotation -> {});
-
-          errors.addAll(engine.getCollectedErrors());
-          warnings.addAll(engine.getParsingWarnings());
-        } catch (ValidationException ex) {
-          // A fatal validation/syntactic error stopped processing before completion.
-          errors.add(ex);
-        } catch (IOException ex) {
-          errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage()));
-        } catch (Exception ex) {
-          errors.add(new ValidationException("GFF3 validation failed: " + ex.getMessage()));
-        }
-      }
-    } finally {
-      for (Path tmp : tempFiles) {
-        try {
-          Files.deleteIfExists(tmp);
-        } catch (IOException ignored) {
-        }
-      }
+      errors.addAll(engine.getCollectedErrors());
+      warnings.addAll(engine.getParsingWarnings());
+    } catch (ValidationException ex) {
+      // A fatal validation/syntactic error stopped processing before completion.
+      errors.add(ex);
+    } catch (IOException ex) {
+      errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage()));
+    } catch (Exception ex) {
+      errors.add(new ValidationException("GFF3 validation failed: " + ex.getMessage()));
     }
 
     writeReport(gff3File.getReportFile(), errors, warnings);
@@ -144,30 +120,6 @@ public class Gff3Validator {
       return false;
     }
     return true;
-  }
-
-  /**
-   * Decompresses a FASTA file (gzip, bzip2, or plain) to a temporary uncompressed file. The caller
-   * is responsible for deleting the returned {@link Path} after use.
-   */
-  private static Path decompressFasta(File fastaFile) throws IOException {
-    Path tmp = Files.createTempFile("webin-gff3-fasta-", ".fasta");
-    String name = fastaFile.getName();
-    if (name.endsWith(".gz") || name.endsWith(".gzip")) {
-      try (GZIPInputStream in = new GZIPInputStream(new FileInputStream(fastaFile));
-          OutputStream out = Files.newOutputStream(tmp)) {
-        in.transferTo(out);
-      }
-    } else if (name.endsWith(".bz2") || name.endsWith(".bzip2")) {
-      try (BZip2CompressorInputStream in =
-              new BZip2CompressorInputStream(new FileInputStream(fastaFile));
-          OutputStream out = Files.newOutputStream(tmp)) {
-        in.transferTo(out);
-      }
-    } else {
-      Files.copy(fastaFile.toPath(), tmp, StandardCopyOption.REPLACE_EXISTING);
-    }
-    return tmp;
   }
 
   private void writeReport(
