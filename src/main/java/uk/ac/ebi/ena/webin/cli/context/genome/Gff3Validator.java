@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -82,6 +83,8 @@ public class Gff3Validator {
     List<ValidationException> errors = new ArrayList<>();
     List<ValidationException> warnings = new ArrayList<>();
 
+    // The ValidationEngine (try-with-resources) takes ownership of the sequenceProvider via
+    // withProvider(...) and closes it when engine.close() is called. No explicit close needed here.
     try (Reader reader = FileUtils.getBufferedReader(gff3);
         ValidationEngine engine =
             new ValidationEngineBuilder().failFast(false).withProvider(sequenceProvider).build();
@@ -99,8 +102,6 @@ public class Gff3Validator {
       errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage()));
     } catch (Exception ex) {
       errors.add(new ValidationException("GFF3 validation failed: " + ex.getMessage()));
-    } finally {
-      sequenceProvider.close();
     }
 
     writeReport(gff3File.getReportFile(), errors, warnings);
@@ -135,7 +136,7 @@ public class Gff3Validator {
             reportFile.toPath(),
             StandardCharsets.UTF_8,
             StandardOpenOption.CREATE,
-            StandardOpenOption.APPEND)) {
+            StandardOpenOption.TRUNCATE_EXISTING)) {
       for (String line : lines) {
         writer.write(line);
         writer.write(System.lineSeparator());
@@ -149,7 +150,7 @@ public class Gff3Validator {
     StringBuilder sb = new StringBuilder();
     sb.append(severity).append(": ").append(exception.getMessage());
     if (exception.getLine() > 0) {
-      sb.append(" [ line: ").append(exception.getLine()).append("]");
+      sb.append(" [line: ").append(exception.getLine()).append("]");
     }
     return sb.toString();
   }
@@ -159,6 +160,10 @@ public class Gff3Validator {
    * accession found in the FASTA header (the first whitespace-delimited token), which is the same
    * identifier referenced in GFF3 column 1. Coordinates are 1-based inclusive, matching the GFF3
    * feature coordinates passed by the gff3tools cross-validators.
+   *
+   * <p><b>Memory limitation:</b> all sequences are fully materialised as Java {@code String}s and
+   * held in a {@link HashMap} for the lifetime of validation. Individual sequences larger than ~2.1
+   * Gb (Integer.MAX_VALUE characters) are not supported and very large genomes may exhaust heap.
    */
   static class FastaSequenceSource implements SequenceSource {
 
@@ -180,12 +185,22 @@ public class Gff3Validator {
       if (sequence == null) {
         throw new IllegalArgumentException("No sequence found for seqId: " + seqId);
       }
-      int from = (int) Math.max(1, fromBase);
-      int to = (int) Math.min(sequence.length(), toBase);
-      if (from > to) {
+      if (fromBase < 1 || toBase > sequence.length()) {
+        throw new IllegalArgumentException(
+            "Requested range ["
+                + fromBase
+                + ", "
+                + toBase
+                + "] is out of bounds for seqId "
+                + seqId
+                + " (length "
+                + sequence.length()
+                + ")");
+      }
+      if (fromBase > toBase) {
         return "";
       }
-      return sequence.substring(from - 1, to);
+      return sequence.substring((int) (fromBase - 1), (int) toBase);
     }
 
     private synchronized Map<String, String> sequences() {
@@ -206,7 +221,9 @@ public class Gff3Validator {
         while ((line = reader.readLine()) != null) {
           if (line.startsWith(">")) {
             if (accession != null) {
-              target.put(accession, sequence.toString());
+              if (target.put(accession, sequence.toString()) != null) {
+                throw new IllegalArgumentException("Duplicate sequence ID in FASTA: " + accession);
+              }
             }
             accession = line.substring(1).trim().split("\\s+")[0];
             sequence = new StringBuilder();
@@ -215,10 +232,13 @@ public class Gff3Validator {
           }
         }
         if (accession != null) {
-          target.put(accession, sequence.toString());
+          if (target.put(accession, sequence.toString()) != null) {
+            throw new IllegalArgumentException("Duplicate sequence ID in FASTA: " + accession);
+          }
         }
       } catch (IOException ex) {
-        log.warn("Failed to read FASTA file {}: {}", file, ex.getMessage());
+        throw new UncheckedIOException(
+            "Failed to read FASTA file " + file + ": " + ex.getMessage(), ex);
       }
     }
   }

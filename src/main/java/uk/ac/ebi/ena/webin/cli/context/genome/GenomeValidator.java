@@ -33,6 +33,9 @@ public class GenomeValidator implements Validator<GenomeManifest, ValidationResp
   @Override
   public ValidationResponse validate(GenomeManifest manifest) {
     ValidationResponse response = submissionValidator.validate(manifest);
+    if (response == null) {
+      response = new ValidationResponse();
+    }
 
     List<SubmissionFile<GenomeManifest.FileType>> gff3Files =
         manifest.files(GenomeManifest.FileType.GFF3);
