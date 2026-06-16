@@ -115,7 +115,7 @@ public class GenomeXmlTest {
             + "      </SEQUENCE_ASSEMBLY>\n"
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"4d5b603a968abcec9e377cdcd172af33\" />\n"
+            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"73ab6de83b6369ef977f00ac7a966618\" />\n"
             + "    </FILES>\n"
             + "  </ANALYSIS>\n"
             + "</ANALYSIS_SET>\n");
@@ -149,7 +149,7 @@ public class GenomeXmlTest {
             + "      </SEQUENCE_ASSEMBLY>\n"
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"4d5b603a968abcec9e377cdcd172af33\" />\n"
+            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"73ab6de83b6369ef977f00ac7a966618\" />\n"
             + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.gff3.gz\" filetype=\"gff3\" checksum_method=\"MD5\" checksum=\"94d2ff3caf21a5e60da59aae6a06a657\" />\n"
             + "    </FILES>\n"
             + "  </ANALYSIS>\n"
