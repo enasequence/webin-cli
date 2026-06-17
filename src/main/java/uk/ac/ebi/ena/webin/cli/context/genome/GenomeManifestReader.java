@@ -258,13 +258,6 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .group("Sequences in a fasta file and annotation in a GFF3 file.")
             .required(Field.FASTA)
             .required(Field.GFF3)
-            .and()
-            .group(
-                "Sequences in a fasta file, annotation in a GFF3 file, a list of chromosomes, and an optional list of unlocalised sequences.")
-            .required(Field.FASTA)
-            .required(Field.GFF3)
-            .required(Field.CHROMOSOME_LIST)
-            .optional(Field.UNLOCALISED_LIST)
             .build());
 
     if (factory.getStudyProcessor() != null) {

@@ -100,7 +100,7 @@ public class GenomeManifestReaderTest {
   @Test
   public void testInvalidManifestWithBothFastaAndFlatfile() {
     String expectedErrorMessage =
-        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3] or [1 FASTA, 1 GFF3, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST].";
+        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3].";
 
     String[][] invalidFileTypeGroups = {
       {"FASTA", "FLATFILE"},
@@ -164,7 +164,7 @@ public class GenomeManifestReaderTest {
   @Test
   public void testInvalidManifestWithGff3Alone() {
     String expectedErrorMessage =
-        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3] or [1 FASTA, 1 GFF3, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST].";
+        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3].";
 
     GenomeManifestReader manifestReader = createManifestReader();
     List<String> msgs = new ArrayList<>();
