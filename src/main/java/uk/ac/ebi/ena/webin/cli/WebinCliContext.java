@@ -25,6 +25,7 @@ import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.taxrefset.TaxRefSetManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.taxrefset.TaxRefSetXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeValidator;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
@@ -44,7 +45,7 @@ public enum WebinCliContext {
       TranscriptomeManifest.class,
       TranscriptomeManifestReader.class,
       TranscriptomeXmlWriter.class,
-      SubmissionValidator.class,
+      TranscriptomeValidator.class,
       "Transcriptome assembly"),
   sequence(
       SequenceManifest.class,

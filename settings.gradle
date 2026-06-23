@@ -1,0 +1,5 @@
+includeBuild('../webin-cli-validator') {
+    dependencySubstitution {
+        substitute module('uk.ac.ebi.ena.webin-cli:webin-cli-validator') using project(':')
+    }
+}

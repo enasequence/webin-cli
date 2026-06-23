@@ -8,40 +8,41 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.context.genome;
+package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
 import java.util.List;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
+import uk.ac.ebi.ena.webin.cli.context.genome.Gff3Validator;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
+import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 /**
- * Composite genome validator. It first runs the existing {@code sequencetools} {@link
- * SubmissionValidator} (FASTA, list files and assembly metadata) and then, when the manifest
- * declares a GFF3 file, runs client-side GFF3 validation via {@link Gff3Validator}.
+ * Composite transcriptome validator. Runs the {@code sequencetools} {@link SubmissionValidator}
+ * first, then — when the manifest declares a GFF3 file — runs client-side GFF3 validation via
+ * {@link Gff3Validator}.
  *
  * <p>This class is instantiated reflectively by {@code WebinCliContext} so it must keep a public
  * no-arg constructor.
  */
-public class GenomeValidator implements Validator<GenomeManifest, ValidationResponse> {
+public class TranscriptomeValidator implements Validator<TranscriptomeManifest, ValidationResponse> {
 
   private final SubmissionValidator submissionValidator = new SubmissionValidator();
   private final Gff3Validator gff3Validator = new Gff3Validator();
 
   @Override
-  public ValidationResponse validate(GenomeManifest manifest) {
+  public ValidationResponse validate(TranscriptomeManifest manifest) {
     ValidationResponse response = submissionValidator.validate(manifest);
     if (response == null) {
       response = new ValidationResponse();
     }
 
-    List<SubmissionFile<GenomeManifest.FileType>> gff3Files =
-        manifest.files(GenomeManifest.FileType.GFF3);
+    List<SubmissionFile<TranscriptomeManifest.FileType>> gff3Files =
+        manifest.files(TranscriptomeManifest.FileType.GFF3);
     if (gff3Files != null && !gff3Files.isEmpty()) {
-      List<SubmissionFile<GenomeManifest.FileType>> fastaFiles =
-          manifest.files(GenomeManifest.FileType.FASTA);
+      List<SubmissionFile<TranscriptomeManifest.FileType>> fastaFiles =
+          manifest.files(TranscriptomeManifest.FileType.FASTA);
       boolean gff3Ok = gff3Validator.validate(gff3Files, fastaFiles);
       if (!gff3Ok) {
         response.setStatus(ValidationResponse.status.VALIDATION_ERROR);

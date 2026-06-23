@@ -30,7 +30,6 @@ import uk.ac.ebi.embl.gff3tools.validation.provider.CompositeSequenceProvider;
 import uk.ac.ebi.embl.gff3tools.validation.provider.FileSequenceSource;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 
 /**
  * Orchestrates client-side GFF3 validation using the {@code gff3tools} programmatic API.
@@ -47,8 +46,9 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
  * separator is mandatory — it is enforced by the ENA submission protocol, not merely a library
  * constraint. Plain headers without {@code |} are rejected.
  *
- * <p>Only gzip-compressed FASTA ({@code .fasta.gz}) is supported. bzip2-compressed FASTA is not
- * accepted when submitted with GFF3.
+ * <p>Only gzip-compressed FASTA ({@code .fasta.gz}) is supported alongside GFF3. bzip2-compressed
+ * FASTA is not accepted because {@code gff3tools}'s {@link FileSequenceSource} decompresses only
+ * gzip; bzip2 files would be passed raw to the FASTA reader, producing an opaque failure.
  */
 public class Gff3Validator {
 
@@ -60,48 +60,49 @@ public class Gff3Validator {
    * @return {@code true} if all GFF3 files validated without errors, {@code false} otherwise.
    */
   public boolean validate(
-      GenomeManifest manifest, List<SubmissionFile<GenomeManifest.FileType>> gff3Files) {
+      List<? extends SubmissionFile<?>> gff3Files,
+      List<? extends SubmissionFile<?>> fastaFiles) {
     if (gff3Files == null || gff3Files.isEmpty()) {
       return true;
     }
 
-    List<SubmissionFile<GenomeManifest.FileType>> fastaFiles =
-        manifest.files(GenomeManifest.FileType.FASTA);
-
     boolean valid = true;
-    for (SubmissionFile<GenomeManifest.FileType> gff3File : gff3Files) {
+    for (SubmissionFile<?> gff3File : gff3Files) {
       valid &= validateFile(gff3File, fastaFiles);
     }
     return valid;
   }
 
   private boolean validateFile(
-      SubmissionFile<GenomeManifest.FileType> gff3File,
-      List<SubmissionFile<GenomeManifest.FileType>> fastaFiles) {
+      SubmissionFile<?> gff3File, List<? extends SubmissionFile<?>> fastaFiles) {
 
     File gff3 = gff3File.getFile();
 
-    // Guard: bzip2-compressed FASTA is not supported alongside GFF3 (GzipUtils only decompresses
-    // gzip; bzip2 would be passed raw to fastareader, producing an opaque failure).
+    // Guard: bzip2-compressed FASTA is not supported alongside GFF3 — gff3tools's
+    // FileSequenceSource decompresses only gzip; bzip2 would be passed raw to the FASTA
+    // reader, producing an opaque failure. Check all FASTA files before reporting.
     if (fastaFiles != null) {
-      for (SubmissionFile<GenomeManifest.FileType> fastaFile : fastaFiles) {
+      List<ValidationException> bzip2Errors = new ArrayList<>();
+      for (SubmissionFile<?> fastaFile : fastaFiles) {
         String fastaName = fastaFile.getFile().getName();
         if (fastaName.endsWith(".bz2") || fastaName.endsWith(".bzip2")) {
-          List<ValidationException> bzip2Errors = new ArrayList<>();
           bzip2Errors.add(
               new ValidationException(
                   "bzip2-compressed FASTA is not supported with GFF3 annotation; "
-                      + "use gzip compression (.fasta.gz)"));
-          writeReport(gff3File.getReportFile(), bzip2Errors, List.of());
-          log.info("GFF3 file {} validation failed: bzip2 FASTA not supported.", gff3.getName());
-          return false;
+                      + "use gzip compression (.fasta.gz): "
+                      + fastaName));
         }
+      }
+      if (!bzip2Errors.isEmpty()) {
+        writeReport(gff3File.getReportFile(), bzip2Errors, List.of());
+        log.info("GFF3 file {} validation failed: bzip2 FASTA not supported.", gff3.getName());
+        return false;
       }
     }
 
     CompositeSequenceProvider sequenceProvider = new CompositeSequenceProvider();
     if (fastaFiles != null) {
-      for (SubmissionFile<GenomeManifest.FileType> fastaFile : fastaFiles) {
+      for (SubmissionFile<?> fastaFile : fastaFiles) {
         // FileSequenceSource handles gzip decompression internally (gff3tools >= 4.6.2)
         // and cleans up any temporary decompressed files when engine.close() is called.
         sequenceProvider.addSource(
@@ -121,6 +122,7 @@ public class Gff3Validator {
         GFF3FileReader gff3Reader = new GFF3FileReader(engine, reader, gff3.toPath())) {
 
       gff3Reader.readHeader();
+      // Validation runs as a side-effect of reading; annotations are not needed here.
       gff3Reader.read(annotation -> {});
 
       errors.addAll(engine.getCollectedErrors());
@@ -130,8 +132,12 @@ public class Gff3Validator {
       errors.add(ex);
     } catch (IOException ex) {
       errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage()));
-    } catch (Exception ex) {
-      errors.add(new ValidationException("GFF3 validation failed: " + ex.getMessage()));
+    } catch (RuntimeException ex) {
+      log.error("Unexpected error during GFF3 validation of {}", gff3.getName(), ex);
+      errors.add(
+          new ValidationException(
+              "GFF3 validation failed unexpectedly: "
+                  + (ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName())));
     }
 
     writeReport(gff3File.getReportFile(), errors, warnings);
@@ -155,10 +161,6 @@ public class Gff3Validator {
     }
     for (ValidationException warning : warnings) {
       lines.add(formatMessage("WARNING", warning));
-    }
-
-    if (lines.isEmpty()) {
-      return;
     }
 
     try (Writer writer =

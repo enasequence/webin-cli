@@ -19,7 +19,6 @@ import java.nio.file.Files;
 import java.util.List;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType;
 
 /**
@@ -30,64 +29,49 @@ public class Gff3ValidatorTest {
 
   private static final File RESOURCE_DIR = getResourceDir("uk/ac/ebi/ena/webin/cli/genome");
 
-  private GenomeManifest manifestWith(String fastaName, String gff3Name) throws Exception {
-    GenomeManifest manifest = new GenomeManifest();
+  private List<SubmissionFile<FileType>> fastaFiles(String fastaName) {
+    return List.of(new SubmissionFile<>(FileType.FASTA, new File(RESOURCE_DIR, fastaName)));
+  }
 
-    SubmissionFile<FileType> fasta =
-        new SubmissionFile<>(FileType.FASTA, new File(RESOURCE_DIR, fastaName));
+  private SubmissionFile<FileType> gff3File(String gff3Name) throws Exception {
     SubmissionFile<FileType> gff3 =
         new SubmissionFile<>(FileType.GFF3, new File(RESOURCE_DIR, gff3Name));
-
     File reportFile = File.createTempFile("gff3-", ".report");
     reportFile.deleteOnExit();
     gff3.setReportFile(reportFile);
-
-    manifest.files().add(fasta);
-    manifest.files().add(gff3);
-    return manifest;
+    return gff3;
   }
 
-  private String reportContent(GenomeManifest manifest) throws Exception {
-    File reportFile = manifest.files(FileType.GFF3).get(0).getReportFile();
-    return new String(Files.readAllBytes(reportFile.toPath()), StandardCharsets.UTF_8);
+  private String reportContent(SubmissionFile<FileType> gff3) throws Exception {
+    return new String(Files.readAllBytes(gff3.getReportFile().toPath()), StandardCharsets.UTF_8);
   }
 
   @Test
   public void testValidGff3() throws Exception {
-    GenomeManifest manifest = manifestWith("valid.fasta.gz", "valid-annotation.gff3.gz");
-    List<SubmissionFile<FileType>> gff3Files = manifest.files(FileType.GFF3);
-
-    boolean valid = new Gff3Validator().validate(manifest, gff3Files);
-
+    SubmissionFile<FileType> gff3 = gff3File("valid-annotation.gff3.gz");
+    boolean valid = new Gff3Validator().validate(List.of(gff3), fastaFiles("valid.fasta.gz"));
     assertThat(valid).isTrue();
-    assertThat(reportContent(manifest)).doesNotContain("ERROR:");
+    assertThat(reportContent(gff3)).doesNotContain("ERROR:");
   }
 
   @Test
   public void testInvalidGff3() throws Exception {
-    GenomeManifest manifest = manifestWith("valid.fasta.gz", "invalid.gff3.gz");
-    List<SubmissionFile<FileType>> gff3Files = manifest.files(FileType.GFF3);
-
-    boolean valid = new Gff3Validator().validate(manifest, gff3Files);
-
+    SubmissionFile<FileType> gff3 = gff3File("invalid.gff3.gz");
+    boolean valid = new Gff3Validator().validate(List.of(gff3), fastaFiles("valid.fasta.gz"));
     assertThat(valid).isFalse();
-    assertThat(reportContent(manifest)).contains("ERROR:");
+    assertThat(reportContent(gff3)).contains("ERROR:");
   }
 
   @Test
   public void testCrossValidationFailure() throws Exception {
-    GenomeManifest manifest = manifestWith("valid.fasta.gz", "inconsistent.gff3.gz");
-    List<SubmissionFile<FileType>> gff3Files = manifest.files(FileType.GFF3);
-
-    boolean valid = new Gff3Validator().validate(manifest, gff3Files);
-
+    SubmissionFile<FileType> gff3 = gff3File("inconsistent.gff3.gz");
+    boolean valid = new Gff3Validator().validate(List.of(gff3), fastaFiles("valid.fasta.gz"));
     assertThat(valid).isFalse();
-    assertThat(reportContent(manifest)).contains("ERROR:");
+    assertThat(reportContent(gff3)).contains("ERROR:");
   }
 
   @Test
   public void testNoGff3Files() {
-    GenomeManifest manifest = new GenomeManifest();
-    assertThat(new Gff3Validator().validate(manifest, manifest.files(FileType.GFF3))).isTrue();
+    assertThat(new Gff3Validator().validate(List.of(), List.of())).isTrue();
   }
 }
