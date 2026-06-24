@@ -10,11 +10,10 @@
  */
 package uk.ac.ebi.ena.webin.cli;
 
-import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.readtools.validator.ReadsValidator;
 import uk.ac.ebi.ena.txmbvalidator.TxmbValidator;
+import uk.ac.ebi.ena.webin.cli.context.SequenceSubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
-import uk.ac.ebi.ena.webin.cli.context.genome.GenomeValidator;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.polysample.PolySampleManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.polysample.PolySampleXmlWriter;
@@ -25,7 +24,6 @@ import uk.ac.ebi.ena.webin.cli.context.sequence.SequenceXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.taxrefset.TaxRefSetManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.taxrefset.TaxRefSetXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeManifestReader;
-import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeValidator;
 import uk.ac.ebi.ena.webin.cli.context.transcriptome.TranscriptomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReader;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
@@ -39,25 +37,25 @@ public enum WebinCliContext {
       GenomeManifest.class,
       GenomeManifestReader.class,
       GenomeXmlWriter.class,
-      GenomeValidator.class,
+      SequenceSubmissionValidator.class,
       "Genome assembly"),
   transcriptome(
       TranscriptomeManifest.class,
       TranscriptomeManifestReader.class,
       TranscriptomeXmlWriter.class,
-      TranscriptomeValidator.class,
+      SequenceSubmissionValidator.class,
       "Transcriptome assembly"),
   sequence(
       SequenceManifest.class,
       SequenceManifestReader.class,
       SequenceXmlWriter.class,
-      SubmissionValidator.class,
+      SequenceSubmissionValidator.class,
       "Sequence assembly"),
   polysample(
       PolySampleManifest.class,
       PolySampleManifestReader.class,
       PolySampleXmlWriter.class,
-      SubmissionValidator.class,
+      SequenceSubmissionValidator.class,
       "Polysample"),
   reads(
       ReadsManifest.class,
