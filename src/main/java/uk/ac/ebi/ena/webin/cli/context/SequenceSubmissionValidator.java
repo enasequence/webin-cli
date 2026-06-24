@@ -21,7 +21,7 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 /**
- * Single validator for Genome, Transcriptome and Sequence submissions. Delegates to the {@code
+ * Single validator for Genome, Transcriptome, Sequence and Polysample submissions. Delegates to the {@code
  * sequencetools} {@link SubmissionValidator} and, when the manifest declares a GFF3 file (Genome
  * or Transcriptome only), also runs client-side GFF3 validation via {@link Gff3Validator}.
  *

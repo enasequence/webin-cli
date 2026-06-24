@@ -22,7 +22,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.embl.gff3tools.cli.SequenceFormat;
+import uk.ac.ebi.embl.gff3tools.exception.ReadException;
 import uk.ac.ebi.embl.gff3tools.exception.ValidationException;
+import uk.ac.ebi.embl.gff3tools.exception.WriteException;
 import uk.ac.ebi.embl.gff3tools.gff3.reader.GFF3FileReader;
 import uk.ac.ebi.embl.gff3tools.validation.ValidationEngine;
 import uk.ac.ebi.embl.gff3tools.validation.ValidationEngineBuilder;
@@ -130,6 +132,8 @@ public class Gff3Validator {
     } catch (ValidationException ex) {
       // A fatal validation/syntactic error stopped processing before completion.
       errors.add(ex);
+    } catch (ReadException | WriteException ex) {
+      errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage()));
     } catch (IOException ex) {
       errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage()));
     } catch (RuntimeException ex) {
