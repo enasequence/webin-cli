@@ -16,52 +16,45 @@ import uk.ac.ebi.ena.webin.cli.context.genome.Gff3Validator;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
-import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
 
 /**
- * Single validator for Genome, Transcriptome, Sequence and Polysample submissions. Delegates to
- * the {@code sequencetools} {@link SubmissionValidator} and, when the manifest declares a GFF3
- * file (Genome or Transcriptome only), also runs client-side GFF3 validation via {@link
- * Gff3Validator}.
+ * Composite validator for genome, transcriptome, and sequence submissions. Runs the sequencetools
+ * {@link SubmissionValidator} first, then performs client-side GFF3 validation when the manifest
+ * declares a GFF3 file.
  *
- * <p>This class is instantiated reflectively by {@code WebinCliContext} so it must keep a public
- * no-arg constructor.
+ * <p>Instantiated reflectively by {@link uk.ac.ebi.ena.webin.cli.WebinCliContext}, so a public
+ * no-arg constructor is required.
  */
-public class SequenceSubmissionValidator implements Validator<Manifest, ValidationResponse> {
+public class SequenceSubmissionValidator implements Validator<Manifest<?>, ValidationResponse> {
 
-  private final SubmissionValidator submissionValidator = new SubmissionValidator();
-  private final Gff3Validator gff3Validator = new Gff3Validator();
+  private static final String GFF3_TYPE = "GFF3";
+  private static final String FASTA_TYPE = "FASTA";
+
+  private final SubmissionValidator submissionValidator;
+  private final Gff3Validator gff3Validator;
+
+  public SequenceSubmissionValidator() {
+    this(new SubmissionValidator(), new Gff3Validator());
+  }
+
+  SequenceSubmissionValidator(SubmissionValidator submissionValidator, Gff3Validator gff3Validator) {
+    this.submissionValidator = submissionValidator;
+    this.gff3Validator = gff3Validator;
+  }
 
   @Override
-  public ValidationResponse validate(Manifest manifest) {
+  public ValidationResponse validate(Manifest<?> manifest) {
     ValidationResponse response = submissionValidator.validate(manifest);
     if (response == null) {
       response = new ValidationResponse();
     }
 
-    if (manifest instanceof GenomeManifest) {
-      GenomeManifest genomeManifest = (GenomeManifest) manifest;
-      List<SubmissionFile<GenomeManifest.FileType>> gff3Files =
-          genomeManifest.files(GenomeManifest.FileType.GFF3);
-      if (gff3Files != null && !gff3Files.isEmpty()) {
-        List<SubmissionFile<GenomeManifest.FileType>> fastaFiles =
-            genomeManifest.files(GenomeManifest.FileType.FASTA);
-        if (!gff3Validator.validate(gff3Files, fastaFiles)) {
-          response.setStatus(ValidationResponse.status.VALIDATION_ERROR);
-        }
-      }
-    } else if (manifest instanceof TranscriptomeManifest) {
-      TranscriptomeManifest transcriptomeManifest = (TranscriptomeManifest) manifest;
-      List<SubmissionFile<TranscriptomeManifest.FileType>> gff3Files =
-          transcriptomeManifest.files(TranscriptomeManifest.FileType.GFF3);
-      if (gff3Files != null && !gff3Files.isEmpty()) {
-        List<SubmissionFile<TranscriptomeManifest.FileType>> fastaFiles =
-            transcriptomeManifest.files(TranscriptomeManifest.FileType.FASTA);
-        if (!gff3Validator.validate(gff3Files, fastaFiles)) {
-          response.setStatus(ValidationResponse.status.VALIDATION_ERROR);
-        }
+    List<? extends SubmissionFile<?>> gff3Files = manifest.filesWithTypeName(GFF3_TYPE);
+    if (!gff3Files.isEmpty()) {
+      List<? extends SubmissionFile<?>> fastaFiles = manifest.filesWithTypeName(FASTA_TYPE);
+      if (!gff3Validator.validate(gff3Files, fastaFiles)) {
+        response.setStatus(ValidationResponse.status.VALIDATION_ERROR);
       }
     }
 
