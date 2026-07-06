@@ -8,7 +8,7 @@ Data submissions to ENA can be made using the Webin command line submission inte
 
 The following types of submissions are supported:
 
-- genome assemblies (FASTA, flat file, or FASTA + GFF3 annotation)
+- genome assemblies
 - transcriptome assemblies
 - annotated sequences
 - read data submissions (Fastq, BAM, CRAM)
@@ -81,36 +81,6 @@ To publish webin-cli as a library :
 ```
 gradle publish
 ```
-
-## Genome Assembly Manifest Fields
-
-The genome context (`-context genome`) supports the following data-file fields in the manifest:
-
-| Field             | Required/Optional | Description                                                     | Accepted suffixes                             |
-|-------------------|-------------------|-----------------------------------------------------------------|-----------------------------------------------|
-| `FASTA`           | See file groups   | Sequences in a FASTA file                                       | `.fasta.gz`, `.fa.gz`, `.fna.gz` (+ `.bz2`)  |
-| `FLATFILE`        | See file groups   | Sequences and annotation in an EMBL flat file                   | `.gz`, `.bz2`                                 |
-| `GFF3`            | See file groups   | Genome annotation in a GFF3 file (paired with `FASTA`)         | `.gff3.gz`, `.gff.gz` (+ `.bz2`)             |
-| `CHROMOSOME_LIST` | Optional          | Tab-delimited list of chromosomes / named top-level sequences   | `.gz`, `.bz2`                                 |
-| `UNLOCALISED_LIST`| Optional          | Tab-delimited list of unlocalised sequences                     | `.gz`, `.bz2`                                 |
-
-### Supported file-group combinations
-
-| Files                                        | Notes                                            |
-|----------------------------------------------|--------------------------------------------------|
-| `FASTA`                                      | Sequence-only assembly                           |
-| `FASTA` + `CHROMOSOME_LIST`                  | Chromosomal assembly without annotation          |
-| `FASTA` + `CHROMOSOME_LIST` + `UNLOCALISED_LIST` | Chromosomal assembly with unlocalised sequences |
-| `FLATFILE`                                   | Annotated assembly via EMBL flat file            |
-| `FLATFILE` + `CHROMOSOME_LIST`               | Chromosomal annotated assembly                   |
-| `FLATFILE` + `CHROMOSOME_LIST` + `UNLOCALISED_LIST` | Chromosomal annotated assembly with unlocalised sequences |
-| `FASTA` + `GFF3`                             | GFF3-annotated assembly (**new in 9.0.3**)       |
-| `FASTA` + `GFF3` + `CHROMOSOME_LIST`         | Chromosomal GFF3-annotated assembly              |
-| `FASTA` + `GFF3` + `CHROMOSOME_LIST` + `UNLOCALISED_LIST` | Chromosomal GFF3-annotated assembly with unlocalised sequences |
-
-> **Note:** GFF3 annotation files must be gzip- or bzip2-compressed (`.gff3.gz`, `.gff.gz`,
-> `.gff3.bz2`, `.gff.bz2`). GFF3 is paired with `FASTA` only; it cannot be combined with `FLATFILE`.
-> GFF3 is not supported for `primary metagenome`, `binned metagenome`, or `clinical isolate assembly` types.
 
 ## Support
 
