@@ -30,6 +30,7 @@ public class SequenceSubmissionValidator implements Validator<Manifest<?>, Valid
 
   private static final String GFF3_TYPE = "GFF3";
   private static final String FASTA_TYPE = "FASTA";
+  private static final String FLATFILE_TYPE = "FLATFILE";
 
   private final SubmissionValidator submissionValidator;
   private final Gff3Validator gff3Validator;
@@ -45,17 +46,28 @@ public class SequenceSubmissionValidator implements Validator<Manifest<?>, Valid
 
   @Override
   public ValidationResponse validate(Manifest<?> manifest) {
-    ValidationResponse response = submissionValidator.validate(manifest);
-    if (response == null) {
-      response = new ValidationResponse();
+    List<? extends SubmissionFile<?>> gff3Files = manifest.filesWithTypeName(GFF3_TYPE);
+    List<? extends SubmissionFile<?>> fastaFiles = manifest.filesWithTypeName(FASTA_TYPE);
+    boolean gff3Only =
+        !gff3Files.isEmpty()
+            && fastaFiles.isEmpty()
+            && manifest.filesWithTypeName(FLATFILE_TYPE).isEmpty();
+
+    ValidationResponse response;
+    if (gff3Only) {
+      // sequencetools' SubmissionValidator requires at least one FASTA/FLATFILE sequence
+      // to compute contig/scaffold/chromosome counts, which a GFF3-only submission never
+      // has. Skip it entirely and rely on Gff3Validator below instead.
+      response = new ValidationResponse(ValidationResponse.status.VALIDATION_SUCCESS);
+    } else {
+      response = submissionValidator.validate(manifest);
+      if (response == null) {
+        response = new ValidationResponse();
+      }
     }
 
-    List<? extends SubmissionFile<?>> gff3Files = manifest.filesWithTypeName(GFF3_TYPE);
-    if (!gff3Files.isEmpty()) {
-      List<? extends SubmissionFile<?>> fastaFiles = manifest.filesWithTypeName(FASTA_TYPE);
-      if (!gff3Validator.validate(gff3Files, fastaFiles)) {
-        response.setStatus(ValidationResponse.status.VALIDATION_ERROR);
-      }
+    if (!gff3Files.isEmpty() && !gff3Validator.validate(gff3Files, fastaFiles)) {
+      response.setStatus(ValidationResponse.status.VALIDATION_ERROR);
     }
 
     return response;

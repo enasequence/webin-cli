@@ -100,7 +100,7 @@ public class GenomeManifestReaderTest {
   @Test
   public void testInvalidManifestWithBothFastaAndFlatfile() {
     String expectedErrorMessage =
-        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3].";
+        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3] or [1 GFF3].";
 
     String[][] invalidFileTypeGroups = {
       {"FASTA", "FLATFILE"},
@@ -162,23 +162,24 @@ public class GenomeManifestReaderTest {
   }
 
   @Test
-  public void testInvalidManifestWithGff3Alone() {
-    String expectedErrorMessage =
-        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3].";
-
+  public void testValidManifestWithGff3Alone() {
     GenomeManifestReader manifestReader = createManifestReader();
-    List<String> msgs = new ArrayList<>();
-    manifestReader.addListener(validationMessage -> msgs.add(validationMessage.getMessage()));
 
     manifestReader.readManifest(
         Paths.get("."),
         new ManifestBuilder()
             .field(Field.PLATFORM, " illumina")
             .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
-            .file("GFF3", "annotation.gff3.gz")
+            .field(Field.DESCRIPTION, " description")
+            .file("GFF3", TempFileBuilder.empty("annotation.gff3.gz"))
             .build());
 
-    Assert.assertFalse(manifestReader.getValidationResult().isValid());
-    Assert.assertTrue(msgs.contains(expectedErrorMessage));
+    GenomeManifest manifest = manifestReader.getManifests().stream().findFirst().get();
+
+    assertThat(manifest.files().files()).hasSize(1);
+    assertThat(manifest.files().get(GenomeManifest.FileType.GFF3)).hasSize(1);
+    SubmissionFile<GenomeManifest.FileType> gff3File =
+        manifest.files().get(GenomeManifest.FileType.GFF3).get(0);
+    Assert.assertEquals(GenomeManifest.FileType.GFF3, gff3File.getFileType());
   }
 }

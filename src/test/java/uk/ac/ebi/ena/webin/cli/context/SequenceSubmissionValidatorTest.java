@@ -13,12 +13,14 @@ package uk.ac.ebi.ena.webin.cli.context;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Collections;
 import org.junit.Test;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.context.genome.Gff3Validator;
@@ -49,7 +51,7 @@ public class SequenceSubmissionValidatorTest {
 
   @Test
   public void gff3FilesPresent_gff3ValidationPasses_responseUnchanged() {
-    GenomeManifest manifest = manifestWithGff3();
+    GenomeManifest manifest = manifestWithFastaAndGff3();
     ValidationResponse expected =
         new ValidationResponse(ValidationResponse.status.VALIDATION_SUCCESS);
     when(submissionValidator.validate(any())).thenReturn(expected);
@@ -62,7 +64,7 @@ public class SequenceSubmissionValidatorTest {
 
   @Test
   public void gff3FilesPresent_gff3ValidationFails_statusSetToValidationError() {
-    GenomeManifest manifest = manifestWithGff3();
+    GenomeManifest manifest = manifestWithFastaAndGff3();
     when(submissionValidator.validate(any()))
         .thenReturn(new ValidationResponse(ValidationResponse.status.VALIDATION_SUCCESS));
     when(gff3Validator.validate(anyList(), anyList())).thenReturn(false);
@@ -82,7 +84,36 @@ public class SequenceSubmissionValidatorTest {
     assertThat(result).isNotNull();
   }
 
-  private GenomeManifest manifestWithGff3() {
+  @Test
+  public void gff3Only_submissionValidatorSkipped_gff3ValidatorCalledWithEmptyFastaList() {
+    GenomeManifest manifest = manifestWithGff3Only();
+    when(gff3Validator.validate(anyList(), eq(Collections.emptyList()))).thenReturn(true);
+
+    ValidationResponse result = validator.validate(manifest);
+
+    assertThat(result.getStatus()).isEqualTo(ValidationResponse.status.VALIDATION_SUCCESS);
+    verify(submissionValidator, never()).validate(any());
+  }
+
+  @Test
+  public void gff3Only_gff3ValidationFails_statusSetToValidationError() {
+    GenomeManifest manifest = manifestWithGff3Only();
+    when(gff3Validator.validate(anyList(), anyList())).thenReturn(false);
+
+    ValidationResponse result = validator.validate(manifest);
+
+    assertThat(result.getStatus()).isEqualTo(ValidationResponse.status.VALIDATION_ERROR);
+    verify(submissionValidator, never()).validate(any());
+  }
+
+  private GenomeManifest manifestWithFastaAndGff3() {
+    GenomeManifest manifest = new GenomeManifest();
+    manifest.files().add(new SubmissionFile<>(FileType.FASTA, new File("dummy.fasta")));
+    manifest.files().add(new SubmissionFile<>(FileType.GFF3, new File("dummy.gff3")));
+    return manifest;
+  }
+
+  private GenomeManifest manifestWithGff3Only() {
     GenomeManifest manifest = new GenomeManifest();
     manifest.files().add(new SubmissionFile<>(FileType.GFF3, new File("dummy.gff3")));
     return manifest;
