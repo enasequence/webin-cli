@@ -100,7 +100,7 @@ public class GenomeManifestReaderTest {
   @Test
   public void testInvalidManifestWithBothFastaAndFlatfile() {
     String expectedErrorMessage =
-        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FASTA, 1 GFF3] or [1 GFF3].";
+        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 GFF3].";
 
     String[][] invalidFileTypeGroups = {
       {"FASTA", "FLATFILE"},
@@ -138,8 +138,13 @@ public class GenomeManifestReaderTest {
   }
 
   @Test
-  public void testValidManifestWithFastaAndGff3() {
+  public void testInvalidManifestWithFastaAndGff3() {
+    String expectedErrorMessage =
+        "An invalid set of files has been specified. Expected data files are: [1 FASTA] or [1 FASTA, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 FLATFILE] or [1 FLATFILE, 1 CHROMOSOME_LIST, 0-1 UNLOCALISED_LIST] or [1 GFF3].";
+
     GenomeManifestReader manifestReader = createManifestReader();
+    List<String> msgs = new ArrayList<>();
+    manifestReader.addListener(validationMessage -> msgs.add(validationMessage.getMessage()));
 
     manifestReader.readManifest(
         Paths.get("."),
@@ -151,14 +156,8 @@ public class GenomeManifestReaderTest {
             .file("GFF3", TempFileBuilder.empty("annotation.gff3.gz"))
             .build());
 
-    GenomeManifest manifest = manifestReader.getManifests().stream().findFirst().get();
-
-    assertThat(manifest.files().files()).hasSize(2);
-    assertThat(manifest.files().get(GenomeManifest.FileType.FASTA)).hasSize(1);
-    assertThat(manifest.files().get(GenomeManifest.FileType.GFF3)).hasSize(1);
-    SubmissionFile<GenomeManifest.FileType> gff3File =
-        manifest.files().get(GenomeManifest.FileType.GFF3).get(0);
-    Assert.assertEquals(GenomeManifest.FileType.GFF3, gff3File.getFileType());
+    Assert.assertFalse(manifestReader.getValidationResult().isValid());
+    Assert.assertTrue(msgs.contains(expectedErrorMessage));
   }
 
   @Test

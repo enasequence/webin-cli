@@ -37,7 +37,7 @@ public class GenomeManifestReaderFileCountTest {
             GenomeManifest.FileType.FLATFILE,
             GenomeManifest.FileType.CHROMOSOME_LIST,
             GenomeManifest.FileType.UNLOCALISED_LIST)
-        .files(GenomeManifest.FileType.FASTA, GenomeManifest.FileType.GFF3)
+        .files(GenomeManifest.FileType.GFF3)
         .test();
   }
 

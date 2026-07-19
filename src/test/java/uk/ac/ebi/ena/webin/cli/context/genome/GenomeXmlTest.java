@@ -122,41 +122,6 @@ public class GenomeXmlTest {
   }
 
   @Test
-  public void testFastaAndGff3Files() throws Throwable {
-    ManifestBuilder manifestBuilder =
-        addDefaultFields(new ManifestBuilder())
-            .file("FASTA", "valid.fasta.gz")
-            .file("GFF3", "valid.gff3.gz");
-
-    String analysisXml = getGeneratedXml(manifestBuilder, "analysis.xml");
-
-    XmlTester.assertXml(
-        analysisXml,
-        "<ANALYSIS_SET>\n"
-            + "  <ANALYSIS>\n"
-            + "    <TITLE>Genome assembly: test_genome</TITLE>\n"
-            + "    <STUDY_REF accession=\"PRJNA272616\" />\n"
-            + "    <SAMPLE_REF accession=\"SAMEA4734564\" />\n"
-            + "    <ANALYSIS_TYPE>\n"
-            + "      <SEQUENCE_ASSEMBLY>\n"
-            + "        <NAME>test_genome</NAME>\n"
-            + "        <TYPE>clone or isolate</TYPE>\n"
-            + "        <PARTIAL>false</PARTIAL>\n"
-            + "        <COVERAGE>1</COVERAGE>\n"
-            + "        <PROGRAM>test_program</PROGRAM>\n"
-            + "        <PLATFORM>test_platform</PLATFORM>\n"
-            + "        <MOL_TYPE>genomic DNA</MOL_TYPE>\n"
-            + "      </SEQUENCE_ASSEMBLY>\n"
-            + "    </ANALYSIS_TYPE>\n"
-            + "    <FILES>\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"73ab6de83b6369ef977f00ac7a966618\" />\n"
-            + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.gff3.gz\" filetype=\"gff3\" checksum_method=\"MD5\" checksum=\"94d2ff3caf21a5e60da59aae6a06a657\" />\n"
-            + "    </FILES>\n"
-            + "  </ANALYSIS>\n"
-            + "</ANALYSIS_SET>\n");
-  }
-
-  @Test
   public void testSubmissionXml() throws Throwable {
     ManifestBuilder manifestBuilder =
         addDefaultFields(new ManifestBuilder())

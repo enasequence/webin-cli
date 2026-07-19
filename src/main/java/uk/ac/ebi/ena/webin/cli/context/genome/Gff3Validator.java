@@ -62,8 +62,7 @@ public class Gff3Validator {
    * @return {@code true} if all GFF3 files validated without errors, {@code false} otherwise.
    */
   public boolean validate(
-      List<? extends SubmissionFile<?>> gff3Files,
-      List<? extends SubmissionFile<?>> fastaFiles) {
+      List<? extends SubmissionFile<?>> gff3Files, List<? extends SubmissionFile<?>> fastaFiles) {
     if (gff3Files == null || gff3Files.isEmpty()) {
       return true;
     }

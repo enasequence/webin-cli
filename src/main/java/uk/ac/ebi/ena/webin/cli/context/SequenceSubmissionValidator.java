@@ -39,7 +39,8 @@ public class SequenceSubmissionValidator implements Validator<Manifest<?>, Valid
     this(new SubmissionValidator(), new Gff3Validator());
   }
 
-  SequenceSubmissionValidator(SubmissionValidator submissionValidator, Gff3Validator gff3Validator) {
+  SequenceSubmissionValidator(
+      SubmissionValidator submissionValidator, Gff3Validator gff3Validator) {
     this.submissionValidator = submissionValidator;
     this.gff3Validator = gff3Validator;
   }

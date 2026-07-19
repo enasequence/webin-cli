@@ -31,6 +31,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String DESCRIPTION = "DESCRIPTION";
     String TAB = "TAB";
     String FLATFILE = "FLATFILE";
+    String GFF3 = "GFF3";
     String AUTHORS = "AUTHORS";
     String ADDRESS = "ADDRESS";
   }
@@ -43,6 +44,7 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
     String DESCRIPTION = "Sequence submission description";
     String TAB = "Tabulated file";
     String FLATFILE = "Flat file";
+    String GFF3 = "Annotation in a GFF3 file";
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
@@ -92,6 +94,12 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .desc(Description.FLATFILE)
             .processor(getFlatfileProcessors())
             .and()
+            .file()
+            .optional()
+            .name(Field.GFF3)
+            .desc(Description.GFF3)
+            .processor(getGff3Processors())
+            .and()
             .meta()
             .optional()
             .name(Field.AUTHORS)
@@ -120,6 +128,9 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
             .and()
             .group("Annotated sequences in a flat file.")
             .required(Field.FLATFILE)
+            .and()
+            .group("Annotation in a GFF3 file.")
+            .required(Field.GFF3)
             .build());
 
     if (factory.getStudyProcessor() != null) {
@@ -155,6 +166,12 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
   private static ManifestFieldProcessor[] getFastaProcessors() {
     return new ManifestFieldProcessor[] {
       new ASCIIFileNameProcessor(), new FileSuffixProcessor(ManifestFileSuffix.FASTA_FILE_SUFFIX)
+    };
+  }
+
+  private static ManifestFieldProcessor[] getGff3Processors() {
+    return new ManifestFieldProcessor[] {
+      new ASCIIFileNameProcessor(), new FileSuffixProcessor(ManifestFileSuffix.GFF3_FILE_SUFFIX)
     };
   }
 
@@ -200,6 +217,11 @@ public class SequenceManifestReader extends ManifestReader<SequenceManifest> {
                       flatFile ->
                           submissionFiles.add(
                               new SubmissionFile(SequenceManifest.FileType.FLATFILE, flatFile)));
+              getFiles(getInputDir(), fieldGroup, Field.GFF3)
+                  .forEach(
+                      gff3File ->
+                          submissionFiles.add(
+                              new SubmissionFile(SequenceManifest.FileType.GFF3, gff3File)));
             });
   }
 

@@ -180,8 +180,7 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
             .group("Sequences in an annotated flat file.")
             .required(Field.FLATFILE)
             .and()
-            .group("Sequences in a fasta file and annotation in a GFF3 file.")
-            .required(Field.FASTA)
+            .group("Annotation in a GFF3 file.")
             .required(Field.GFF3)
             .build());
 
