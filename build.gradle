@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '10.0.0-DEV'
+version = '10.0.0-dev'
 
 repositories {
     mavenLocal()
