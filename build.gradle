@@ -29,7 +29,7 @@ repositories {
 dependencies {
     // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library.
     // TODO: remove local override once webin-cli-validator 2.0.10 is published (TTENA-207 Phase 0)
-    api( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:2.0.10-GFF3-LOCAL' )
+    api( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:2.0.9' )
     api( 'uk.ac.ebi.ena:gff3tools:4.6.2' ) {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
