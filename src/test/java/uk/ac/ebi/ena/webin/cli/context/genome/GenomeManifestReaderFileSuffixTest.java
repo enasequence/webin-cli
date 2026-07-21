@@ -25,6 +25,10 @@ public class GenomeManifestReaderFileSuffixTest {
     valid(manifestReader, GenomeManifest.FileType.FLATFILE, ".txt.gz");
     valid(manifestReader, GenomeManifest.FileType.CHROMOSOME_LIST, ".txt.gz");
     valid(manifestReader, GenomeManifest.FileType.UNLOCALISED_LIST, ".txt.gz");
+    valid(manifestReader, GenomeManifest.FileType.GFF3, ".gff3.gz");
+    valid(manifestReader, GenomeManifest.FileType.GFF3, ".gff.gz");
+    valid(manifestReader, GenomeManifest.FileType.GFF3, ".gff3.bz2");
+    valid(manifestReader, GenomeManifest.FileType.GFF3, ".gff.bz2");
   }
 
   @Test
@@ -37,5 +41,10 @@ public class GenomeManifestReaderFileSuffixTest {
     invalid(manifestReader, GenomeManifest.FileType.FLATFILE, ".txt");
     invalid(manifestReader, GenomeManifest.FileType.CHROMOSOME_LIST, ".txt");
     invalid(manifestReader, GenomeManifest.FileType.UNLOCALISED_LIST, ".txt");
+    // GFF3: invalid (uncompressed)
+    invalid(manifestReader, GenomeManifest.FileType.GFF3, ".gff3");
+    invalid(manifestReader, GenomeManifest.FileType.GFF3, ".gff");
+    // GFF3: invalid extension
+    invalid(manifestReader, GenomeManifest.FileType.GFF3, ".txt.gz");
   }
 }

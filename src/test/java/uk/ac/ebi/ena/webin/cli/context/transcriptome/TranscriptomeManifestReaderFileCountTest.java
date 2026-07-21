@@ -23,6 +23,7 @@ public class TranscriptomeManifestReaderFileCountTest {
         // Supported file groups
         .files(TranscriptomeManifest.FileType.FASTA)
         .files(TranscriptomeManifest.FileType.FLATFILE)
+        .files(TranscriptomeManifest.FileType.GFF3)
         .test();
   }
 }
