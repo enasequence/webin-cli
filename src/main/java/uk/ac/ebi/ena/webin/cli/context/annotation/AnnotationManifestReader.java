@@ -40,6 +40,7 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
     String GFF3 = "GFF3";
     String ANALYSIS_TYPE = "ANALYSIS_TYPE";
     String ANALYSIS_ATTRIBUTE = "ANALYSIS_ATTRIBUTE";
+    String PRIMARY_ID = "PRIMARY_ID";
   }
 
   public interface Description {
@@ -48,6 +49,7 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
     String ANALYSIS_TYPE = "Analysis type";
     String ANALYSIS_ATTRIBUTE =
         "Additional annotation attribute in <tag>:<value> format. May be repeated.";
+    String PRIMARY_ID = "Primary accession of the assembly being annotated";
   }
 
   public AnnotationManifestReader(
@@ -72,6 +74,11 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
             .name(Field.ANALYSIS_TYPE)
             .desc(Description.ANALYSIS_TYPE)
             .processor(new CVFieldProcessor(CV_ANALYSIS_TYPE))
+            .and()
+            .meta()
+            .required()
+            .name(Field.PRIMARY_ID)
+            .desc(Description.PRIMARY_ID)
             .and()
             .meta()
             .optional(100)
@@ -114,6 +121,7 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
 
               manifest.setName(fieldGroup.getValue(Fields.NAME));
               manifest.setAnalysisType(fieldGroup.getValue(Field.ANALYSIS_TYPE));
+              manifest.setPrimaryId(fieldGroup.getValue(Field.PRIMARY_ID));
               manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
 
               SubmissionFiles<AnnotationManifest.FileType> submissionFiles = manifest.files();
