@@ -53,6 +53,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
             .build());
 
     AnnotationManifest manifest = manifestReader.getManifests().stream().findFirst().get();
@@ -60,6 +61,7 @@ public class AnnotationManifestReaderTest {
     assertEquals("SOME-FANCY-NAME", manifest.getName());
     assertEquals(
         AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION, manifest.getAnalysisType());
+    assertEquals("GCA_982310335", manifest.getPrimaryId());
     assertThat(manifest.files().files()).hasSize(1);
     assertThat(manifest.files().get(AnnotationManifest.FileType.GFF3)).hasSize(1);
     assertThat(manifest.getAttributes()).isEmpty();
@@ -79,6 +81,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE,
                 "ANNOTATION_SOURCE:Prokka v1.14.6")
@@ -108,6 +111,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
             .field(AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE, "PLOIDY:2")
             .field(AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE, "PLOIDY:4")
             .build());
@@ -137,6 +141,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
             .build());
 
     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
@@ -162,6 +167,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
             .field(AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE, "MISSING_COLON_VALUE")
             .build());
 
@@ -207,6 +213,32 @@ public class AnnotationManifestReaderTest {
                 AnnotationManifestReader.Field.GFF3,
                 TempFileBuilder.empty("annotation.gff3.gz"))
             .field(AnnotationManifestReader.Field.ANALYSIS_TYPE, "SEQUENCE_ANNOTATION")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .build());
+
+    assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
+  }
+
+  @Test
+  public void testMissingPrimaryIdReportsError() {
+    AnnotationManifestReader manifestReader = createManifestReader();
+
+    MessageCounter counter =
+        MessageCounter.regex(
+            ValidationMessage.Severity.ERROR,
+            WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR.regex());
+    manifestReader.addListener(counter);
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .file(
+                AnnotationManifestReader.Field.GFF3,
+                TempFileBuilder.empty("annotation.gff3.gz"))
+            .field(
+                AnnotationManifestReader.Field.ANALYSIS_TYPE,
+                AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
             .build());
 
     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);

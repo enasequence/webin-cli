@@ -52,6 +52,12 @@ public class AnnotationXmlWriter
   }
 
   @Override
+  protected <M extends Manifest> List<Element> createAdditionalAnalysisElements(M manifest) {
+    AnnotationManifest annotationManifest = (AnnotationManifest) manifest;
+    return List.of(new Element("PRIMARY_ID").setText(annotationManifest.getPrimaryId()));
+  }
+
+  @Override
   protected <M extends Manifest> void addCustomAttributes(M manifest, Element analysisAttributesE) {
     AnnotationManifest annotationManifest = (AnnotationManifest) manifest;
 

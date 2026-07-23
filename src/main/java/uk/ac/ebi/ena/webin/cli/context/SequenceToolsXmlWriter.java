@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,11 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     // No-op by default
   }
 
+  /** Hook for context-specific top-level elements added directly under &lt;ANALYSIS&gt;. */
+  protected <M extends Manifest> List<Element> createAdditionalAnalysisElements(M manifest) {
+    return Collections.emptyList();
+  }
+
   @Override
   public Map<SubmissionBundle.SubmissionXMLFileType, String> createXml(
       M manifest,
@@ -61,6 +67,8 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
 
     if (null != manifest.getDescription() && !manifest.getDescription().isEmpty())
       analysisE.addContent(new Element("DESCRIPTION").setText(manifest.getDescription()));
+
+    for (Element e : createAdditionalAnalysisElements(manifest)) analysisE.addContent(e);
 
     if (manifest.getStudy() != null) {
       Element studyRefE = new Element("STUDY_REF");
