@@ -139,7 +139,7 @@ public class ReadsValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(2);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isEqualTo(2);
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
-    assertThat(executor.getValidationResponse().isPaired());
+    assertThat(executor.getValidationResponse().isPaired()).isTrue();
     assertGeneratedFiles(executor);
   }
 
@@ -156,7 +156,9 @@ public class ReadsValidationTest {
     assertThat(submissionFiles.get().size()).isEqualTo(1);
     assertThat(submissionFiles.get(FileType.FASTQ).size()).isOne();
     executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS);
-    assertThat(executor.getValidationResponse().isPaired());
+    // Pairing is deliberately not derived from a single (interleaved) fastq file:
+    // readtools 7517a26 gated paired.set(true) on a two-file submission.
+    assertThat(executor.getValidationResponse().isPaired()).isFalse();
     assertGeneratedFiles(executor);
   }
 
