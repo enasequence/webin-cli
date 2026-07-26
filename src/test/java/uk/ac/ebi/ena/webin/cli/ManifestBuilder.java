@@ -224,6 +224,9 @@ public class ManifestBuilder {
           case "FLATFILE":
             file(fileType, ".dat.gz");
             break;
+          case "GFF3":
+            file(fileType, ".gff3.gz");
+            break;
           case "CHROMOSOME_LIST":
           case "UNLOCALISED_LIST":
           case "TAB":

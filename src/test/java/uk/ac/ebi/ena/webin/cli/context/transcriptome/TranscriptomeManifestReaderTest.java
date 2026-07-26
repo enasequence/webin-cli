@@ -62,4 +62,23 @@ public class TranscriptomeManifestReaderTest {
     Assert.assertEquals("ST-001", manifest.getSubmissionTool());
     Assert.assertEquals("STV-001", manifest.getSubmissionToolVersion());
   }
+
+  @Test
+  public void testValidManifestWithGff3Alone() {
+    TranscriptomeManifestReader manifestReader = createManifestReader();
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(Field.PLATFORM, " illumina")
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
+            .field(Field.DESCRIPTION, " description")
+            .file("GFF3", TempFileBuilder.empty("annotation.gff3.gz"))
+            .build());
+
+    TranscriptomeManifest manifest = manifestReader.getManifests().stream().findFirst().get();
+
+    assertThat(manifest.files().files()).hasSize(1);
+    assertThat(manifest.files().get(TranscriptomeManifest.FileType.GFF3)).hasSize(1);
+  }
 }

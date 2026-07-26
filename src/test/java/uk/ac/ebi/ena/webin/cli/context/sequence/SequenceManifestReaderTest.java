@@ -59,4 +59,22 @@ public class SequenceManifestReaderTest {
     assertEquals("ST-001", manifest.getSubmissionTool());
     assertEquals("STV-001", manifest.getSubmissionToolVersion());
   }
+
+  @Test
+  public void testValidSequenceGff3Manifest() {
+    SequenceManifestReader manifestReader = createManifestReader();
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
+            .field(Field.DESCRIPTION, " description")
+            .file("GFF3", TempFileBuilder.empty("annotation.gff3.gz"))
+            .build());
+
+    SequenceManifest manifest = manifestReader.getManifests().stream().findFirst().get();
+
+    assertThat(manifest.files().files()).hasSize(1);
+    assertThat(manifest.files().get(SequenceManifest.FileType.GFF3)).hasSize(1);
+  }
 }

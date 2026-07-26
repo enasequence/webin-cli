@@ -42,6 +42,7 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
     String TPA = "TPA";
     String FASTA = "FASTA";
     String FLATFILE = "FLATFILE";
+    String GFF3 = "GFF3";
     String AUTHORS = "AUTHORS";
     String ADDRESS = "ADDRESS";
     String ASSEMBLY_TYPE = "ASSEMBLY_TYPE";
@@ -60,6 +61,7 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
     String TPA = "Third party annotation";
     String FASTA = "Fasta file";
     String FLATFILE = "Flat file";
+    String GFF3 = "Annotation in a GFF3 file";
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
     String ASSEMBLY_TYPE = "Assembly type";
@@ -131,6 +133,12 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
             .desc(Description.FLATFILE)
             .processor(getFlatfileProcessors())
             .and()
+            .file()
+            .optional()
+            .name(Field.GFF3)
+            .desc(Description.GFF3)
+            .processor(getGff3Processors())
+            .and()
             .meta()
             .optional()
             .name(Field.TPA)
@@ -171,6 +179,9 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
             .and()
             .group("Sequences in an annotated flat file.")
             .required(Field.FLATFILE)
+            .and()
+            .group("Annotation in a GFF3 file.")
+            .required(Field.GFF3)
             .build());
 
     if (factory.getStudyProcessor() != null) {
@@ -216,6 +227,12 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
     return new ManifestFieldProcessor[] {
       new ASCIIFileNameProcessor(),
       new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)
+    };
+  }
+
+  private static ManifestFieldProcessor[] getGff3Processors() {
+    return new ManifestFieldProcessor[] {
+      new ASCIIFileNameProcessor(), new FileSuffixProcessor(ManifestFileSuffix.GFF3_FILE_SUFFIX)
     };
   }
 
@@ -271,6 +288,11 @@ public class TranscriptomeManifestReader extends ManifestReader<TranscriptomeMan
                       file ->
                           submissionFiles.add(
                               new SubmissionFile(TranscriptomeManifest.FileType.FLATFILE, file)));
+              getFiles(getInputDir(), fieldGroup, Field.GFF3)
+                  .forEach(
+                      file ->
+                          submissionFiles.add(
+                              new SubmissionFile(TranscriptomeManifest.FileType.GFF3, file)));
             });
   }
 

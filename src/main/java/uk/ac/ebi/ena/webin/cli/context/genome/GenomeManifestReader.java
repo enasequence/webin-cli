@@ -52,6 +52,7 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
     String UNLOCALISED_LIST = "UNLOCALISED_LIST";
     String FASTA = "FASTA";
     String FLATFILE = "FLATFILE";
+    String GFF3 = "GFF3";
     String AUTHORS = "AUTHORS";
     String ADDRESS = "ADDRESS";
   }
@@ -74,6 +75,7 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
     String UNLOCALISED_LIST = "Unlocalised sequence list file";
     String FASTA = "Fasta file";
     String FLATFILE = "Flat file";
+    String GFF3 = "Annotation in a GFF3 file";
     String AUTHORS = "For submission brokers only. Submitter's names as a comma-separated list";
     String ADDRESS = "For submission brokers only. Submitter's address";
   }
@@ -190,6 +192,12 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .and()
             .file()
             .optional()
+            .name(Field.GFF3)
+            .desc(Description.GFF3)
+            .processor(getGff3Processors())
+            .and()
+            .file()
+            .optional()
             .name(Field.CHROMOSOME_LIST)
             .desc(Description.CHROMOSOME_LIST)
             .processor(getChromosomeListProcessors())
@@ -246,6 +254,9 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
             .required(Field.FLATFILE)
             .required(Field.CHROMOSOME_LIST)
             .optional(Field.UNLOCALISED_LIST)
+            .and()
+            .group("Annotation in a GFF3 file.")
+            .required(Field.GFF3)
             .build());
 
     if (factory.getStudyProcessor() != null) {
@@ -305,6 +316,12 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
     return new ManifestFieldProcessor[] {
       new ASCIIFileNameProcessor(),
       new FileSuffixProcessor(ManifestFileSuffix.GZIP_OR_BZIP_FILE_SUFFIX)
+    };
+  }
+
+  private static ManifestFieldProcessor[] getGff3Processors() {
+    return new ManifestFieldProcessor[] {
+      new ASCIIFileNameProcessor(), new FileSuffixProcessor(ManifestFileSuffix.GFF3_FILE_SUFFIX)
     };
   }
 
@@ -383,6 +400,11 @@ public class GenomeManifestReader extends ManifestReader<GenomeManifest> {
                           submissionFiles.add(
                               new SubmissionFile(
                                   GenomeManifest.FileType.UNLOCALISED_LIST, unlocalisedListFile)));
+              getFiles(getInputDir(), fieldGroup, Field.GFF3)
+                  .forEach(
+                      gff3File ->
+                          submissionFiles.add(
+                              new SubmissionFile(GenomeManifest.FileType.GFF3, gff3File)));
 
               // "primary metagenome" and "binned metagenome" checks
               if (ASSEMBLY_TYPE_PRIMARY_METAGENOME.equals(fieldGroup.getValue(Field.ASSEMBLY_TYPE))
