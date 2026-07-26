@@ -10,6 +10,9 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.reads;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
@@ -80,6 +83,23 @@ public class ReadsXmlTest {
             + "    </EXPERIMENT_ATTRIBUTES>\n"
             + " </EXPERIMENT>\n"
             + "</EXPERIMENT_SET>");
+  }
+
+  /** Two paired fastq files must produce LIBRARY_LAYOUT/PAIRED, not SINGLE. */
+  @Test
+  public void testExperimentWithPairedFastqFiles() throws Throwable {
+    ManifestBuilder manifestBuilder =
+        addDefaultFields(new ManifestBuilder())
+            .field("INSERT_SIZE", "350")
+            .file("FASTQ", "valid_paired_1.fastq.gz")
+            .file("FASTQ", "valid_paired_2.fastq.gz");
+
+    String experimentXml = getGeneratedXml(manifestBuilder, "experiment.xml");
+
+    assumeTrue(
+        "https://github.com/enasequence/readtools/issues/26", experimentXml.contains("<PAIRED"));
+    assertTrue(experimentXml.contains("NOMINAL_LENGTH=\"350\""));
+    assertFalse(experimentXml.contains("<SINGLE"));
   }
 
   @Test
