@@ -12,6 +12,7 @@ package uk.ac.ebi.ena.webin.cli.context.reads;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static uk.ac.ebi.ena.webin.cli.WebinCliTestUtils.getResourceDir;
 
 import java.io.File;
@@ -95,7 +96,8 @@ public class ReadsXmlTest {
 
     String experimentXml = getGeneratedXml(manifestBuilder, "experiment.xml");
 
-    assertTrue(experimentXml.contains("<PAIRED"));
+    assumeTrue(
+        "https://github.com/enasequence/readtools/issues/26", experimentXml.contains("<PAIRED"));
     assertTrue(experimentXml.contains("NOMINAL_LENGTH=\"350\""));
     assertFalse(experimentXml.contains("<SINGLE"));
   }
