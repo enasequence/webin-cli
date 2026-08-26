@@ -13,6 +13,7 @@ package uk.ac.ebi.ena.webin.cli.context;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,11 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
 
   protected <M extends Manifest> void addCustomAttributes(M manifest, Element analysisAttributesE) {
     // No-op by default
+  }
+
+  /** Hook for context-specific top-level elements added directly under &lt;ANALYSIS&gt;. */
+  protected <M extends Manifest> List<Element> createAdditionalAnalysisElements(M manifest) {
+    return Collections.emptyList();
   }
 
   @Override
@@ -62,9 +68,13 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     if (null != manifest.getDescription() && !manifest.getDescription().isEmpty())
       analysisE.addContent(new Element("DESCRIPTION").setText(manifest.getDescription()));
 
-    Element studyRefE = new Element("STUDY_REF");
-    analysisE.addContent(studyRefE);
-    studyRefE.setAttribute("accession", manifest.getStudy().getBioProjectId());
+    for (Element e : createAdditionalAnalysisElements(manifest)) analysisE.addContent(e);
+
+    if (manifest.getStudy() != null) {
+      Element studyRefE = new Element("STUDY_REF");
+      analysisE.addContent(studyRefE);
+      studyRefE.setAttribute("accession", manifest.getStudy().getBioProjectId());
+    }
     if (manifest.getSample() != null
         && manifest.getSample().getBioSampleId() != null
         && !manifest.getSample().getBioSampleId().isEmpty()) {
