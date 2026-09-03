@@ -10,6 +10,8 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.transcriptome;
 
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest;
@@ -19,10 +21,19 @@ public class TranscriptomeManifestReaderFileCountTest {
   @Test
   public void testFileCount() {
     new ManifestReaderFileCountTester<>(
-            TranscriptomeManifestReader.class, TranscriptomeManifest.FileType.values())
+            TranscriptomeManifestReader.class,
+            getFileTypes().toArray(new TranscriptomeManifest.FileType[0]))
         // Supported file groups
         .files(TranscriptomeManifest.FileType.FASTA)
         .files(TranscriptomeManifest.FileType.FLATFILE)
         .test();
+  }
+
+  private static List<TranscriptomeManifest.FileType> getFileTypes() {
+    /* TranscriptomeManifestReader does not support the GFF3 field yet, even though
+    TranscriptomeManifest.FileType declares it, so we exclude it upfront. */
+    return Arrays.stream(TranscriptomeManifest.FileType.values())
+        .filter(fileType -> !fileType.name().equals("GFF3"))
+        .toList();
   }
 }

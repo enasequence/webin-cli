@@ -62,9 +62,11 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     if (null != manifest.getDescription() && !manifest.getDescription().isEmpty())
       analysisE.addContent(new Element("DESCRIPTION").setText(manifest.getDescription()));
 
-    Element studyRefE = new Element("STUDY_REF");
-    analysisE.addContent(studyRefE);
-    studyRefE.setAttribute("accession", manifest.getStudy().getBioProjectId());
+    if (manifest.getStudy() != null) {
+      Element studyRefE = new Element("STUDY_REF");
+      analysisE.addContent(studyRefE);
+      studyRefE.setAttribute("accession", manifest.getStudy().getBioProjectId());
+    }
     if (manifest.getSample() != null
         && manifest.getSample().getBioSampleId() != null
         && !manifest.getSample().getBioSampleId().isEmpty()) {
