@@ -33,6 +33,8 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
 
   public static final String ANALYSIS_TYPE_DECOUPLED_ANNOTATION = "DECOUPLED_ANNOTATION";
 
+  public static final String DEFAULT_DESCRIPTION = "Annotation submission";
+
   private static final ManifestCVList CV_ANALYSIS_TYPE =
       new ManifestCVList(ANALYSIS_TYPE_DECOUPLED_ANNOTATION);
 
@@ -41,6 +43,7 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
     String ANALYSIS_TYPE = "ANALYSIS_TYPE";
     String ANALYSIS_ATTRIBUTE = "ANALYSIS_ATTRIBUTE";
     String PRIMARY_ID = "PRIMARY_ID";
+    String DESCRIPTION = "DESCRIPTION";
   }
 
   public interface Description {
@@ -50,10 +53,10 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
     String ANALYSIS_ATTRIBUTE =
         "Additional annotation attribute in <tag>:<value> format. May be repeated.";
     String PRIMARY_ID = "Primary accession of the assembly being annotated";
+    String DESCRIPTION = "Annotation submission description";
   }
 
-  public AnnotationManifestReader(
-      WebinCliParameters parameters, MetadataProcessorFactory factory) {
+  public AnnotationManifestReader(WebinCliParameters parameters, MetadataProcessorFactory factory) {
     super(
         parameters,
         // Fields.
@@ -79,6 +82,11 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
             .required()
             .name(Field.PRIMARY_ID)
             .desc(Description.PRIMARY_ID)
+            .and()
+            .meta()
+            .optional()
+            .name(Field.DESCRIPTION)
+            .desc(Description.DESCRIPTION)
             .and()
             .meta()
             .optional(100)
@@ -122,6 +130,13 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
               manifest.setName(fieldGroup.getValue(Fields.NAME));
               manifest.setAnalysisType(fieldGroup.getValue(Field.ANALYSIS_TYPE));
               manifest.setPrimaryId(fieldGroup.getValue(Field.PRIMARY_ID));
+
+              String description = fieldGroup.getValue(Field.DESCRIPTION);
+              manifest.setDescription(
+                  (description != null && !description.isEmpty())
+                      ? description
+                      : DEFAULT_DESCRIPTION);
+
               manifest.setIgnoreErrors(getWebinCliParameters().isIgnoreErrors());
 
               SubmissionFiles<AnnotationManifest.FileType> submissionFiles = manifest.files();

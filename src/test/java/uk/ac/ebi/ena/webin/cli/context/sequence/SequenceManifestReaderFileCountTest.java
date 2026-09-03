@@ -10,6 +10,8 @@
  */
 package uk.ac.ebi.ena.webin.cli.context.sequence;
 
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderFileCountTester;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.SequenceManifest;
@@ -19,10 +21,18 @@ public class SequenceManifestReaderFileCountTest {
   @Test
   public void testFileCount() {
     new ManifestReaderFileCountTester<>(
-            SequenceManifestReader.class, SequenceManifest.FileType.values())
+            SequenceManifestReader.class, getFileTypes().toArray(new SequenceManifest.FileType[0]))
         // Supported file groups
         .files(SequenceManifest.FileType.TAB)
         .files(SequenceManifest.FileType.FLATFILE)
         .test();
+  }
+
+  private static List<SequenceManifest.FileType> getFileTypes() {
+    /* SequenceManifestReader does not support the GFF3 field yet, even though
+    SequenceManifest.FileType declares it, so we exclude it upfront. */
+    return Arrays.stream(SequenceManifest.FileType.values())
+        .filter(fileType -> !fileType.name().equals("GFF3"))
+        .toList();
   }
 }

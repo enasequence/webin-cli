@@ -1,0 +1,15 @@
+## Sample manifest file for submitting a GFF3 annotation via Webin-CLI (annotation context)
+##
+## Fields:
+##   NAME               - Unique annotation submission name (required)
+##   GFF3               - Annotation in a GFF3 file, must be compressed as .gff3.gz or .gff3.bz2 (required)
+##   ANALYSIS_TYPE       - Must be DECOUPLED_ANNOTATION (required)
+##   PRIMARY_ID          - Primary accession of the assembly being annotated, e.g. GCA_982310335 (required)
+##   ANALYSIS_ATTRIBUTE  - Additional attribute in <tag>:<value> format, may be repeated (optional)
+
+NAME                MY_ANNOTATION_SUBMISSION_001
+GFF3                my_annotation.gff3.gz
+ANALYSIS_TYPE       DECOUPLED_ANNOTATION
+PRIMARY_ID          GCA_982310335
+ANALYSIS_ATTRIBUTE  ANNOTATION_SOURCE:Prokka v1.14.6
+ANALYSIS_ATTRIBUTE  ANNOTATION_DATE:2026-08-10

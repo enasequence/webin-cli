@@ -4,9 +4,9 @@
  * file except in compliance with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package uk.ac.ebi.ena.webin.cli.context.annotation;
 
@@ -35,14 +35,13 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 /**
  * Validates GFF3 files for the annotation (DECOUPLED_ANNOTATION) submission context.
  *
- * <p>Unlike the genome context, annotation submissions do not include a FASTA file — the
- * sequences are referenced by {@code PRIMARY_ID} (an existing ENA assembly accession). The
- * GFF3 is validated structurally only: the {@link CompositeSequenceProvider} is left empty, so
- * cross-validation rules that resolve sequences (translation, location, gap) will report
- * unresolved seqId errors for any sequence not found, but the structural/syntactic GFF3 checks
- * still run. Full cross-validation against the referenced assembly happens server-side in the
- * {@code webin-gff3-stages} pipeline, which downloads the reference sequences during its
- * VALIDATE stage.
+ * <p>Unlike the genome context, annotation submissions do not include a FASTA file — the sequences
+ * are referenced by {@code PRIMARY_ID} (an existing ENA assembly accession). The GFF3 is validated
+ * structurally only: the {@link CompositeSequenceProvider} is left empty, so cross-validation rules
+ * that resolve sequences (translation, location, gap) will report unresolved seqId errors for any
+ * sequence not found, but the structural/syntactic GFF3 checks still run. Full cross-validation
+ * against the referenced assembly happens server-side in the {@code webin-gff3-stages} pipeline,
+ * which downloads the reference sequences during its VALIDATE stage.
  */
 public class Gff3Validator {
 

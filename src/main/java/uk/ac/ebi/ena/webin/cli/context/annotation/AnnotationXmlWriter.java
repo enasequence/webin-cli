@@ -28,7 +28,9 @@ public class AnnotationXmlWriter
 
   @Override
   protected Element createXmlAnalysisTypeElement(AnnotationManifest manifest) {
-    return new Element(manifest.getAnalysisType());
+    Element analysisTypeE = new Element(manifest.getAnalysisType());
+    analysisTypeE.addContent(new Element("PRIMARY_ID").setText(manifest.getPrimaryId()));
+    return analysisTypeE;
   }
 
   @Override
@@ -49,12 +51,6 @@ public class AnnotationXmlWriter
                         "gff3")));
 
     return list;
-  }
-
-  @Override
-  protected <M extends Manifest> List<Element> createAdditionalAnalysisElements(M manifest) {
-    AnnotationManifest annotationManifest = (AnnotationManifest) manifest;
-    return List.of(new Element("PRIMARY_ID").setText(annotationManifest.getPrimaryId()));
   }
 
   @Override

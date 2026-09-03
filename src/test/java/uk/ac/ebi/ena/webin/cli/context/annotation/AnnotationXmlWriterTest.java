@@ -31,8 +31,7 @@ public class AnnotationXmlWriterTest {
 
   @Test
   public void testCreateXml() {
-    File gff3File =
-        TempFileBuilder.file("annotation.gff3", "##gff-version 3\n").toFile();
+    File gff3File = TempFileBuilder.file("annotation.gff3", "##gff-version 3\n").toFile();
 
     AnnotationManifest manifest = new AnnotationManifest();
     manifest.setName("my_annotation_20260722");
@@ -65,9 +64,10 @@ public class AnnotationXmlWriterTest {
             + "  <ANALYSIS>\n"
             + "    <TITLE>Annotation: my_annotation_20260722</TITLE>\n"
             + "    <DESCRIPTION>Structural annotation of assembly GCA_000001.1</DESCRIPTION>\n"
-            + "    <PRIMARY_ID>GCA_000001.1</PRIMARY_ID>\n"
             + "    <ANALYSIS_TYPE>\n"
-            + "      <DECOUPLED_ANNOTATION/>\n"
+            + "      <DECOUPLED_ANNOTATION>\n"
+            + "        <PRIMARY_ID>GCA_000001.1</PRIMARY_ID>\n"
+            + "      </DECOUPLED_ANNOTATION>\n"
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
             + "      <FILE filename=\"webin-cli-test/annotation/my_annotation_20260722/"
