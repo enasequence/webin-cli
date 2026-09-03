@@ -86,8 +86,7 @@ public class AnnotationManifestReaderTest {
 
     AnnotationManifest manifest = manifestReader.getManifests().stream().findFirst().get();
 
-    assertEquals(
-        "Structural annotation of assembly GCA_982310335", manifest.getDescription());
+    assertEquals("Structural annotation of assembly GCA_982310335", manifest.getDescription());
   }
 
   @Test

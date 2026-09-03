@@ -19,8 +19,8 @@ import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
  *
  * <p>Runs {@link Gff3Validator} on any GFF3 files declared in the manifest. GFF3 validation is
  * structural-only client-side (no FASTA cross-check) because annotation submissions reference
- * existing ENA sequences via {@code PRIMARY_ID}; full sequence-level validation happens
- * server-side in the {@code webin-gff3-stages} pipeline.
+ * existing ENA sequences via {@code PRIMARY_ID}; full sequence-level validation happens server-side
+ * in the {@code webin-gff3-stages} pipeline.
  *
  * <p>Standard manifest/metadata validation is not delegated to the sequencetools {@code
  * SubmissionValidator} because it does not support {@code AnnotationManifest}: it recognises only
