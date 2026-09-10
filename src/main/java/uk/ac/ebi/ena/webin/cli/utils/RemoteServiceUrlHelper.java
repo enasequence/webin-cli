@@ -13,11 +13,13 @@ package uk.ac.ebi.ena.webin.cli.utils;
 public class RemoteServiceUrlHelper {
   public static final String WEBIN_REST_V1_TEST_URL =
       "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/";
-  public static final String WEBIN_REST_V1_PROD_URL = "https://www.ebi.ac.uk/ena/submit/drop-box/";
+  public static final String WEBIN_REST_V1_PROD_URL =
+      "https://wwwdev.ebi.ac.uk/ena/dev/submit/drop-box/";
 
   public static final String WEBIN_REST_V2_TEST_URL =
       "https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/";
-  public static final String WEBIN_REST_V2_PROD_URL = "https://www.ebi.ac.uk/ena/submit/webin-v2/";
+  public static final String WEBIN_REST_V2_PROD_URL =
+      "https://wwwdev.ebi.ac.uk/ena/dev/submit/webin-v2/";
 
   public static final String WEBIN_AUTH_TEST_URL =
       "https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token";
