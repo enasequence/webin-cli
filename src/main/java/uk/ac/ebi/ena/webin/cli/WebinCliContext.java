@@ -13,6 +13,9 @@ package uk.ac.ebi.ena.webin.cli;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.readtools.validator.ReadsValidator;
 import uk.ac.ebi.ena.txmbvalidator.TxmbValidator;
+import uk.ac.ebi.ena.webin.cli.context.annotation.AnnotationManifestReader;
+import uk.ac.ebi.ena.webin.cli.context.annotation.AnnotationSubmissionValidator;
+import uk.ac.ebi.ena.webin.cli.context.annotation.AnnotationXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.polysample.PolySampleManifestReader;
@@ -68,7 +71,13 @@ public enum WebinCliContext {
       TaxRefSetManifestReader.class,
       TaxRefSetXmlWriter.class,
       TxmbValidator.class,
-      "Taxonomy reference set");
+      "Taxonomy reference set"),
+  annotation(
+      AnnotationManifest.class,
+      AnnotationManifestReader.class,
+      AnnotationXmlWriter.class,
+      AnnotationSubmissionValidator.class,
+      "Annotation");
 
   private final Class<? extends Manifest> manifestClass;
   private final Class<? extends ManifestReader<? extends Manifest>> manifestReaderClass;

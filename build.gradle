@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'uk.ac.ebi.ena.webin-cli'
-version = '9.0.3'
+version = '9.1.0'
 
 repositories {
     mavenLocal()
@@ -28,6 +28,10 @@ repositories {
 
 dependencies {
     // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library.
+    api( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:3.0.0-SNAPSHOT' )
+    api( 'uk.ac.ebi.ena:gff3tools:5.1.0' ) {
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
     api( 'uk.ac.ebi.ena.sequence:sequencetools:2.+' )
     api( 'uk.ac.ebi.ena.txmbtools:txmbtools:2.+' )
     api( 'uk.ac.ebi.ena:readtools:2.+' ) {
