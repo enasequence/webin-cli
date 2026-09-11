@@ -42,6 +42,9 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
  * sequence not found, but the structural/syntactic GFF3 checks still run. Full cross-validation
  * against the referenced assembly happens server-side in the {@code webin-gff3-stages} pipeline,
  * which downloads the reference sequences during its VALIDATE stage.
+ *
+ * Moving this class to gfftools adds webin-cli-validator to its list of dependencies. Which is
+ * unnecessary. Therefore, it is simpler to keep it here.
  */
 public class Gff3Validator {
 
