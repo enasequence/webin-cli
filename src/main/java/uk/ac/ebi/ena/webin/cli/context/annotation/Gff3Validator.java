@@ -46,8 +46,6 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
  * Moving this class to gfftools adds webin-cli-validator to its list of dependencies. Which is
  * unnecessary. Therefore, it is simpler to keep it here.
  */
-// Moving this class to gfftools adds webin-cli-validator to its list of dependencies. Which is
-// unnecessary. Therefore, it is simpler to keep it here.
 public class Gff3Validator {
 
   private static final Logger log = LoggerFactory.getLogger(Gff3Validator.class);
