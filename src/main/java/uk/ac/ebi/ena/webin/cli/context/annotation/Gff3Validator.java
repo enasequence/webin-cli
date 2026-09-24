@@ -23,25 +23,36 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.embl.gff3tools.cli.SequenceFormat;
 import uk.ac.ebi.embl.gff3tools.exception.ValidationException;
 import uk.ac.ebi.embl.gff3tools.gff3.reader.GFF3FileReader;
 import uk.ac.ebi.embl.gff3tools.validation.ValidationEngine;
 import uk.ac.ebi.embl.gff3tools.validation.ValidationEngineBuilder;
 import uk.ac.ebi.embl.gff3tools.validation.meta.RuleSeverity;
 import uk.ac.ebi.embl.gff3tools.validation.provider.CompositeSequenceProvider;
+import uk.ac.ebi.embl.gff3tools.validation.provider.FileSequenceSource;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 
 /**
- * Validates GFF3 files for the annotation (DECOUPLED_ANNOTATION) submission context.
+ * Validates GFF3 files against gff3tools, and validates FASTA files against gff3tools when no GFF3
+ * file is present.
  *
- * <p>Unlike the genome context, annotation submissions do not include a FASTA file — the sequences
- * are referenced by {@code PRIMARY_ID} (an existing ENA assembly accession). The GFF3 is validated
- * structurally only: the {@link CompositeSequenceProvider} is left empty, so cross-validation rules
- * that resolve sequences (translation, location, gap) will report unresolved seqId errors for any
- * sequence not found, but the structural/syntactic GFF3 checks still run. Full cross-validation
- * against the referenced assembly happens server-side in the {@code webin-gff3-stages} pipeline,
- * which downloads the reference sequences during its VALIDATE stage.
+ * <p>A submission carries either GFF3 or FASTA files, never both, so no cross-validation between
+ * the two is needed:
+ *
+ * <ul>
+ *   <li>GFF3 files are validated structurally: the {@link CompositeSequenceProvider} is left empty,
+ *       so cross-validation rules that resolve sequences (translation, location, gap) do not fire,
+ *       but the structural/syntactic GFF3 checks still run. For the annotation
+ *       (DECOUPLED_ANNOTATION) context, sequences are referenced by {@code PRIMARY_ID} (an existing
+ *       ENA assembly accession) and full cross-validation happens server-side in the {@code
+ *       webin-gff3-stages} pipeline, which downloads the reference sequences during its VALIDATE
+ *       stage.
+ *   <li>FASTA files are validated on their own (header syntax, duplicate sequence IDs) via {@link
+ *       FileSequenceSource}. Submitted FASTA headers are expected in gff3tools' {@code >ID |
+ *       {"key":"value",...}} form.
+ * </ul>
  *
  * <p>Moving this class to gfftools adds webin-cli-validator to its list of dependencies. Which is
  * unnecessary. Therefore, it is simpler to keep it here.
@@ -57,9 +68,6 @@ public class Gff3Validator {
    * @return {@code true} if all GFF3 files validated without errors, {@code false} otherwise.
    */
   public boolean validate(List<? extends SubmissionFile<?>> gff3Files) {
-    if (gff3Files == null || gff3Files.isEmpty()) {
-      return true;
-    }
     boolean valid = true;
     for (SubmissionFile<?> gff3File : gff3Files) {
       valid &= validateFile(gff3File);
@@ -67,14 +75,34 @@ public class Gff3Validator {
     return valid;
   }
 
+  /**
+   * Validates the GFF3 files in the provided list if any are present; otherwise validates the FASTA
+   * files, if any. A submission carries either GFF3 or FASTA files, never both.
+   *
+   * @param gff3Files GFF3 submission files to validate; may be null or empty
+   * @param fastaFiles FASTA submission files to validate when no GFF3 files are present; may be
+   *     null or empty
+   * @return {@code true} if validation found no errors, {@code false} otherwise.
+   */
+  public boolean validate(
+      List<? extends SubmissionFile<?>> gff3Files, List<? extends SubmissionFile<?>> fastaFiles) {
+    if (gff3Files != null && !gff3Files.isEmpty()) {
+      return validate(gff3Files);
+    }
+
+    if (fastaFiles == null || fastaFiles.isEmpty()) {
+      return true;
+    }
+    boolean valid = true;
+    for (SubmissionFile<?> fastaFile : fastaFiles) {
+      valid &= validateFastaFile(fastaFile);
+    }
+    return valid;
+  }
+
   private boolean validateFile(SubmissionFile<?> gff3File) {
     File gff3 = gff3File.getFile();
 
-    // No FASTA in annotation context — sequences are referenced by PRIMARY_ID and resolved
-    // server-side. Structural validation only: disable validators that require sequence data
-    // (coordinate bounds checking, CDS location bounds, translation comparison) since no
-    // SequenceLookup is available. Full cross-validation happens server-side in
-    // webin-gff3-stages.
     CompositeSequenceProvider sequenceProvider = new CompositeSequenceProvider();
 
     Map<String, RuleSeverity> ruleOverrides = new HashMap<>();
@@ -119,6 +147,34 @@ public class Gff3Validator {
 
     if (!errors.isEmpty()) {
       log.info("GFF3 file {} validation failed with {} error(s).", gff3.getName(), errors.size());
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Validates a FASTA file's header syntax and sequence IDs via gff3tools, with no GFF3 feature
+   * data involved. Any {@link FileSequenceSource} method triggers eager parsing of every header
+   * (via {@code JsonHeaderParser}, expecting {@code >ID | {"key":"value",...}}) and a duplicate
+   * sequence ID check; both throw unchecked {@link RuntimeException} on failure.
+   */
+  private boolean validateFastaFile(SubmissionFile<?> fastaFile) {
+    File fasta = fastaFile.getFile();
+    List<ValidationException> errors = new ArrayList<>();
+
+    FileSequenceSource source = new FileSequenceSource(fasta.toPath(), SequenceFormat.fasta, null);
+    try {
+      source.knownSeqIds();
+    } catch (RuntimeException ex) {
+      errors.add(new ValidationException("FASTA validation failed: " + ex.getMessage()));
+    } finally {
+      source.close();
+    }
+
+    writeReport(fastaFile.getReportFile(), errors, List.of());
+
+    if (!errors.isEmpty()) {
+      log.info("FASTA file {} validation failed with {} error(s).", fasta.getName(), errors.size());
       return false;
     }
     return true;

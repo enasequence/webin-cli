@@ -29,9 +29,11 @@ repositories {
 dependencies {
     // dependencies declared as 'api' so they can be exposed to projects that use webin-cli as a library.
     api( 'uk.ac.ebi.ena.webin-cli:webin-cli-validator:3.+' )
-    api( 'uk.ac.ebi.ena:gff3tools:5.2.0' ) {
+    api( 'uk.ac.ebi.ena:gff3tools:5.3.2' ) {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
+    // gff3tools exposes fastareader types in its API but publishes it as runtime-only.
+    api( 'uk.ac.ebi.ena:fastareader:1.2.0' )
     api( 'uk.ac.ebi.ena.sequence:sequencetools:2.+' )
     api( 'uk.ac.ebi.ena.txmbtools:txmbtools:2.+' )
     api( 'uk.ac.ebi.ena:readtools:2.+' ) {

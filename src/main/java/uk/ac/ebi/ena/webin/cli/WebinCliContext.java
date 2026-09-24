@@ -13,8 +13,8 @@ package uk.ac.ebi.ena.webin.cli;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.readtools.validator.ReadsValidator;
 import uk.ac.ebi.ena.txmbvalidator.TxmbValidator;
+import uk.ac.ebi.ena.webin.cli.context.Gff3AwareSubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.context.annotation.AnnotationManifestReader;
-import uk.ac.ebi.ena.webin.cli.context.annotation.AnnotationSubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.context.annotation.AnnotationXmlWriter;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeManifestReader;
 import uk.ac.ebi.ena.webin.cli.context.genome.GenomeXmlWriter;
@@ -40,13 +40,13 @@ public enum WebinCliContext {
       GenomeManifest.class,
       GenomeManifestReader.class,
       GenomeXmlWriter.class,
-      SubmissionValidator.class,
+      Gff3AwareSubmissionValidator.class,
       "Genome assembly"),
   transcriptome(
       TranscriptomeManifest.class,
       TranscriptomeManifestReader.class,
       TranscriptomeXmlWriter.class,
-      SubmissionValidator.class,
+      Gff3AwareSubmissionValidator.class,
       "Transcriptome assembly"),
   sequence(
       SequenceManifest.class,
@@ -76,7 +76,7 @@ public enum WebinCliContext {
       AnnotationManifest.class,
       AnnotationManifestReader.class,
       AnnotationXmlWriter.class,
-      AnnotationSubmissionValidator.class,
+      Gff3AwareSubmissionValidator.class,
       "Annotation");
 
   private final Class<? extends Manifest> manifestClass;

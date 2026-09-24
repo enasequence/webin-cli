@@ -67,7 +67,7 @@ public class TranscriptomeXmlTest {
             + "      </TRANSCRIPTOME_ASSEMBLY>\n"
             + "    </ANALYSIS_TYPE>\n"
             + "    <FILES>\n"
-            + "      <FILE filename=\"webin-cli-test/transcriptome/test_transcriptome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"101d3801949d7d315f631b3c3832c3ac\" />\n"
+            + "      <FILE filename=\"webin-cli-test/transcriptome/test_transcriptome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"61a40607634bd607982003af8f03a871\" />\n"
             + "    </FILES>\n"
             + "    <ANALYSIS_ATTRIBUTES>\n"
             + "        <ANALYSIS_ATTRIBUTE>\n"

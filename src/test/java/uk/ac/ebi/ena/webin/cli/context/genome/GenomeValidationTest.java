@@ -232,7 +232,8 @@ public class GenomeValidationTest {
             () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
         .isInstanceOf(WebinCliException.class);
 
-    new ReportTester(executor).textInSubmissionReport(NAME, "fasta file validation failed");
+    new ReportTester(executor)
+        .textInFileReport(NAME, "invalid.fasta.gz", "FASTA validation failed");
   }
 
   @Test
