@@ -11,18 +11,17 @@
 package uk.ac.ebi.ena.webin.cli.utils;
 
 public class RemoteServiceUrlHelper {
-  public static final String WEBIN_REST_V1_TEST_URL =
+  private static final String WEBIN_REST_V1_TEST_URL =
       "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/";
-  public static final String WEBIN_REST_V1_PROD_URL = "https://www.ebi.ac.uk/ena/submit/drop-box/";
+  private static final String WEBIN_REST_V1_PROD_URL = "https://www.ebi.ac.uk/ena/submit/drop-box/";
 
-  public static final String WEBIN_REST_V2_TEST_URL =
+  private static final String WEBIN_REST_V2_TEST_URL =
       "https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/";
-  public static final String WEBIN_REST_V2_PROD_URL = "https://www.ebi.ac.uk/ena/submit/webin-v2/";
+  private static final String WEBIN_REST_V2_PROD_URL = "https://www.ebi.ac.uk/ena/submit/webin-v2/";
 
-  public static final String WEBIN_AUTH_TEST_URL =
-      "https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token";
-  public static final String WEBIN_AUTH_PROD_URL =
-      "https://www.ebi.ac.uk/ena/submit/webin/auth/token";
+  private static final String WEBIN_AUTH_TEST_URL =
+      "https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/";
+  private static final String WEBIN_AUTH_PROD_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth/";
 
   public static final String BIOSAMPLES_TEST_URL = "https://wwwdev.ebi.ac.uk/biosamples/";
   public static final String BIOSAMPLES_PROD_URL = "https://www.ebi.ac.uk/biosamples/";

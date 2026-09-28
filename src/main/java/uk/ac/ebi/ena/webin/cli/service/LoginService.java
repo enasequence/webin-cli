@@ -26,17 +26,18 @@ import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.WebinCliMessage;
 import uk.ac.ebi.ena.webin.cli.service.utils.HttpHeaderBuilder;
 import uk.ac.ebi.ena.webin.cli.utils.ExceptionUtils;
+import uk.ac.ebi.ena.webin.cli.utils.RemoteServiceUrlHelper;
 import uk.ac.ebi.ena.webin.cli.utils.RetryUtils;
 
 public class LoginService {
   private static final Logger log = LoggerFactory.getLogger(LoginService.class);
-  private static final String TEST_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth";
-  private static final String PRODUCTION_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth";
-  private final String username;
-  private final String password;
-  private final boolean test;
 
   public static final String SERVICE_NAME = "Login";
+
+  private final String username;
+  private final String password;
+
+  private final boolean test;
 
   public static class LoginRequestBody {
     public final List<String> authRealms = new ArrayList<>();
@@ -55,10 +56,6 @@ public class LoginService {
     public String principle;
   }
 
-  private String getUri(String uri, boolean test) {
-    return (test) ? TEST_URL + uri : PRODUCTION_URL + uri;
-  }
-
   public LoginService(String username, String password, boolean test) {
     this.username = username;
     this.password = password;
@@ -66,7 +63,7 @@ public class LoginService {
   }
 
   public String login() throws WebinCliException, RuntimeException {
-    RequestEntity<LoginRequestBody> request = getAuthRequest("/login");
+    RequestEntity<LoginRequestBody> request = getAuthRequest("login");
 
     RestTemplate restTemplate = new RestTemplate();
 
@@ -97,7 +94,7 @@ public class LoginService {
    * @return token
    */
   public String getAuthToken() throws WebinCliException, RuntimeException {
-    RequestEntity<LoginRequestBody> request = getAuthRequest("/token");
+    RequestEntity<LoginRequestBody> request = getAuthRequest("token");
 
     RestTemplate restTemplate = new RestTemplate();
 
@@ -123,7 +120,7 @@ public class LoginService {
     RequestEntity<LoginRequestBody> request = null;
     try {
       request =
-          RequestEntity.post(new URI(getUri(url, test)))
+          RequestEntity.post(new URI(RemoteServiceUrlHelper.getWebinAuthUrl(test) + url))
               .headers(headers)
               .accept(MediaType.APPLICATION_JSON)
               .body(requestBody);

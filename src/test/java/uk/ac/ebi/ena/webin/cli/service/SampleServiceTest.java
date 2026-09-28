@@ -61,7 +61,7 @@ public class SampleServiceTest {
             .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(TEST))
             .setUserName(WebinCliTestUtils.getTestWebinUsername())
             .setPassword(WebinCliTestUtils.getTestWebinPassword())
-            .setWebinAuthUri(RemoteServiceUrlHelper.getWebinAuthUrl(TEST))
+            .setWebinAuthUri(RemoteServiceUrlHelper.getWebinAuthUrl(TEST) + "token")
             .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(TEST))
             .setBiosamplesWebinUserName(WebinCliTestUtils.getTestWebinUsername())
             .setBiosamplesWebinPassword(WebinCliTestUtils.getTestWebinPassword())

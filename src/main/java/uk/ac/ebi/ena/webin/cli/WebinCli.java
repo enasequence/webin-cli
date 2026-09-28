@@ -59,6 +59,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.ManifestReaderBuilder;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.service.LoginService;
 import uk.ac.ebi.ena.webin.cli.service.SubmitService;
+import uk.ac.ebi.ena.webin.cli.service.UserDetailsService;
 import uk.ac.ebi.ena.webin.cli.service.VersionService;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.upload.ASCPService;
@@ -291,6 +292,8 @@ public class WebinCli {
       if (parameters.isSubmit()) {
         submit();
       }
+
+      checkAndLogAbsConsentWarning();
 
       // It is important that following catch blocks log errors so they get written to the report
       // file.
@@ -922,6 +925,16 @@ public class WebinCli {
       throw ex;
     } catch (RuntimeException ex) {
       throw WebinCliException.systemError(ex, "Error checking uploaded files for modifications.");
+    }
+  }
+
+  private void checkAndLogAbsConsentWarning() {
+    UserDetailsService userDetailsService =
+        new UserDetailsService(parameters.getWebinAuthToken(), parameters.isTest());
+
+    UserDetailsService.UserDetails userDetails = userDetailsService.get();
+    if (!userDetails.isAbsConsent()) {
+      log.warn(WebinCliMessage.CLI_ABS_CONSENT_WARNING.text());
     }
   }
 
