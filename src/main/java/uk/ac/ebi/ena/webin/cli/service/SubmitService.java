@@ -170,7 +170,7 @@ public class SubmitService extends WebinService {
   private void processReceipt(
       String receiptXml, List<SubmissionBundle.SubmissionXMLFile> xmlFileList)
       throws WebinCliException {
-    StringBuilder errorsSb = new StringBuilder();
+
     try {
       SAXBuilder builder = new SAXBuilder();
       Document doc = builder.build(new StringReader(receiptXml));
@@ -183,7 +183,8 @@ public class SubmitService extends WebinService {
 
       Element rootNode = doc.getRootElement();
 
-      if (Boolean.valueOf(rootNode.getAttributeValue("success"))) {
+      Boolean success = Boolean.valueOf(rootNode.getAttributeValue("success"));
+      if (success) {
         for (SubmissionBundle.SubmissionXMLFile xmlFile : xmlFileList) {
           // Do not show submission accession in the output.
           if (xmlFile.getType() == SubmissionBundle.SubmissionXMLFileType.SUBMISSION) {
@@ -202,16 +203,21 @@ public class SubmitService extends WebinService {
 
           log.info(msg);
         }
-      } else {
-        List<Element> childrenList = rootNode.getChildren("MESSAGES");
-        for (Element child : childrenList) {
-          List<Element> errorList = child.getChildren("ERROR");
-          if (errorList != null && !errorList.isEmpty()) {
-            errorList.stream().forEach(e -> errorsSb.append(e.getValue()));
-          } else {
-            errorsSb.append("The submission failed because of an XML submission error.");
-          }
+      }
+
+      StringBuilder errorsSb = new StringBuilder();
+
+      List<Element> messages = rootNode.getChild("MESSAGES").getChildren();
+      for (Element message : messages) {
+        if (!success && message.getName().equalsIgnoreCase("error")) {
+          errorsSb.append(message.getValue());
+        } else {
+          log.info(message.getValue());
         }
+      }
+
+      if (!success && errorsSb.isEmpty()) {
+        errorsSb.append("The submission failed because of an XML submission error.");
       }
 
       if (errorsSb.length() != 0) {

@@ -34,6 +34,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -281,6 +283,8 @@ public class WebinCli {
 
   public void execute() throws WebinCliException, Throwable {
     try {
+      checkForAbsConsent();
+
       executor.readManifest();
 
       if (parameters.isValidate() || executor.getSubmissionBundles() == null) {
@@ -292,8 +296,6 @@ public class WebinCli {
       if (parameters.isSubmit()) {
         submit();
       }
-
-      checkAndLogAbsConsentWarning();
 
       // It is important that following catch blocks log errors so they get written to the report
       // file.
@@ -414,10 +416,6 @@ public class WebinCli {
       saveSubmittedSubmissionBundles(submittedBundles);
     } else if (!submissionFailureOccurred) {
       log.info("Nothing to submit. Submission(s) may have already been sent.");
-    }
-
-    if (parameters.isTest()) {
-      log.info("This was a TEST submission(s).");
     }
 
     if (submissionFailureOccurred) {
@@ -928,13 +926,24 @@ public class WebinCli {
     }
   }
 
-  private void checkAndLogAbsConsentWarning() {
+  /**
+   * Starting 15th of October 2026 Europe/London submissions will be rejected if ABS consent is not
+   * given. Although webin-rest will eventually reject the submission upon receiving, this check was
+   * added to webin-cli so the error can be shown to the submitter early in the submission process.
+   * Well before validation and uploading occurrs.
+   */
+  private void checkForAbsConsent() throws WebinCliException {
+    // No need to perform this check before the 15th.
+    if (LocalDate.now(ZoneId.of("Europe/London")).isBefore(LocalDate.of(2026, 10, 15))) {
+      return;
+    }
+
     UserDetailsService userDetailsService =
         new UserDetailsService(parameters.getWebinAuthToken(), parameters.isTest());
 
     UserDetailsService.UserDetails userDetails = userDetailsService.get();
     if (!userDetails.isAbsConsent()) {
-      log.warn(WebinCliMessage.CLI_ABS_CONSENT_WARNING.text());
+      throw WebinCliException.systemError(WebinCliMessage.CLI_ABS_CONSENT_ERROR.text());
     }
   }
 

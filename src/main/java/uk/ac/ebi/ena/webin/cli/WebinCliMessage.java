@@ -37,8 +37,8 @@ public enum WebinCliMessage implements MessageFormatSource {
       "Cannot submit more than 1 genome within 24 hours for one submission account, sample and study."),
   CLI_GENOME_RATELIMIT_ERROR_WITH_ANALYSIS_ID(
       "Cannot submit more than 1 genome within 24 hours for one submission account, sample and study. The ID of the last submitted analysis is {0}."),
-  CLI_ABS_CONSENT_WARNING(
-      "Please complete Access and Benefit Sharing (ABS) acknowledgement on the submission portal. Future submissions will not be allowed without ABS consent."),
+  CLI_ABS_CONSENT_ERROR(
+      "Failed submission: Incomplete Access and Benefit Sharing (ABS) acknowledgement. Please login to Webin Submissions Portal to complete."),
 
   EXECUTOR_INIT_ERROR("Failed to initialise validator. {0}"),
   EXECUTOR_EMPTY_DIRECTORY_ERROR("Unable to empty directory {0}"),
