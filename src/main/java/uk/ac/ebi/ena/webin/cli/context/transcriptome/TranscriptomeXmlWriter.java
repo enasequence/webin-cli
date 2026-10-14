@@ -14,9 +14,11 @@ import static uk.ac.ebi.ena.webin.cli.validator.manifest.TranscriptomeManifest.F
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
@@ -43,6 +45,13 @@ public class TranscriptomeXmlWriter
     if (null != manifest.getAssemblyType() && !manifest.getAssemblyType().isEmpty())
       e.addContent(createTextElement("TYPE", manifest.getAssemblyType()));
     return e;
+  }
+
+  @Override
+  protected List<File> getFastaFiles(TranscriptomeManifest manifest) {
+    return manifest.files(FileType.FASTA).stream()
+        .map(file -> file.getFile())
+        .collect(Collectors.toList());
   }
 
   @Override

@@ -14,9 +14,11 @@ import static uk.ac.ebi.ena.webin.cli.validator.manifest.GenomeManifest.FileType
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createFileElement;
 import static uk.ac.ebi.ena.webin.cli.xml.XmlWriterHelper.createTextElement;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.jdom2.Element;
 import uk.ac.ebi.ena.webin.cli.context.SequenceToolsXmlWriter;
 import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
@@ -53,6 +55,13 @@ public class GenomeXmlWriter extends SequenceToolsXmlWriter<GenomeManifest, Vali
     }
 
     return e;
+  }
+
+  @Override
+  protected List<File> getFastaFiles(GenomeManifest manifest) {
+    return manifest.files(FileType.FASTA).stream()
+        .map(file -> file.getFile())
+        .collect(Collectors.toList());
   }
 
   @Override

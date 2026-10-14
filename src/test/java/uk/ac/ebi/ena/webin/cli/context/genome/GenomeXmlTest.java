@@ -117,6 +117,12 @@ public class GenomeXmlTest {
             + "    <FILES>\n"
             + "      <FILE filename=\"webin-cli-test/genome/test_genome/valid.fasta.gz\" filetype=\"fasta\" checksum_method=\"MD5\" checksum=\"97b909b51a325a454dc6e3981899b1f2\" />\n"
             + "    </FILES>\n"
+            + "    <ANALYSIS_ATTRIBUTES>\n"
+            + "        <ANALYSIS_ATTRIBUTE>\n"
+            + "            <TAG>Pipeline</TAG>\n"
+            + "            <VALUE>DECOUPLED_ANNOTATION</VALUE>\n"
+            + "        </ANALYSIS_ATTRIBUTE>\n"
+            + "    </ANALYSIS_ATTRIBUTES>\n"
             + "  </ANALYSIS>\n"
             + "</ANALYSIS_SET>\n");
   }
