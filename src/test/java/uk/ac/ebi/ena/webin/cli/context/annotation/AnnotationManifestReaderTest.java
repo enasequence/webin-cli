@@ -253,4 +253,27 @@ public class AnnotationManifestReaderTest {
 
     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
   }
+
+  @Test
+  public void testInvalidPrimaryIdReportsError() {
+    AnnotationManifestReader manifestReader = createManifestReader();
+
+    MessageCounter counter =
+        MessageCounter.regex(
+            ValidationMessage.Severity.ERROR, WebinCliMessage.PRIMARY_ID_PROCESSOR_ERROR.regex());
+    manifestReader.addListener(counter);
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
+            .field(
+                AnnotationManifestReader.Field.ANALYSIS_TYPE,
+                AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "NOT_AN_ACCESSION")
+            .build());
+
+    assertThat(counter.getCount()).isEqualTo(1);
+  }
 }

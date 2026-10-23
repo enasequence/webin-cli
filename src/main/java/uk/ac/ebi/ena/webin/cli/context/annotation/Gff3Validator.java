@@ -107,6 +107,8 @@ public class Gff3Validator {
 
     Map<String, RuleSeverity> ruleOverrides = new HashMap<>();
     ruleOverrides.put("TRANSLATION_COMPARISON", RuleSeverity.OFF);
+    // Validated if there are empry annotation
+    ruleOverrides.put("EMPTY_ANNOTATION", RuleSeverity.ERROR);
 
     List<ValidationException> errors = new ArrayList<>();
     List<ValidationException> warnings = new ArrayList<>();

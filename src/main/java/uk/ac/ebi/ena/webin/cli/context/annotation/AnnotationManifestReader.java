@@ -23,6 +23,7 @@ import uk.ac.ebi.ena.webin.cli.manifest.processor.CVFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.CustomFieldProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.FileSuffixProcessor;
 import uk.ac.ebi.ena.webin.cli.manifest.processor.MetadataProcessorFactory;
+import uk.ac.ebi.ena.webin.cli.manifest.processor.PrimaryIdProcessor;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFiles;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.AnnotationManifest;
@@ -82,6 +83,7 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
             .required()
             .name(Field.PRIMARY_ID)
             .desc(Description.PRIMARY_ID)
+            .processor(new PrimaryIdProcessor())
             .and()
             .meta()
             .optional()
