@@ -10,18 +10,25 @@
  */
 package uk.ac.ebi.ena.webin.cli.context;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import uk.ac.ebi.embl.api.validation.submission.SubmissionValidator;
 import uk.ac.ebi.ena.webin.cli.context.annotation.Gff3Validator;
+import uk.ac.ebi.ena.webin.cli.utils.FastaUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.api.Validator;
+import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.AnnotationManifest;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 
 /**
- * Runs any GFF3 or FASTA files declared in the manifest through {@link Gff3Validator} (gff3tools)
- * before delegating standard manifest/metadata validation to the sequencetools {@link
- * SubmissionValidator}. GFF3 validation failure short-circuits — {@code SubmissionValidator} does
- * not run.
+ * Runs any GFF3 files, and any FASTA files with JSON headers ({@code >ID | {...}}), declared in the
+ * manifest through {@link Gff3Validator} (gff3tools) before delegating standard manifest/metadata
+ * validation to the sequencetools {@link SubmissionValidator}. GFF3 validation failure
+ * short-circuits — {@code SubmissionValidator} does not run.
+ *
+ * <p>FASTA files without JSON headers are not passed to {@link Gff3Validator}; they are validated
+ * by {@code SubmissionValidator} only.
  *
  * <p>{@link AnnotationManifest} is a special case: {@code SubmissionValidator} does not support it
  * (it recognises only genome/transcriptome/sequence/polysample manifests and throws {@link
@@ -52,8 +59,10 @@ public class Gff3AwareSubmissionValidator implements Validator<Manifest<?>, Vali
   @Override
   public ValidationResponse validate(Manifest<?> manifest) {
     ValidationResponse response = new ValidationResponse();
+    // Gff3 files and FASTA with json headers validated here.
     if (!gff3Validator.validate(
-        manifest.filesWithTypeName(GFF3_TYPE), manifest.filesWithTypeName(FASTA_TYPE))) {
+        manifest.filesWithTypeName(GFF3_TYPE),
+        getJsonHeaderFastaFiles(manifest.filesWithTypeName(FASTA_TYPE)))) {
       response.setStatus(ValidationResponse.status.VALIDATION_ERROR);
       return response;
     }
@@ -63,6 +72,14 @@ public class Gff3AwareSubmissionValidator implements Validator<Manifest<?>, Vali
       return response;
     }
 
+    // All other formates validated here.
     return submissionValidator.validate(manifest);
+  }
+
+  private static List<? extends SubmissionFile<?>> getJsonHeaderFastaFiles(
+      List<? extends SubmissionFile<?>> fastaFiles) {
+    return fastaFiles.stream()
+        .filter(fastaFile -> FastaUtils.hasJsonFastaHeader(fastaFile.getFile()))
+        .collect(Collectors.toList());
   }
 }

@@ -8,18 +8,17 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.ena.webin.cli.context;
+package uk.ac.ebi.ena.webin.cli.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import uk.ac.ebi.ena.webin.cli.TempFileBuilder;
 
-public class SequenceToolsXmlWriterTest {
+public class FastaUtilsTest {
 
   private static boolean hasJsonFastaHeader(String contents) {
-    return SequenceToolsXmlWriter.hasJsonFastaHeader(
-        TempFileBuilder.file("test.fasta", contents).toFile());
+    return FastaUtils.hasJsonFastaHeader(TempFileBuilder.file("test.fasta", contents).toFile());
   }
 
   @Test

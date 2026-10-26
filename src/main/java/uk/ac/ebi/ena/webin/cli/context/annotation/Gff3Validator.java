@@ -50,8 +50,8 @@ import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
  *       webin-gff3-stages} pipeline, which downloads the reference sequences during its VALIDATE
  *       stage.
  *   <li>FASTA files are validated on their own (header syntax, duplicate sequence IDs) via {@link
- *       FileSequenceSource}. Submitted FASTA headers are expected in gff3tools' {@code >ID |
- *       {"key":"value",...}} form.
+ *       FileSequenceSource}. Only FASTA files with headers in gff3tools' {@code >ID |
+ *       {"key":"value",...}} form are passed here; plain FASTA files are left to sequencetools.
  * </ul>
  *
  * <p>Moving this class to gfftools adds webin-cli-validator to its list of dependencies. Which is

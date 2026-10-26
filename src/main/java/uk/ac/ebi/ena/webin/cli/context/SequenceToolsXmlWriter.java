@@ -10,7 +10,6 @@
  */
 package uk.ac.ebi.ena.webin.cli.context;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -19,13 +18,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
-import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
+import uk.ac.ebi.ena.webin.cli.utils.FastaUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
@@ -34,13 +32,6 @@ import uk.ac.ebi.ena.webin.cli.xml.XmlWriter;
 
 public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends ValidationResponse>
     implements XmlWriter<M, R> {
-
-  /** FASTA header with a sequence id followed by a JSON object, e.g. {@code >ID | {...}}. */
-  private static final Pattern JSON_FASTA_HEADER_PATTERN =
-      Pattern.compile("^>\\s*\\S+\\s*\\|\\s*\\{.*\\}\\s*$");
-
-  /** Number of FASTA lines searched for a JSON header. */
-  private static final int JSON_FASTA_HEADER_MAX_LINES = 200;
 
   protected abstract Element createXmlAnalysisTypeElement(M manifest);
 
@@ -122,7 +113,7 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
 
     Element analysisAttributesE = new Element("ANALYSIS_ATTRIBUTES");
 
-    if (getFastaFiles(manifest).stream().anyMatch(SequenceToolsXmlWriter::hasJsonFastaHeader)) {
+    if (getFastaFiles(manifest).stream().anyMatch(FastaUtils::hasJsonFastaHeader)) {
       Element pipelineAnalysisAttributeE = new Element("ANALYSIS_ATTRIBUTE");
       pipelineAnalysisAttributeE.addContent(new Element("TAG").setText("Pipeline"));
       pipelineAnalysisAttributeE.addContent(new Element("VALUE").setText("DECOUPLED_ANNOTATION"));
@@ -177,24 +168,5 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     Map<SubmissionBundle.SubmissionXMLFileType, String> xmls = new HashMap<>();
     xmls.put(SubmissionBundle.SubmissionXMLFileType.ANALYSIS, stringWriter.toString());
     return xmls;
-  }
-
-  /**
-   * Returns true if any FASTA header within the first {@link #JSON_FASTA_HEADER_MAX_LINES} lines is
-   * in the {@code >ID | {json}} format.
-   */
-  static boolean hasJsonFastaHeader(File fastaFile) {
-    try (BufferedReader reader = FileUtils.getBufferedReader(fastaFile)) {
-      String line;
-      int lineCount = 0;
-      while (lineCount++ < JSON_FASTA_HEADER_MAX_LINES && (line = reader.readLine()) != null) {
-        if (line.startsWith(">") && JSON_FASTA_HEADER_PATTERN.matcher(line).matches()) {
-          return true;
-        }
-      }
-      return false;
-    } catch (IOException ex) {
-      throw WebinCliException.systemError(ex);
-    }
   }
 }
