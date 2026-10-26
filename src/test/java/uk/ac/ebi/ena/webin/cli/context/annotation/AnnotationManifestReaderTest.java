@@ -47,6 +47,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, " SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
@@ -57,6 +58,8 @@ public class AnnotationManifestReaderTest {
     AnnotationManifest manifest = manifestReader.getManifests().stream().findFirst().get();
 
     assertEquals("SOME-FANCY-NAME", manifest.getName());
+    assertNotNull(manifest.getStudy());
+    assertEquals("PRJNA272616", manifest.getStudy().getBioProjectId());
     assertEquals(
         AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION, manifest.getAnalysisType());
     assertEquals("GCA_982310335", manifest.getPrimaryId());
@@ -74,6 +77,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
@@ -97,6 +101,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
@@ -125,6 +130,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
@@ -156,6 +162,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
@@ -179,6 +186,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
@@ -188,6 +196,30 @@ public class AnnotationManifestReaderTest {
             .build());
 
     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
+  }
+
+  @Test
+  public void testMissingStudyReportsError() {
+    AnnotationManifestReader manifestReader = createManifestReader();
+
+    MessageCounter counter =
+        MessageCounter.regex(
+            ValidationMessage.Severity.ERROR,
+            WebinCliMessage.MANIFEST_READER_MISSING_MANDATORY_FIELD_ERROR.regex());
+    manifestReader.addListener(counter);
+
+    manifestReader.readManifest(
+        Paths.get("."),
+        new ManifestBuilder()
+            .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
+            .field(
+                AnnotationManifestReader.Field.ANALYSIS_TYPE,
+                AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .build());
+
+    assertThat(counter.getCount()).isEqualTo(1);
   }
 
   @Test
@@ -204,6 +236,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .build());
 
@@ -223,6 +256,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(AnnotationManifestReader.Field.ANALYSIS_TYPE, "SEQUENCE_ANNOTATION")
             .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
@@ -245,6 +279,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
@@ -267,6 +302,7 @@ public class AnnotationManifestReaderTest {
         Paths.get("."),
         new ManifestBuilder()
             .field(ManifestReader.Fields.NAME, "SOME-FANCY-NAME")
+            .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,

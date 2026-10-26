@@ -40,6 +40,7 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
       new ManifestCVList(ANALYSIS_TYPE_DECOUPLED_ANNOTATION);
 
   public interface Field {
+    String STUDY = "STUDY";
     String GFF3 = "GFF3";
     String ANALYSIS_TYPE = "ANALYSIS_TYPE";
     String ANALYSIS_ATTRIBUTE = "ANALYSIS_ATTRIBUTE";
@@ -49,6 +50,7 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
 
   public interface Description {
     String NAME = "Unique annotation submission name";
+    String STUDY = "Study accession or name";
     String GFF3 = "Annotation in a GFF3 file";
     String ANALYSIS_TYPE = "Analysis type";
     String ANALYSIS_ATTRIBUTE =
@@ -66,6 +68,12 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
             .required()
             .name(Fields.NAME)
             .desc(Description.NAME)
+            .and()
+            .meta()
+            .required()
+            .name(Field.STUDY)
+            .desc(Description.STUDY)
+            .processor(factory.getStudyProcessor())
             .and()
             .file()
             .required()
@@ -101,6 +109,12 @@ public class AnnotationManifestReader extends ManifestReader<AnnotationManifest>
             .group("Annotation in a GFF3 file.")
             .required(Field.GFF3)
             .build());
+
+    if (factory.getStudyProcessor() != null) {
+      factory
+          .getStudyProcessor()
+          .setCallback((fieldGroup, study) -> getManifest(fieldGroup).setStudy(study));
+    }
 
     getAnalysisAttributeProcessor()
         .setCallback(

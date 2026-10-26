@@ -21,6 +21,7 @@ import uk.ac.ebi.ena.webin.cli.XmlTester;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.AnnotationManifest;
+import uk.ac.ebi.ena.webin.cli.validator.reference.Study;
 
 public class AnnotationXmlWriterTest {
 
@@ -38,6 +39,9 @@ public class AnnotationXmlWriterTest {
     manifest.setDescription("Structural annotation of assembly GCA_000001.1");
     manifest.setAnalysisType(AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION);
     manifest.setPrimaryId("GCA_000001.1");
+    Study study = new Study();
+    study.setBioProjectId("PRJNA272616");
+    manifest.setStudy(study);
     manifest.files().add(new SubmissionFile<>(AnnotationManifest.FileType.GFF3, gff3File));
     manifest.addAttribute("ANNOTATION_SOURCE", "Prokka v1.14.6");
     manifest.addAttribute("GENE_CALLER", "Prodigal");
@@ -64,6 +68,7 @@ public class AnnotationXmlWriterTest {
             + "  <ANALYSIS>\n"
             + "    <TITLE>Annotation: my_annotation_20260722</TITLE>\n"
             + "    <DESCRIPTION>Structural annotation of assembly GCA_000001.1</DESCRIPTION>\n"
+            + "    <STUDY_REF accession=\"PRJNA272616\" />\n"
             + "    <ANALYSIS_TYPE>\n"
             + "      <DECOUPLED_ANNOTATION>\n"
             + "        <PRIMARY_ID>GCA_000001.1</PRIMARY_ID>\n"
