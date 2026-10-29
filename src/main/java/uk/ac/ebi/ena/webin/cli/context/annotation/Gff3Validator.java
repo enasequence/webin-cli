@@ -68,9 +68,12 @@ public class Gff3Validator {
    * @return {@code true} if all GFF3 files validated without errors, {@code false} otherwise.
    */
   public boolean validate(List<? extends SubmissionFile<?>> gff3Files) {
+    // Validate every file, even after a failure, so that each one gets its own report.
     boolean valid = true;
     for (SubmissionFile<?> gff3File : gff3Files) {
-      valid &= validateFile(gff3File);
+      if (!validateFile(gff3File)) {
+        valid = false;
+      }
     }
     return valid;
   }
@@ -93,9 +96,12 @@ public class Gff3Validator {
     if (fastaFiles == null || fastaFiles.isEmpty()) {
       return true;
     }
+    // Validate every file, even after a failure, so that each one gets its own report.
     boolean valid = true;
     for (SubmissionFile<?> fastaFile : fastaFiles) {
-      valid &= validateFastaFile(fastaFile);
+      if (!validateFastaFile(fastaFile)) {
+        valid = false;
+      }
     }
     return valid;
   }
@@ -140,15 +146,15 @@ public class Gff3Validator {
     } catch (ValidationException ex) {
       errors.add(ex);
     } catch (IOException ex) {
-      errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage()));
+      errors.add(new ValidationException("Failed to read GFF3 file: " + ex.getMessage(), ex));
     } catch (Exception ex) {
-      errors.add(new ValidationException("GFF3 validation failed: " + ex.getMessage()));
+      errors.add(new ValidationException("GFF3 validation failed: " + ex.getMessage(), ex));
     }
 
     writeReport(gff3File.getReportFile(), errors, warnings);
 
     if (!errors.isEmpty()) {
-      log.info("GFF3 file {} validation failed with {} error(s).", gff3.getName(), errors.size());
+      log.warn("GFF3 file {} validation failed with {} error(s).", gff3.getName(), errors.size());
       return false;
     }
     return true;
@@ -168,7 +174,7 @@ public class Gff3Validator {
     try {
       source.knownSeqIds();
     } catch (RuntimeException ex) {
-      errors.add(new ValidationException("FASTA validation failed: " + ex.getMessage()));
+      errors.add(new ValidationException("FASTA validation failed: " + ex.getMessage(), ex));
     } finally {
       source.close();
     }
@@ -176,7 +182,7 @@ public class Gff3Validator {
     writeReport(fastaFile.getReportFile(), errors, List.of());
 
     if (!errors.isEmpty()) {
-      log.info("FASTA file {} validation failed with {} error(s).", fasta.getName(), errors.size());
+      log.warn("FASTA file {} validation failed with {} error(s).", fasta.getName(), errors.size());
       return false;
     }
     return true;
@@ -211,7 +217,7 @@ public class Gff3Validator {
         writer.write(System.lineSeparator());
       }
     } catch (IOException ex) {
-      log.warn("Failed to write GFF3 validation report {}: {}", reportFile, ex.getMessage());
+      log.warn("Failed to write GFF3 validation report {}: {}", reportFile, ex.getMessage(), ex);
     }
   }
 
