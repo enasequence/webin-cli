@@ -28,8 +28,8 @@ public class PrimaryIdProcessorTest {
   @Test
   public void testValid() {
     // Assembly
-    Assert.assertTrue(process("GCA_982311725").isValid());
     Assert.assertTrue(process("GCA_982311725.1").isValid());
+    Assert.assertTrue(process("GCA_945867215.12").isValid());
     // WGS
     Assert.assertTrue(process("CBIHLC010000000").isValid());
     Assert.assertTrue(process("AAAA01000000").isValid());
@@ -46,8 +46,11 @@ public class PrimaryIdProcessorTest {
   public void testInvalid() {
     Assert.assertFalse(process("foo").isValid());
     Assert.assertFalse(process("GCA_98231172").isValid());
-    Assert.assertFalse(process("GCF_982311725").isValid());
-    Assert.assertFalse(process("gca_982311725").isValid());
+    // Assembly accession without a version
+    Assert.assertFalse(process("GCA_982311725").isValid());
+    Assert.assertFalse(process("GCA_982311725.").isValid());
+    Assert.assertFalse(process("GCF_982311725.1").isValid());
+    Assert.assertFalse(process("gca_982311725.1").isValid());
     Assert.assertFalse(process("OZ30762").isValid());
     Assert.assertFalse(process("ERZ123456").isValid());
     Assert.assertFalse(process("CBIHLC01").isValid());

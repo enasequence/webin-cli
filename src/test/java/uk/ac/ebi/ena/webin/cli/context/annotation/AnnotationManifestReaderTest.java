@@ -52,7 +52,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .build());
 
     AnnotationManifest manifest = manifestReader.getManifests().stream().findFirst().get();
@@ -62,7 +62,7 @@ public class AnnotationManifestReaderTest {
     assertEquals("PRJNA272616", manifest.getStudy().getBioProjectId());
     assertEquals(
         AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION, manifest.getAnalysisType());
-    assertEquals("GCA_982310335", manifest.getPrimaryId());
+    assertEquals("GCA_982310335.1", manifest.getPrimaryId());
     assertEquals(AnnotationManifestReader.DEFAULT_DESCRIPTION, manifest.getDescription());
     assertThat(manifest.files().files()).hasSize(1);
     assertThat(manifest.files().get(AnnotationManifest.FileType.GFF3)).hasSize(1);
@@ -82,15 +82,15 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .field(
                 AnnotationManifestReader.Field.DESCRIPTION,
-                "Structural annotation of assembly GCA_982310335")
+                "Structural annotation of assembly GCA_982310335.1")
             .build());
 
     AnnotationManifest manifest = manifestReader.getManifests().stream().findFirst().get();
 
-    assertEquals("Structural annotation of assembly GCA_982310335", manifest.getDescription());
+    assertEquals("Structural annotation of assembly GCA_982310335.1", manifest.getDescription());
   }
 
   @Test
@@ -106,7 +106,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE,
                 "ANNOTATION_SOURCE:Prokka v1.14.6")
@@ -135,7 +135,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .field(AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE, "PLOIDY:2")
             .field(AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE, "PLOIDY:4")
             .build());
@@ -166,7 +166,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .build());
 
     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
@@ -191,7 +191,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .field(AnnotationManifestReader.Field.ANALYSIS_ATTRIBUTE, "MISSING_COLON_VALUE")
             .build());
 
@@ -216,7 +216,7 @@ public class AnnotationManifestReaderTest {
             .field(
                 AnnotationManifestReader.Field.ANALYSIS_TYPE,
                 AnnotationManifestReader.ANALYSIS_TYPE_DECOUPLED_ANNOTATION)
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .build());
 
     assertThat(counter.getCount()).isEqualTo(1);
@@ -259,7 +259,7 @@ public class AnnotationManifestReaderTest {
             .field(AnnotationManifestReader.Field.STUDY, "SRP052303")
             .file(AnnotationManifestReader.Field.GFF3, TempFileBuilder.empty("annotation.gff3.gz"))
             .field(AnnotationManifestReader.Field.ANALYSIS_TYPE, "SEQUENCE_ANNOTATION")
-            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335")
+            .field(AnnotationManifestReader.Field.PRIMARY_ID, "GCA_982310335.1")
             .build());
 
     assertThat(counter.getCount()).isGreaterThanOrEqualTo(1);
