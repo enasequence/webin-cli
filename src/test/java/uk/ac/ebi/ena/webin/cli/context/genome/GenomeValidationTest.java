@@ -223,6 +223,7 @@ public class GenomeValidationTest {
 
   @Test
   public void testInvalidFasta() {
+    // Plain FASTA headers are validated by sequencetools.
     File manifestFile = manifestBuilder().file(FileType.FASTA, "invalid.fasta.gz").build();
 
     WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
@@ -233,6 +234,24 @@ public class GenomeValidationTest {
         .isInstanceOf(WebinCliException.class);
 
     new ReportTester(executor).textInSubmissionReport(NAME, "fasta file validation failed");
+  }
+
+  @Test
+  public void testInvalidJsonHeaderFasta() {
+    // JSON FASTA headers (>ID | {...}) are validated by gff3tools, which reports to the file
+    // report.
+    File manifestFile =
+        manifestBuilder().file(FileType.FASTA, "invalid-json-header.fasta.gz").build();
+
+    WebinCliExecutor<GenomeManifest, ValidationResponse> executor =
+        executorBuilder.build(manifestFile, RESOURCE_DIR);
+    executor.readManifest();
+    assertThatThrownBy(
+            () -> executor.validateSubmission(ManifestValidationPolicy.VALIDATE_ALL_MANIFESTS))
+        .isInstanceOf(WebinCliException.class);
+
+    new ReportTester(executor)
+        .textInFileReport(NAME, "invalid-json-header.fasta.gz", "FASTA validation failed");
   }
 
   @Test

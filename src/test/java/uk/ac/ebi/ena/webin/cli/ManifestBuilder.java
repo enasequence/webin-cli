@@ -242,6 +242,9 @@ public class ManifestBuilder {
           case "FASTQ":
             file(fileType, ".fastq.gz");
             break;
+          case "GFF3":
+            file(fileType, ".gff3.gz");
+            break;
           default:
             throw new RuntimeException("Unknown file type: " + fileType.name());
         }

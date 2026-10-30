@@ -43,4 +43,7 @@ public interface ManifestFileSuffix {
           ".tsv" + GZIP_FILE_SUFFIX,
           ".tab" + BZIP2_FILE_SUFFIX,
           ".tsv" + BZIP2_FILE_SUFFIX);
+
+  List<String> GFF3_FILE_SUFFIX =
+      Arrays.asList(".gff3" + GZIP_FILE_SUFFIX, ".gff3" + BZIP2_FILE_SUFFIX);
 }

@@ -115,6 +115,8 @@ public enum WebinCliMessage implements MessageFormatSource {
   CV_FIELD_PROCESSOR_FIELD_VALUE_CORRECTED("Field \"{0}\" value \"{1}\" was corrected to \"{2}\"."),
   ASCII_FILE_NAME_PROCESSOR_ERROR(
       "Invalid {0} file name: \"{1}\". File name should conform following regular expression: {2}."),
+  PRIMARY_ID_PROCESSOR_ERROR(
+      "Invalid {0} field value: \"{1}\". Expected a versioned assembly, WGS set, transcriptome set or sequence accession, e.g. GCA_945867215.1, CBIHLC010000000, HCKQ01000001 or OZ307626."),
   READS_MANIFEST_READER_MISSING_PLATFORM_AND_INSTRUMENT_ERROR(
       "Platform and/or instrument should be defined. Valid platforms: {0}. Valid instruments: {1}."),
   READS_MANIFEST_READER_INVALID_PLATFORM_FOR_INSTRUMENT_ERROR(

@@ -10,9 +10,11 @@
  */
 package uk.ac.ebi.ena.webin.cli.context;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import uk.ac.ebi.ena.webin.cli.WebinCliException;
 import uk.ac.ebi.ena.webin.cli.submit.SubmissionBundle;
+import uk.ac.ebi.ena.webin.cli.utils.FastaUtils;
 import uk.ac.ebi.ena.webin.cli.validator.api.ValidationResponse;
 import uk.ac.ebi.ena.webin.cli.validator.manifest.Manifest;
 import uk.ac.ebi.ena.webin.cli.validator.reference.Analysis;
@@ -33,6 +36,11 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
   protected abstract Element createXmlAnalysisTypeElement(M manifest);
 
   protected abstract List<Element> createXmlFileElements(M manifest, Path inputDir, Path uploadDir);
+
+  /** FASTA files checked for JSON headers. None by default. */
+  protected List<File> getFastaFiles(M manifest) {
+    return Collections.emptyList();
+  }
 
   protected <M extends Manifest> void addCustomAttributes(M manifest, Element analysisAttributesE) {
     // No-op by default
@@ -65,6 +73,7 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     Element studyRefE = new Element("STUDY_REF");
     analysisE.addContent(studyRefE);
     studyRefE.setAttribute("accession", manifest.getStudy().getBioProjectId());
+
     if (manifest.getSample() != null
         && manifest.getSample().getBioSampleId() != null
         && !manifest.getSample().getBioSampleId().isEmpty()) {
@@ -102,6 +111,14 @@ public abstract class SequenceToolsXmlWriter<M extends Manifest, R extends Valid
     for (Element e : createXmlFileElements(manifest, inputDir, uploadDir)) filesE.addContent(e);
 
     Element analysisAttributesE = new Element("ANALYSIS_ATTRIBUTES");
+
+    if (getFastaFiles(manifest).stream().anyMatch(FastaUtils::hasJsonFastaHeader)) {
+      Element pipelineAnalysisAttributeE = new Element("ANALYSIS_ATTRIBUTE");
+      pipelineAnalysisAttributeE.addContent(new Element("TAG").setText("Pipeline"));
+      pipelineAnalysisAttributeE.addContent(new Element("VALUE").setText("DECOUPLED_ANNOTATION"));
+
+      analysisAttributesE.addContent(pipelineAnalysisAttributeE);
+    }
 
     if (manifest.getSubmissionTool() != null && !manifest.getSubmissionTool().isEmpty()) {
       Element submissionToolAnalysisAttributeTagE = new Element("TAG").setText("SUBMISSION_TOOL");
