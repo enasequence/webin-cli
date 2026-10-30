@@ -60,7 +60,7 @@ public class Gff3AwareSubmissionValidator implements Validator<Manifest<?>, Vali
   public ValidationResponse validate(Manifest<?> manifest) {
     ValidationResponse response = new ValidationResponse();
     // Gff3 files and FASTA with json headers validated here.
-    if (!gff3Validator.validateGFF3File(
+    if (!gff3Validator.validate(
         manifest.filesWithTypeName(GFF3_TYPE),
         getJsonHeaderFastaFiles(manifest.filesWithTypeName(FASTA_TYPE)))) {
       response.setStatus(ValidationResponse.status.VALIDATION_ERROR);
