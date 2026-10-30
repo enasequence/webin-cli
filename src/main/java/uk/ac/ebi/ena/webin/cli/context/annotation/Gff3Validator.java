@@ -71,7 +71,7 @@ public class Gff3Validator {
     // Validate every file, even after a failure, so that each one gets its own report.
     for (SubmissionFile<?> gff3File : gff3Files) {
       if (!validateFile(gff3File)) {
-          return false;
+        return false;
       }
     }
     return true;
