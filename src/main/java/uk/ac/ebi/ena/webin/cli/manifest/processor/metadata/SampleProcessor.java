@@ -153,7 +153,7 @@ public class SampleProcessor implements ManifestFieldProcessor {
     return new SampleService.Builder()
         .setWebinRestV1Uri(RemoteServiceUrlHelper.getWebinRestV1Url(parameters.isTest()))
         .setCredentials(parameters.getWebinServiceUserName(), parameters.getPassword())
-        .setWebinAuthUri(RemoteServiceUrlHelper.getWebinAuthUrl(parameters.isTest()))
+        .setWebinAuthUri(RemoteServiceUrlHelper.getWebinAuthUrl(parameters.isTest()) + "token")
         .setBiosamplesUri(RemoteServiceUrlHelper.getBiosamplesUrl(parameters.isTest()))
         .setBiosamplesWebinUserName(parameters.getWebinServiceUserName())
         .setBiosamplesWebinPassword(parameters.getPassword())
