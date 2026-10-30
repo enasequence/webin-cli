@@ -57,7 +57,7 @@ public class Gff3ValidatorTest {
     AnnotationManifest manifest = manifestWith("valid.gff3.gz");
     List<SubmissionFile<FileType>> gff3Files = manifest.files(FileType.GFF3);
 
-    boolean valid = new Gff3Validator().validate(gff3Files);
+    boolean valid = new Gff3Validator().validateGFF3File(gff3Files);
 
     assertThat(valid).isTrue();
     assertThat(reportContent(manifest)).doesNotContain("ERROR:");
@@ -68,7 +68,7 @@ public class Gff3ValidatorTest {
     AnnotationManifest manifest = manifestWith("invalid.gff3.gz");
     List<SubmissionFile<FileType>> gff3Files = manifest.files(FileType.GFF3);
 
-    boolean valid = new Gff3Validator().validate(gff3Files);
+    boolean valid = new Gff3Validator().validateGFF3File(gff3Files);
 
     assertThat(valid).isFalse();
     assertThat(reportContent(manifest)).contains("ERROR:");
@@ -77,6 +77,6 @@ public class Gff3ValidatorTest {
   @Test
   public void testNoGff3Files() {
     AnnotationManifest manifest = new AnnotationManifest();
-    assertThat(new Gff3Validator().validate(manifest.files(FileType.GFF3))).isTrue();
+    assertThat(new Gff3Validator().validateGFF3File(manifest.files(FileType.GFF3))).isTrue();
   }
 }

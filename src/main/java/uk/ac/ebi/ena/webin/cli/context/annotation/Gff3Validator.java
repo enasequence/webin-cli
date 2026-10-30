@@ -67,12 +67,12 @@ public class Gff3Validator {
    * @param gff3Files GFF3 submission files to validate (must not be null or empty)
    * @return {@code true} if all GFF3 files validated without errors, {@code false} otherwise.
    */
-  public boolean validate(List<? extends SubmissionFile<?>> gff3Files) {
+  public boolean validateGFF3File(List<? extends SubmissionFile<?>> gff3Files) {
     // Validate every file, even after a failure, so that each one gets its own report.
     boolean valid = true;
     for (SubmissionFile<?> gff3File : gff3Files) {
       if (!validateFile(gff3File)) {
-        valid = false;
+          return false;
       }
     }
     return valid;
@@ -87,10 +87,10 @@ public class Gff3Validator {
    *     null or empty
    * @return {@code true} if validation found no errors, {@code false} otherwise.
    */
-  public boolean validate(
+  public boolean validateGFF3File(
       List<? extends SubmissionFile<?>> gff3Files, List<? extends SubmissionFile<?>> fastaFiles) {
     if (gff3Files != null && !gff3Files.isEmpty()) {
-      return validate(gff3Files);
+      return validateGFF3File(gff3Files);
     }
 
     if (fastaFiles == null || fastaFiles.isEmpty()) {
@@ -100,7 +100,7 @@ public class Gff3Validator {
     boolean valid = true;
     for (SubmissionFile<?> fastaFile : fastaFiles) {
       if (!validateFastaFile(fastaFile)) {
-        valid = false;
+        return false;
       }
     }
     return valid;

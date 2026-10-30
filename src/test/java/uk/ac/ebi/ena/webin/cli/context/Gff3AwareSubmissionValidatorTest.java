@@ -42,13 +42,13 @@ public class Gff3AwareSubmissionValidatorTest {
   private static List<SubmissionFile<?>> validateAndCaptureFastaFiles(GenomeManifest manifest) {
     Gff3Validator gff3Validator = mock(Gff3Validator.class);
     SubmissionValidator submissionValidator = mock(SubmissionValidator.class);
-    when(gff3Validator.validate(anyList(), anyList())).thenReturn(true);
+    when(gff3Validator.validateGFF3File(anyList(), anyList())).thenReturn(true);
     when(submissionValidator.validate(any())).thenReturn(new ValidationResponse());
 
     new Gff3AwareSubmissionValidator(gff3Validator, submissionValidator).validate(manifest);
 
     ArgumentCaptor<List> fastaFiles = ArgumentCaptor.forClass(List.class);
-    verify(gff3Validator).validate(anyList(), fastaFiles.capture());
+    verify(gff3Validator).validateGFF3File(anyList(), fastaFiles.capture());
     verify(submissionValidator).validate(manifest);
     return fastaFiles.getValue();
   }
