@@ -30,8 +30,9 @@ public class TranscriptomeManifestReaderFileCountTest {
   }
 
   private static List<TranscriptomeManifest.FileType> getFileTypes() {
-    /* TranscriptomeManifestReader does not support the GFF3 field yet, even though
-    TranscriptomeManifest.FileType declares it, so we exclude it upfront. */
+    /* TranscriptomeManifest.FileType (webin-cli-validator) includes GFF3, but
+    TranscriptomeManifestReader does not accept a GFF3 field yet. Remove this exclusion once
+    GFF3 is supported here. */
     return Arrays.stream(TranscriptomeManifest.FileType.values())
         .filter(fileType -> !fileType.name().equals("GFF3"))
         .toList();

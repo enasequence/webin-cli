@@ -29,8 +29,8 @@ public class SequenceManifestReaderFileCountTest {
   }
 
   private static List<SequenceManifest.FileType> getFileTypes() {
-    /* SequenceManifestReader does not support the GFF3 field yet, even though
-    SequenceManifest.FileType declares it, so we exclude it upfront. */
+    /* SequenceManifest.FileType (webin-cli-validator) includes GFF3, but SequenceManifestReader
+    does not accept a GFF3 field yet. Remove this exclusion once GFF3 is supported here. */
     return Arrays.stream(SequenceManifest.FileType.values())
         .filter(fileType -> !fileType.name().equals("GFF3"))
         .toList();
