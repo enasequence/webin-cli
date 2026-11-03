@@ -35,8 +35,7 @@ import uk.ac.ebi.ena.webin.cli.utils.FileUtils;
 import uk.ac.ebi.ena.webin.cli.validator.file.SubmissionFile;
 
 /**
- * Validates GFF3 files against gff3tools, and validates FASTA files against gff3tools when no GFF3
- * file is present.
+ * Validates GFF3 annotation and sequence with FASTA header against gff3tools.
  *
  * <p>A submission carries either GFF3 or FASTA files, never both, so no cross-validation between
  * the two is needed:
